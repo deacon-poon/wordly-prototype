@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { roboto } from "./font";
 import "./globals.css";
 import { Providers } from "@/store/providers";
 
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-roboto",
-});
-
 export const metadata: Metadata = {
-  title: "Wordly - AI Translation Platform",
-  description: "Modern AI-powered translation platform",
+  title: "Wordly - Intelligent Speech Platform",
+  description:
+    "Wordly is an intelligent speech platform for multilingual communication",
 };
 
 export default function RootLayout({
@@ -20,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${roboto.variable} font-sans antialiased`}>
+    <html lang="en" className={`${roboto.variable}`}>
+      <body className={`font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

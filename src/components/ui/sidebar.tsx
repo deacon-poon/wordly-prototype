@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { PanelLeftIcon, Menu } from "lucide-react";
+import { PanelLeftIcon, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   toggleSidebar,
@@ -66,8 +66,17 @@ interface SidebarProviderProps {
 }
 
 function SidebarProvider({ children }: SidebarProviderProps) {
+  const isCollapsed = useSelector(selectSidebarCollapsed);
+
   return (
-    <div className="grid md:grid-cols-[auto_1fr] min-h-screen">{children}</div>
+    <div
+      className={cn(
+        "grid w-full min-h-screen h-screen overflow-hidden",
+        isCollapsed ? "grid-cols-[70px_1fr]" : "grid-cols-[240px_1fr]"
+      )}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -76,17 +85,17 @@ interface SidebarTriggerProps
 
 function SidebarTrigger({ className, ...props }: SidebarTriggerProps) {
   const dispatch = useDispatch();
-  const collapsed = useSelector(selectSidebarCollapsed);
+  const isCollapsed = useSelector(selectSidebarCollapsed);
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      className={cn("md:hidden", className)}
+      className={cn("h-9 w-9 p-0", className)}
       onClick={() => dispatch(toggleSidebar())}
       {...props}
     >
-      <Menu className="h-5 w-5" />
+      <Menu className="h-4 w-4 text-brand-teal" />
       <span className="sr-only">Toggle sidebar</span>
     </Button>
   );
@@ -98,145 +107,185 @@ interface SidebarInsetProps {
 }
 
 function SidebarInset({ children, className }: SidebarInsetProps) {
-  const collapsed = useSelector(selectSidebarCollapsed);
+  return (
+    <div className={cn("flex flex-col h-screen", className)}>{children}</div>
+  );
+}
 
+const sidebarVariants = cva(
+  "fixed inset-y-0 left-0 z-10 h-full flex-col border-r bg-white",
+  {
+    variants: {
+      collapsible: {
+        icon: "w-[240px] transition-all duration-300 ease-in-out data-[collapsed=true]:w-[70px]",
+        none: "w-[240px]",
+      },
+    },
+    defaultVariants: {
+      collapsible: "none",
+    },
+  }
+);
+
+interface SidebarProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof sidebarVariants> {
+  defaultCollapsed?: boolean;
+}
+
+const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
+  (
+    { className, collapsible, defaultCollapsed = false, children, ...props },
+    ref
+  ) => {
+    const isCollapsed = useSelector(selectSidebarCollapsed);
+    const dispatch = useDispatch();
+
+    return (
+      <aside
+        ref={ref}
+        className={cn(
+          "group flex flex-col h-screen bg-white text-gray-800 transition-all duration-300 border-r shadow-md",
+          {
+            "w-[70px]": isCollapsed,
+            "w-[240px]": !isCollapsed,
+          },
+          className
+        )}
+        data-collapsed={isCollapsed}
+        {...props}
+      >
+        {children}
+        <div className="absolute right-2 top-4 z-20 hidden h-6 w-6 text-brand-teal transition-all group-hover:block">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => dispatch(toggleSidebar())}
+            className="h-6 w-6 p-0 hover:bg-transparent"
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4 text-brand-teal" />
+            ) : (
+              <ChevronLeft className="h-4 w-4 text-brand-teal" />
+            )}
+            <span className="sr-only">
+              {isCollapsed ? "Expand" : "Collapse"} sidebar
+            </span>
+          </Button>
+        </div>
+      </aside>
+    );
+  }
+);
+Sidebar.displayName = "Sidebar";
+
+interface SidebarHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+function SidebarHeader({ className, children, ...props }: SidebarHeaderProps) {
   return (
     <div
       className={cn(
-        "flex flex-col min-h-screen",
-        collapsed ? "md:ml-0" : "md:ml-[220px]",
+        "flex h-16 items-center gap-2 px-4 py-2 border-b shrink-0",
         className
       )}
+      {...props}
     >
       {children}
     </div>
   );
 }
 
-function Sidebar({
-  side = "left",
-  variant = "sidebar",
-  collapsible = "offcanvas",
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"div"> & {
-  side?: "left" | "right";
-  variant?: "sidebar" | "floating" | "inset";
-  collapsible?: "offcanvas" | "icon" | "none";
-}) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+interface SidebarNavProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-  if (collapsible === "none") {
-    return (
-      <div
-        data-slot="sidebar"
-        className={cn(
-          "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-
-  if (isMobile) {
-    return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-        <SheetContent
-          data-sidebar="sidebar"
-          data-slot="sidebar"
-          data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
-          side={side}
-        >
-          <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
-          </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
+function SidebarNav({ className, children, ...props }: SidebarNavProps) {
   return (
     <div
-      className="group peer text-sidebar-foreground hidden md:block"
-      data-state={state}
-      data-collapsible={state === "collapsed" ? collapsible : ""}
-      data-variant={variant}
-      data-side={side}
-      data-slot="sidebar"
+      className={cn("flex-1 overflow-y-auto scrollbar-none", className)}
+      {...props}
     >
-      {/* This is what handles the sidebar gap on desktop */}
-      <div
-        data-slot="sidebar-gap"
-        className={cn(
-          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-          "group-data-[collapsible=offcanvas]:w-0",
-          "group-data-[side=right]:rotate-180",
-          variant === "floating" || variant === "inset"
-            ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
-        )}
-      />
-      <div
-        data-slot="sidebar-container"
-        className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
-          side === "left"
-            ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-            : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-          // Adjust the padding for floating and inset variants.
-          variant === "floating" || variant === "inset"
-            ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
-          className
-        )}
-        {...props}
-      >
-        <div
-          data-sidebar="sidebar"
-          data-slot="sidebar-inner"
-          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
-        >
-          {children}
-        </div>
-      </div>
+      <div className="py-4 space-y-5">{children}</div>
     </div>
   );
 }
 
-function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
-  const { toggleSidebar } = useSidebar();
+interface SidebarFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
+function SidebarFooter({ className, children, ...props }: SidebarFooterProps) {
   return (
-    <button
-      data-sidebar="rail"
-      data-slot="sidebar-rail"
-      aria-label="Toggle Sidebar"
-      tabIndex={-1}
-      onClick={toggleSidebar}
-      title="Toggle Sidebar"
+    <div
       className={cn(
-        "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex",
-        "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
-        "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-        "hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full",
-        "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
-        "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
+        "flex items-center border-t border-gray-200 px-3 py-3 mt-auto shrink-0 bg-white",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
+  );
+}
+
+interface SidebarSectionProps extends React.HTMLAttributes<HTMLDivElement> {
+  title?: string;
+}
+
+function SidebarSection({
+  className,
+  title,
+  children,
+  ...props
+}: SidebarSectionProps) {
+  const isCollapsed = useSelector(selectSidebarCollapsed);
+
+  return (
+    <div className={cn("px-3 py-3", className)} {...props}>
+      {title && !isCollapsed && (
+        <h3 className="px-2 mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+          {title}
+        </h3>
+      )}
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+interface SidebarItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  icon?: React.ReactNode;
+  title: string;
+  isActive?: boolean;
+}
+
+function SidebarItem({
+  className,
+  icon,
+  title,
+  isActive,
+  ...props
+}: SidebarItemProps) {
+  const isCollapsed = useSelector(selectSidebarCollapsed);
+
+  return (
+    <div
+      className={cn(
+        "group flex cursor-pointer items-center rounded-md px-3 py-3 hover:bg-gray-100",
+        isActive
+          ? "bg-brand-teal/10 text-brand-teal font-medium"
+          : "text-gray-700",
+        className
+      )}
+      {...props}
+    >
+      {icon && (
+        <div
+          className={cn(
+            "mr-3 flex h-5 w-5 items-center justify-center",
+            isActive ? "text-brand-teal" : "text-brand-teal/90"
+          )}
+        >
+          {icon}
+        </div>
+      )}
+      {!isCollapsed && <span className="text-sm font-medium">{title}</span>}
+    </div>
   );
 }
 
@@ -254,28 +303,6 @@ function SidebarInput({
   );
 }
 
-function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="sidebar-header"
-      data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
-      {...props}
-    />
-  );
-}
-
-function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="sidebar-footer"
-      data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
-      {...props}
-    />
-  );
-}
-
 function SidebarSeparator({
   className,
   ...props
@@ -285,20 +312,6 @@ function SidebarSeparator({
       data-slot="sidebar-separator"
       data-sidebar="separator"
       className={cn("bg-sidebar-border mx-2 w-auto", className)}
-      {...props}
-    />
-  );
-}
-
-function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="sidebar-content"
-      data-sidebar="content"
-      className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
-        className
-      )}
       {...props}
     />
   );
@@ -657,15 +670,20 @@ SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
 
 export {
   Sidebar,
-  SidebarContent,
+  SidebarHeader,
+  SidebarNav,
   SidebarFooter,
+  SidebarInset,
+  SidebarTrigger,
+  SidebarProvider,
+  SidebarSection,
+  SidebarItem,
+  SidebarInput,
+  SidebarSeparator,
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInput,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuAction,
   SidebarMenuBadge,
@@ -675,9 +693,5 @@ export {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarSeparator,
-  SidebarTrigger,
   useSidebar,
 };
