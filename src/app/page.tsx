@@ -1,4 +1,14 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   return (
@@ -23,27 +33,42 @@ export default function Home() {
         </div>
       </header>
       <main className="flex-1">
-        <section className="container mx-auto flex flex-col items-center justify-center gap-6 py-12 text-center px-4">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            AI-Powered Translation Platform
+        <section className="container mx-auto py-12 px-4">
+          <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+            Testing Shadcn Components
           </h1>
-          <p className="max-w-[700px] text-lg text-muted-foreground">
-            Translate your audio and video content into multiple languages with
-            high accuracy using our advanced AI technology.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/dashboard"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-            >
-              Get Started
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              Learn More
-            </Link>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>This is a Card</CardTitle>
+                <CardDescription>
+                  Testing if shadcn/ui styling works
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>This is card content to test styling</p>
+              </CardContent>
+              <CardFooter>
+                <Button>Primary Button</Button>
+                <Button variant="outline" className="ml-2">
+                  Outline Button
+                </Button>
+              </CardFooter>
+            </Card>
+
+            <div className="border p-6 rounded-lg">
+              <h3 className="text-lg font-medium mb-4">
+                Plain HTML for comparison
+              </h3>
+              <p>This is unstyled content</p>
+              <Separator className="my-4" />
+              <div className="flex gap-2">
+                <button className="px-4 py-2 bg-blue-500 text-white rounded">
+                  Plain Button
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       </main>

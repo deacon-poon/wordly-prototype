@@ -1,74 +1,145 @@
+"use client";
+
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar-redux";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { selectUserPlan, selectUserActivity } from "@/store/slices/userSlice";
 
 export default function DashboardPage() {
+  const userPlan = useSelector(selectUserPlan);
+  const userActivity = useSelector(selectUserActivity);
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex sticky top-0 bg-background h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Dashboard</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Plan Info Card */}
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+              <div className="p-6 flex flex-col space-y-4">
+                <h3 className="text-xl font-semibold">
+                  Your Plan: {userPlan.name}
+                </h3>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Available time: {userPlan.availableTime} mins
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Scheduled time: {userPlan.scheduledTime} mins
+                  </p>
+                </div>
+                <div className="w-full max-w-[100px] h-10 rounded-md bg-[#00B8D9] flex items-center justify-center text-white">
+                  {userPlan.availableTime}
+                </div>
+                <Link
+                  href="/purchase"
+                  className="text-sm text-[#00B8D9] hover:underline inline-flex items-center"
+                >
+                  Purchase
+                </Link>
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="rounded-lg border bg-card text-card-foreground shadow">
-          <div className="p-6 flex flex-col space-y-2">
-            <h3 className="text-2xl font-semibold">Recent Sessions</h3>
-            <p className="text-muted-foreground">No active sessions found</p>
-            <Link
-              href="/sessions"
-              className="text-sm text-primary hover:underline mt-4"
-            >
-              View all sessions
-            </Link>
+            {/* Recent Usage Card */}
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+              <div className="p-6 flex flex-col space-y-4">
+                <h3 className="text-xl font-semibold">Recent Usage</h3>
+                <div className="w-full h-[100px] flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">
+                    No usage data available
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Try it Now Card */}
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+              <div className="p-6 flex flex-col space-y-4">
+                <h3 className="text-xl font-semibold">Try it Now</h3>
+                <p className="text-sm text-muted-foreground">
+                  To see Wordly in action, click the link below to open a
+                  demonstration session.
+                </p>
+                <Link
+                  href="#"
+                  className="text-sm text-[#00B8D9] hover:underline inline-flex items-center"
+                >
+                  Try it Now
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            {/* Session Activity Card */}
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+              <div className="p-6 flex flex-col space-y-4">
+                <h3 className="text-xl font-semibold">Session Activity</h3>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Last: {userActivity.lastSession || "-"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Next: {userActivity.nextSession || "-"}
+                  </p>
+                </div>
+                <Link
+                  href="/activity"
+                  className="text-sm text-[#00B8D9] hover:underline inline-flex items-center"
+                >
+                  Activity
+                </Link>
+              </div>
+            </div>
+
+            {/* Schedule Card */}
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+              <div className="p-6 flex flex-col space-y-4">
+                <h3 className="text-xl font-semibold">Schedule</h3>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Schedule a session in advance.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Get links for an upcoming session.
+                  </p>
+                </div>
+                <Link
+                  href="/schedule"
+                  className="text-sm text-[#00B8D9] hover:underline inline-flex items-center"
+                >
+                  Schedule
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="rounded-lg border bg-card text-card-foreground shadow">
-          <div className="p-6 flex flex-col space-y-2">
-            <h3 className="text-2xl font-semibold">Transcripts</h3>
-            <p className="text-muted-foreground">No transcripts found</p>
-            <Link
-              href="/transcripts"
-              className="text-sm text-primary hover:underline mt-4"
-            >
-              View all transcripts
-            </Link>
-          </div>
-        </div>
-
-        <div className="rounded-lg border bg-card text-card-foreground shadow">
-          <div className="p-6 flex flex-col space-y-2">
-            <h3 className="text-2xl font-semibold">Glossaries</h3>
-            <p className="text-muted-foreground">No glossaries found</p>
-            <Link
-              href="/glossaries"
-              className="text-sm text-primary hover:underline mt-4"
-            >
-              View all glossaries
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-4">
-          <Link
-            href="/sessions/new"
-            className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
-          >
-            New Session
-          </Link>
-          <Link
-            href="/transcripts/upload"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            Upload Transcript
-          </Link>
-          <Link
-            href="/glossaries/new"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            Create Glossary
-          </Link>
-        </div>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
