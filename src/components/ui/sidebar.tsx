@@ -71,8 +71,10 @@ function SidebarProvider({ children }: SidebarProviderProps) {
   return (
     <div
       className={cn(
-        "grid w-full min-h-screen h-screen overflow-hidden",
-        isCollapsed ? "grid-cols-[70px_1fr]" : "grid-cols-[240px_1fr]"
+        "grid w-full min-h-screen h-screen overflow-hidden will-change-[grid-template-columns]",
+        isCollapsed
+          ? "grid-cols-[70px_1fr] transition-[grid-template-columns] duration-300 ease-in-out"
+          : "grid-cols-[240px_1fr] transition-[grid-template-columns] duration-300 ease-in-out"
       )}
     >
       {children}
@@ -145,10 +147,11 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       <aside
         ref={ref}
         className={cn(
-          "group flex flex-col h-screen bg-white text-gray-800 transition-all duration-300 border-r shadow-md",
+          "group flex flex-col h-screen text-gray-800 border-r shadow-md will-change-[width] bg-white",
           {
-            "w-[70px]": isCollapsed,
-            "w-[240px]": !isCollapsed,
+            "w-[70px] transition-[width] duration-300 ease-in-out": isCollapsed,
+            "w-[240px] transition-[width] duration-300 ease-in-out":
+              !isCollapsed,
           },
           className
         )}
@@ -185,7 +188,7 @@ function SidebarHeader({ className, children, ...props }: SidebarHeaderProps) {
   return (
     <div
       className={cn(
-        "flex h-16 items-center gap-2 px-4 py-2 border-b shrink-0",
+        "flex h-16 items-center gap-2 px-4 py-2 shrink-0",
         className
       )}
       {...props}
@@ -214,7 +217,7 @@ function SidebarFooter({ className, children, ...props }: SidebarFooterProps) {
   return (
     <div
       className={cn(
-        "flex items-center border-t border-gray-200 px-3 py-3 mt-auto shrink-0 bg-white",
+        "flex items-center border-t border-gray-200 px-3 py-3 mt-auto shrink-0",
         className
       )}
       {...props}
@@ -267,9 +270,7 @@ function SidebarItem({
     <div
       className={cn(
         "group flex cursor-pointer items-center rounded-md px-3 py-3 hover:bg-gray-100",
-        isActive
-          ? "bg-brand-teal/10 text-brand-teal font-medium"
-          : "text-gray-700",
+        isActive ? "bg-gray-100 font-medium" : "text-gray-700",
         className
       )}
       {...props}
@@ -278,13 +279,22 @@ function SidebarItem({
         <div
           className={cn(
             "mr-3 flex h-5 w-5 items-center justify-center",
-            isActive ? "text-brand-teal" : "text-brand-teal/90"
+            isActive ? "text-brand-teal" : "text-brand-teal"
           )}
         >
           {icon}
         </div>
       )}
-      {!isCollapsed && <span className="text-sm font-medium">{title}</span>}
+      {!isCollapsed && (
+        <span
+          className={cn(
+            "text-sm font-medium",
+            isActive ? "text-gray-900" : "text-gray-700"
+          )}
+        >
+          {title}
+        </span>
+      )}
     </div>
   );
 }

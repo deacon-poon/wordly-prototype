@@ -9,14 +9,11 @@ import {
   SidebarHeader,
   SidebarNav,
   SidebarFooter,
-  SidebarSection,
-  SidebarItem,
 } from "@/components/ui/sidebar";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+import { NavWorkspace } from "@/components/nav-workspace";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import Image from "next/image";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -24,12 +21,23 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="flex flex-col">
-      <SidebarHeader>
-        <TeamSwitcher />
+      <SidebarHeader className="flex items-center justify-start px-4">
+        <div className="flex items-center">
+          <Image
+            src="/logo/wordly-logo.svg"
+            alt="Wordly Logo"
+            width={36}
+            height={36}
+          />
+          {!isCollapsed && (
+            <span className="text-xl font-bold text-brand-teal ml-2">
+              wordly
+            </span>
+          )}
+        </div>
       </SidebarHeader>
       <SidebarNav className="flex-grow">
-        <NavMain pathname={pathname} />
-        <NavProjects pathname={pathname} />
+        <NavWorkspace pathname={pathname} />
       </SidebarNav>
       <SidebarFooter>
         <NavUser />

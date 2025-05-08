@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,9 +14,18 @@ import { Separator } from "@/components/ui/separator";
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b">
+      <header className="relative z-20 shadow-sm bg-gradient-to-r from-brand-teal/15 via-brand-teal/5 to-brand-pink/5">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="text-2xl font-bold">Wordly</div>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo/wordly-logo.png"
+              alt="Wordly Logo"
+              width={32}
+              height={32}
+              className="h-auto w-auto"
+            />
+            <span className="text-2xl font-bold text-brand-teal">Wordly</span>
+          </div>
           <nav className="flex items-center gap-6">
             <Link href="/dashboard" className="hover:underline">
               Dashboard

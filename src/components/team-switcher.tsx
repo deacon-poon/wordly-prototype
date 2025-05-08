@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectSidebarCollapsed } from "@/store/slices/sidebarSlice";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Building } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export function TeamSwitcher() {
   const isCollapsed = useSelector(selectSidebarCollapsed);
@@ -17,15 +18,17 @@ export function TeamSwitcher() {
           isCollapsed ? "justify-center w-full" : ""
         )}
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand-teal/10">
-          <Building className="h-5 w-5 text-brand-teal" />
+        <div className="flex  items-center justify-center">
+          <Image
+            src="/logo/wordly-logo.svg"
+            alt="Wordly Logo"
+            width={40}
+            height={40}
+          />
         </div>
         {!isCollapsed && (
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-gray-800">
-              Acme Inc.
-            </span>
-            <span className="text-xs text-gray-500">Enterprise</span>
+          <div className="flex flex-col justify-center">
+            <span className="text-xl font-bold text-brand-teal">Wordly</span>
           </div>
         )}
       </div>

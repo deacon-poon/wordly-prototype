@@ -213,10 +213,16 @@
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease-in-out;
+  width: 100%; /* Ensure cards take full width of their container */
 }
 
 .dashboard-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Ensure proper alignment with sidebar collapsed */
+[data-collapsed="true"] .dashboard-container {
+  padding-left: 70px; /* Match the collapsed sidebar width */
 }
 
 /* Status indicators */

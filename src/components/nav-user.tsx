@@ -5,6 +5,10 @@ import { useSelector } from "react-redux";
 import { selectSidebarCollapsed } from "@/store/slices/sidebarSlice";
 import { cn } from "@/lib/utils";
 import { User, ChevronDown, LogOut, Shield, Settings } from "lucide-react";
+
+// Fix imports for UI components
+import { Badge } from "../components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,17 +16,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+  DropdownMenuGroup,
+} from "../components/ui/dropdown-menu";
 
 export function NavUser() {
   const isCollapsed = useSelector(selectSidebarCollapsed);
 
   // This would come from your user auth state in a real app
   const user = {
-    name: "Deacon Smith",
-    email: "deacon@example.com",
+    name: "Deacon Poon",
+    email: "deacon@wordly.ai",
     avatar: "/avatars/01.png",
     role: "Administrator",
     permissions: ["Full Access"],
@@ -30,11 +33,12 @@ export function NavUser() {
 
   return (
     <div className="w-full">
+      {/* User Menu */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div
             className={cn(
-              "flex w-full cursor-pointer items-center py-1 px-1 gap-3 rounded-md hover:bg-gray-100",
+              "flex cursor-pointer items-center py-1 px-1 gap-3 rounded-md hover:bg-gray-100 w-full",
               isCollapsed ? "justify-center" : "justify-between"
             )}
           >
@@ -85,18 +89,20 @@ export function NavUser() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4 text-brand-teal" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Shield className="mr-2 h-4 w-4 text-brand-teal" />
-            <span>Permissions</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4 text-brand-teal" />
-            <span>Settings</span>
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4 text-brand-teal" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Shield className="mr-2 h-4 w-4 text-brand-teal" />
+              <span>Permissions</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4 text-brand-teal" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <LogOut className="mr-2 h-4 w-4 text-brand-teal" />

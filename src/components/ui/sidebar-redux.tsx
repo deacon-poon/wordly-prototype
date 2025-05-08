@@ -51,8 +51,10 @@ export function SidebarInset({ children, className }: SidebarInsetProps) {
   return (
     <div
       className={cn(
-        "flex flex-col min-h-screen",
-        collapsed ? "md:ml-0" : "md:ml-[220px]",
+        "flex flex-col min-h-screen will-change-[margin-left]",
+        collapsed
+          ? "md:ml-0 transition-[margin-left] duration-300 ease-in-out"
+          : "md:ml-[220px] transition-[margin-left] duration-300 ease-in-out",
         className
       )}
     >
