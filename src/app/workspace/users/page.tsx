@@ -67,90 +67,113 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800">
           "Main HQ" Workspace User Management
         </h2>
         <div className="flex gap-3">
           <Button
             variant="outline"
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 border-gray-300"
           >
             Archive workspace
           </Button>
-          <Button className="bg-brand-teal hover:bg-brand-teal/90">
+          <Button className="bg-brand-teal hover:bg-brand-teal/90 text-white">
             <UserPlus className="h-4 w-4 mr-2" />
             Invite another user
           </Button>
         </div>
       </div>
 
-      <Card>
+      <Card className="border border-gray-200 shadow-sm rounded-lg overflow-hidden">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[50%]">Name</TableHead>
-                <TableHead className="w-[50%]">Role</TableHead>
-                <TableHead className="w-0"></TableHead>
+              <TableRow className="bg-gray-50 hover:bg-gray-50 border-b border-gray-200">
+                <TableHead className="w-[50%] py-4 text-sm font-semibold text-gray-700">
+                  Name
+                </TableHead>
+                <TableHead className="w-[50%] py-4 text-sm font-semibold text-gray-700">
+                  Role
+                </TableHead>
+                <TableHead className="w-0 py-4"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">
-                    {user.name} {user.isCurrentUser && "(you)"}
+              {users.map((user, index) => (
+                <TableRow
+                  key={user.id}
+                  className={`border-b border-gray-200 ${
+                    index === users.length - 1 ? "border-b-0" : ""
+                  }`}
+                >
+                  <TableCell className="py-4 font-medium text-gray-900">
+                    {user.name}{" "}
+                    {user.isCurrentUser && (
+                      <span className="text-gray-500 font-normal">(you)</span>
+                    )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
-                          variant="ghost"
-                          className="flex items-center justify-between w-32 px-3 py-1 h-8 font-normal"
+                          variant="outline"
+                          className="flex items-center justify-between w-36 px-3 py-1 h-9 font-normal border-gray-300 bg-white hover:bg-gray-50"
                         >
-                          {user.role}
+                          <span className={`${getRoleColor(user.role)}`}>
+                            {user.role}
+                          </span>
                           <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
+                      <DropdownMenuContent
+                        align="start"
+                        className="w-36 border border-gray-200 shadow-md"
+                      >
                         <DropdownMenuItem
                           onClick={() =>
                             handleRoleChange(user.id, "Administrator")
                           }
-                          className={
-                            user.role === "Administrator" ? "bg-gray-100" : ""
-                          }
+                          className={`px-3 py-2 ${
+                            user.role === "Administrator"
+                              ? "bg-gray-100 text-brand-teal font-medium"
+                              : ""
+                          }`}
                         >
                           Administrator
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleChange(user.id, "Editor")}
-                          className={
-                            user.role === "Editor" ? "bg-gray-100" : ""
-                          }
+                          className={`px-3 py-2 ${
+                            user.role === "Editor"
+                              ? "bg-gray-100 text-brand-teal font-medium"
+                              : ""
+                          }`}
                         >
                           Editor
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleChange(user.id, "Viewer")}
-                          className={
-                            user.role === "Viewer" ? "bg-gray-100" : ""
-                          }
+                          className={`px-3 py-2 ${
+                            user.role === "Viewer"
+                              ? "bg-gray-100 text-brand-teal font-medium"
+                              : ""
+                          }`}
                         >
                           Viewer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="py-4 text-right pr-6">
                     {!user.isCurrentUser && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveUser(user.id)}
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-red-500"
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full"
                       >
-                        <XCircle className="h-4 w-4" />
+                        <XCircle className="h-5 w-5" />
                         <span className="sr-only">Remove</span>
                       </Button>
                     )}
@@ -163,4 +186,18 @@ export default function UsersPage() {
       </Card>
     </div>
   );
+}
+
+// Helper function to get color class based on role
+function getRoleColor(role: User["role"]): string {
+  switch (role) {
+    case "Administrator":
+      return "text-brand-teal";
+    case "Editor":
+      return "text-blue-600";
+    case "Viewer":
+      return "text-gray-600";
+    default:
+      return "text-gray-700";
+  }
 }
