@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Don't ignore storybook-static to enable pre-built deployments
+# /storybook-static

@@ -12,7 +12,7 @@ This project is configured to deploy both the Next.js application and the Storyb
    - Uses `npm run build` to build the Next.js application
    - Default Next.js output directory is used (.next)
 
-### Storybook Deployment
+### Storybook Deployment (Option 1 - Two Projects)
 
 1. Create a second project on Vercel, also linked to the same repository
 2. On the project settings, override the build settings:
@@ -20,6 +20,19 @@ This project is configured to deploy both the Next.js application and the Storyb
    - Set the Build Command to `npm run build:storybook`
    - Set the Output Directory to `storybook-static`
    - Alternatively, you can specify to use the `vercel-storybook.json` configuration file
+
+### Storybook Deployment (Option 2 - Pre-built Static Output)
+
+If you cannot modify the build command in Vercel, use this alternative approach:
+
+1. Build Storybook locally: `npm run build:storybook`
+2. Push the `storybook-static` directory to your repository
+3. Create a new project on Vercel
+4. Set the Root Directory to `storybook-static`
+5. Set the Framework to "Other"
+6. All other settings can remain default (the `vercel.json` file inside `storybook-static` handles configuration)
+
+This second approach deploys the pre-built static files directly without Vercel needing to build them.
 
 ## Deployment Process
 
