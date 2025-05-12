@@ -45,22 +45,7 @@ export default function WorkspaceLayout({
               </p>
             </div>
 
-            <Tabs defaultValue={getActiveTab()} className="space-y-4">
-              <TabsList className="w-full md:w-auto">
-                <TabsTrigger value="session-defaults" asChild>
-                  <a href="/workspace/defaults">Session Defaults</a>
-                </TabsTrigger>
-                <TabsTrigger value="custom-fields" asChild>
-                  <a href="/workspace/custom-fields">Custom Fields</a>
-                </TabsTrigger>
-                <TabsTrigger value="users" asChild>
-                  <a href="/workspace/users">Users</a>
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value={getActiveTab()} className="space-y-4">
-                {children}
-              </TabsContent>
-            </Tabs>
+            {children}
           </div>
         </main>
       </SidebarInset>
