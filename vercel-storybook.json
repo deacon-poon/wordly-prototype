@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build:storybook",
+  "devCommand": "npm run dev:storybook",
+  "installCommand": "npm install",
+  "outputDirectory": "storybook-static",
+  "framework": null,
+  "regions": ["sfo1"],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
+}
