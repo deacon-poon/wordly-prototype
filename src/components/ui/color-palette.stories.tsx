@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { ColorPalette } from "./ColorPalette";
+import { ColorPalette } from "./color-palette";
 
 const meta: Meta<typeof ColorPalette> = {
   title: "Design System/ColorPalette",
