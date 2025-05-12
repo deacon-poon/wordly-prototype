@@ -5,5 +5,20 @@
   "devCommand": "npm run dev:storybook",
   "installCommand": "npm install",
   "framework": null,
-  "public": true
+  "public": true,
+  "github": {
+    "enabled": true,
+    "silent": true
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }
