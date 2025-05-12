@@ -32,8 +32,73 @@ module.exports = {
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         brand: {
-          teal: "#118197",
-          pink: "#E0007B",
+          teal: "#118197", // Base teal-500
+          pink: "#E0007B", // Base pink-500
+        },
+        // Extended brand teal palette
+        teal: {
+          50: "#E6F4F7",
+          100: "#C5E8EE",
+          200: "#9ED2DC",
+          300: "#5CB9CA",
+          400: "#30A3B7",
+          500: "#118197", // Base teal
+          600: "#0C687A",
+          700: "#08505D",
+          800: "#063840",
+          900: "#021F24",
+        },
+        // Extended brand pink palette
+        pink: {
+          50: "#FCE6F1",
+          100: "#F9BFD9",
+          200: "#F693C1",
+          300: "#F367A9",
+          400: "#F13B91",
+          500: "#E0007B", // Base pink
+          600: "#B30062",
+          700: "#85004A",
+          800: "#570031",
+          900: "#290019",
+        },
+        // Semantic green palette for affirmative actions
+        success: {
+          50: "#E6F6EC",
+          100: "#C5E8D2",
+          200: "#9CD7B0",
+          300: "#66C188",
+          400: "#34AD67",
+          500: "#0C9A4E", // Base green
+          600: "#0A7B3F",
+          700: "#085D2F",
+          800: "#053E20",
+          900: "#021F10",
+        },
+        // Semantic red palette for destructive actions
+        error: {
+          50: "#FCEBEA",
+          100: "#F9CFCC",
+          200: "#F5A8A2",
+          300: "#F07870",
+          400: "#EA4F45",
+          500: "#E62D21", // Base red
+          600: "#B8221A",
+          700: "#8A1A13",
+          800: "#5C110D",
+          900: "#2E0906",
+        },
+        // Extended UI gray palette
+        gray: {
+          50: "#F8F9FA",
+          100: "#EEF0F2",
+          200: "#E3E6E8",
+          300: "#CDD2D7",
+          400: "#9BA3AB",
+          500: "#646E78",
+          600: "#495057",
+          700: "#343A40",
+          800: "#212529",
+          900: "#121416",
         },
         primary: {
           DEFAULT: "hsl(var(--primary) / <alpha-value>)",

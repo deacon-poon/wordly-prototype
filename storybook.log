@@ -1,0 +1,22 @@
+npm error code ERESOLVE
+npm error ERESOLVE unable to resolve dependency tree
+npm error
+npm error While resolving: wordly-prototype@0.1.0
+npm error Found: storybook@7.6.10
+npm error node_modules/storybook
+npm error   dev storybook@"7.6.10" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peer storybook@"^8.6.12" from @storybook/addon-onboarding@8.6.12
+npm error node_modules/@storybook/addon-onboarding
+npm error   dev @storybook/addon-onboarding@"^8.6.12" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /Users/deacon/.npm/_logs/2025-05-12T05_17_59_300Z-eresolve-report.txt
+
+npm error A complete log of this run can be found in: /Users/deacon/.npm/_logs/2025-05-12T05_17_59_300Z-debug-0.log
