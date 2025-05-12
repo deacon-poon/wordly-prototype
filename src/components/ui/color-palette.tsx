@@ -1,6 +1,20 @@
 import React from "react";
 import { cva } from "class-variance-authority";
 
+// Add ColorVariant interface for use in colors.ts
+export interface ColorVariant {
+  name: string;
+  value: string;
+  contrast?: {
+    white: number;
+    black: number;
+  };
+  wcag?: {
+    aa: boolean;
+    aaa: boolean;
+  };
+}
+
 interface ColorSwatchProps {
   colorName: string;
   colorValue: string;
