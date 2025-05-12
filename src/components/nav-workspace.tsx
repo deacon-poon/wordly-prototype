@@ -101,6 +101,12 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
       icon: ListChecks,
     },
     {
+      id: "custom-fields",
+      title: "Custom Fields",
+      href: "/workspace/custom-fields",
+      icon: Settings,
+    },
+    {
       id: "users",
       title: "Users",
       href: "/workspace/users",
@@ -108,24 +114,24 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
     },
   ];
 
-  // Org-wide admin items
-  const orgAdminItems: WorkspaceItem[] = [
+  // Organization admin items (renamed from Org-wide admin)
+  const organizationAdminItems: WorkspaceItem[] = [
     {
       id: "all-users",
-      title: "All Users",
-      href: "/org/users",
+      title: "Organization Users",
+      href: "/organization/users",
       icon: UserCog,
     },
     {
-      id: "custom-fields",
-      title: "Custom Fields",
-      href: "/org/fields",
-      icon: Settings,
+      id: "accounts",
+      title: "Accounts",
+      href: "/organization/accounts",
+      icon: Building2,
     },
     {
       id: "billing",
-      title: "Billing",
-      href: "/org/billing",
+      title: "Billing & Usage",
+      href: "/organization/billing",
       icon: CreditCard,
     },
   ];
@@ -136,7 +142,7 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
       <SidebarSection>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center justify-between p-3 mb-2 rounded-md bg-gray-100/80 cursor-pointer">
+            <div className="flex items-center justify-between p-3 mb-2 rounded-md bg-gray-100/80 cursor-pointer hover:bg-gray-200/80 transition-colors">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-brand-teal" />
                 {!isCollapsed && (
@@ -195,7 +201,7 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
       </SidebarSection>
 
       {/* Workspace Admin */}
-      <SidebarSection title="Workspace Admin">
+      <SidebarSection title="Workspace Settings">
         <div className="space-y-1">
           {workspaceAdminItems.map((item) => (
             <Link key={item.id} href={item.href}>
@@ -209,10 +215,10 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
         </div>
       </SidebarSection>
 
-      {/* Org-wide Admin */}
-      <SidebarSection title="Org-wide Admin">
+      {/* Organization Admin */}
+      <SidebarSection title="Organization Management">
         <div className="space-y-1">
-          {orgAdminItems.map((item) => (
+          {organizationAdminItems.map((item) => (
             <Link key={item.id} href={item.href}>
               <SidebarItem
                 icon={<item.icon className="h-4 w-4" />}

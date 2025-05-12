@@ -20,7 +20,7 @@ export function AppSidebar() {
   const isCollapsed = useSelector(selectSidebarCollapsed);
 
   return (
-    <Sidebar className="flex flex-col">
+    <Sidebar className="flex flex-col h-screen border-r shadow-sm z-30">
       <SidebarHeader className="flex items-center justify-start px-4">
         <div className="flex items-center">
           <Image
@@ -36,7 +36,7 @@ export function AppSidebar() {
           )}
         </div>
       </SidebarHeader>
-      <SidebarNav className="flex-grow">
+      <SidebarNav className="flex-grow overflow-y-auto">
         <NavWorkspace pathname={pathname} />
       </SidebarNav>
       <SidebarFooter>

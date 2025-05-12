@@ -79,23 +79,24 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
   };
 
   return (
-    <header className="flex sticky top-0 h-16 shrink-0 items-center gap-2 px-4 z-20 shadow-sm bg-gradient-to-r from-brand-teal/15 via-brand-teal/5 to-brand-pink/5">
+    <header className="flex sticky top-0 h-16 shrink-0 items-center gap-2 px-4 z-20 shadow-sm bg-gradient-to-r from-brand-teal/15 via-brand-teal/5 to-brand-pink/5 w-full">
       {/* Left Section */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 md:hidden">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
       </div>
+
+      <Breadcrumb className="hidden md:flex">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       {/* Right Section */}
       <div className="flex items-center gap-3 ml-auto">
