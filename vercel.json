@@ -1,13 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
+  "outputDirectory": "storybook-static",
+  "buildCommand": "npm run build:storybook",
+  "devCommand": "npm run dev:storybook",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "regions": ["sfo1"],
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  }
+  "framework": null,
+  "public": true
 }
