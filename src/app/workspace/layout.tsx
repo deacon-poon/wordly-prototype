@@ -29,6 +29,21 @@ export default function WorkspaceLayout({
     }
   };
 
+  // Get the page title based on the active tab
+  const getPageTitle = () => {
+    const activeTab = getActiveTab();
+    switch (activeTab) {
+      case "session-defaults":
+        return "Session Defaults";
+      case "custom-fields":
+        return "Custom Fields";
+      case "users":
+        return "Users";
+      default:
+        return "Workspace Settings";
+    }
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -38,7 +53,7 @@ export default function WorkspaceLayout({
           <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
             <div className="flex flex-col gap-4">
               <h1 className="text-2xl font-bold tracking-tight">
-                Workspace Settings
+                {getPageTitle()}
               </h1>
               <p className="text-muted-foreground">
                 Configure your workspace settings and preferences.
