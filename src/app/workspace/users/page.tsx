@@ -11,7 +11,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus, UserPlus, XCircle } from "lucide-react";
+import {
+  ChevronDown,
+  UserPlus,
+  XCircle,
+  ShieldCheck,
+  Edit2,
+  Eye,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +55,20 @@ export default function UsersPage() {
       isCurrentUser: false,
     },
   ]);
+
+  // Get the appropriate icon for a role
+  const getRoleIcon = (role: User["role"]) => {
+    switch (role) {
+      case "Administrator":
+        return <ShieldCheck className="h-4 w-4 mr-2" />;
+      case "Editor":
+        return <Edit2 className="h-4 w-4 mr-2" />;
+      case "Viewer":
+        return <Eye className="h-4 w-4 mr-2" />;
+      default:
+        return null;
+    }
+  };
 
   // Handler for role change
   const handleRoleChange = (userId: string, newRole: User["role"]) => {
@@ -118,9 +139,10 @@ export default function UsersPage() {
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="outline"
-                          className="flex items-center justify-between w-36 px-3 py-1 h-9 font-normal border-gray-300 bg-white hover:bg-gray-50"
+                          className="flex items-center justify-between w-40 px-3 py-1 h-9 font-normal border-gray-300 bg-white hover:bg-gray-50"
                         >
-                          <span className={`${getRoleColor(user.role)}`}>
+                          <span className="text-gray-700 flex items-center">
+                            {getRoleIcon(user.role)}
                             {user.role}
                           </span>
                           <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
@@ -128,7 +150,7 @@ export default function UsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="start"
-                        className="w-36 border border-gray-200 shadow-md"
+                        className="w-40 border border-gray-200 shadow-md"
                       >
                         <DropdownMenuItem
                           onClick={() =>
@@ -136,30 +158,33 @@ export default function UsersPage() {
                           }
                           className={`px-3 py-2 ${
                             user.role === "Administrator"
-                              ? "bg-gray-100 text-brand-teal font-medium"
+                              ? "bg-gray-100 font-medium"
                               : ""
                           }`}
                         >
+                          <ShieldCheck className="h-4 w-4 mr-2" />
                           Administrator
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleChange(user.id, "Editor")}
                           className={`px-3 py-2 ${
                             user.role === "Editor"
-                              ? "bg-gray-100 text-brand-teal font-medium"
+                              ? "bg-gray-100 font-medium"
                               : ""
                           }`}
                         >
+                          <Edit2 className="h-4 w-4 mr-2" />
                           Editor
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleRoleChange(user.id, "Viewer")}
                           className={`px-3 py-2 ${
                             user.role === "Viewer"
-                              ? "bg-gray-100 text-brand-teal font-medium"
+                              ? "bg-gray-100 font-medium"
                               : ""
                           }`}
                         >
+                          <Eye className="h-4 w-4 mr-2" />
                           Viewer
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -186,18 +211,4 @@ export default function UsersPage() {
       </Card>
     </div>
   );
-}
-
-// Helper function to get color class based on role
-function getRoleColor(role: User["role"]): string {
-  switch (role) {
-    case "Administrator":
-      return "text-brand-teal";
-    case "Editor":
-      return "text-blue-600";
-    case "Viewer":
-      return "text-gray-600";
-    default:
-      return "text-gray-700";
-  }
 }
