@@ -246,8 +246,8 @@ const plumPalette: ColorVariant[] = [
 const getWCAGCompliance = (contrastValue: number): { aa: boolean; aaa: boolean } => {
   const level = passesWCAG(contrastValue);
   return {
-    aa: level === 'AA' || level === 'AAA',
-    aaa: level === 'AAA'
+    aa: level.includes('AA') || level.includes('AAA'),
+    aaa: level.includes('AAA') && !level.includes('Large Text')
   };
 };
 

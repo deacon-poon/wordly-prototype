@@ -30,15 +30,20 @@ const ContrastIndicator: React.FC<ContrastIndicatorProps> = ({
   aa,
   aaa,
 }) => {
+  // WCAG AA requires 4.5:1 contrast for normal text
+  // WCAG AAA requires 7:1 contrast for normal text
   const getLevel = () => {
     if (aaa) return "AAA";
     if (aa) return "AA";
+    // Check raw ratio as a backup (in case props don't match the actual ratio)
+    if (ratio >= 7) return "AAA";
+    if (ratio >= 4.5) return "AA";
     return "Fail";
   };
 
   const getColor = () => {
-    if (aaa) return "bg-green-500";
-    if (aa) return "bg-yellow-500";
+    if (aaa || ratio >= 7) return "bg-green-500";
+    if (aa || ratio >= 4.5) return "bg-yellow-500";
     return "bg-red-500";
   };
 
