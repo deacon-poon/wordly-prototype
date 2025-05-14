@@ -89,17 +89,17 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">
+        <h2 className="text-2xl font-semibold text-gray-900">
           "Main HQ" Workspace User Management
         </h2>
         <div className="flex gap-3">
           <Button
             variant="outline"
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 border-gray-300"
+            className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border-gray-300"
           >
             Archive workspace
           </Button>
-          <Button className="bg-brand-teal hover:bg-brand-teal/90 text-white">
+          <Button className="bg-[#006064] hover:bg-[#00474a] text-white">
             <UserPlus className="h-4 w-4 mr-2" />
             Invite another user
           </Button>
@@ -111,10 +111,10 @@ export default function UsersPage() {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50 hover:bg-gray-50 border-b border-gray-200">
-                <TableHead className="w-[50%] py-4 text-sm font-semibold text-gray-700">
+                <TableHead className="w-[50%] py-4 text-sm font-semibold text-gray-800">
                   Name
                 </TableHead>
-                <TableHead className="w-[50%] py-4 text-sm font-semibold text-gray-700">
+                <TableHead className="w-[50%] py-4 text-sm font-semibold text-gray-800">
                   Role
                 </TableHead>
                 <TableHead className="w-0 py-4"></TableHead>
@@ -131,7 +131,7 @@ export default function UsersPage() {
                   <TableCell className="py-4 font-medium text-gray-900">
                     {user.name}{" "}
                     {user.isCurrentUser && (
-                      <span className="text-gray-500 font-normal">(you)</span>
+                      <span className="text-gray-600 font-normal">(you)</span>
                     )}
                   </TableCell>
                   <TableCell className="py-4">
@@ -141,7 +141,7 @@ export default function UsersPage() {
                           variant="outline"
                           className="flex items-center justify-between w-40 px-3 py-1 h-9 font-normal border-gray-300 bg-white hover:bg-gray-50"
                         >
-                          <span className="text-gray-700 flex items-center">
+                          <span className="text-gray-800 flex items-center">
                             {getRoleIcon(user.role)}
                             {user.role}
                           </span>
@@ -196,7 +196,8 @@ export default function UsersPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveUser(user.id)}
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full"
+                        className="h-8 w-8 p-0 text-gray-600 hover:text-[#d32f2f] hover:bg-gray-100 rounded-full"
+                        aria-label={`Remove ${user.name}`}
                       >
                         <XCircle className="h-5 w-5" />
                         <span className="sr-only">Remove</span>

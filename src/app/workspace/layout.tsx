@@ -4,12 +4,7 @@ import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname } from "next/navigation";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export default function WorkspaceLayout({
   children,
@@ -53,13 +48,7 @@ export default function WorkspaceLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex h-16 items-center border-b px-4 md:px-6">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger />
-            <Separator orientation="vertical" className="h-6" />
-          </div>
-          <div className="ml-4 text-lg font-semibold">{getPageTitle()}</div>
-        </div>
+        <AppHeader title="Workspace Settings" />
         <main className="flex-1 overflow-auto bg-[#f8f9fa]">
           <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
             <div className="flex flex-col gap-4">
