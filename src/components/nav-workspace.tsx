@@ -32,6 +32,7 @@ import { useState } from "react";
 
 interface NavWorkspaceProps {
   pathname: string;
+  onClick?: () => void;
 }
 
 interface WorkspaceItem {
@@ -41,7 +42,7 @@ interface WorkspaceItem {
   icon: React.ElementType;
 }
 
-export function NavWorkspace({ pathname }: NavWorkspaceProps) {
+export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
   const isCollapsed = useSelector(selectSidebarCollapsed);
   const [activeWorkspace, setActiveWorkspace] = React.useState("Main HQ");
 
@@ -189,7 +190,7 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
       <SidebarSection>
         <div className="space-y-1">
           {mainItems.map((item) => (
-            <Link key={item.id} href={item.href}>
+            <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem
                 icon={<item.icon className="h-4 w-4" />}
                 title={item.title}
@@ -200,11 +201,11 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
         </div>
       </SidebarSection>
 
-      {/* Workspace Admin */}
-      <SidebarSection title="Workspace Settings">
+      {/* Workspace Settings */}
+      <SidebarSection title={isCollapsed ? "" : "Workspace Settings"}>
         <div className="space-y-1">
           {workspaceAdminItems.map((item) => (
-            <Link key={item.id} href={item.href}>
+            <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem
                 icon={<item.icon className="h-4 w-4" />}
                 title={item.title}
@@ -215,11 +216,11 @@ export function NavWorkspace({ pathname }: NavWorkspaceProps) {
         </div>
       </SidebarSection>
 
-      {/* Organization Admin */}
-      <SidebarSection title="Organization Management">
+      {/* Org-wide Admin */}
+      <SidebarSection title={isCollapsed ? "" : "Organization"}>
         <div className="space-y-1">
           {organizationAdminItems.map((item) => (
-            <Link key={item.id} href={item.href}>
+            <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem
                 icon={<item.icon className="h-4 w-4" />}
                 title={item.title}
