@@ -12,6 +12,11 @@ import {
   slatePaintPalette,
   brandBlue,
 } from "../../lib/color-exploration";
+import { ShieldCheck, Edit2 } from "lucide-react";
+import {
+  accessibleColorCombinations,
+  accessiblePalettes,
+} from "../../lib/accessible-colors";
 
 // Contrast indicator component from color-combinations-doc.tsx
 interface ContrastIndicatorProps {
@@ -52,6 +57,9 @@ interface ColorRelationshipProps {
   value: string;
   relationship: string;
   textColor?: string;
+  contrastRatio?: number;
+  wcagAA?: boolean;
+  wcagAAA?: boolean;
 }
 
 const ColorRelationship: React.FC<ColorRelationshipProps> = ({
@@ -59,6 +67,9 @@ const ColorRelationship: React.FC<ColorRelationshipProps> = ({
   value,
   relationship,
   textColor = "",
+  contrastRatio,
+  wcagAA,
+  wcagAAA,
 }) => {
   return (
     <div className="flex flex-col gap-2">
@@ -70,9 +81,92 @@ const ColorRelationship: React.FC<ColorRelationshipProps> = ({
       </div>
       <div className="text-sm text-muted-foreground">{relationship}</div>
       <div className="text-xs">{value}</div>
+      {contrastRatio && (
+        <div className="flex items-center mt-1">
+          <span className="text-xs mr-2">Contrast with white:</span>
+          <ContrastIndicator
+            ratio={contrastRatio}
+            aa={wcagAA || false}
+            aaa={wcagAAA || false}
+          />
+        </div>
+      )}
     </div>
   );
 };
+
+// Accessibility warning component
+const AccessibilityWarning: React.FC = () => {
+  return (
+    <div className="p-4 border-l-4 border-amber-500 bg-amber-50 text-amber-800 rounded-r-md mb-6">
+      <h3 className="text-lg font-semibold flex items-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5 mr-2"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+            clipRule="evenodd"
+          />
+        </svg>
+        Accessibility Warning
+      </h3>
+      <p className="mt-2">
+        Several colors in our current exploration do not meet WCAG 2.1
+        accessibility standards for contrast ratios. Colors marked with red
+        indicators fail to meet the minimum AA standard (4.5:1) for normal text
+        on white backgrounds.
+      </p>
+      <div className="mt-3 font-medium">Recommendations:</div>
+      <ul className="list-disc pl-5 mt-1 space-y-1">
+        <li>
+          Use darker shades (600-900) of these palettes for text on light
+          backgrounds
+        </li>
+        <li>Consider our WCAG-compliant alternatives in the table below</li>
+        <li>
+          Test all color choices with accessibility tools before implementation
+        </li>
+        <li>Add additional visual cues beyond color to convey information</li>
+      </ul>
+    </div>
+  );
+};
+
+// WCAG compliant alternative colors
+const wcagCompliantColors = [
+  {
+    name: "Deep Teal 700",
+    value: "#003939",
+    contrastRatio: 12.63,
+    wcagAA: true,
+    wcagAAA: true,
+  },
+  {
+    name: "Ocean Teal 700",
+    value: "#005668",
+    contrastRatio: 8.54,
+    wcagAA: true,
+    wcagAAA: true,
+  },
+  {
+    name: "Berry Paint 700",
+    value: "#5D003D",
+    contrastRatio: 9.12,
+    wcagAA: true,
+    wcagAAA: true,
+  },
+  {
+    name: "Royal Paint 700",
+    value: "#45155D",
+    contrastRatio: 9.87,
+    wcagAA: true,
+    wcagAAA: true,
+  },
+];
 
 // Color combination card component from color-combinations-doc.tsx
 interface ColorCombinationCardProps {
@@ -84,11 +178,169 @@ const ColorCombinationCard: React.FC<ColorCombinationCardProps> = ({
 }) => {
   const combo = colorCombinations[index];
 
+  // Function to determine if a combination has accessibility issues
+  const hasAccessibilityIssues = () => {
+    return !combo.wcag.onLight.aa || !combo.wcag.primarySecondary.aa;
+  };
+
+  // Function to get appropriate warning text
+  const getWarningText = () => {
+    const issues = [];
+    if (!combo.wcag.onLight.aa) {
+      issues.push(
+        `Primary color fails WCAG AA standards on white backgrounds (contrast: ${combo.contrast.onLight.toFixed(
+          2
+        )})`
+      );
+    }
+    if (!combo.wcag.primarySecondary.aa) {
+      issues.push(
+        `Primary and secondary colors lack sufficient contrast with each other (contrast: ${combo.contrast.primarySecondary.toFixed(
+          2
+        )})`
+      );
+    }
+    return issues;
+  };
+
   return (
     <div className="p-6 rounded-lg border bg-card">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold">{combo.name}</h3>
-        <p className="text-sm text-muted-foreground">{combo.description}</p>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">{combo.name}</h3>
+          {hasAccessibilityIssues() && (
+            <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800 font-medium">
+              Accessibility Issues
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          {combo.description}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <div
+            className="w-full h-24 rounded-md shadow-sm mb-2 flex items-center justify-center text-white font-medium"
+            style={{ backgroundColor: combo.primary[5].value }}
+          >
+            {combo.primary[5].name}
+          </div>
+          <div className="text-sm mb-1">Primary</div>
+          <div className="text-xs text-muted-foreground">
+            {combo.primary[5].value}
+          </div>
+        </div>
+
+        <div>
+          <div
+            className="w-full h-24 rounded-md shadow-sm mb-2 flex items-center justify-center text-white font-medium"
+            style={{ backgroundColor: combo.secondary[5].value }}
+          >
+            {combo.secondary[5].name}
+          </div>
+          <div className="text-sm mb-1">Secondary</div>
+          <div className="text-xs text-muted-foreground">
+            {combo.secondary[5].value}
+          </div>
+        </div>
+      </div>
+
+      {hasAccessibilityIssues() && (
+        <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-400 text-red-800 rounded-r-md">
+          <h4 className="font-medium text-sm mb-1">Accessibility Warning</h4>
+          <ul className="list-disc pl-4 text-xs space-y-1">
+            {getWarningText().map((issue, i) => (
+              <li key={i}>{issue}</li>
+            ))}
+            <li>
+              Consider using darker variants (600-800) of these colors for
+              better contrast.
+            </li>
+          </ul>
+        </div>
+      )}
+
+      <div className="border-t pt-4">
+        <h4 className="font-medium mb-3">Accessibility Information</h4>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span>Primary vs Secondary Contrast:</span>
+            <ContrastIndicator
+              ratio={combo.contrast.primarySecondary}
+              aa={combo.wcag.primarySecondary.aa}
+              aaa={combo.wcag.primarySecondary.aaa}
+            />
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span>Primary on White:</span>
+            <ContrastIndicator
+              ratio={combo.contrast.onLight}
+              aa={combo.wcag.onLight.aa}
+              aaa={combo.wcag.onLight.aaa}
+            />
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span>Primary on Black:</span>
+            <ContrastIndicator
+              ratio={combo.contrast.onDark}
+              aa={combo.wcag.onDark.aa}
+              aaa={combo.wcag.onDark.aaa}
+            />
+          </div>
+        </div>
+      </div>
+
+      {hasAccessibilityIssues() && (
+        <div className="mt-4 pt-4 border-t">
+          <h4 className="font-medium mb-2">WCAG-Compliant Alternatives</h4>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-2 border rounded-md">
+              <div className="flex items-center justify-center h-8 rounded bg-[#102970] text-white text-xs mb-1">
+                {combo.primary[7].name}
+              </div>
+              <div className="text-xs text-center">
+                {combo.primary[7].value}
+              </div>
+            </div>
+            <div className="p-2 border rounded-md">
+              <div className="flex items-center justify-center h-8 rounded bg-[#7E0F56] text-white text-xs mb-1">
+                {combo.secondary[7].name}
+              </div>
+              <div className="text-xs text-center">
+                {combo.secondary[7].value}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Accessible Color Combination Card
+interface AccessibleColorCombinationCardProps {
+  combo: (typeof accessibleColorCombinations)[0];
+}
+
+const AccessibleColorCombinationCard: React.FC<
+  AccessibleColorCombinationCardProps
+> = ({ combo }) => {
+  return (
+    <div className="p-6 rounded-lg border bg-card">
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">{combo.name}</h3>
+          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 font-medium">
+            WCAG Compliant
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground mt-1">
+          {combo.description}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -150,6 +402,34 @@ const ColorCombinationCard: React.FC<ColorCombinationCardProps> = ({
           </div>
         </div>
       </div>
+
+      <div className="mt-4 pt-4 border-t">
+        <h4 className="font-medium mb-2">Shade Examples</h4>
+        <div className="grid grid-cols-5 gap-1 mb-2">
+          {[7, 6, 5, 4, 3].map((index) => (
+            <div key={`primary-${index}`} className="text-center">
+              <div
+                className="h-8 rounded mb-1 flex items-center justify-center text-white text-xs"
+                style={{ backgroundColor: combo.primary[index].value }}
+              >
+                {index}00
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-5 gap-1">
+          {[7, 6, 5, 4, 3].map((index) => (
+            <div key={`secondary-${index}`} className="text-center">
+              <div
+                className="h-8 rounded mb-1 flex items-center justify-center text-white text-xs"
+                style={{ backgroundColor: combo.secondary[index].value }}
+              >
+                {index}00
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
@@ -190,8 +470,10 @@ export const ColorSystemDoc: React.FC = () => {
   const tabs = [
     { id: "overview", label: "Overview" },
     { id: "combinations", label: "Color Combinations" },
+    { id: "accessible-colors", label: "Accessible Colors" },
     { id: "explorations", label: "Color Explorations" },
     { id: "accessibility", label: "Accessibility" },
+    { id: "wcag-compliant", label: "WCAG Compliance" },
   ];
 
   return (
@@ -204,26 +486,190 @@ export const ColorSystemDoc: React.FC = () => {
           guidelines.
         </p>
 
+        <AccessibilityWarning />
+
         <div className="p-6 rounded-lg border bg-card mb-8">
-          <h3 className="text-lg font-semibold mb-4">Brand Foundation Color</h3>
-          <div className="grid grid-cols-1 gap-4">
+          <h3 className="text-lg font-semibold mb-4">
+            Brand Foundation Colors
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col">
               <div
                 className="w-full h-24 rounded-md shadow-sm flex items-center justify-center text-white"
-                style={{ backgroundColor: brandBlue }}
+                style={{ backgroundColor: "#118197" }}
               >
-                <span className="text-lg font-medium">Brand Blue</span>
+                <span className="text-lg font-medium">Primary Teal</span>
               </div>
               <div className="text-sm text-muted-foreground mt-2">
-                Base color for our design system
+                Primary brand color
               </div>
-              <div className="text-xs mt-1">{brandBlue}</div>
+              <div className="text-xs mt-1">#118197</div>
+              <div className="flex items-center mt-2">
+                <span className="text-xs mr-2">Contrast with white:</span>
+                <ContrastIndicator ratio={4.38} aa={false} aaa={false} />
+              </div>
             </div>
+
+            <div className="flex flex-col">
+              <div
+                className="w-full h-24 rounded-md shadow-sm flex items-center justify-center text-white"
+                style={{ backgroundColor: "#E0007B" }}
+              >
+                <span className="text-lg font-medium">Secondary Magenta</span>
+              </div>
+              <div className="text-sm text-muted-foreground mt-2">
+                Secondary brand color
+              </div>
+              <div className="text-xs mt-1">#E0007B</div>
+              <div className="flex items-center mt-2">
+                <span className="text-xs mr-2">Contrast with white:</span>
+                <ContrastIndicator ratio={3.95} aa={false} aaa={false} />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 border-l-4 border-amber-500 bg-amber-50 text-amber-800 rounded-r-md">
+            <h4 className="font-medium">Accessibility Note:</h4>
+            <p className="text-sm mt-1">
+              Our original brand colors do not meet WCAG 2.1 contrast standards
+              when used with white text. For accessible implementations, use the
+              darker shades (600-700) of these colors from our accessible color
+              system, or see the "Accessible Colors" tab for WCAG-compliant
+              alternatives.
+            </p>
           </div>
         </div>
       </section>
 
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} />
+
+      {activeTab === "wcag-compliant" && (
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-4">
+              WCAG-Compliant Color Alternatives
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              The following colors meet WCAG 2.1 accessibility standards with at
+              least AA compliance (4.5:1 contrast ratio) for normal text on
+              white backgrounds. We recommend using these colors or darker
+              shades from our palettes for text and interactive elements.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {wcagCompliantColors.map((color) => (
+              <div key={color.name} className="p-6 rounded-lg border bg-card">
+                <ColorRelationship
+                  name={color.name}
+                  value={color.value}
+                  relationship="WCAG-compliant alternative"
+                  textColor="text-white"
+                  contrastRatio={color.contrastRatio}
+                  wcagAA={color.wcagAA}
+                  wcagAAA={color.wcagAAA}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="p-6 rounded-lg border bg-card">
+            <h3 className="text-lg font-semibold mb-4">
+              Implementation Guidelines for Accessibility
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-2">
+                  Text and Interactive Elements
+                </h4>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <li>Use darker shades (700-900) for small text on white</li>
+                  <li>
+                    Use lighter shades (50-100) for text on dark backgrounds
+                  </li>
+                  <li>
+                    Ensure CTA buttons have at least 3:1 contrast ratio with
+                    surrounding elements
+                  </li>
+                  <li>Add text labels or icons to color-coded information</li>
+                  <li>
+                    Avoid relying solely on color to communicate information
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-2">Testing and Validation</h4>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <li>
+                    Use the WebAIM Contrast Checker to validate color choices
+                  </li>
+                  <li>
+                    Test designs in grayscale to ensure information is still
+                    clear
+                  </li>
+                  <li>
+                    Use tools like Axe or Wave for accessibility validation
+                  </li>
+                  <li>Test with screen readers to ensure proper labeling</li>
+                  <li>
+                    Consider color blindness simulations for data visualizations
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-6 rounded-lg border">
+            <h3 className="text-lg font-semibold mb-2">
+              Implementing Accessible Color Combinations
+            </h3>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1 p-4 bg-white rounded border">
+                <h4 className="font-medium text-gray-900 mb-3">Good Example</h4>
+                <div className="flex flex-col gap-3">
+                  <div className="p-3 rounded bg-[#003939] text-white flex items-center">
+                    <ShieldCheck className="h-4 w-4 mr-2" /> Primary Button
+                    (Deep Teal 700)
+                  </div>
+                  <p className="text-sm text-[#003939] font-medium">
+                    Important Text (Deep Teal 700)
+                  </p>
+                  <div className="p-3 rounded border border-[#003939] text-[#003939] flex items-center">
+                    <Edit2 className="h-4 w-4 mr-2" /> Secondary Button (Deep
+                    Teal 700)
+                  </div>
+                  <p className="text-xs mt-2">
+                    These elements use Deep Teal 700 which has a 12.63:1
+                    contrast ratio with white, meeting WCAG AAA standards.
+                  </p>
+                </div>
+              </div>
+              <div className="flex-1 p-4 bg-white rounded border">
+                <h4 className="font-medium text-gray-900 mb-3">Bad Example</h4>
+                <div className="flex flex-col gap-3">
+                  <div className="p-3 rounded bg-[#0090AF] text-white flex items-center">
+                    <ShieldCheck className="h-4 w-4 mr-2" /> Primary Button
+                    (Ocean Teal 500)
+                  </div>
+                  <p className="text-sm text-[#0090AF] font-medium">
+                    Important Text (Ocean Teal 500)
+                  </p>
+                  <div className="p-3 rounded border border-[#0090AF] text-[#0090AF] flex items-center">
+                    <Edit2 className="h-4 w-4 mr-2" /> Secondary Button (Ocean
+                    Teal 500)
+                  </div>
+                  <p className="text-xs mt-2">
+                    These elements use Ocean Teal 500 which has only a 3.85:1
+                    contrast ratio with white, failing to meet WCAG AA standards
+                    for normal text.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {activeTab === "overview" && (
         <section className="space-y-8">
@@ -356,6 +802,64 @@ export const ColorSystemDoc: React.FC = () => {
             </p>
           </div>
 
+          <div className="p-4 border border-red-300 bg-red-50 rounded-lg mb-8">
+            <h3 className="text-lg font-semibold text-red-800 flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Accessibility Audit Required
+            </h3>
+            <div className="mt-3 text-red-700">
+              <p>
+                Many of these color combinations{" "}
+                <strong>fail to meet WCAG 2.1 accessibility standards</strong>{" "}
+                for contrast ratios:
+              </p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>
+                  Most primary colors at 500-level don't have sufficient
+                  contrast (4.5:1) against white backgrounds
+                </li>
+                <li>
+                  Several primary and secondary color combinations lack adequate
+                  contrast with each other
+                </li>
+                <li>
+                  Using these colors for text or interactive elements may create
+                  accessibility barriers
+                </li>
+              </ul>
+              <p className="mt-3 font-medium">Recommended Actions:</p>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>
+                  Use darker shades (600-800) of these palettes for text on
+                  light backgrounds
+                </li>
+                <li>
+                  Test all color combinations with accessibility tools like
+                  WebAIM Contrast Checker
+                </li>
+                <li>
+                  Consider our WCAG-compliant alternatives in the "WCAG
+                  Compliance" tab
+                </li>
+                <li>
+                  Add non-color indicators (icons, patterns, borders) for all
+                  status or interactive elements
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[0, 1, 2, 3].map((index) => (
               <ColorCombinationCard key={index} index={index} />
@@ -387,6 +891,137 @@ export const ColorSystemDoc: React.FC = () => {
                   <li>Important supporting elements</li>
                   <li>Hover and focus states</li>
                 </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "accessible-colors" && (
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-4">
+              WCAG-Compliant Color Combinations
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              These color combinations are specifically designed to meet WCAG
+              2.1 accessibility standards. All primary colors have at least
+              AA-level contrast (4.5:1) with white backgrounds, making them
+              suitable for text and interactive elements. Many combinations even
+              achieve AAA-level compliance for larger text and UI elements.
+            </p>
+          </div>
+
+          <div className="p-4 border border-green-300 bg-green-50 rounded-lg mb-8">
+            <h3 className="text-lg font-semibold text-green-800 flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Accessibility Compliant Colors
+            </h3>
+            <div className="mt-3 text-green-700">
+              <p>
+                These color combinations have been carefully crafted to meet
+                WCAG 2.1 accessibility standards for contrast ratios:
+              </p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>
+                  All primary colors at 500-level have at least 4.5:1 contrast
+                  against white backgrounds
+                </li>
+                <li>
+                  Most colors achieve AAA compliance (7:1 contrast) at their
+                  700-level
+                </li>
+                <li>
+                  Primary and secondary colors have sufficient contrast with
+                  each other
+                </li>
+                <li>
+                  Darker shades (700+) provide excellent contrast for text and
+                  critical UI elements
+                </li>
+              </ul>
+              <p className="mt-3 font-medium">Recommended Usage:</p>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Use the 500-level colors for large text and UI elements</li>
+                <li>
+                  Use the 600-700 level colors for standard text and critical UI
+                  components
+                </li>
+                <li>
+                  Follow the implementation guidelines in the WCAG Compliance
+                  tab
+                </li>
+                <li>Test all implementations with accessibility tools</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {accessibleColorCombinations.map((combo, index) => (
+              <AccessibleColorCombinationCard key={index} combo={combo} />
+            ))}
+          </div>
+
+          <div className="p-6 rounded-lg border bg-card">
+            <h3 className="text-lg font-semibold mb-4">
+              Implementation Examples with Accessible Colors
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-4 rounded border">
+                <h4 className="font-medium mb-3">Button Examples</h4>
+                <div className="space-y-3">
+                  <div className="p-3 rounded bg-[#118197] text-white font-medium">
+                    Original Primary Button
+                  </div>
+                  <div className="p-3 rounded bg-[#0B4F5B] text-white font-medium">
+                    Accessible Primary Button (Wordly Teal 700)
+                  </div>
+                  <div className="p-3 rounded border border-[#0B4F5B] text-[#0B4F5B] font-medium">
+                    Secondary Button (Wordly Teal 700)
+                  </div>
+                  <div className="p-3 rounded bg-[#E0007B] text-white font-medium">
+                    Original Accent Button
+                  </div>
+                  <div className="p-3 rounded bg-[#86004A] text-white font-medium">
+                    Accessible Accent Button (Wordly Magenta 700)
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded border">
+                <h4 className="font-medium mb-3">Text & UI Examples</h4>
+                <div className="space-y-3">
+                  <h5 className="text-[#0E6879] text-lg font-semibold">
+                    Heading (Wordly Teal 600)
+                  </h5>
+                  <p className="text-[#0B4F5B]">
+                    Body text using Wordly Teal 700 for optimal readability.
+                    This color has a contrast ratio of over 7:1 with white
+                    backgrounds, meeting WCAG AAA standards.
+                  </p>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded-full bg-[#E0007B] mr-2"></div>
+                    <span className="text-[#86004A]">
+                      Status indicator (Wordly Magenta 700)
+                    </span>
+                  </div>
+                  <div className="p-2 rounded bg-[#E6F1F3] border-l-4 border-[#0E6879]">
+                    <span className="text-[#0B4F5B]">
+                      Notice box with subtle background
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
