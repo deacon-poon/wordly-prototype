@@ -79,6 +79,24 @@ export default function OrganizationUsersPage() {
     }
   };
 
+  // Handle role change for a user
+  const handleRoleChange = (userId: string, newRole: User["role"]) => {
+    setUsers(
+      users.map((user) =>
+        user.id === userId ? { ...user, role: newRole } : user
+      )
+    );
+  };
+
+  // Handle workspace change for a user
+  const handleWorkspaceChange = (userId: string, newWorkspace: string) => {
+    setUsers(
+      users.map((user) =>
+        user.id === userId ? { ...user, workspace: newWorkspace } : user
+      )
+    );
+  };
+
   // Filter users based on selected workspace and role
   const filteredUsers = users.filter((user) => {
     const workspaceMatch =
@@ -219,12 +237,81 @@ export default function OrganizationUsersPage() {
                   <span className="text-gray-500 font-normal">(you)</span>
                 )}
               </div>
-              <div className="text-gray-700">{user.workspace}</div>
+              <div className="text-gray-700">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="text-gray-800 border-gray-300 h-9 flex items-center justify-between"
+                      disabled={user.workspace.includes("workspaces")}
+                    >
+                      {user.workspace}
+                      {!user.workspace.includes("workspaces") && (
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {!user.workspace.includes("workspaces") && (
+                    <DropdownMenuContent align="start">
+                      {workspaces
+                        .filter((w) => w !== "All Workspaces")
+                        .map((workspace) => (
+                          <DropdownMenuItem
+                            key={workspace}
+                            onClick={() =>
+                              handleWorkspaceChange(user.id, workspace)
+                            }
+                            className={
+                              user.workspace === workspace ? "bg-gray-100" : ""
+                            }
+                          >
+                            {workspace}
+                          </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                  )}
+                </DropdownMenu>
+              </div>
               <div className="flex items-center justify-between text-gray-700">
-                <span className="inline-flex items-center">
-                  {getRoleIcon(user.role)}
-                  {user.role}
-                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="text-gray-800 border-gray-300 h-9 flex items-center justify-between"
+                    >
+                      <div className="flex items-center">
+                        {getRoleIcon(user.role)}
+                        {user.role}
+                      </div>
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChange(user.id, "Administrator")}
+                      className={
+                        user.role === "Administrator" ? "bg-gray-100" : ""
+                      }
+                    >
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                      Administrator
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChange(user.id, "Mixed")}
+                      className={user.role === "Mixed" ? "bg-gray-100" : ""}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Mixed
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChange(user.id, "Viewer")}
+                      className={user.role === "Viewer" ? "bg-gray-100" : ""}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Viewer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 {!user.isCurrentUser && (
                   <Button
