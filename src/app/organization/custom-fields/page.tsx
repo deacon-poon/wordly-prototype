@@ -2,15 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Plus, Edit, Trash, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,6 +32,9 @@ interface CustomField {
   default: string;
   possibleValues?: string[];
 }
+
+// Panel mode types
+type PanelMode = "view" | "edit" | "add";
 
 export default function OrganizationCustomFieldsPage() {
   const [fields, setFields] = useState<CustomField[]>([
@@ -77,19 +72,28 @@ export default function OrganizationCustomFieldsPage() {
     },
   ]);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentField, setCurrentField] = useState<CustomField | null>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
+  const [panelMode, setPanelMode] = useState<PanelMode>("view");
+  const [editingField, setEditingField] = useState<CustomField | null>(null);
+
+  // Form state
+  const [formName, setFormName] = useState("");
+  const [formType, setFormType] = useState<FieldType>("free text");
+  const [formDefault, setFormDefault] = useState("");
+  const [formPossibleValues, setFormPossibleValues] = useState<string[]>([]);
 
   // Listen for field deselection events from the parent layout
   useEffect(() => {
     const handleFieldDeselected = (e: CustomEvent) => {
       if (e.detail.fieldId === selectedField) {
         setSelectedField(null);
+        setPanelMode("view");
+        resetForm();
       }
     };
 
     window.addEventListener("field-deselected" as any, handleFieldDeselected);
+
     return () => {
       window.removeEventListener(
         "field-deselected" as any,
@@ -98,22 +102,92 @@ export default function OrganizationCustomFieldsPage() {
     };
   }, [selectedField]);
 
-  // Open dialog to add a new field
-  const openAddDialog = () => {
-    setCurrentField(null);
-    setIsDialogOpen(true);
+  // Reset form to default values
+  const resetForm = () => {
+    setFormName("");
+    setFormType("free text");
+    setFormDefault("");
+    setFormPossibleValues([]);
+    setEditingField(null);
   };
 
-  // Open dialog to edit an existing field
-  const openEditDialog = (field: CustomField) => {
-    setCurrentField({ ...field });
-    setIsDialogOpen(true);
+  // Initialize form with field values for editing
+  const initFormWithField = (field: CustomField) => {
+    setFormName(field.name);
+    setFormType(field.type);
+    setFormDefault(field.default);
+    setFormPossibleValues(field.possibleValues || []);
+    setEditingField(field);
   };
 
-  // Handle dialog form submission
+  // Open add new field panel
+  const openAddPanel = () => {
+    resetForm();
+    setPanelMode("add");
+
+    // Send event to show the panel
+    window.dispatchEvent(
+      new CustomEvent("field-selected", {
+        detail: {
+          fieldId: "new",
+          content: renderEditPanel(),
+          mode: "add",
+        },
+      })
+    );
+
+    setSelectedField("new");
+  };
+
+  // Open edit field panel
+  const openEditPanel = (field: CustomField) => {
+    initFormWithField(field);
+    setPanelMode("edit");
+
+    // Update the panel content
+    window.dispatchEvent(
+      new CustomEvent("field-selected", {
+        detail: {
+          fieldId: field.id,
+          content: renderEditPanel(),
+          mode: "edit",
+        },
+      })
+    );
+
+    setSelectedField(field.id);
+  };
+
+  // Handle form submission
   const handleSaveField = () => {
-    // Implement save logic
-    setIsDialogOpen(false);
+    // Create new field object
+    const updatedField: CustomField = {
+      id: editingField ? editingField.id : `${Date.now()}`,
+      name: formName,
+      type: formType,
+      default: formDefault,
+      possibleValues: formType.includes("select")
+        ? formPossibleValues
+        : undefined,
+    };
+
+    if (panelMode === "add") {
+      // Add new field
+      setFields([...fields, updatedField]);
+    } else {
+      // Update existing field
+      setFields(
+        fields.map((field) =>
+          field.id === updatedField.id ? updatedField : field
+        )
+      );
+    }
+
+    // Switch back to view mode and show the updated field details
+    setPanelMode("view");
+
+    // Update the panel to show the saved field
+    handleFieldSelect(updatedField);
   };
 
   // Delete a field
@@ -122,7 +196,7 @@ export default function OrganizationCustomFieldsPage() {
       setFields(fields.filter((field) => field.id !== id));
       if (selectedField === id) {
         setSelectedField(null);
-        // Notify parent layout
+        // Notify parent layout to close panel
         window.dispatchEvent(
           new CustomEvent("field-selected", {
             detail: { fieldId: null, content: null },
@@ -141,27 +215,41 @@ export default function OrganizationCustomFieldsPage() {
     return field.type;
   };
 
-  // Handle field selection
+  // Handle field selection - updating this to display view-only details
   const handleFieldSelect = (field: CustomField) => {
-    const newSelectedId = field.id === selectedField ? null : field.id;
-    setSelectedField(newSelectedId);
+    // If we're in edit mode, ask for confirmation before switching
+    if (panelMode !== "view" && selectedField) {
+      if (!confirm("Discard unsaved changes?")) {
+        return;
+      }
+    }
 
-    // Create details panel content
-    const detailsContent = newSelectedId ? renderDetailsPanel(field) : null;
+    // If already selected, do nothing
+    if (field.id === selectedField) {
+      return;
+    }
+
+    // Set the selected field and show view panel
+    setSelectedField(field.id);
+    setPanelMode("view");
+
+    // Create details panel content with view panel
+    const detailsContent = renderViewPanel(field);
 
     // Dispatch event to parent layout
     window.dispatchEvent(
       new CustomEvent("field-selected", {
         detail: {
-          fieldId: newSelectedId,
+          fieldId: field.id,
           content: detailsContent,
+          mode: "view",
         },
       })
     );
   };
 
-  // Render the details panel for the selected field
-  const renderDetailsPanel = (field: CustomField) => {
+  // Render the view panel for the selected field
+  const renderViewPanel = (field: CustomField) => {
     return (
       <div className="h-full p-6 overflow-auto">
         <div className="space-y-4">
@@ -201,7 +289,7 @@ export default function OrganizationCustomFieldsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => openEditDialog(field)}
+              onClick={() => openEditPanel(field)}
               className="mr-2"
             >
               <Edit className="h-4 w-4 mr-2" />
@@ -222,6 +310,137 @@ export default function OrganizationCustomFieldsPage() {
     );
   };
 
+  // Render the edit panel form
+  const renderEditPanel = () => {
+    return (
+      <div className="h-full overflow-auto">
+        <div className="space-y-6 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="field-name">Field Name</Label>
+            <Input
+              id="field-name"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="e.g., Client ID, Project Name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-type">Field Type</Label>
+            <Select
+              value={formType}
+              onValueChange={(value: FieldType) => setFormType(value)}
+            >
+              <SelectTrigger id="field-type">
+                <SelectValue placeholder="Select field type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="free text">Free Text</SelectItem>
+                <SelectItem value="numeric">Numeric</SelectItem>
+                <SelectItem value="single-select">Single Select</SelectItem>
+                <SelectItem value="multi-select">Multi Select</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-default">Default Value</Label>
+            <Input
+              id="field-default"
+              value={formDefault}
+              onChange={(e) => setFormDefault(e.target.value)}
+              placeholder="Default value"
+            />
+          </div>
+
+          {(formType === "single-select" || formType === "multi-select") && (
+            <div className="space-y-2">
+              <Label>Possible Values</Label>
+              <div className="border rounded-md p-4 space-y-2">
+                {formPossibleValues.map((value, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Input
+                      value={value}
+                      onChange={(e) => {
+                        const updatedValues = [...formPossibleValues];
+                        updatedValues[index] = e.target.value;
+                        setFormPossibleValues(updatedValues);
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
+                      onClick={() => {
+                        const updatedValues = formPossibleValues.filter(
+                          (_, i) => i !== index
+                        );
+                        setFormPossibleValues(updatedValues);
+                      }}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() =>
+                    setFormPossibleValues([...formPossibleValues, ""])
+                  }
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Value
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-4 flex justify-end">
+            <Button
+              variant="default"
+              className="bg-[#006064] hover:bg-[#00474a] text-white"
+              onClick={handleSaveField}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {panelMode === "add" ? "Add Field" : "Save Changes"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Show field details when row is clicked
+  const showFieldDetails = (field: CustomField) => {
+    // If we're in edit mode, ask for confirmation before switching
+    if (panelMode !== "view" && selectedField) {
+      if (!confirm("Discard unsaved changes?")) {
+        return;
+      }
+    }
+
+    // Set the selected field and show view panel
+    setSelectedField(field.id);
+    setPanelMode("view");
+
+    // Create details panel content with view panel
+    const detailsContent = renderViewPanel(field);
+
+    // Dispatch event to parent layout
+    window.dispatchEvent(
+      new CustomEvent("field-selected", {
+        detail: {
+          fieldId: field.id,
+          content: detailsContent,
+          mode: "view",
+        },
+      })
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-6 flex justify-between items-start">
@@ -237,7 +456,7 @@ export default function OrganizationCustomFieldsPage() {
         <Button
           variant="default"
           className="bg-[#006064] hover:bg-[#00474a] text-white"
-          onClick={openAddDialog}
+          onClick={openAddPanel}
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Custom Field
@@ -261,7 +480,7 @@ export default function OrganizationCustomFieldsPage() {
                 className={`hover:bg-gray-50 cursor-pointer ${
                   selectedField === field.id ? "bg-gray-100" : ""
                 }`}
-                onClick={() => handleFieldSelect(field)}
+                onClick={() => showFieldDetails(field)}
               >
                 <TableCell className="font-medium">{field.name}</TableCell>
                 <TableCell>{formatTypeDisplay(field)}</TableCell>
@@ -273,7 +492,7 @@ export default function OrganizationCustomFieldsPage() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        openEditDialog(field);
+                        openEditPanel(field);
                       }}
                       className="h-8 w-8 p-0 text-gray-500 hover:text-[#006064]"
                     >
@@ -299,74 +518,6 @@ export default function OrganizationCustomFieldsPage() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Dialog for adding/editing fields */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {currentField ? "Edit Custom Field" : "Add New Custom Field"}
-            </DialogTitle>
-            <DialogDescription>
-              {currentField
-                ? "Modify the details of this custom field."
-                : "Create a new custom field for usage data tracking."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Field Name
-              </Label>
-              <Input
-                id="name"
-                defaultValue={currentField?.name || ""}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Field Type
-              </Label>
-              <Select defaultValue={currentField?.type || "free text"}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select field type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free text">Free Text</SelectItem>
-                  <SelectItem value="numeric">Numeric</SelectItem>
-                  <SelectItem value="single-select">Single Select</SelectItem>
-                  <SelectItem value="multi-select">Multi Select</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="default" className="text-right">
-                Default Value
-              </Label>
-              <Input
-                id="default"
-                defaultValue={currentField?.default || ""}
-                className="col-span-3"
-              />
-            </div>
-            {/* Additional fields for select options would go here */}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-[#006064] hover:bg-[#00474a] text-white"
-              onClick={handleSaveField}
-            >
-              Save Custom Field
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
