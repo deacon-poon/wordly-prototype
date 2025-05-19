@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { selectSidebarCollapsed } from "@/store/slices/sidebarSlice";
 import { cn } from "@/lib/utils";
 import { useIsMobile, useIsTablet, useViewportSize } from "@/hooks/use-mobile";
-import { ListFilter, X } from "lucide-react";
+import { ListFilter, X, Edit, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ResizablePanelGroup,
@@ -155,14 +155,22 @@ export function AppShell({
               <div className="h-full overflow-auto bg-white border-l">
                 <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                   <h2 className="font-semibold">{rightPanelTitle}</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 h-auto"
-                    onClick={onRightPanelClose}
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={onRightPanelClose}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="overflow-auto p-4">{rightPanel}</div>
               </div>
@@ -193,20 +201,28 @@ export function AppShell({
             >
               <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                 <h2 className="font-semibold">{rightPanelTitle}</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 h-auto"
-                  onClick={() => {
-                    toggleMobilePanel();
-                    if (onRightPanelClose) onRightPanelClose();
-                    // Optional: notify parent components
-                    const closeEvent = new CustomEvent("rightpanel-close");
-                    window.dispatchEvent(closeEvent);
-                  }}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      toggleMobilePanel();
+                      if (onRightPanelClose) onRightPanelClose();
+                      // Optional: notify parent components
+                      const closeEvent = new CustomEvent("rightpanel-close");
+                      window.dispatchEvent(closeEvent);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="overflow-auto p-4 h-[calc(100%-56px)]">
                 {rightPanel}

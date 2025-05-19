@@ -227,34 +227,31 @@ export default function SessionsPage() {
       sidebar={<AppSidebar />}
       header={<AppHeader title="Sessions" />}
       showRightPanel={showRightPanel}
-      rightPanelTitle={selectedSession.title}
+      rightPanelTitle="Session"
       onRightPanelClose={handleCloseRightPanel}
       rightPanel={
         <div className="space-y-6">
-          {/* Session ID subheader */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Hash className="w-4 h-4 text-gray-400" />
-              <p className="text-sm text-gray-500">{selectedSession.id}</p>
-            </div>
-            <StatusBadge status={selectedSession.status} />
+          {/* Session title and ID */}
+          <div>
+            <h2 className="text-xl font-semibold mb-1">
+              {selectedSession.title}
+            </h2>
+            <p className="text-sm text-gray-500">{selectedSession.id}</p>
           </div>
 
-          {/* Session details in two columns */}
-          <div className="grid grid-cols-[120px_1fr] gap-y-4">
+          {/* Session details in two columns with clear separation */}
+          <div className="grid grid-cols-[140px_1fr] gap-y-4">
             <div className="flex items-center">
+              <User className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Presenter:</p>
             </div>
-            <div className="flex items-center">
-              <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">{selectedSession.presenter}</p>
-            </div>
+            <p className="text-sm font-medium">{selectedSession.presenter}</p>
 
             <div className="flex items-center">
+              <Hash className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Session ID:</p>
             </div>
             <div className="flex items-center">
-              <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
               <p className="text-sm font-medium">{selectedSession.id}</p>
               <Button variant="ghost" size="icon" className="h-6 w-6 p-0 ml-1">
                 <Copy className="h-3.5 w-3.5 text-gray-400" />
@@ -262,10 +259,10 @@ export default function SessionsPage() {
             </div>
 
             <div className="flex items-center">
+              <Hash className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Passcode:</p>
             </div>
             <div className="flex items-center">
-              <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
               <p className="text-sm font-medium">
                 {selectedSession.passcode || "-"}
               </p>
@@ -275,50 +272,41 @@ export default function SessionsPage() {
             </div>
 
             <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Start date:</p>
             </div>
-            <div className="flex items-center">
-              <Calendar className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">
-                {selectedSession.date} {selectedSession.time} (PDT)
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.date} {selectedSession.time} (PDT)
+            </p>
 
             <div className="flex items-center">
+              <User className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Account:</p>
             </div>
-            <div className="flex items-center">
-              <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">{selectedSession.account}</p>
-            </div>
+            <p className="text-sm font-medium">{selectedSession.account}</p>
 
             <div className="flex items-center">
+              <Clock className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Duration:</p>
             </div>
-            <div className="flex items-center">
-              <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">
-                {selectedSession.duration} mins
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.duration} mins
+            </p>
 
             <div className="flex items-center">
+              <LanguagesIcon className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Language:</p>
             </div>
-            <div className="flex items-center">
-              <LanguagesIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">{selectedSession.language}</p>
-            </div>
+            <p className="text-sm font-medium">{selectedSession.language}</p>
 
             <div className="flex items-center">
+              <Check className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Auto Select:</p>
             </div>
-            <div className="flex items-center">
-              <Check className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">Enabled</p>
-            </div>
+            <p className="text-sm font-medium">Enabled</p>
 
             <div className="flex items-center">
+              <Filter className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Selections:</p>
             </div>
             <div className="flex flex-wrap gap-1">
@@ -344,32 +332,28 @@ export default function SessionsPage() {
             </div>
 
             <div className="flex items-center">
+              <QrCodeIcon className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Access:</p>
             </div>
-            <div className="flex items-center">
-              <QrCodeIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">
-                {selectedSession.access || "-"}
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.access || "-"}
+            </p>
 
             <div className="flex items-center">
+              <div className="w-4 h-4 mr-2" />
               <p className="text-sm font-medium text-gray-500">Pinned:</p>
             </div>
-            <div className="flex items-center">
-              <p className="text-sm font-medium">
-                {selectedSession.pinned ? "Yes" : "No"}
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.pinned ? "Yes" : "No"}
+            </p>
 
             <div className="flex items-center">
+              <div className="w-4 h-4 mr-2" />
               <p className="text-sm font-medium text-gray-500">Voice Pack:</p>
             </div>
-            <div className="flex items-center">
-              <p className="text-sm font-medium">
-                {selectedSession.voicePack || "-"}
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.voicePack || "-"}
+            </p>
           </div>
 
           {/* Edit button */}

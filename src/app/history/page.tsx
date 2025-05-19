@@ -177,50 +177,42 @@ export default function HistoryPage() {
       rightPanel={
         <div className="space-y-4">
           {/* Session summary */}
-          <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold mb-1">
+              {selectedSession.title}
+            </h2>
             <div className="flex items-center gap-2">
               <Hash className="w-4 h-4 text-gray-400" />
               <p className="text-sm text-gray-500">{selectedSession.id}</p>
+              <StatusBadge status={selectedSession.status} />
             </div>
-            <StatusBadge status={selectedSession.status} />
-          </div>
-
-          {/* Title */}
-          <div className="py-2">
-            <h2 className="text-md font-semibold">{selectedSession.title}</h2>
           </div>
 
           {/* Session details in two columns */}
           <div className="grid grid-cols-[120px_1fr] gap-y-4">
             <div className="flex items-center">
+              <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Start time:</p>
             </div>
-            <div className="flex items-center">
-              <CalendarIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">
-                {selectedSession.date} {selectedSession.time}
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.date} {selectedSession.time}
+            </p>
 
             <div className="flex items-center">
+              <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Duration:</p>
             </div>
-            <div className="flex items-center">
-              <ClockIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">
-                {selectedSession.duration} mins
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.duration} mins
+            </p>
 
             <div className="flex items-center">
+              <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
               <p className="text-sm font-medium text-gray-500">Usage:</p>
             </div>
-            <div className="flex items-center">
-              <ClockIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
-              <p className="text-sm font-medium">
-                {selectedSession.usedDuration} mins
-              </p>
-            </div>
+            <p className="text-sm font-medium">
+              {selectedSession.usedDuration} mins
+            </p>
           </div>
 
           {/* Progress bar for usage */}
