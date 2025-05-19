@@ -458,9 +458,9 @@ export default function OrganizationUsersPage() {
                             Assigned workspaces
                           </DropdownMenuLabel>
                           {user.workspaceRoles.map((wr, i) => (
-                            <DropdownMenuItem
+                            <div
                               key={i}
-                              className="py-2 cursor-default"
+                              className="px-2 py-2 cursor-default hover:bg-gray-50"
                             >
                               <div className="w-full flex items-center justify-between group">
                                 <span>{wr.workspaceName}</span>
@@ -498,7 +498,7 @@ export default function OrganizationUsersPage() {
                                     )}
                                 </div>
                               </div>
-                            </DropdownMenuItem>
+                            </div>
                           ))}
                         </>
                       )}
@@ -538,55 +538,59 @@ export default function OrganizationUsersPage() {
                 <div className="flex items-center justify-between text-gray-700">
                   <div className="flex items-center">
                     {user.workspaceRoles ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-auto px-3 py-1 rounded-full border hover:bg-gray-50 ${getRoleBadgeClass(
+                              user.role
+                            )}`}
+                          >
+                            <div className="flex items-center">
+                              {getRoleIcon(user.role)}
+                              {user.role}
+                            </div>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-64">
+                          <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                            Workspace Roles
+                          </DropdownMenuLabel>
+                          {user.workspaceRoles.map((wr, idx) => (
+                            <div
+                              key={idx}
+                              className="px-2 py-2 cursor-default hover:bg-gray-50"
                               onClick={() => handleManageWorkspaces(user.id)}
-                              className={`h-auto px-3 py-1 rounded-full border hover:bg-gray-50 ${getRoleBadgeClass(
-                                user.role
-                              )}`}
                             >
-                              <div className="flex items-center">
-                                {getRoleIcon(user.role)}
-                                {user.role}
-                              </div>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent className="bg-white p-0 border border-gray-200 shadow-md rounded-md">
-                            <div className="p-3 max-w-[280px]">
-                              <div className="text-xs font-semibold text-gray-700 mb-2">
-                                Workspace Assignments
-                              </div>
-                              <div className="space-y-1.5">
-                                {user.workspaceRoles.map((wr, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex items-center justify-between text-xs"
-                                  >
-                                    <span className="text-gray-600 mr-3">
-                                      {wr.workspaceName}
-                                    </span>
-                                    <span
-                                      className={`px-2 py-0.5 rounded-full ${
-                                        wr.role === "Administrator"
-                                          ? "bg-blue-50 text-blue-700"
-                                          : wr.role === "Editor"
-                                          ? "bg-emerald-50 text-emerald-700"
-                                          : "bg-gray-50 text-gray-600"
-                                      }`}
-                                    >
-                                      {wr.role}
-                                    </span>
-                                  </div>
-                                ))}
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-gray-600 mr-3">
+                                  {wr.workspaceName}
+                                </span>
+                                <span
+                                  className={`px-2 py-0.5 rounded-full ${
+                                    wr.role === "Administrator"
+                                      ? "bg-blue-50 text-blue-700"
+                                      : wr.role === "Editor"
+                                      ? "bg-emerald-50 text-emerald-700"
+                                      : "bg-gray-50 text-gray-600"
+                                  }`}
+                                >
+                                  {wr.role}
+                                </span>
                               </div>
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                          ))}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleManageWorkspaces(user.id)}
+                            className="text-[#006064] py-2 cursor-pointer"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                            Manage all roles
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     ) : (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
