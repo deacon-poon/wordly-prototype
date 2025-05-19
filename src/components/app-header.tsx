@@ -52,6 +52,55 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
     { id: 4, type: "user", title: "Sarah Johnson", date: "Team Member" },
   ];
 
+  // Generate breadcrumb items from pathname
+  const getBreadcrumbItems = () => {
+    const segments = pathname.split("/").filter(Boolean);
+
+    if (segments.length === 0) {
+      return [{ label: "Home", href: "/", active: true }];
+    }
+
+    const items = [{ label: "Home", href: "/", active: false }];
+
+    let currentPath = "";
+
+    segments.forEach((segment, index) => {
+      currentPath += `/${segment}`;
+
+      // Format the segment label
+      let label = segment.charAt(0).toUpperCase() + segment.slice(1);
+
+      // Special cases for specific segments
+      if (segment === "organization" && index === 0) {
+        label = "Organization Management";
+      } else if (segments[0] === "organization") {
+        // Format organization sub-pages
+        switch (segment) {
+          case "users":
+            label = "All Users";
+            break;
+          case "custom-fields":
+            label = "Custom Fields";
+            break;
+          case "workspace":
+            label = "Workspace";
+            break;
+          // Keep defaults for others
+        }
+      }
+
+      items.push({
+        label,
+        href: currentPath,
+        active: index === segments.length - 1,
+      });
+    });
+
+    return items;
+  };
+
+  const breadcrumbItems = getBreadcrumbItems();
+
   // Get the title from the pathname if not provided
   const pageTitle =
     title ||
@@ -88,13 +137,18 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
 
       <Breadcrumb className="hidden md:flex">
         <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
-          </BreadcrumbItem>
+          {breadcrumbItems.map((item, index) => (
+            <React.Fragment key={index}>
+              <BreadcrumbItem>
+                {item.active ? (
+                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+              {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
+            </React.Fragment>
+          ))}
         </BreadcrumbList>
       </Breadcrumb>
 
