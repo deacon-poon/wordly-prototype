@@ -254,9 +254,12 @@ export default function BillingProjectsPage() {
       .filter((t) => t.type === "adjustment")
       .reduce((sum, t) => sum + t.minutes, 0);
 
+    // Set a maximum value for the progress bar (for visualization)
+    const maxProgressValue = Math.max(project.minutesValue, totalUsage) * 1.2;
+
     return (
-      <div className="h-full overflow-auto p-6">
-        <div className="space-y-6">
+      <div className="h-full overflow-auto">
+        <div className="p-6 space-y-6">
           <div>
             <h3 className="text-lg font-semibold">{project.name}</h3>
             <p className="text-sm text-gray-500 mt-1">
@@ -266,58 +269,130 @@ export default function BillingProjectsPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
+          <div className="space-y-4">
+            <Card className="border-0 shadow-none">
+              <CardHeader className="px-0 py-2">
                 <CardTitle className="text-sm font-medium text-gray-500">
                   Current Balance
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{project.balance}</div>
+              <CardContent className="px-0 pt-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="text-2xl font-bold">{project.balance}</div>
+                  <Badge
+                    variant="outline"
+                    className="bg-[#e0f7fa] text-[#006064] border-0"
+                  >
+                    Available
+                  </Badge>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div
+                    className="bg-[#00838f] h-2.5 rounded-full"
+                    style={{
+                      width: `${
+                        (project.minutesValue / maxProgressValue) * 100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="pb-2">
+
+            <Card className="border-0 shadow-none">
+              <CardHeader className="px-0 py-2">
                 <CardTitle className="text-sm font-medium text-gray-500">
-                  Total Usage
+                  Usage History
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{totalUsage} minutes</div>
+              <CardContent className="px-0 pt-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="text-2xl font-bold">{totalUsage} minutes</div>
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-0"
+                  >
+                    Used
+                  </Badge>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div
+                    className="bg-blue-500 h-2.5 rounded-full"
+                    style={{
+                      width: `${(totalUsage / maxProgressValue) * 100}%`,
+                    }}
+                  ></div>
+                </div>
               </CardContent>
             </Card>
+
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="bg-gray-50 rounded-md p-3">
+                <div className="text-xs font-medium text-gray-500 mb-1">
+                  Allocations
+                </div>
+                <div className="text-lg font-bold text-green-600">
+                  +{totalAllocation} minutes
+                </div>
+              </div>
+              <div className="bg-gray-50 rounded-md p-3">
+                <div className="text-xs font-medium text-gray-500 mb-1">
+                  Adjustments
+                </div>
+                <div className="text-lg font-bold text-red-600">
+                  {totalAdjustments} minutes
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <h4 className="text-sm font-medium mb-3">Transaction History</h4>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Tabs
-                  defaultValue="all"
-                  className="w-[400px]"
-                  onValueChange={setActiveTab}
-                >
-                  <TabsList>
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="usage">Usage</TabsTrigger>
-                    <TabsTrigger value="allocation">Allocations</TabsTrigger>
-                    <TabsTrigger value="adjustment">Adjustments</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-                <Button variant="outline" size="sm" className="h-8">
-                  <Download className="h-3.5 w-3.5 mr-1.5" />
-                  Export
-                </Button>
-              </div>
+          <div className="border-t pt-5">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-sm font-medium">Transaction History</h4>
+              <Button variant="outline" size="sm" className="h-7">
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                Export
+              </Button>
+            </div>
 
-              <div className="border rounded-md">
+            <Tabs
+              defaultValue="all"
+              className="w-full"
+              onValueChange={setActiveTab}
+            >
+              <TabsList className="w-full mb-4 bg-gray-100 p-0.5">
+                <TabsTrigger
+                  value="all"
+                  className="flex-1 data-[state=active]:bg-white"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger
+                  value="usage"
+                  className="flex-1 data-[state=active]:bg-white"
+                >
+                  Usage
+                </TabsTrigger>
+                <TabsTrigger
+                  value="allocation"
+                  className="flex-1 data-[state=active]:bg-white"
+                >
+                  Allocations
+                </TabsTrigger>
+                <TabsTrigger
+                  value="adjustment"
+                  className="flex-1 data-[state=active]:bg-white"
+                >
+                  Adjustments
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="border rounded-md overflow-hidden">
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
                       <TableHead>Date</TableHead>
                       <TableHead>Description</TableHead>
-                      <TableHead>Type</TableHead>
                       <TableHead className="text-right">Minutes</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -333,40 +408,38 @@ export default function BillingProjectsPage() {
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div className="font-medium">
+                              <div className="font-medium flex items-center">
                                 {transaction.description}
+                                <Badge
+                                  variant="outline"
+                                  className={`ml-2 px-1.5 py-0 text-xs ${
+                                    transaction.type === "usage"
+                                      ? "bg-blue-50 text-blue-700 border-blue-200"
+                                      : transaction.type === "allocation"
+                                      ? "bg-green-50 text-green-700 border-green-200"
+                                      : "bg-red-50 text-red-700 border-red-200"
+                                  }`}
+                                >
+                                  {transaction.type}
+                                </Badge>
                               </div>
                               {transaction.session && (
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-gray-500 mt-0.5">
                                   {transaction.session}
                                 </div>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                transaction.type === "usage"
-                                  ? "outline"
-                                  : transaction.type === "allocation"
-                                  ? "default"
-                                  : "destructive"
-                              }
-                              className={
-                                transaction.type === "usage"
-                                  ? "bg-blue-50 text-blue-700 hover:bg-blue-50"
-                                  : transaction.type === "allocation"
-                                  ? "bg-green-50 text-green-700 hover:bg-green-50"
-                                  : "bg-red-50 text-red-700 hover:bg-red-50"
-                              }
-                            >
-                              {transaction.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
+                          <TableCell className="text-right font-medium whitespace-nowrap">
                             <span
                               className={
-                                transaction.minutes < 0 ? "text-red-600" : ""
+                                transaction.minutes < 0
+                                  ? "text-red-600"
+                                  : transaction.type === "allocation"
+                                  ? "text-green-600"
+                                  : transaction.type === "usage"
+                                  ? "text-blue-600"
+                                  : ""
                               }
                             >
                               {transaction.minutes > 0 &&
@@ -381,17 +454,22 @@ export default function BillingProjectsPage() {
                     ) : (
                       <TableRow>
                         <TableCell
-                          colSpan={4}
-                          className="h-24 text-center text-gray-500"
+                          colSpan={3}
+                          className="h-32 text-center text-gray-500"
                         >
-                          No transactions found
+                          <div className="flex flex-col items-center justify-center">
+                            <p>No transactions found</p>
+                            <p className="text-xs mt-1">
+                              Try a different filter
+                            </p>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
               </div>
-            </div>
+            </Tabs>
           </div>
         </div>
       </div>
