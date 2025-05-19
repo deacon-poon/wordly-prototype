@@ -5,7 +5,18 @@ import { useSelector } from "react-redux";
 import { selectSidebarCollapsed } from "@/store/slices/sidebarSlice";
 import { cn } from "@/lib/utils";
 import { useIsMobile, useIsTablet, useViewportSize } from "@/hooks/use-mobile";
-import { ListFilter, X, Edit, ExternalLink, MoreVertical } from "lucide-react";
+import {
+  ListFilter,
+  X,
+  Edit,
+  ExternalLink,
+  MoreVertical,
+  Users,
+  User,
+  Trash,
+  Copy,
+  Video,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -182,13 +193,23 @@ export function AppShell({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          <span>Open in new tab</span>
+                          <Video className="h-4 w-4 mr-2" />
+                          <span>Join with meeting bot</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
+                          <User className="h-4 w-4 mr-2" />
+                          <span>Join as a speaker</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Users className="h-4 w-4 mr-2" />
+                          <span>Join as an attendee</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Copy className="h-4 w-4 mr-2" />
                           <span>Clone session</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
+                          <Trash className="h-4 w-4 mr-2" />
                           <span>Delete session</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -253,13 +274,23 @@ export function AppShell({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem>
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        <span>Open in new tab</span>
+                        <Video className="h-4 w-4 mr-2" />
+                        <span>Join with meeting bot</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
+                        <User className="h-4 w-4 mr-2" />
+                        <span>Join as a speaker</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Users className="h-4 w-4 mr-2" />
+                        <span>Join as an attendee</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Copy className="h-4 w-4 mr-2" />
                         <span>Clone session</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
+                        <Trash className="h-4 w-4 mr-2" />
                         <span>Delete session</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
