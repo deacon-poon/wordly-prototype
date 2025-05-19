@@ -473,25 +473,22 @@ export default function OrganizationUsersPage() {
                 </div>
                 <div className="flex items-center justify-between text-gray-700">
                   <div className="flex items-center">
-                    <div
-                      className={`border rounded-full px-3 py-1 text-xs font-medium inline-flex items-center ${getRoleBadgeClass(
-                        user.role
-                      )}`}
-                    >
-                      {getRoleIcon(user.role)}
-                      {user.role}
-                    </div>
-
-                    {user.workspaceRoles && user.workspaceRoles.length > 1 && (
+                    {user.workspaceRoles ? (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-5 w-5 p-0 ml-1 rounded-full"
+                              onClick={() => handleManageWorkspaces(user.id)}
+                              className={`h-auto px-3 py-1 rounded-full border hover:bg-gray-50 ${getRoleBadgeClass(
+                                user.role
+                              )}`}
                             >
-                              <Info className="h-3.5 w-3.5 text-gray-400" />
+                              <div className="flex items-center">
+                                {getRoleIcon(user.role)}
+                                {user.role}
+                              </div>
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent className="bg-white p-0 border border-gray-200 shadow-md rounded-md">
@@ -526,24 +523,49 @@ export default function OrganizationUsersPage() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-auto px-3 py-1 rounded-full border hover:bg-gray-50 ${getRoleBadgeClass(
+                              user.role
+                            )}`}
+                          >
+                            <div className="flex items-center">
+                              {getRoleIcon(user.role)}
+                              {user.role}
+                            </div>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleRoleChange(user.id, "Administrator")
+                            }
+                            className={
+                              user.role === "Administrator" ? "bg-gray-100" : ""
+                            }
+                          >
+                            <ShieldCheck className="h-4 w-4 mr-2" />
+                            Administrator
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleRoleChange(user.id, "Viewer")}
+                            className={
+                              user.role === "Viewer" ? "bg-gray-100" : ""
+                            }
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Viewer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
 
                   <div className="flex items-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleManageWorkspaces(user.id)}
-                      className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-teal-50 text-[#006064]"
-                    >
-                      {user.workspaceRoles ? (
-                        <ExternalLink className="h-4 w-4" />
-                      ) : (
-                        <ShieldCheck className="h-4 w-4" />
-                      )}
-                      <span className="sr-only">Manage roles</span>
-                    </Button>
-
                     {!user.isCurrentUser && (
                       <Button
                         variant="ghost"
