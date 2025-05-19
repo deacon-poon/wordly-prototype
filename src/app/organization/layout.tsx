@@ -58,7 +58,10 @@ export default function OrganizationLayout({
 
   // Reset panel when navigating away from custom-fields
   useEffect(() => {
-    if (!pathname.includes("/organization/custom-fields")) {
+    if (
+      !pathname.includes("/organization/custom-fields") &&
+      !pathname.includes("/organization/billing")
+    ) {
       setShowPanel(false);
       setDetailsPanel(null);
       setSelectedFieldId(null);
@@ -80,8 +83,10 @@ export default function OrganizationLayout({
     );
   };
 
-  // Only use resizable panel on the custom fields page
-  const isCustomFieldsPage = pathname.includes("/organization/custom-fields");
+  // Use resizable panel on the custom fields or billing projects page
+  const useResizablePanel =
+    pathname.includes("/organization/custom-fields") ||
+    pathname.includes("/organization/billing");
 
   return (
     <SidebarProvider>
@@ -89,7 +94,7 @@ export default function OrganizationLayout({
       <SidebarInset>
         <AppHeader title="Organization Management" />
         <main className="flex-1 overflow-auto bg-[#f8f9fa]">
-          {isCustomFieldsPage && showPanel ? (
+          {useResizablePanel && showPanel ? (
             <ResizablePanelGroup direction="horizontal" className="h-full">
               <ResizablePanel defaultSize={70} minSize={50}>
                 <div className="h-full overflow-auto">
