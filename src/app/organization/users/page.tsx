@@ -2,7 +2,22 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { UserPlus, ShieldCheck, Edit2, Eye } from "lucide-react";
+import {
+  UserPlus,
+  ShieldCheck,
+  Edit2,
+  Eye,
+  Archive,
+  ChevronDown,
+  XCircle,
+} from "lucide-react";
+import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Mock user data
 interface User {
@@ -13,7 +28,19 @@ interface User {
   isCurrentUser: boolean;
 }
 
+// Mock workspace data
+const workspaces = [
+  "All Workspaces",
+  "Main HQ",
+  "Marketing",
+  "Development",
+  "Sales",
+  "Support",
+];
+
 export default function OrganizationUsersPage() {
+  const [selectedWorkspace, setSelectedWorkspace] = useState("All Workspaces");
+  const [selectedRole, setSelectedRole] = useState("All Roles");
   const [users, setUsers] = useState<User[]>([
     {
       id: "1",
@@ -52,70 +79,175 @@ export default function OrganizationUsersPage() {
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-xl font-semibold">
-            User Management (across workspaces)
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage organization users across all workspaces.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <a
-            href="#"
-            className="text-gray-700 hover:text-gray-900 self-center"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log("Archive workspace");
-            }}
-          >
-            archive workspace
-          </a>
-          <Button
-            variant="default"
-            className="bg-[#006064] hover:bg-[#00474a] text-white"
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Invite another user
-          </Button>
-        </div>
-      </div>
+  // Filter users based on selected workspace and role
+  const filteredUsers = users.filter((user) => {
+    const workspaceMatch =
+      selectedWorkspace === "All Workspaces" ||
+      user.workspace === selectedWorkspace ||
+      (user.workspace.includes("workspaces") &&
+        selectedWorkspace !== "All Workspaces");
 
-      <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+    const roleMatch =
+      selectedRole === "All Roles" || user.role === selectedRole;
+
+    return workspaceMatch && roleMatch;
+  });
+
+  const actions = (
+    <>
+      <Button
+        variant="outline"
+        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+        onClick={() => {
+          if (confirm("Are you sure you want to archive this organization?")) {
+            // Archive logic would go here
+            console.log("Organization archived");
+          }
+        }}
+      >
+        <Archive className="h-4 w-4 mr-2" />
+        Archive organization
+      </Button>
+      <Button
+        variant="default"
+        className="bg-[#006064] hover:bg-[#00474a] text-white"
+      >
+        <UserPlus className="h-4 w-4 mr-2" />
+        Invite another user
+      </Button>
+    </>
+  );
+
+  return (
+    <CardHeaderLayout
+      title="All Users"
+      description="Manage users across all workspaces in your organization."
+      actions={actions}
+    >
+      <div className="p-0 -m-6">
         <div className="w-full px-6 py-3 bg-gray-50 grid grid-cols-3 border-b">
           <div className="font-medium text-gray-700">Name</div>
-          <div className="font-medium text-gray-700">Workspace</div>
-          <div className="font-medium text-gray-700">Role</div>
+          <div className="font-medium text-gray-700">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                >
+                  Workspace
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[180px]">
+                {workspaces.map((workspace) => (
+                  <DropdownMenuItem
+                    key={workspace}
+                    onClick={() => setSelectedWorkspace(workspace)}
+                    className={
+                      selectedWorkspace === workspace ? "bg-gray-100" : ""
+                    }
+                  >
+                    {workspace}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="font-medium text-gray-700">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                >
+                  Role
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[180px]">
+                <DropdownMenuItem
+                  onClick={() => setSelectedRole("All Roles")}
+                  className={selectedRole === "All Roles" ? "bg-gray-100" : ""}
+                >
+                  All Roles
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedRole("Administrator")}
+                  className={
+                    selectedRole === "Administrator" ? "bg-gray-100" : ""
+                  }
+                >
+                  <ShieldCheck className="h-4 w-4 mr-2" />
+                  Administrator
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedRole("Mixed")}
+                  className={selectedRole === "Mixed" ? "bg-gray-100" : ""}
+                >
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Mixed
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setSelectedRole("Viewer")}
+                  className={selectedRole === "Viewer" ? "bg-gray-100" : ""}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Viewer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        {users.map((user, index) => (
-          <div
-            key={user.id}
-            className={`w-full px-6 py-4 grid grid-cols-3 items-center ${
-              index < users.length - 1 ? "border-b" : ""
-            }`}
-          >
-            <div className="font-medium text-gray-900">
-              <a href="#" className="text-[#006064] hover:underline">
-                {user.name}
-              </a>{" "}
-              {user.isCurrentUser && (
-                <span className="text-gray-500 font-normal">(you)</span>
-              )}
-            </div>
-            <div className="text-gray-700">{user.workspace}</div>
-            <div className="flex items-center text-gray-700">
-              <span className="inline-flex items-center">
-                {getRoleIcon(user.role)}
-                {user.role}
-              </span>
-            </div>
+        {filteredUsers.length === 0 ? (
+          <div className="w-full px-6 py-8 text-center text-gray-500">
+            No users found matching the selected filters.
           </div>
-        ))}
+        ) : (
+          filteredUsers.map((user, index) => (
+            <div
+              key={user.id}
+              className={`w-full px-6 py-4 grid grid-cols-3 items-center ${
+                index < filteredUsers.length - 1 ? "border-b" : ""
+              }`}
+            >
+              <div className="font-medium text-gray-900">
+                <a href="#" className="text-[#006064] hover:underline">
+                  {user.name}
+                </a>{" "}
+                {user.isCurrentUser && (
+                  <span className="text-gray-500 font-normal">(you)</span>
+                )}
+              </div>
+              <div className="text-gray-700">{user.workspace}</div>
+              <div className="flex items-center justify-between text-gray-700">
+                <span className="inline-flex items-center">
+                  {getRoleIcon(user.role)}
+                  {user.role}
+                </span>
+
+                {!user.isCurrentUser && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (
+                        confirm("Are you sure you want to remove this user?")
+                      ) {
+                        setUsers(users.filter((u) => u.id !== user.id));
+                      }
+                    }}
+                    className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                  >
+                    <XCircle className="h-5 w-5" />
+                    <span className="sr-only">Remove user</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
-    </div>
+    </CardHeaderLayout>
   );
 }
