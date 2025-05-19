@@ -19,6 +19,8 @@ interface AppShellProps {
   header: React.ReactNode;
   rightPanel?: React.ReactNode;
   showRightPanel?: boolean;
+  rightPanelTitle?: string;
+  onRightPanelClose?: () => void;
 }
 
 export function AppShell({
@@ -27,6 +29,8 @@ export function AppShell({
   header,
   rightPanel,
   showRightPanel = false,
+  rightPanelTitle = "Details",
+  onRightPanelClose,
 }: AppShellProps) {
   const isCollapsed = useSelector(selectSidebarCollapsed);
   const isMobile = useIsMobile();
@@ -150,7 +154,15 @@ export function AppShell({
             >
               <div className="h-full overflow-auto bg-white border-l">
                 <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
-                  <h2 className="font-semibold">Details</h2>
+                  <h2 className="font-semibold">{rightPanelTitle}</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 h-auto"
+                    onClick={onRightPanelClose}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
                 </div>
                 <div className="overflow-auto p-4">{rightPanel}</div>
               </div>
@@ -180,13 +192,14 @@ export function AppShell({
               style={{ width: `${getMobilePanelWidth()}px`, maxWidth: "90vw" }}
             >
               <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
-                <h2 className="font-semibold">Details</h2>
+                <h2 className="font-semibold">{rightPanelTitle}</h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="p-1 h-auto"
                   onClick={() => {
                     toggleMobilePanel();
+                    if (onRightPanelClose) onRightPanelClose();
                     // Optional: notify parent components
                     const closeEvent = new CustomEvent("rightpanel-close");
                     window.dispatchEvent(closeEvent);

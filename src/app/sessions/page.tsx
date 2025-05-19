@@ -15,7 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SessionsLayout } from "@/components/layouts";
+import { AppShell, AppHeader, AppSidebar } from "@/components/layouts";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -205,8 +205,208 @@ export default function SessionsPage() {
   ];
 
   return (
-    <SessionsLayout onToggleRightPanel={handleToggleRightPanel}>
-      {/* Right panel content can be conditionally rendered here if needed */}
+    <AppShell
+      sidebar={<AppSidebar />}
+      header={<AppHeader title="Sessions" />}
+      showRightPanel={showRightPanel}
+      rightPanel={
+        <div className="h-full w-full flex flex-col">
+          <div className="p-0 flex-1 overflow-y-auto">
+            <div className="flex flex-col">
+              {/* Header with title */}
+              <div className="p-5 border-b">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-1">
+                      {selectedSession.title}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      {selectedSession.id}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Main content */}
+              <div className="p-5 space-y-6">
+                {/* Session details in two columns */}
+                <div className="grid grid-cols-[120px_1fr] gap-y-4">
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Presenter:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">
+                      {selectedSession.presenter}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Session ID:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">{selectedSession.id}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0 ml-1"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-gray-400" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Passcode:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">
+                      {selectedSession.passcode || "-"}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0 ml-1"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-gray-400" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Start date:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">
+                      {selectedSession.date} {selectedSession.time}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Account:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">
+                      {selectedSession.account}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Duration:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">
+                      {selectedSession.duration} mins
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Language:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <Languages className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">
+                      {selectedSession.language}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Auto Select:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <Check className="w-3.5 h-3.5 mr-2 text-gray-400" />
+                    <p className="text-sm font-medium">Enabled</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Selections:
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedSession.selections ? (
+                      selectedSession.selections.map((selection) => (
+                        <span
+                          key={selection}
+                          className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
+                        >
+                          {selection}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm font-medium">-</p>
+                    )}
+                    {selectedSession.selections &&
+                      selectedSession.selections.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-1 ml-1">
+                          +{selectedSession.selections.length}
+                        </p>
+                      )}
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">Access:</p>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium">
+                      {selectedSession.access || "-"}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">Pinned:</p>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium">
+                      {selectedSession.pinned ? "Yes" : "No"}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium text-gray-500">
+                      Voice Pack:
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-sm font-medium">
+                      {selectedSession.voicePack || "-"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Edit button */}
+                <Button className="w-full bg-brand-teal hover:bg-brand-teal/90 text-white">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Session
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
       <div className="p-6">
         <div className="flex flex-col space-y-6">
           {/* Filters and search row */}
@@ -289,6 +489,6 @@ export default function SessionsPage() {
           </div>
         </div>
       </div>
-    </SessionsLayout>
+    </AppShell>
   );
 }
