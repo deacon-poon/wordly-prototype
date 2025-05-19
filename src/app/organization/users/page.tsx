@@ -291,6 +291,49 @@ export default function OrganizationUsersPage() {
     );
   };
 
+  // Handle removing a workspace from a user
+  const handleRemoveWorkspace = (userId: string, workspaceName: string) => {
+    setUsers(
+      users.map((user) => {
+        if (user.id === userId && user.workspaceRoles) {
+          // Don't allow removing if it's the only workspace
+          if (user.workspaceRoles.length <= 1) {
+            return user;
+          }
+
+          const updatedWorkspaceRoles = user.workspaceRoles.filter(
+            (wr) => wr.workspaceName !== workspaceName
+          );
+
+          // Determine overall role based on remaining roles
+          let overallRole: User["role"] = "Viewer";
+          if (updatedWorkspaceRoles.some((wr) => wr.role === "Administrator")) {
+            if (
+              updatedWorkspaceRoles.every((wr) => wr.role === "Administrator")
+            ) {
+              overallRole = "Administrator";
+            } else {
+              overallRole = "Mixed";
+            }
+          } else if (updatedWorkspaceRoles.some((wr) => wr.role === "Editor")) {
+            overallRole = "Mixed";
+          }
+
+          return {
+            ...user,
+            workspace:
+              updatedWorkspaceRoles.length > 1
+                ? `${updatedWorkspaceRoles.length} workspaces`
+                : updatedWorkspaceRoles[0].workspaceName,
+            workspaceRoles: updatedWorkspaceRoles,
+            role: overallRole,
+          };
+        }
+        return user;
+      })
+    );
+  };
+
   return (
     <>
       <CardHeaderLayout
@@ -417,21 +460,42 @@ export default function OrganizationUsersPage() {
                           {user.workspaceRoles.map((wr, i) => (
                             <DropdownMenuItem
                               key={i}
-                              className="py-2 cursor-pointer"
-                              onClick={() => handleManageWorkspaces(user.id)}
+                              className="py-2 cursor-default"
                             >
-                              <div className="w-full flex items-center justify-between">
+                              <div className="w-full flex items-center justify-between group">
                                 <span>{wr.workspaceName}</span>
-                                <div
-                                  className={`ml-2 text-xs py-0.5 px-2 rounded-full ${
-                                    wr.role === "Administrator"
-                                      ? "bg-blue-50 text-blue-700"
-                                      : wr.role === "Editor"
-                                      ? "bg-emerald-50 text-emerald-700"
-                                      : "bg-gray-50 text-gray-600"
-                                  }`}
-                                >
-                                  {wr.role}
+                                <div className="flex items-center">
+                                  <div
+                                    className={`mr-2 text-xs py-0.5 px-2 rounded-full ${
+                                      wr.role === "Administrator"
+                                        ? "bg-blue-50 text-blue-700"
+                                        : wr.role === "Editor"
+                                        ? "bg-emerald-50 text-emerald-700"
+                                        : "bg-gray-50 text-gray-600"
+                                    }`}
+                                  >
+                                    {wr.role}
+                                  </div>
+                                  {user.workspaceRoles &&
+                                    user.workspaceRoles.length > 1 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleRemoveWorkspace(
+                                            user.id,
+                                            wr.workspaceName
+                                          );
+                                        }}
+                                        className="h-6 w-6 p-0 ml-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
+                                      >
+                                        <XCircle className="h-3.5 w-3.5" />
+                                        <span className="sr-only">
+                                          Remove workspace
+                                        </span>
+                                      </Button>
+                                    )}
                                 </div>
                               </div>
                             </DropdownMenuItem>
