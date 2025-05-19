@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
-import { Plus, ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
+import { Plus, Edit, Trash } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -40,7 +39,6 @@ interface CustomField {
   type: FieldType;
   default: string;
   possibleValues?: string[];
-  expanded?: boolean;
 }
 
 export default function OrganizationCustomFieldsPage() {
@@ -50,7 +48,6 @@ export default function OrganizationCustomFieldsPage() {
       name: "Event Notes*",
       type: "free text",
       default: "(blank)",
-      expanded: false,
     },
     {
       id: "2",
@@ -64,14 +61,12 @@ export default function OrganizationCustomFieldsPage() {
         "Product D",
         // ... more products up to 21
       ],
-      expanded: false,
     },
     {
       id: "3",
       name: "Internal ID",
       type: "numeric",
       default: "11-100",
-      expanded: false,
     },
     {
       id: "4",
@@ -79,40 +74,29 @@ export default function OrganizationCustomFieldsPage() {
       type: "single-select",
       default: "Holiday Inn",
       possibleValues: ["Holiday Inn", "Conference Center", "Virtual"],
-      expanded: false,
     },
   ]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentField, setCurrentField] = useState<CustomField | null>(null);
-  const [allExpanded, setAllExpanded] = useState(false);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
 
-  // Toggle expansion state for all fields
-  const toggleAllExpand = () => {
-    const newExpandState = !allExpanded;
-    setAllExpanded(newExpandState);
-    setFields(
-      fields.map((field) => ({
-        ...field,
-        expanded: newExpandState,
-      }))
-    );
-  };
+  // Listen for field deselection events from the parent layout
+  useEffect(() => {
+    const handleFieldDeselected = (e: CustomEvent) => {
+      if (e.detail.fieldId === selectedField) {
+        setSelectedField(null);
+      }
+    };
 
-  // Toggle expansion state for a single field
-  const toggleExpand = (id: string) => {
-    setFields(
-      fields.map((field) =>
-        field.id === id ? { ...field, expanded: !field.expanded } : field
-      )
-    );
-
-    // Update allExpanded state based on whether all fields are now expanded
-    const allFieldsExpanded = fields
-      .map((field) => (field.id === id ? !field.expanded : field.expanded))
-      .every((expanded) => expanded);
-    setAllExpanded(allFieldsExpanded);
-  };
+    window.addEventListener("field-deselected" as any, handleFieldDeselected);
+    return () => {
+      window.removeEventListener(
+        "field-deselected" as any,
+        handleFieldDeselected
+      );
+    };
+  }, [selectedField]);
 
   // Open dialog to add a new field
   const openAddDialog = () => {
@@ -136,6 +120,15 @@ export default function OrganizationCustomFieldsPage() {
   const handleDeleteField = (id: string) => {
     if (confirm("Are you sure you want to delete this custom field?")) {
       setFields(fields.filter((field) => field.id !== id));
+      if (selectedField === id) {
+        setSelectedField(null);
+        // Notify parent layout
+        window.dispatchEvent(
+          new CustomEvent("field-selected", {
+            detail: { fieldId: null, content: null },
+          })
+        );
+      }
     }
   };
 
@@ -148,154 +141,196 @@ export default function OrganizationCustomFieldsPage() {
     return field.type;
   };
 
-  const actions = (
-    <Button
-      variant="default"
-      className="bg-[#006064] hover:bg-[#00474a] text-white"
-      onClick={openAddDialog}
-    >
-      <Plus className="h-4 w-4 mr-2" />
-      Add New Custom Field
-    </Button>
-  );
+  // Handle field selection
+  const handleFieldSelect = (field: CustomField) => {
+    const newSelectedId = field.id === selectedField ? null : field.id;
+    setSelectedField(newSelectedId);
+
+    // Create details panel content
+    const detailsContent = newSelectedId ? renderDetailsPanel(field) : null;
+
+    // Dispatch event to parent layout
+    window.dispatchEvent(
+      new CustomEvent("field-selected", {
+        detail: {
+          fieldId: newSelectedId,
+          content: detailsContent,
+        },
+      })
+    );
+  };
+
+  // Render the details panel for the selected field
+  const renderDetailsPanel = (field: CustomField) => {
+    return (
+      <div className="h-full p-6 overflow-auto">
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-medium text-sm text-gray-500 mb-1">
+              Field Type
+            </h4>
+            <p>{formatTypeDisplay(field)}</p>
+          </div>
+
+          <div>
+            <h4 className="font-medium text-sm text-gray-500 mb-1">
+              Default Value
+            </h4>
+            <p>{field.default}</p>
+          </div>
+
+          {field.possibleValues && (
+            <div>
+              <h4 className="font-medium text-sm text-gray-500 mb-2">
+                Possible Values
+              </h4>
+              <div className="grid grid-cols-1 gap-2">
+                {field.possibleValues.map((value, index) => (
+                  <div
+                    key={index}
+                    className="px-2 py-1 bg-white border rounded text-gray-700"
+                  >
+                    {value}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openEditDialog(field)}
+              className="mr-2"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Field
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+              onClick={() => handleDeleteField(field.id)}
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete Field
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <>
-      <CardHeaderLayout
-        title="Custom Fields (across workspaces)"
-        description="You can add custom fields to help understand where your minutes are being used when bulk exporting your usage data."
-        actions={actions}
-      >
-        <div className="overflow-hidden -m-6">
-          <Table>
-            <TableHeader className="bg-gray-50">
-              <TableRow>
-                <TableHead>Field Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Default</TableHead>
-                <TableHead className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleAllExpand}
-                    className="font-medium text-gray-700 hover:text-[#006064]"
-                  >
-                    {allExpanded ? "collapse all" : "expand all"}
-                    {allExpanded ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    )}
-                  </Button>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fields.map((field) => (
-                <React.Fragment key={field.id}>
-                  <TableRow className="hover:bg-gray-50">
-                    <TableCell className="font-medium">{field.name}</TableCell>
-                    <TableCell>{formatTypeDisplay(field)}</TableCell>
-                    <TableCell>{field.default}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditDialog(field)}
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-[#006064]"
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteField(field.id)}
-                          className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
-                        >
-                          <Trash className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleExpand(field.id)}
-                          className="h-8 w-8 p-0 text-gray-500"
-                        >
-                          {field.expanded ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">Toggle</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  {field.expanded && field.possibleValues && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className="bg-gray-50 p-4 border-t border-b"
-                      >
-                        <div className="text-sm">
-                          <h4 className="font-medium mb-2">Possible Values:</h4>
-                          <div className="grid grid-cols-3 gap-2">
-                            {field.possibleValues.map((value, index) => (
-                              <div
-                                key={index}
-                                className="px-2 py-1 bg-white border rounded text-gray-700"
-                              >
-                                {value}
-                              </div>
-                            ))}
-                            {field.type === "multi-select" && (
-                              <div className="px-2 py-1 border rounded border-dashed text-gray-500 flex items-center justify-center">
-                                <Plus className="h-3 w-3 mr-1" />
-                                Add value
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
-              ))}
-            </TableBody>
-          </Table>
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="p-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-xl font-semibold">
+            Custom Fields (across workspaces)
+          </h2>
+          <p className="text-gray-500 mt-1">
+            You can add custom fields to help understand where your minutes are
+            being used when bulk exporting your usage data.
+          </p>
         </div>
-      </CardHeaderLayout>
+        <Button
+          variant="default"
+          className="bg-[#006064] hover:bg-[#00474a] text-white"
+          onClick={openAddDialog}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Custom Field
+        </Button>
+      </div>
 
-      {/* Add/Edit Custom Field Dialog */}
+      <div className="border-t">
+        <Table>
+          <TableHeader className="bg-gray-50">
+            <TableRow>
+              <TableHead>Field Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Default</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {fields.map((field) => (
+              <TableRow
+                key={field.id}
+                className={`hover:bg-gray-50 cursor-pointer ${
+                  selectedField === field.id ? "bg-gray-100" : ""
+                }`}
+                onClick={() => handleFieldSelect(field)}
+              >
+                <TableCell className="font-medium">{field.name}</TableCell>
+                <TableCell>{formatTypeDisplay(field)}</TableCell>
+                <TableCell>{field.default}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditDialog(field);
+                      }}
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-[#006064]"
+                    >
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteField(field.id);
+                      }}
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Dialog for adding/editing fields */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
               {currentField ? "Edit Custom Field" : "Add New Custom Field"}
             </DialogTitle>
             <DialogDescription>
               {currentField
-                ? "Update the details of your custom field."
-                : "Add a new custom field to use across workspaces."}
+                ? "Modify the details of this custom field."
+                : "Create a new custom field for usage data tracking."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Field Name</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Field Name
+              </Label>
               <Input
                 id="name"
-                placeholder="e.g., Client ID, Project Name"
-                defaultValue={currentField?.name}
+                defaultValue={currentField?.name || ""}
+                className="col-span-3"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Field Type</Label>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="type" className="text-right">
+                Field Type
+              </Label>
               <Select defaultValue={currentField?.type || "free text"}>
-                <SelectTrigger id="type">
+                <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select field type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -306,38 +341,32 @@ export default function OrganizationCustomFieldsPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="default">Default Value</Label>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="default" className="text-right">
+                Default Value
+              </Label>
               <Input
                 id="default"
-                placeholder="Default value"
-                defaultValue={
-                  currentField?.default === "(blank)"
-                    ? ""
-                    : currentField?.default
-                }
+                defaultValue={currentField?.default || ""}
+                className="col-span-3"
               />
             </div>
+            {/* Additional fields for select options would go here */}
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-              className="mr-2"
-            >
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
             <Button
-              onClick={handleSaveField}
               className="bg-[#006064] hover:bg-[#00474a] text-white"
+              onClick={handleSaveField}
             >
-              {currentField ? "Save Changes" : "Add Field"}
+              Save Custom Field
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
