@@ -465,23 +465,88 @@ export default function OrganizationUsersPage() {
                               <div className="w-full flex items-center justify-between group">
                                 <span>{wr.workspaceName}</span>
                                 <div className="flex items-center">
-                                  <div
-                                    className={`mr-2 text-xs py-0.5 px-2 rounded-full ${
-                                      wr.role === "Administrator"
-                                        ? "bg-blue-50 text-blue-700"
-                                        : wr.role === "Editor"
-                                        ? "bg-emerald-50 text-emerald-700"
-                                        : "bg-gray-50 text-gray-600"
-                                    }`}
-                                  >
-                                    {wr.role}
-                                  </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2 text-xs font-medium rounded-full"
+                                      >
+                                        <div
+                                          className={`flex items-center px-1 ${
+                                            wr.role === "Administrator"
+                                              ? "text-blue-700"
+                                              : wr.role === "Editor"
+                                              ? "text-emerald-700"
+                                              : "text-gray-600"
+                                          }`}
+                                        >
+                                          {wr.role === "Administrator" && (
+                                            <ShieldCheck className="h-3 w-3 mr-1" />
+                                          )}
+                                          {wr.role === "Editor" && (
+                                            <Edit2 className="h-3 w-3 mr-1" />
+                                          )}
+                                          {wr.role === "Viewer" && (
+                                            <Eye className="h-3 w-3 mr-1" />
+                                          )}
+                                          {wr.role}
+                                          <ChevronDown className="h-3 w-3 ml-1" />
+                                        </div>
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                      align="start"
+                                      className="p-1 min-w-24"
+                                    >
+                                      <DropdownMenuItem
+                                        className="text-xs py-1.5 cursor-pointer"
+                                        onClick={() =>
+                                          handleWorkspaceRoleChange(
+                                            user.id,
+                                            wr.workspaceName,
+                                            "Administrator"
+                                          )
+                                        }
+                                      >
+                                        <ShieldCheck className="h-3 w-3 mr-1.5" />
+                                        Administrator
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="text-xs py-1.5 cursor-pointer"
+                                        onClick={() =>
+                                          handleWorkspaceRoleChange(
+                                            user.id,
+                                            wr.workspaceName,
+                                            "Editor"
+                                          )
+                                        }
+                                      >
+                                        <Edit2 className="h-3 w-3 mr-1.5" />
+                                        Editor
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        className="text-xs py-1.5 cursor-pointer"
+                                        onClick={() =>
+                                          handleWorkspaceRoleChange(
+                                            user.id,
+                                            wr.workspaceName,
+                                            "Viewer"
+                                          )
+                                        }
+                                      >
+                                        <Eye className="h-3 w-3 mr-1.5" />
+                                        Viewer
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                   {user.workspaceRoles &&
                                     user.workspaceRoles.length > 1 && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={(e) => {
+                                          e.preventDefault();
                                           e.stopPropagation();
                                           handleRemoveWorkspace(
                                             user.id,
@@ -510,28 +575,38 @@ export default function OrganizationUsersPage() {
                             Add to workspace
                           </DropdownMenuLabel>
                           {getAvailableWorkspaces(user).map((workspace, i) => (
-                            <DropdownMenuItem
+                            <div
                               key={`add-${i}`}
-                              onClick={() =>
-                                handleAddWorkspace(user.id, workspace)
-                              }
-                              className="py-2 cursor-pointer"
+                              className="px-2 py-2 cursor-pointer hover:bg-gray-50"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddWorkspace(user.id, workspace);
+                              }}
                             >
-                              <Plus className="h-3.5 w-3.5 mr-2 text-[#006064]" />
-                              {workspace}
-                            </DropdownMenuItem>
+                              <div className="flex items-center">
+                                <Plus className="h-3.5 w-3.5 mr-2 text-[#006064]" />
+                                {workspace}
+                              </div>
+                            </div>
                           ))}
                         </>
                       )}
 
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleManageWorkspaces(user.id)}
-                        className="text-[#006064] py-2 cursor-pointer"
+                      <div
+                        className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-[#006064]"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleManageWorkspaces(user.id);
+                        }}
                       >
-                        <ExternalLink className="h-3.5 w-3.5 mr-2" />
-                        Manage all workspace roles
-                      </DropdownMenuItem>
+                        <div className="flex items-center">
+                          <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                          Manage all workspace roles
+                        </div>
+                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -561,7 +636,6 @@ export default function OrganizationUsersPage() {
                             <div
                               key={idx}
                               className="px-2 py-2 cursor-default hover:bg-gray-50"
-                              onClick={() => handleManageWorkspaces(user.id)}
                             >
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-gray-600 mr-3">
@@ -582,13 +656,19 @@ export default function OrganizationUsersPage() {
                             </div>
                           ))}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleManageWorkspaces(user.id)}
-                            className="text-[#006064] py-2 cursor-pointer"
+                          <div
+                            className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-[#006064]"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleManageWorkspaces(user.id);
+                            }}
                           >
-                            <ExternalLink className="h-3.5 w-3.5 mr-2" />
-                            Manage all roles
-                          </DropdownMenuItem>
+                            <div className="flex items-center">
+                              <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                              Manage all roles
+                            </div>
+                          </div>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
