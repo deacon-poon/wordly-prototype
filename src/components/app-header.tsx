@@ -87,6 +87,17 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
             break;
           // Keep defaults for others
         }
+      } else if (segments[0] === "workspace") {
+        // Format workspace sub-pages
+        switch (segment) {
+          case "users":
+            label = "Users";
+            break;
+          case "defaults":
+            label = "Session Defaults";
+            break;
+          // Keep defaults for others
+        }
       }
 
       items.push({
