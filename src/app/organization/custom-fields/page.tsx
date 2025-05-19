@@ -41,7 +41,7 @@ export default function OrganizationCustomFieldsPage() {
   const [fields, setFields] = useState<CustomField[]>([
     {
       id: "1",
-      name: "Event Notes*",
+      name: "Event Notes",
       type: "free text",
       default: "(blank)",
       required: true,
@@ -224,6 +224,11 @@ export default function OrganizationCustomFieldsPage() {
     }
   };
 
+  // Format display name with required indicator
+  const formatDisplayName = (field: CustomField) => {
+    return field.required ? `${field.name}*` : field.name;
+  };
+
   // Format type display for table
   const formatTypeDisplay = (field: CustomField) => {
     if (field.type === "single-select" || field.type === "multi-select") {
@@ -266,6 +271,10 @@ export default function OrganizationCustomFieldsPage() {
     return (
       <div className="h-full p-6 overflow-auto">
         <div className="space-y-4">
+          <h3 className="text-lg font-semibold mb-3">
+            {formatDisplayName(field)}
+          </h3>
+
           <div>
             <h4 className="font-medium text-sm text-gray-500 mb-1">Required</h4>
             <p>{field.required ? "Yes" : "No"}</p>
@@ -335,14 +344,15 @@ export default function OrganizationCustomFieldsPage() {
   // Render the edit panel form
   const renderEditPanel = () => {
     const isAddMode = panelMode === "add";
-    const title = isAddMode ? "Add New Custom Field" : "Edit Field";
-    const saveButtonText = isAddMode ? "Add Field" : "Save Changes";
+    const title = isAddMode
+      ? "Add New Custom Field"
+      : `Edit ${editingField?.name || "Field"}`;
 
     return (
       <div className="h-full overflow-auto">
         <div className="space-y-6 p-6">
           <div className="space-y-2">
-            <Label htmlFor="field-name">Field Name</Label>
+            <Label htmlFor="field-name">Custom field name:</Label>
             <Input
               id="field-name"
               value={formName}
@@ -387,6 +397,11 @@ export default function OrganizationCustomFieldsPage() {
                 </Label>
               </div>
             </div>
+            {formRequired && (
+              <p className="text-xs text-gray-500 mt-1">
+                An asterisk (*) will be shown next to the field name.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -493,11 +508,6 @@ export default function OrganizationCustomFieldsPage() {
         </div>
       </div>
     );
-  };
-
-  // Format display name with required indicator
-  const formatDisplayName = (field: CustomField) => {
-    return field.required ? `${field.name}*` : field.name;
   };
 
   return (
