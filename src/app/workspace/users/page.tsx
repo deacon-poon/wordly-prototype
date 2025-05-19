@@ -10,6 +10,7 @@ import {
   Edit2,
   Eye,
   Archive,
+  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -105,7 +106,7 @@ export default function UsersPage() {
       </Button>
       <Button
         variant="default"
-        className="bg-[#006064] hover:bg-[#00474a] text-white"
+        className="bg-brand-teal hover:bg-brand-teal/90 text-white"
         onClick={handleInviteUser}
       >
         <UserPlus className="h-4 w-4 mr-2" />

@@ -499,7 +499,7 @@ export default function OrganizationCustomFieldsPage() {
           <div className="pt-4 flex justify-end">
             <Button
               variant="default"
-              className="bg-[#00838f] hover:bg-[#006064] text-white rounded-full px-8"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-8"
               onClick={handleSaveField}
             >
               Save
@@ -522,7 +522,7 @@ export default function OrganizationCustomFieldsPage() {
         </div>
         <Button
           variant="default"
-          className="bg-[#006064] hover:bg-[#00474a] text-white"
+          className="bg-brand-teal hover:bg-brand-teal/90 text-white"
           onClick={openAddPanel}
         >
           <Plus className="h-4 w-4 mr-2" />

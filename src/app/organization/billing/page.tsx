@@ -524,7 +524,7 @@ export default function BillingProjectsPage() {
         </div>
         <Button
           variant="default"
-          className="bg-[#006064] hover:bg-[#00474a] text-white"
+          className="bg-brand-teal hover:bg-brand-teal/90 text-white"
           onClick={() => {
             // Handle add new billing project
           }}

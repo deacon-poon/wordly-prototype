@@ -271,7 +271,10 @@ export default function OrganizationUsersPage() {
       </Button>
       <Button
         variant="default"
-        className="bg-[#006064] hover:bg-[#00474a] text-white"
+        className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+        onClick={() => {
+          // Code to handle inviting a user
+        }}
       >
         <UserPlus className="h-4 w-4 mr-2" />
         Invite another user
@@ -432,7 +435,7 @@ export default function OrganizationUsersPage() {
                 }`}
               >
                 <div className="font-medium text-gray-900">
-                  <a href="#" className="text-[#006064] hover:underline">
+                  <a href="#" className="text-brand-teal hover:underline">
                     {user.name}
                   </a>{" "}
                   {user.isCurrentUser && (
@@ -509,7 +512,7 @@ export default function OrganizationUsersPage() {
                               }}
                             >
                               <div className="flex items-center">
-                                <Plus className="h-3.5 w-3.5 mr-2 text-[#006064]" />
+                                <Plus className="h-3.5 w-3.5 mr-2 text-brand-teal" />
                                 {workspace}
                               </div>
                             </div>
@@ -624,7 +627,7 @@ export default function OrganizationUsersPage() {
                           )}
                           <DropdownMenuSeparator />
                           <div
-                            className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-[#006064]"
+                            className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-brand-teal"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -753,7 +756,7 @@ export default function OrganizationUsersPage() {
                         className="flex items-center cursor-pointer py-1.5 px-1 hover:bg-gray-50 rounded-md"
                       >
                         {workspace.role === "Administrator" ? (
-                          <CheckSquare className="h-5 w-5 mr-2 text-[#006064]" />
+                          <CheckSquare className="h-5 w-5 mr-2 text-brand-teal" />
                         ) : (
                           <Square className="h-5 w-5 mr-2 text-gray-300" />
                         )}
@@ -774,7 +777,7 @@ export default function OrganizationUsersPage() {
                         className="flex items-center cursor-pointer py-1.5 px-1 hover:bg-gray-50 rounded-md"
                       >
                         {workspace.role === "Editor" ? (
-                          <CheckSquare className="h-5 w-5 mr-2 text-[#006064]" />
+                          <CheckSquare className="h-5 w-5 mr-2 text-brand-teal" />
                         ) : (
                           <Square className="h-5 w-5 mr-2 text-gray-300" />
                         )}
@@ -795,7 +798,7 @@ export default function OrganizationUsersPage() {
                         className="flex items-center cursor-pointer py-1.5 px-1 hover:bg-gray-50 rounded-md"
                       >
                         {workspace.role === "Viewer" ? (
-                          <CheckSquare className="h-5 w-5 mr-2 text-[#006064]" />
+                          <CheckSquare className="h-5 w-5 mr-2 text-brand-teal" />
                         ) : (
                           <Square className="h-5 w-5 mr-2 text-gray-300" />
                         )}
@@ -861,7 +864,7 @@ export default function OrganizationUsersPage() {
             </Button>
             <Button
               onClick={() => setModalOpen(false)}
-              className="bg-[#006064] hover:bg-[#00474a]"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
             >
               Save changes
             </Button>
