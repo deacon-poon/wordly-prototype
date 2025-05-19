@@ -24,6 +24,8 @@ export default function OrganizationLayout({
     null
   );
   const [showPanel, setShowPanel] = useState(false);
+  const [panelTitle, setPanelTitle] = useState("Field Details");
+  const [panelMode, setPanelMode] = useState<"view" | "edit" | "add">("view");
 
   // Custom event listener to handle field selection from child components
   useEffect(() => {
@@ -31,6 +33,21 @@ export default function OrganizationLayout({
       setSelectedFieldId(e.detail.fieldId);
       setDetailsPanel(e.detail.content);
       setShowPanel(!!e.detail.content);
+
+      // Set panel title based on the mode
+      if (e.detail.mode) {
+        setPanelMode(e.detail.mode);
+        if (e.detail.mode === "edit") {
+          setPanelTitle("Edit Field");
+        } else if (e.detail.mode === "add") {
+          setPanelTitle("Add New Field");
+        } else {
+          setPanelTitle("Field Details");
+        }
+      } else {
+        setPanelMode("view");
+        setPanelTitle("Field Details");
+      }
     };
 
     window.addEventListener("field-selected" as any, handleFieldSelect);
@@ -45,6 +62,7 @@ export default function OrganizationLayout({
       setShowPanel(false);
       setDetailsPanel(null);
       setSelectedFieldId(null);
+      setPanelMode("view");
     }
   }, [pathname]);
 
@@ -52,6 +70,7 @@ export default function OrganizationLayout({
     setShowPanel(false);
     setDetailsPanel(null);
     setSelectedFieldId(null);
+    setPanelMode("view");
 
     // Dispatch event to notify child components
     window.dispatchEvent(
@@ -85,7 +104,7 @@ export default function OrganizationLayout({
               <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
                 <div className="h-full overflow-auto bg-white border-l">
                   <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
-                    <h2 className="font-semibold">Field Details</h2>
+                    <h2 className="font-semibold">{panelTitle}</h2>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -93,6 +112,7 @@ export default function OrganizationLayout({
                       onClick={closePanel}
                     >
                       <X className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
                     </Button>
                   </div>
                   {detailsPanel}
