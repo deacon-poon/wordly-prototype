@@ -102,12 +102,6 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       icon: ListChecks,
     },
     {
-      id: "custom-fields",
-      title: "Custom Fields",
-      href: "/workspace/custom-fields",
-      icon: Settings,
-    },
-    {
       id: "users",
       title: "Users",
       href: "/workspace/users",
@@ -119,9 +113,15 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
   const organizationAdminItems: WorkspaceItem[] = [
     {
       id: "all-users",
-      title: "Organization Users",
+      title: "All Users",
       href: "/organization/users",
       icon: UserCog,
+    },
+    {
+      id: "custom-fields",
+      title: "Custom Fields",
+      href: "/organization/custom-fields",
+      icon: Settings,
     },
     {
       id: "accounts",
@@ -131,7 +131,7 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
     },
     {
       id: "billing",
-      title: "Billing & Usage",
+      title: "Billing",
       href: "/organization/billing",
       icon: CreditCard,
     },

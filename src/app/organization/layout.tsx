@@ -10,9 +10,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname } from "next/navigation";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 export default function OrganizationLayout({
   children,
@@ -21,21 +21,18 @@ export default function OrganizationLayout({
 }) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
+  const lastSegment = segments[segments.length - 1];
 
-  // Determine active tab based on URL
-  const getActiveTab = () => {
-    const lastSegment = segments[segments.length - 1];
-    switch (lastSegment) {
-      case "users":
-        return "users";
-      case "accounts":
-        return "accounts";
-      case "billing":
-        return "billing";
-      default:
-        return "users";
-    }
-  };
+  const tabs = [
+    { id: "users", label: "All Users", href: "/organization/users" },
+    {
+      id: "custom-fields",
+      label: "Custom Fields",
+      href: "/organization/custom-fields",
+    },
+    { id: "accounts", label: "Accounts", href: "/organization/accounts" },
+    { id: "billing", label: "Billing", href: "/organization/billing" },
+  ];
 
   return (
     <SidebarProvider>
@@ -65,22 +62,38 @@ export default function OrganizationLayout({
               </p>
             </div>
 
-            <Tabs defaultValue={getActiveTab()} className="space-y-4">
-              <TabsList className="w-full md:w-auto">
-                <TabsTrigger value="users" asChild>
-                  <a href="/organization/users">Organization Users</a>
-                </TabsTrigger>
-                <TabsTrigger value="accounts" asChild>
-                  <a href="/organization/accounts">Accounts</a>
-                </TabsTrigger>
-                <TabsTrigger value="billing" asChild>
-                  <a href="/organization/billing">Billing & Usage</a>
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value={getActiveTab()} className="space-y-4">
-                {children}
-              </TabsContent>
-            </Tabs>
+            <div className="space-y-6">
+              <div className="border-b border-gray-200">
+                <nav className="flex -mb-px space-x-8">
+                  {tabs.map((tab) => {
+                    const isActive =
+                      (tab.id === "users" && lastSegment === "users") ||
+                      (tab.id === "custom-fields" &&
+                        lastSegment === "custom-fields") ||
+                      (tab.id === "accounts" && lastSegment === "accounts") ||
+                      (tab.id === "billing" && lastSegment === "billing");
+
+                    return (
+                      <Link
+                        key={tab.id}
+                        href={tab.href}
+                        className={`
+                          py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap
+                          ${
+                            isActive
+                              ? "border-[#006064] text-[#006064]"
+                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                          }
+                        `}
+                      >
+                        {tab.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+              {children}
+            </div>
           </div>
         </main>
       </SidebarInset>

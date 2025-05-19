@@ -1,25 +1,21 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function CustomFieldsPage() {
-  const actions = (
-    <Button
-      variant="default"
-      className="bg-[#006064] hover:bg-[#00474a] text-white"
-    >
-      Add Custom Field
-    </Button>
-  );
+export default function WorkspaceCustomFieldsPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to the organization custom fields page
+    router.push("/organization/custom-fields");
+  }, [router]);
 
   return (
-    <CardHeaderLayout
-      title="Custom Fields"
-      description="Configure custom fields for sessions in this workspace."
-      actions={actions}
-    >
-      <p className="text-gray-500">Custom fields configuration coming soon.</p>
-    </CardHeaderLayout>
+    <div className="p-6">
+      <p className="text-gray-500">
+        Redirecting to organization custom fields...
+      </p>
+    </div>
   );
 }
