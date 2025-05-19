@@ -141,10 +141,12 @@ export default function OrganizationCustomFieldsPage() {
 
   // Open edit field panel
   const openEditPanel = (field: CustomField) => {
+    // Make sure we have a clean form with the field's current values
+    resetForm();
     initFormWithField(field);
     setPanelMode("edit");
 
-    // Update the panel content
+    // Update the panel content with the field's current data
     window.dispatchEvent(
       new CustomEvent("field-selected", {
         detail: {
@@ -160,14 +162,20 @@ export default function OrganizationCustomFieldsPage() {
 
   // Handle form submission
   const handleSaveField = () => {
-    // Create new field object
+    // Validate form data
+    if (!formName.trim()) {
+      alert("Field name is required");
+      return;
+    }
+
+    // Create new field object with current form values
     const updatedField: CustomField = {
       id: editingField ? editingField.id : `${Date.now()}`,
       name: formName,
       type: formType,
       default: formDefault,
       possibleValues: formType.includes("select")
-        ? formPossibleValues
+        ? formPossibleValues.filter((val) => val.trim() !== "")
         : undefined,
     };
 
@@ -187,7 +195,7 @@ export default function OrganizationCustomFieldsPage() {
     setPanelMode("view");
 
     // Update the panel to show the saved field
-    handleFieldSelect(updatedField);
+    showFieldDetails(updatedField);
   };
 
   // Delete a field
