@@ -29,19 +29,30 @@ export default function WorkspaceLayout({
     }
   };
 
-  // Get the page title based on the active tab
+  // Get the page title based on the active tab - not used since titles are now in the cards
   const getPageTitle = () => {
     const activeTab = getActiveTab();
     switch (activeTab) {
       case "session-defaults":
-        return "Session Defaults";
+        return "";
       case "custom-fields":
-        return "Custom Fields";
+        return "";
       case "users":
-        return "Users";
+        return "";
       default:
         return "Workspace Settings";
     }
+  };
+
+  // We no longer need to show the header for any workspace settings pages
+  // All pages now include their title and description in the card
+  const shouldShowHeader = () => {
+    return false;
+  };
+
+  // Get the description text based on the active tab - not used since descriptions are now in the cards
+  const getDescriptionText = () => {
+    return "";
   };
 
   return (
@@ -51,14 +62,14 @@ export default function WorkspaceLayout({
         <AppHeader title="Workspace Settings" />
         <main className="flex-1 overflow-auto bg-[#f8f9fa]">
           <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
-            <div className="flex flex-col gap-4">
-              <h1 className="text-2xl font-bold tracking-tight">
-                {getPageTitle()}
-              </h1>
-              <p className="text-muted-foreground">
-                Configure your workspace settings and preferences.
-              </p>
-            </div>
+            {shouldShowHeader() && (
+              <div className="flex flex-col gap-4">
+                <h1 className="text-2xl font-bold tracking-tight">
+                  {getPageTitle()}
+                </h1>
+                <p className="text-muted-foreground">{getDescriptionText()}</p>
+              </div>
+            )}
 
             {children}
           </div>
