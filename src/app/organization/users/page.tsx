@@ -15,6 +15,7 @@ import {
   Plus,
   ExternalLink,
   Info,
+  Settings,
 } from "lucide-react";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
 import {
@@ -45,7 +46,7 @@ interface User {
   id: string;
   name: string;
   workspace: string;
-  role: "Administrator" | "Mixed" | "Viewer";
+  role: "Administrator" | "Mixed" | "Viewer" | "Editor";
   isCurrentUser: boolean;
   // For users with multiple workspaces
   workspaceRoles?: {
@@ -464,104 +465,27 @@ export default function OrganizationUsersPage() {
                             >
                               <div className="w-full flex items-center justify-between group">
                                 <span>{wr.workspaceName}</span>
-                                <div className="flex items-center">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 px-2 text-xs font-medium rounded-full"
-                                      >
-                                        <div
-                                          className={`flex items-center px-1 ${
-                                            wr.role === "Administrator"
-                                              ? "text-blue-700"
-                                              : wr.role === "Editor"
-                                              ? "text-emerald-700"
-                                              : "text-gray-600"
-                                          }`}
-                                        >
-                                          {wr.role === "Administrator" && (
-                                            <ShieldCheck className="h-3 w-3 mr-1" />
-                                          )}
-                                          {wr.role === "Editor" && (
-                                            <Edit2 className="h-3 w-3 mr-1" />
-                                          )}
-                                          {wr.role === "Viewer" && (
-                                            <Eye className="h-3 w-3 mr-1" />
-                                          )}
-                                          {wr.role}
-                                          <ChevronDown className="h-3 w-3 ml-1" />
-                                        </div>
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      align="start"
-                                      className="p-1 min-w-24"
+                                {user.workspaceRoles &&
+                                  user.workspaceRoles.length > 1 && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleRemoveWorkspace(
+                                          user.id,
+                                          wr.workspaceName
+                                        );
+                                      }}
+                                      className="h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
                                     >
-                                      <DropdownMenuItem
-                                        className="text-xs py-1.5 cursor-pointer"
-                                        onClick={() =>
-                                          handleWorkspaceRoleChange(
-                                            user.id,
-                                            wr.workspaceName,
-                                            "Administrator"
-                                          )
-                                        }
-                                      >
-                                        <ShieldCheck className="h-3 w-3 mr-1.5" />
-                                        Administrator
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="text-xs py-1.5 cursor-pointer"
-                                        onClick={() =>
-                                          handleWorkspaceRoleChange(
-                                            user.id,
-                                            wr.workspaceName,
-                                            "Editor"
-                                          )
-                                        }
-                                      >
-                                        <Edit2 className="h-3 w-3 mr-1.5" />
-                                        Editor
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        className="text-xs py-1.5 cursor-pointer"
-                                        onClick={() =>
-                                          handleWorkspaceRoleChange(
-                                            user.id,
-                                            wr.workspaceName,
-                                            "Viewer"
-                                          )
-                                        }
-                                      >
-                                        <Eye className="h-3 w-3 mr-1.5" />
-                                        Viewer
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                  {user.workspaceRoles &&
-                                    user.workspaceRoles.length > 1 && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          handleRemoveWorkspace(
-                                            user.id,
-                                            wr.workspaceName
-                                          );
-                                        }}
-                                        className="h-6 w-6 p-0 ml-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
-                                      >
-                                        <XCircle className="h-3.5 w-3.5" />
-                                        <span className="sr-only">
-                                          Remove workspace
-                                        </span>
-                                      </Button>
-                                    )}
-                                </div>
+                                      <XCircle className="h-3.5 w-3.5" />
+                                      <span className="sr-only">
+                                        Remove workspace
+                                      </span>
+                                    </Button>
+                                  )}
                               </div>
                             </div>
                           ))}
@@ -592,21 +516,6 @@ export default function OrganizationUsersPage() {
                           ))}
                         </>
                       )}
-
-                      <DropdownMenuSeparator />
-                      <div
-                        className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-[#006064]"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleManageWorkspaces(user.id);
-                        }}
-                      >
-                        <div className="flex items-center">
-                          <ExternalLink className="h-3.5 w-3.5 mr-2" />
-                          Manage all workspace roles
-                        </div>
-                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -630,31 +539,89 @@ export default function OrganizationUsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-64">
                           <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                            Workspace Roles
+                            Role settings
                           </DropdownMenuLabel>
-                          {user.workspaceRoles.map((wr, idx) => (
-                            <div
-                              key={idx}
-                              className="px-2 py-2 cursor-default hover:bg-gray-50"
-                            >
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-gray-600 mr-3">
-                                  {wr.workspaceName}
-                                </span>
-                                <span
-                                  className={`px-2 py-0.5 rounded-full ${
-                                    wr.role === "Administrator"
-                                      ? "bg-blue-50 text-blue-700"
-                                      : wr.role === "Editor"
-                                      ? "bg-emerald-50 text-emerald-700"
-                                      : "bg-gray-50 text-gray-600"
-                                  }`}
-                                >
-                                  {wr.role}
-                                </span>
+
+                          {user.workspaceRoles.length === 1 ? (
+                            // Single workspace - show simple role options
+                            <>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleRoleChange(user.id, "Administrator")
+                                }
+                                className={
+                                  user.role === "Administrator"
+                                    ? "bg-gray-100"
+                                    : ""
+                                }
+                              >
+                                <ShieldCheck className="h-4 w-4 mr-2" />
+                                Administrator
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleRoleChange(user.id, "Editor")
+                                }
+                                className={
+                                  user.role === "Editor" ? "bg-gray-100" : ""
+                                }
+                              >
+                                <Edit2 className="h-4 w-4 mr-2" />
+                                Editor
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleRoleChange(user.id, "Viewer")
+                                }
+                                className={
+                                  user.role === "Viewer" ? "bg-gray-100" : ""
+                                }
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Viewer
+                              </DropdownMenuItem>
+                            </>
+                          ) : (
+                            // Multiple workspaces - show list with edit option
+                            <>
+                              <div className="px-2 py-1 mb-1">
+                                <p className="text-xs text-gray-500">
+                                  This user has multiple workspace assignments
+                                  with different roles:
+                                </p>
                               </div>
-                            </div>
-                          ))}
+                              {user.workspaceRoles.map((wr, idx) => (
+                                <div
+                                  key={idx}
+                                  className="px-2 py-1.5 flex items-center justify-between text-xs"
+                                >
+                                  <span className="text-gray-600 mr-3">
+                                    {wr.workspaceName}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full flex items-center ${
+                                      wr.role === "Administrator"
+                                        ? "bg-blue-50 text-blue-700"
+                                        : wr.role === "Editor"
+                                        ? "bg-emerald-50 text-emerald-700"
+                                        : "bg-gray-50 text-gray-600"
+                                    }`}
+                                  >
+                                    {wr.role === "Administrator" && (
+                                      <ShieldCheck className="h-3 w-3 mr-1" />
+                                    )}
+                                    {wr.role === "Editor" && (
+                                      <Edit2 className="h-3 w-3 mr-1" />
+                                    )}
+                                    {wr.role === "Viewer" && (
+                                      <Eye className="h-3 w-3 mr-1" />
+                                    )}
+                                    {wr.role}
+                                  </span>
+                                </div>
+                              ))}
+                            </>
+                          )}
                           <DropdownMenuSeparator />
                           <div
                             className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-[#006064]"
@@ -665,8 +632,8 @@ export default function OrganizationUsersPage() {
                             }}
                           >
                             <div className="flex items-center">
-                              <ExternalLink className="h-3.5 w-3.5 mr-2" />
-                              Manage all roles
+                              <Settings className="h-3.5 w-3.5 mr-2" />
+                              Advanced role management
                             </div>
                           </div>
                         </DropdownMenuContent>
@@ -698,6 +665,15 @@ export default function OrganizationUsersPage() {
                           >
                             <ShieldCheck className="h-4 w-4 mr-2" />
                             Administrator
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleRoleChange(user.id, "Editor")}
+                            className={
+                              user.role === "Editor" ? "bg-gray-100" : ""
+                            }
+                          >
+                            <Edit2 className="h-4 w-4 mr-2" />
+                            Editor
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleRoleChange(user.id, "Viewer")}
