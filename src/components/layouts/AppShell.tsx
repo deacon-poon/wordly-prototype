@@ -5,8 +5,14 @@ import { useSelector } from "react-redux";
 import { selectSidebarCollapsed } from "@/store/slices/sidebarSlice";
 import { cn } from "@/lib/utils";
 import { useIsMobile, useIsTablet, useViewportSize } from "@/hooks/use-mobile";
-import { ListFilter, X, Edit, ExternalLink } from "lucide-react";
+import { ListFilter, X, Edit, ExternalLink, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -156,12 +162,37 @@ export function AppShell({
                 <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                   <h2 className="font-semibold">{rightPanelTitle}</h2>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                      <Edit className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center text-xs text-gray-600 font-medium"
+                    >
+                      <Edit className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 p-0"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          <span>Open in new tab</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <span>Clone session</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <span>Delete session</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -202,12 +233,37 @@ export function AppShell({
               <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                 <h2 className="font-semibold">{rightPanelTitle}</h2>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                    <Edit className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center text-xs text-gray-600 font-medium"
+                  >
+                    <Edit className="h-3.5 w-3.5 mr-1.5" />
+                    Edit
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 p-0"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        <span>Open in new tab</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <span>Clone session</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <span>Delete session</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button
                     variant="ghost"
                     size="icon"

@@ -355,12 +355,6 @@ export default function SessionsPage() {
               {selectedSession.voicePack || "-"}
             </p>
           </div>
-
-          {/* Edit button */}
-          <Button className="w-full bg-brand-teal hover:bg-brand-teal/90 text-white">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Session
-          </Button>
         </div>
       }
     >
