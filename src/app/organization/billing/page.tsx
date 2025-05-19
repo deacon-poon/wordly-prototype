@@ -172,11 +172,38 @@ export default function BillingProjectsPage() {
   };
 
   // Handle row selection
-  const handleRowSelect = (projectId: string) => {
+  const handleRowSelect = (projectId: string, event?: React.MouseEvent) => {
+    const isCtrlPressed = event?.ctrlKey || event?.metaKey;
+
     if (selectedProjects.includes(projectId)) {
-      setSelectedProjects(selectedProjects.filter((id) => id !== projectId));
+      // If project is already selected
+      const newSelection = selectedProjects.filter((id) => id !== projectId);
+      setSelectedProjects(newSelection);
+
+      // If this was the project being displayed and there are other selections,
+      // show the first of the remaining selected projects
+      if (newSelection.length > 0) {
+        showProjectTransactions(newSelection[0]);
+      } else {
+        // Close the panel if no projects remain selected
+        window.dispatchEvent(
+          new CustomEvent("field-deselected", {
+            detail: { fieldId: projectId },
+          })
+        );
+      }
     } else {
-      setSelectedProjects([projectId]);
+      // If project is not yet selected
+      if (isCtrlPressed) {
+        // Add to selection if Ctrl/Cmd is pressed
+        const newSelection = [...selectedProjects, projectId];
+        setSelectedProjects(newSelection);
+      } else {
+        // Replace selection if Ctrl/Cmd is not pressed
+        setSelectedProjects([projectId]);
+      }
+
+      // Show the details of the newly selected project
       showProjectTransactions(projectId);
     }
   };
@@ -184,11 +211,21 @@ export default function BillingProjectsPage() {
   // Handle header checkbox
   const handleSelectAll = () => {
     if (selectedProjects.length === filteredProjects.length) {
+      // If all projects are selected, unselect all
       setSelectedProjects([]);
+      // Close the panel if open
+      window.dispatchEvent(
+        new CustomEvent("field-deselected", {
+          detail: { fieldId: selectedProjects[0] },
+        })
+      );
     } else {
-      // Select only the first project to show details when selecting all
+      // Select all projects
+      const allProjectIds = filteredProjects.map((project) => project.id);
+      setSelectedProjects(allProjectIds);
+
+      // If there's at least one project, show its transactions
       if (filteredProjects.length > 0) {
-        setSelectedProjects([filteredProjects[0].id]);
         showProjectTransactions(filteredProjects[0].id);
       }
     }
@@ -557,7 +594,7 @@ export default function BillingProjectsPage() {
                   className={`hover:bg-gray-50 cursor-pointer ${
                     selectedProjects.includes(project.id) ? "bg-gray-100" : ""
                   }`}
-                  onClick={() => handleRowSelect(project.id)}
+                  onClick={(event) => handleRowSelect(project.id, event)}
                 >
                   <TableCell className="pl-6">
                     <Checkbox
