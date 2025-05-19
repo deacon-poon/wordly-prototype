@@ -97,6 +97,10 @@ export default function HistoryPage() {
   const [selectedSession, setSelectedSession] = useState(mockSessions[0]);
   const [showRightPanel, setShowRightPanel] = useState(true);
 
+  const handleCloseRightPanel = () => {
+    setShowRightPanel(false);
+  };
+
   const columns: TableColumn<Session>[] = [
     {
       header: "ID",
@@ -168,164 +172,134 @@ export default function HistoryPage() {
       sidebar={<AppSidebar />}
       header={<AppHeader title="History" />}
       showRightPanel={showRightPanel}
+      rightPanelTitle="Usage Summary"
+      onRightPanelClose={handleCloseRightPanel}
       rightPanel={
-        <div className="h-full w-full flex flex-col">
-          <div className="p-0 flex-1 overflow-y-auto">
-            <div className="flex flex-col">
-              {/* Header with title */}
-              <div className="p-5 border-b">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold mb-1">Usage Summary</h2>
-                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+        <div className="space-y-4">
+          {/* Session summary */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Hash className="w-4 h-4 text-gray-400" />
+              <p className="text-sm text-gray-500">{selectedSession.id}</p>
+            </div>
+            <StatusBadge status={selectedSession.status} />
+          </div>
 
-              {/* Main content */}
-              <div className="p-5 space-y-4">
-                {/* Session details in two columns */}
-                <div className="grid grid-cols-[120px_1fr] gap-y-4">
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Session:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium">{selectedSession.id}</p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 p-0 ml-1"
-                    >
-                      <Copy className="h-3.5 w-3.5 text-gray-400" />
-                    </Button>
-                  </div>
+          {/* Title */}
+          <div className="py-2">
+            <h2 className="text-md font-semibold">{selectedSession.title}</h2>
+          </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">Title:</p>
-                  </div>
-                  <p className="text-sm font-medium">{selectedSession.title}</p>
+          {/* Session details in two columns */}
+          <div className="grid grid-cols-[120px_1fr] gap-y-4">
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Start time:</p>
+            </div>
+            <div className="flex items-center">
+              <CalendarIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.date} {selectedSession.time}
+              </p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">Status:</p>
-                  </div>
-                  <div className="flex items-center">
-                    <StatusBadge status={selectedSession.status} />
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Duration:</p>
+            </div>
+            <div className="flex items-center">
+              <ClockIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.duration} mins
+              </p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Start time:
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {selectedSession.date} {selectedSession.time}
-                  </p>
-
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Duration:
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {selectedSession.duration} mins
-                  </p>
-
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">Usage:</p>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {selectedSession.usedDuration} mins
-                  </p>
-                </div>
-
-                {/* Progress bar for usage */}
-                <div className="mt-4 pb-4 border-b">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-500">
-                      Usage / Duration
-                    </span>
-                    <span className="text-sm font-medium">
-                      {selectedSession.usedDuration} /{" "}
-                      {selectedSession.duration} mins
-                    </span>
-                  </div>
-                  <Progress
-                    value={
-                      (selectedSession.usedDuration /
-                        selectedSession.duration) *
-                      100
-                    }
-                    className="h-2"
-                  />
-                </div>
-
-                {/* Presenters section */}
-                <Accordion
-                  type="single"
-                  collapsible
-                  defaultValue="presenters"
-                  className="w-full"
-                >
-                  <AccordionItem value="presenters" className="border-b">
-                    <AccordionTrigger className="py-3">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium">Presenters:</p>
-                        <span className="ml-2 text-sm">
-                          {selectedSession.presenters.length}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {selectedSession.presenters.map((presenter, index) => (
-                        <div key={index} className="py-2">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm">{presenter.name}:</span>
-                            <span className="text-sm font-medium">
-                              {presenter.duration} mins
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={100}
-                              className="h-2 flex-1"
-                              indicatorColor="bg-brand-teal"
-                            />
-                            <span className="text-xs text-gray-500">
-                              Present
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* Attendees section */}
-                  <AccordionItem value="attendees" className="border-b">
-                    <AccordionTrigger className="py-3">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium">Attendees:</p>
-                        <span className="ml-2 text-sm">
-                          {selectedSession.attendees}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {selectedSession.languages.map((language, index) => (
-                        <div key={index} className="py-2 flex justify-between">
-                          <span className="text-sm">{language.name}:</span>
-                          <span className="text-sm font-medium">
-                            {language.count}
-                          </span>
-                        </div>
-                      ))}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Usage:</p>
+            </div>
+            <div className="flex items-center">
+              <ClockIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.usedDuration} mins
+              </p>
             </div>
           </div>
+
+          {/* Progress bar for usage */}
+          <div className="py-4 border-b">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-500">Usage / Duration</span>
+              <span className="text-sm font-medium">
+                {selectedSession.usedDuration} / {selectedSession.duration} mins
+              </span>
+            </div>
+            <Progress
+              value={
+                (selectedSession.usedDuration / selectedSession.duration) * 100
+              }
+              className="h-2"
+              indicatorColor="bg-brand-teal"
+            />
+          </div>
+
+          {/* Presenters section */}
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="presenters"
+            className="w-full"
+          >
+            <AccordionItem value="presenters" className="border-b">
+              <AccordionTrigger className="py-3">
+                <div className="flex items-center">
+                  <p className="text-sm font-medium">Presenters:</p>
+                  <span className="ml-2 text-sm">
+                    {selectedSession.presenters.length}
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                {selectedSession.presenters.map((presenter, index) => (
+                  <div key={index} className="py-2">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm">{presenter.name}:</span>
+                      <span className="text-sm font-medium">
+                        {presenter.duration} mins
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Progress
+                        value={100}
+                        className="h-2 flex-1"
+                        indicatorColor="bg-brand-teal"
+                      />
+                      <span className="text-xs text-gray-500">Present</span>
+                    </div>
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Attendees section */}
+            <AccordionItem value="attendees" className="border-b">
+              <AccordionTrigger className="py-3">
+                <div className="flex items-center">
+                  <p className="text-sm font-medium">Attendees:</p>
+                  <span className="ml-2 text-sm">
+                    {selectedSession.attendees}
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                {selectedSession.languages.map((language, index) => (
+                  <div key={index} className="py-2 flex justify-between">
+                    <span className="text-sm">{language.name}:</span>
+                    <span className="text-sm font-medium">
+                      {language.count}
+                    </span>
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       }
     >

@@ -7,17 +7,29 @@ import {
   Copy,
   Hash,
   User,
-  Languages,
+  Languages as LanguagesIcon,
   Edit,
   Search,
   Check,
   Filter,
   Users,
+  BarChart,
+  ListFilter,
+  ChevronDown,
+  X as CloseIcon,
+  QrCode as QrCodeIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell, AppHeader, AppSidebar } from "@/components/layouts";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   DataTable,
   StatusBadge,
@@ -117,6 +129,8 @@ export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<Session>(
     mockSessions[0]
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const handleSessionSelect = (session: Session) => {
     setSelectedSession(session);
@@ -125,6 +139,10 @@ export default function SessionsPage() {
 
   const handleToggleRightPanel = () => {
     setShowRightPanel(!showRightPanel);
+  };
+
+  const handleCloseRightPanel = () => {
+    setShowRightPanel(false);
   };
 
   const columns: TableColumn<Session>[] = [
@@ -209,283 +227,265 @@ export default function SessionsPage() {
       sidebar={<AppSidebar />}
       header={<AppHeader title="Sessions" />}
       showRightPanel={showRightPanel}
+      rightPanelTitle={selectedSession.title}
+      onRightPanelClose={handleCloseRightPanel}
       rightPanel={
-        <div className="h-full w-full flex flex-col">
-          <div className="p-0 flex-1 overflow-y-auto">
-            <div className="flex flex-col">
-              {/* Header with title */}
-              <div className="p-5 border-b">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-1">
-                      {selectedSession.title}
-                    </h2>
-                    <p className="text-sm text-gray-500">
-                      {selectedSession.id}
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+        <div className="space-y-6">
+          {/* Session ID subheader */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Hash className="w-4 h-4 text-gray-400" />
+              <p className="text-sm text-gray-500">{selectedSession.id}</p>
+            </div>
+            <StatusBadge status={selectedSession.status} />
+          </div>
 
-              {/* Main content */}
-              <div className="p-5 space-y-6">
-                {/* Session details in two columns */}
-                <div className="grid grid-cols-[120px_1fr] gap-y-4">
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Presenter:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">
-                      {selectedSession.presenter}
-                    </p>
-                  </div>
+          {/* Session details in two columns */}
+          <div className="grid grid-cols-[120px_1fr] gap-y-4">
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Presenter:</p>
+            </div>
+            <div className="flex items-center">
+              <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">{selectedSession.presenter}</p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Session ID:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">{selectedSession.id}</p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 p-0 ml-1"
-                    >
-                      <Copy className="h-3.5 w-3.5 text-gray-400" />
-                    </Button>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Session ID:</p>
+            </div>
+            <div className="flex items-center">
+              <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">{selectedSession.id}</p>
+              <Button variant="ghost" size="icon" className="h-6 w-6 p-0 ml-1">
+                <Copy className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Passcode:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">
-                      {selectedSession.passcode || "-"}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 p-0 ml-1"
-                    >
-                      <Copy className="h-3.5 w-3.5 text-gray-400" />
-                    </Button>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Passcode:</p>
+            </div>
+            <div className="flex items-center">
+              <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.passcode || "-"}
+              </p>
+              <Button variant="ghost" size="icon" className="h-6 w-6 p-0 ml-1">
+                <Copy className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Start date:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">
-                      {selectedSession.date} {selectedSession.time}
-                    </p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Start date:</p>
+            </div>
+            <div className="flex items-center">
+              <Calendar className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.date} {selectedSession.time} (PDT)
+              </p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Account:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">
-                      {selectedSession.account}
-                    </p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Account:</p>
+            </div>
+            <div className="flex items-center">
+              <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">{selectedSession.account}</p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Duration:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">
-                      {selectedSession.duration} mins
-                    </p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Duration:</p>
+            </div>
+            <div className="flex items-center">
+              <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.duration} mins
+              </p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Language:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <Languages className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">
-                      {selectedSession.language}
-                    </p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Language:</p>
+            </div>
+            <div className="flex items-center">
+              <LanguagesIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">{selectedSession.language}</p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Auto Select:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <Check className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                    <p className="text-sm font-medium">Enabled</p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Auto Select:</p>
+            </div>
+            <div className="flex items-center">
+              <Check className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">Enabled</p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Selections:
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedSession.selections ? (
-                      selectedSession.selections.map((selection) => (
-                        <span
-                          key={selection}
-                          className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
-                        >
-                          {selection}
-                        </span>
-                      ))
-                    ) : (
-                      <p className="text-sm font-medium">-</p>
-                    )}
-                    {selectedSession.selections &&
-                      selectedSession.selections.length > 0 && (
-                        <p className="text-xs text-gray-500 mt-1 ml-1">
-                          +{selectedSession.selections.length}
-                        </p>
-                      )}
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Selections:</p>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {selectedSession.selections ? (
+                selectedSession.selections.map((selection) => (
+                  <span
+                    key={selection}
+                    className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
+                  >
+                    <span className="mr-1">✓</span>
+                    {selection}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm font-medium">-</p>
+              )}
+              {selectedSession.selections &&
+                selectedSession.selections.length > 0 && (
+                  <span className="px-2 py-1 bg-gray-100 text-xs rounded-full flex items-center">
+                    + {selectedSession.selections.length}
+                  </span>
+                )}
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">Access:</p>
-                  </div>
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium">
-                      {selectedSession.access || "-"}
-                    </p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Access:</p>
+            </div>
+            <div className="flex items-center">
+              <QrCodeIcon className="w-3.5 h-3.5 mr-2 text-gray-400" />
+              <p className="text-sm font-medium">
+                {selectedSession.access || "-"}
+              </p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">Pinned:</p>
-                  </div>
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium">
-                      {selectedSession.pinned ? "Yes" : "No"}
-                    </p>
-                  </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Pinned:</p>
+            </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium">
+                {selectedSession.pinned ? "Yes" : "No"}
+              </p>
+            </div>
 
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium text-gray-500">
-                      Voice Pack:
-                    </p>
-                  </div>
-                  <div className="flex items-center">
-                    <p className="text-sm font-medium">
-                      {selectedSession.voicePack || "-"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Edit button */}
-                <Button className="w-full bg-brand-teal hover:bg-brand-teal/90 text-white">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Session
-                </Button>
-              </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium text-gray-500">Voice Pack:</p>
+            </div>
+            <div className="flex items-center">
+              <p className="text-sm font-medium">
+                {selectedSession.voicePack || "-"}
+              </p>
             </div>
           </div>
+
+          {/* Edit button */}
+          <Button className="w-full bg-brand-teal hover:bg-brand-teal/90 text-white">
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Session
+          </Button>
         </div>
       }
     >
-      <div className="p-6">
-        <div className="flex flex-col space-y-6">
-          {/* Filters and search row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" className="h-9">
-                <Calendar className="h-4 w-4 mr-2" />
-                <span>Date Range</span>
-              </Button>
-              <Button variant="outline" size="sm" className="h-9">
-                <Filter className="h-4 w-4 mr-2" />
-                <span>Status</span>
-              </Button>
-            </div>
+      <div>
+        {/* Filter toolbar at top */}
+        <div className="flex flex-wrap items-center gap-2 p-4 border-b bg-white">
+          <Button variant="outline" size="sm" className="h-9">
+            <Filter className="h-4 w-4 mr-2" />
+            <span>Filters</span>
+          </Button>
+          <Button variant="outline" size="sm" className="h-9">
+            <BarChart className="h-4 w-4 mr-2" />
+            <span>Analytics</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9"
+            onClick={handleToggleRightPanel}
+          >
+            <ListFilter className="h-4 w-4 mr-2" />
+            <span>Details Panel</span>
+          </Button>
 
-            <div className="flex items-center space-x-2">
-              <div className="relative">
+          <div className="flex grow items-center justify-end gap-2">
+            <div className="flex items-center w-full md:w-auto">
+              <div className="relative flex-grow md:flex-grow-0 ml-auto">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
                   placeholder="Search sessions..."
                   className="h-9 pl-9 pr-3 w-full md:w-[250px]"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Button className="bg-brand-teal hover:bg-brand-teal/90 text-white h-9">
-                <Users className="h-4 w-4 mr-2" />
-                <span>New Session</span>
-              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-9 px-3 ml-2">
+                    <span>Status</span>
+                    <ChevronDown className="h-4 w-4 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setStatusFilter(null)}>
+                    All
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setStatusFilter("COMPLETED")}
+                  >
+                    Completed
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setStatusFilter("IN-PROGRESS")}
+                  >
+                    In Progress
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setStatusFilter("SCHEDULED")}
+                  >
+                    Scheduled
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
+        </div>
 
-          {/* Sessions card */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center py-2 border-b">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium">
-                    Sessions: {mockSessions.length}
-                  </span>
+        <div className="p-6">
+          <div className="flex flex-col space-y-6">
+            {/* Date filter row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">From</span>
+                <div className="border rounded-md p-1.5">
+                  <span className="text-sm">MM/DD/YYYY</span>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium">
-                    Total Duration:{" "}
-                    {mockSessions.reduce(
-                      (acc, session) => acc + session.duration,
-                      0
-                    )}{" "}
-                    mins
-                  </span>
+
+                <span className="text-sm font-medium">To</span>
+                <div className="border rounded-md p-1.5">
+                  <span className="text-sm">MM/DD/YYYY</span>
                 </div>
               </div>
 
-              {/* Session list using DataTable */}
-              <DataTable
-                data={mockSessions}
-                columns={columns}
-                onRowClick={handleSessionSelect}
-                selectedItem={selectedSession}
-                idField="id"
-              />
-            </CardContent>
-          </Card>
+              <div className="flex items-center">
+                <Badge variant="outline" className="mr-2">
+                  <span className="text-sm">Sessions: 5</span>
+                </Badge>
+                <Badge variant="outline">
+                  <span className="text-sm">Total Duration: 285 mins</span>
+                </Badge>
+              </div>
+            </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center items-center gap-2">
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>«</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>‹</span>
-            </Button>
-            <Button className="h-9 w-9 p-0 bg-brand-teal text-white">
-              <span>1</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>›</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>»</span>
-            </Button>
+            {/* Sessions card */}
+            <Card>
+              <CardContent className="p-4">
+                {/* Session list using DataTable */}
+                <DataTable
+                  data={mockSessions.filter((session) => {
+                    return !statusFilter || session.status === statusFilter;
+                  })}
+                  columns={columns}
+                  onRowClick={handleSessionSelect}
+                  selectedItem={selectedSession}
+                  idField="id"
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
