@@ -122,21 +122,22 @@ export default function OrganizationCustomFieldsPage() {
 
   // Open add new field panel
   const openAddPanel = () => {
+    // Make sure we have a clean form
     resetForm();
     setPanelMode("add");
 
-    // Send event to show the panel
+    // Open panel with blank form
     window.dispatchEvent(
       new CustomEvent("field-selected", {
         detail: {
-          fieldId: "new",
+          fieldId: "new-field",
           content: renderEditPanel(),
           mode: "add",
         },
       })
     );
 
-    setSelectedField("new");
+    setSelectedField("new-field");
   };
 
   // Open edit field panel
@@ -170,7 +171,7 @@ export default function OrganizationCustomFieldsPage() {
 
     // Create new field object with current form values
     const updatedField: CustomField = {
-      id: editingField ? editingField.id : `${Date.now()}`,
+      id: editingField ? editingField.id : `field-${Date.now()}`,
       name: formName,
       type: formType,
       default: formDefault,
@@ -223,18 +224,13 @@ export default function OrganizationCustomFieldsPage() {
     return field.type;
   };
 
-  // Handle field selection - updating this to display view-only details
-  const handleFieldSelect = (field: CustomField) => {
+  // Show field details when row is clicked
+  const showFieldDetails = (field: CustomField) => {
     // If we're in edit mode, ask for confirmation before switching
     if (panelMode !== "view" && selectedField) {
       if (!confirm("Discard unsaved changes?")) {
         return;
       }
-    }
-
-    // If already selected, do nothing
-    if (field.id === selectedField) {
-      return;
     }
 
     // Set the selected field and show view panel
@@ -272,7 +268,7 @@ export default function OrganizationCustomFieldsPage() {
             <h4 className="font-medium text-sm text-gray-500 mb-1">
               Default Value
             </h4>
-            <p>{field.default}</p>
+            <p>{field.default || "(empty)"}</p>
           </div>
 
           {field.possibleValues && (
@@ -281,14 +277,18 @@ export default function OrganizationCustomFieldsPage() {
                 Possible Values
               </h4>
               <div className="grid grid-cols-1 gap-2">
-                {field.possibleValues.map((value, index) => (
-                  <div
-                    key={index}
-                    className="px-2 py-1 bg-white border rounded text-gray-700"
-                  >
-                    {value}
-                  </div>
-                ))}
+                {field.possibleValues.length > 0 ? (
+                  field.possibleValues.map((value, index) => (
+                    <div
+                      key={index}
+                      className="px-2 py-1 bg-white border rounded text-gray-700"
+                    >
+                      {value}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500 italic">No values defined</div>
+                )}
               </div>
             </div>
           )}
@@ -320,6 +320,10 @@ export default function OrganizationCustomFieldsPage() {
 
   // Render the edit panel form
   const renderEditPanel = () => {
+    const isAddMode = panelMode === "add";
+    const title = isAddMode ? "Add New Custom Field" : "Edit Field";
+    const saveButtonText = isAddMode ? "Add Field" : "Save Changes";
+
     return (
       <div className="h-full overflow-auto">
         <div className="space-y-6 p-6">
@@ -374,6 +378,7 @@ export default function OrganizationCustomFieldsPage() {
                         updatedValues[index] = e.target.value;
                         setFormPossibleValues(updatedValues);
                       }}
+                      placeholder={`Value ${index + 1}`}
                     />
                     <Button
                       variant="ghost"
@@ -413,39 +418,11 @@ export default function OrganizationCustomFieldsPage() {
               onClick={handleSaveField}
             >
               <Save className="h-4 w-4 mr-2" />
-              {panelMode === "add" ? "Add Field" : "Save Changes"}
+              {saveButtonText}
             </Button>
           </div>
         </div>
       </div>
-    );
-  };
-
-  // Show field details when row is clicked
-  const showFieldDetails = (field: CustomField) => {
-    // If we're in edit mode, ask for confirmation before switching
-    if (panelMode !== "view" && selectedField) {
-      if (!confirm("Discard unsaved changes?")) {
-        return;
-      }
-    }
-
-    // Set the selected field and show view panel
-    setSelectedField(field.id);
-    setPanelMode("view");
-
-    // Create details panel content with view panel
-    const detailsContent = renderViewPanel(field);
-
-    // Dispatch event to parent layout
-    window.dispatchEvent(
-      new CustomEvent("field-selected", {
-        detail: {
-          fieldId: field.id,
-          content: detailsContent,
-          mode: "view",
-        },
-      })
     );
   };
 
