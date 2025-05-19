@@ -30,6 +30,7 @@ interface CustomField {
   name: string;
   type: FieldType;
   default: string;
+  required: boolean;
   possibleValues?: string[];
 }
 
@@ -43,12 +44,14 @@ export default function OrganizationCustomFieldsPage() {
       name: "Event Notes*",
       type: "free text",
       default: "(blank)",
+      required: true,
     },
     {
       id: "2",
       name: "Products Used",
       type: "multi-select",
       default: "(4 default values)",
+      required: false,
       possibleValues: [
         "Product A",
         "Product B",
@@ -62,12 +65,14 @@ export default function OrganizationCustomFieldsPage() {
       name: "Internal ID",
       type: "numeric",
       default: "11-100",
+      required: false,
     },
     {
       id: "4",
       name: "Venues",
       type: "single-select",
       default: "Holiday Inn",
+      required: false,
       possibleValues: ["Holiday Inn", "Conference Center", "Virtual"],
     },
   ]);
@@ -80,6 +85,7 @@ export default function OrganizationCustomFieldsPage() {
   const [formName, setFormName] = useState("");
   const [formType, setFormType] = useState<FieldType>("free text");
   const [formDefault, setFormDefault] = useState("");
+  const [formRequired, setFormRequired] = useState(false);
   const [formPossibleValues, setFormPossibleValues] = useState<string[]>([]);
 
   // Listen for field deselection events from the parent layout
@@ -107,6 +113,7 @@ export default function OrganizationCustomFieldsPage() {
     setFormName("");
     setFormType("free text");
     setFormDefault("");
+    setFormRequired(false);
     setFormPossibleValues([]);
     setEditingField(null);
   };
@@ -116,6 +123,7 @@ export default function OrganizationCustomFieldsPage() {
     setFormName(field.name);
     setFormType(field.type);
     setFormDefault(field.default);
+    setFormRequired(field.required);
     setFormPossibleValues(field.possibleValues || []);
     setEditingField(field);
   };
@@ -175,6 +183,7 @@ export default function OrganizationCustomFieldsPage() {
       name: formName,
       type: formType,
       default: formDefault,
+      required: formRequired,
       possibleValues: formType.includes("select")
         ? formPossibleValues.filter((val) => val.trim() !== "")
         : undefined,
@@ -258,6 +267,11 @@ export default function OrganizationCustomFieldsPage() {
       <div className="h-full p-6 overflow-auto">
         <div className="space-y-4">
           <div>
+            <h4 className="font-medium text-sm text-gray-500 mb-1">Required</h4>
+            <p>{field.required ? "Yes" : "No"}</p>
+          </div>
+
+          <div>
             <h4 className="font-medium text-sm text-gray-500 mb-1">
               Field Type
             </h4>
@@ -268,7 +282,7 @@ export default function OrganizationCustomFieldsPage() {
             <h4 className="font-medium text-sm text-gray-500 mb-1">
               Default Value
             </h4>
-            <p>{field.default || "(empty)"}</p>
+            <p>{field.default || "(blank)"}</p>
           </div>
 
           {field.possibleValues && (
@@ -338,7 +352,45 @@ export default function OrganizationCustomFieldsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="field-type">Field Type</Label>
+            <Label htmlFor="field-required">Is required?</Label>
+            <div className="flex items-center space-x-6 mt-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="required-yes"
+                  name="field-required"
+                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
+                  checked={formRequired}
+                  onChange={() => setFormRequired(true)}
+                />
+                <Label
+                  htmlFor="required-yes"
+                  className="font-normal cursor-pointer"
+                >
+                  Required
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="required-no"
+                  name="field-required"
+                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
+                  checked={!formRequired}
+                  onChange={() => setFormRequired(false)}
+                />
+                <Label
+                  htmlFor="required-no"
+                  className="font-normal cursor-pointer"
+                >
+                  Optional
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-type">Field type:</Label>
             <Select
               value={formType}
               onValueChange={(value: FieldType) => setFormType(value)}
@@ -353,21 +405,39 @@ export default function OrganizationCustomFieldsPage() {
                 <SelectItem value="multi-select">Multi Select</SelectItem>
               </SelectContent>
             </Select>
+            {formType === "free text" && (
+              <p className="text-xs text-gray-500 mt-1">
+                (When adding a session, people will be able to type any text in
+                this field.)
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="field-default">Default Value</Label>
-            <Input
-              id="field-default"
-              value={formDefault}
-              onChange={(e) => setFormDefault(e.target.value)}
-              placeholder="Default value"
-            />
+            <Label htmlFor="field-default">Default value:</Label>
+            <Select
+              value={formDefault || "(blank)"}
+              onValueChange={(value) => setFormDefault(value)}
+            >
+              <SelectTrigger id="field-default">
+                <SelectValue placeholder="Select default value" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="(blank)">(blank)</SelectItem>
+                {formType === "single-select" &&
+                  formPossibleValues.length > 0 &&
+                  formPossibleValues.map((value, index) => (
+                    <SelectItem key={index} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {(formType === "single-select" || formType === "multi-select") && (
             <div className="space-y-2">
-              <Label>Possible Values</Label>
+              <Label htmlFor="field-possible-values">Possible values:</Label>
               <div className="border rounded-md p-4 space-y-2">
                 {formPossibleValues.map((value, index) => (
                   <div key={index} className="flex items-center space-x-2">
@@ -414,16 +484,20 @@ export default function OrganizationCustomFieldsPage() {
           <div className="pt-4 flex justify-end">
             <Button
               variant="default"
-              className="bg-[#006064] hover:bg-[#00474a] text-white"
+              className="bg-[#00838f] hover:bg-[#006064] text-white rounded-full px-8"
               onClick={handleSaveField}
             >
-              <Save className="h-4 w-4 mr-2" />
-              {saveButtonText}
+              Save
             </Button>
           </div>
         </div>
       </div>
     );
+  };
+
+  // Format display name with required indicator
+  const formatDisplayName = (field: CustomField) => {
+    return field.required ? `${field.name}*` : field.name;
   };
 
   return (
@@ -465,7 +539,9 @@ export default function OrganizationCustomFieldsPage() {
                 }`}
                 onClick={() => showFieldDetails(field)}
               >
-                <TableCell className="font-medium">{field.name}</TableCell>
+                <TableCell className="font-medium">
+                  {formatDisplayName(field)}
+                </TableCell>
                 <TableCell>{formatTypeDisplay(field)}</TableCell>
                 <TableCell>{field.default}</TableCell>
                 <TableCell className="text-right">
