@@ -430,12 +430,10 @@ export default function OrganizationCustomFieldsPage() {
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-6 flex justify-between items-start">
         <div>
-          <h2 className="text-xl font-semibold">
-            Custom Fields (across workspaces)
-          </h2>
+          <h2 className="text-xl font-semibold">Custom Fields</h2>
           <p className="text-gray-500 mt-1">
-            You can add custom fields to help understand where your minutes are
-            being used when bulk exporting your usage data.
+            Add and manage custom fields for organizing and filtering your usage
+            data across workspaces.
           </p>
         </div>
         <Button
