@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -88,6 +88,11 @@ export default function OrganizationCustomFieldsPage() {
   const [formRequired, setFormRequired] = useState(false);
   const [formPossibleValues, setFormPossibleValues] = useState<string[]>([]);
 
+  // Keep track of the current panel content
+  const [panelContent, setPanelContent] = useState<React.ReactNode | null>(
+    null
+  );
+
   // Listen for field deselection events from the parent layout
   useEffect(() => {
     const handleFieldDeselected = (e: CustomEvent) => {
@@ -130,43 +135,322 @@ export default function OrganizationCustomFieldsPage() {
 
   // Open add new field panel
   const openAddPanel = () => {
-    // Make sure we have a clean form
-    resetForm();
+    // Set up form for a new field
+    setEditingField(null);
+    setFormName("");
+    setFormType("free text");
+    setFormDefault("");
+    setFormRequired(false);
+    setFormPossibleValues([]);
     setPanelMode("add");
+    setSelectedField("new-field");
+
+    // Create element for add panel with blank form
+    const addPanelElement = (
+      <div className="h-full overflow-auto">
+        <div className="space-y-6 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="field-name">Custom field name:</Label>
+            <Input
+              id="field-name"
+              defaultValue=""
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="e.g., Client ID, Project Name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-required">Is required?</Label>
+            <div className="flex items-center space-x-6 mt-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="required-yes"
+                  name="field-required"
+                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
+                  defaultChecked={false}
+                  onChange={() => setFormRequired(true)}
+                />
+                <Label
+                  htmlFor="required-yes"
+                  className="font-normal cursor-pointer"
+                >
+                  Required
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="required-no"
+                  name="field-required"
+                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
+                  defaultChecked={true}
+                  onChange={() => setFormRequired(false)}
+                />
+                <Label
+                  htmlFor="required-no"
+                  className="font-normal cursor-pointer"
+                >
+                  Optional
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-type">Field type:</Label>
+            <Select
+              defaultValue="free text"
+              onValueChange={(value: FieldType) => setFormType(value)}
+            >
+              <SelectTrigger id="field-type">
+                <SelectValue placeholder="Select field type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="free text">Free Text</SelectItem>
+                <SelectItem value="numeric">Numeric</SelectItem>
+                <SelectItem value="single-select">Single Select</SelectItem>
+                <SelectItem value="multi-select">Multi Select</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 mt-1">
+              (When adding a session, people will be able to type any text in
+              this field.)
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-default">Default value:</Label>
+            <Select
+              defaultValue="(blank)"
+              onValueChange={(value) => setFormDefault(value)}
+            >
+              <SelectTrigger id="field-default">
+                <SelectValue placeholder="Select default value" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="(blank)">(blank)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="pt-4 flex justify-end">
+            <Button
+              variant="default"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-8"
+              onClick={handleSaveField}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Update the panel content
+    setPanelContent(addPanelElement);
 
     // Open panel with blank form
     window.dispatchEvent(
       new CustomEvent("field-selected", {
         detail: {
           fieldId: "new-field",
-          content: renderEditPanel(),
+          content: addPanelElement,
           mode: "add",
         },
       })
     );
-
-    setSelectedField("new-field");
   };
 
   // Open edit field panel
   const openEditPanel = (field: CustomField) => {
-    // Make sure we have a clean form with the field's current values
-    resetForm();
-    initFormWithField(field);
+    // First set the editing field and update form state
+    setEditingField(field);
+    setFormName(field.name);
+    setFormType(field.type);
+    setFormDefault(field.default);
+    setFormRequired(field.required);
+    setFormPossibleValues(field.possibleValues || []);
     setPanelMode("edit");
+    setSelectedField(field.id);
 
-    // Update the panel content with the field's current data
+    // Create an element that will render the edit panel with inline data
+    const editPanelElement = (
+      <div className="h-full overflow-auto">
+        <div className="space-y-6 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="field-name">Custom field name:</Label>
+            <Input
+              id="field-name"
+              defaultValue={field.name}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="e.g., Client ID, Project Name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-required">Is required?</Label>
+            <div className="flex items-center space-x-6 mt-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="required-yes"
+                  name="field-required"
+                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
+                  defaultChecked={field.required}
+                  onChange={() => setFormRequired(true)}
+                />
+                <Label
+                  htmlFor="required-yes"
+                  className="font-normal cursor-pointer"
+                >
+                  Required
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="required-no"
+                  name="field-required"
+                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
+                  defaultChecked={!field.required}
+                  onChange={() => setFormRequired(false)}
+                />
+                <Label
+                  htmlFor="required-no"
+                  className="font-normal cursor-pointer"
+                >
+                  Optional
+                </Label>
+              </div>
+            </div>
+            {field.required && (
+              <p className="text-xs text-gray-500 mt-1">
+                An asterisk (*) will be shown next to the field name.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-type">Field type:</Label>
+            <Select
+              defaultValue={field.type}
+              onValueChange={(value: FieldType) => setFormType(value)}
+            >
+              <SelectTrigger id="field-type">
+                <SelectValue placeholder="Select field type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="free text">Free Text</SelectItem>
+                <SelectItem value="numeric">Numeric</SelectItem>
+                <SelectItem value="single-select">Single Select</SelectItem>
+                <SelectItem value="multi-select">Multi Select</SelectItem>
+              </SelectContent>
+            </Select>
+            {field.type === "free text" && (
+              <p className="text-xs text-gray-500 mt-1">
+                (When adding a session, people will be able to type any text in
+                this field.)
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-default">Default value:</Label>
+            <Select
+              defaultValue={field.default || "(blank)"}
+              onValueChange={(value) => setFormDefault(value)}
+            >
+              <SelectTrigger id="field-default">
+                <SelectValue placeholder="Select default value" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="(blank)">(blank)</SelectItem>
+                {field.type === "single-select" &&
+                  field.possibleValues &&
+                  field.possibleValues.length > 0 &&
+                  field.possibleValues.map((value, index) => (
+                    <SelectItem key={index} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(field.type === "single-select" ||
+            field.type === "multi-select") && (
+            <div className="space-y-2">
+              <Label htmlFor="field-possible-values">Possible values:</Label>
+              <div className="border rounded-md p-4 space-y-2">
+                {(field.possibleValues || []).map((value, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <Input
+                      defaultValue={value}
+                      onChange={(e) => {
+                        const updatedValues = [...formPossibleValues];
+                        updatedValues[index] = e.target.value;
+                        setFormPossibleValues(updatedValues);
+                      }}
+                      placeholder={`Value ${index + 1}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
+                      onClick={() => {
+                        const updatedValues = formPossibleValues.filter(
+                          (_, i) => i !== index
+                        );
+                        setFormPossibleValues(updatedValues);
+                      }}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() =>
+                    setFormPossibleValues([...formPossibleValues, ""])
+                  }
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Value
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-4 flex justify-end">
+            <Button
+              variant="default"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-8"
+              onClick={handleSaveField}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Update the panel content
+    setPanelContent(editPanelElement);
+
+    // Dispatch event to parent layout with the actual panel content
     window.dispatchEvent(
       new CustomEvent("field-selected", {
         detail: {
           fieldId: field.id,
-          content: renderEditPanel(),
+          content: editPanelElement,
           mode: "edit",
         },
       })
     );
-
-    setSelectedField(field.id);
   };
 
   // Handle form submission
@@ -294,24 +578,20 @@ export default function OrganizationCustomFieldsPage() {
             <p>{field.default || "(blank)"}</p>
           </div>
 
-          {field.possibleValues && (
+          {field.possibleValues && field.possibleValues.length > 0 && (
             <div>
               <h4 className="font-medium text-sm text-gray-500 mb-2">
                 Possible Values
               </h4>
               <div className="grid grid-cols-1 gap-2">
-                {field.possibleValues.length > 0 ? (
-                  field.possibleValues.map((value, index) => (
-                    <div
-                      key={index}
-                      className="px-2 py-1 bg-white border rounded text-gray-700"
-                    >
-                      {value}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-gray-500 italic">No values defined</div>
-                )}
+                {field.possibleValues.map((value, index) => (
+                  <div
+                    key={index}
+                    className="px-2 py-1 bg-white border rounded text-gray-700"
+                  >
+                    {value}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -334,175 +614,6 @@ export default function OrganizationCustomFieldsPage() {
             >
               <Trash className="h-4 w-4 mr-2" />
               Delete Field
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Render the edit panel form
-  const renderEditPanel = () => {
-    const isAddMode = panelMode === "add";
-    const title = isAddMode
-      ? "Add New Custom Field"
-      : `Edit ${editingField?.name || "Field"}`;
-
-    return (
-      <div className="h-full overflow-auto">
-        <div className="space-y-6 p-6">
-          <div className="space-y-2">
-            <Label htmlFor="field-name">Custom field name:</Label>
-            <Input
-              id="field-name"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              placeholder="e.g., Client ID, Project Name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="field-required">Is required?</Label>
-            <div className="flex items-center space-x-6 mt-2">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="required-yes"
-                  name="field-required"
-                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
-                  checked={formRequired}
-                  onChange={() => setFormRequired(true)}
-                />
-                <Label
-                  htmlFor="required-yes"
-                  className="font-normal cursor-pointer"
-                >
-                  Required
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  id="required-no"
-                  name="field-required"
-                  className="h-4 w-4 text-[#006064] focus:ring-[#006064]"
-                  checked={!formRequired}
-                  onChange={() => setFormRequired(false)}
-                />
-                <Label
-                  htmlFor="required-no"
-                  className="font-normal cursor-pointer"
-                >
-                  Optional
-                </Label>
-              </div>
-            </div>
-            {formRequired && (
-              <p className="text-xs text-gray-500 mt-1">
-                An asterisk (*) will be shown next to the field name.
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="field-type">Field type:</Label>
-            <Select
-              value={formType}
-              onValueChange={(value: FieldType) => setFormType(value)}
-            >
-              <SelectTrigger id="field-type">
-                <SelectValue placeholder="Select field type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="free text">Free Text</SelectItem>
-                <SelectItem value="numeric">Numeric</SelectItem>
-                <SelectItem value="single-select">Single Select</SelectItem>
-                <SelectItem value="multi-select">Multi Select</SelectItem>
-              </SelectContent>
-            </Select>
-            {formType === "free text" && (
-              <p className="text-xs text-gray-500 mt-1">
-                (When adding a session, people will be able to type any text in
-                this field.)
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="field-default">Default value:</Label>
-            <Select
-              value={formDefault || "(blank)"}
-              onValueChange={(value) => setFormDefault(value)}
-            >
-              <SelectTrigger id="field-default">
-                <SelectValue placeholder="Select default value" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="(blank)">(blank)</SelectItem>
-                {formType === "single-select" &&
-                  formPossibleValues.length > 0 &&
-                  formPossibleValues.map((value, index) => (
-                    <SelectItem key={index} value={value}>
-                      {value}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {(formType === "single-select" || formType === "multi-select") && (
-            <div className="space-y-2">
-              <Label htmlFor="field-possible-values">Possible values:</Label>
-              <div className="border rounded-md p-4 space-y-2">
-                {formPossibleValues.map((value, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Input
-                      value={value}
-                      onChange={(e) => {
-                        const updatedValues = [...formPossibleValues];
-                        updatedValues[index] = e.target.value;
-                        setFormPossibleValues(updatedValues);
-                      }}
-                      placeholder={`Value ${index + 1}`}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
-                      onClick={() => {
-                        const updatedValues = formPossibleValues.filter(
-                          (_, i) => i !== index
-                        );
-                        setFormPossibleValues(updatedValues);
-                      }}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() =>
-                    setFormPossibleValues([...formPossibleValues, ""])
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Value
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="pt-4 flex justify-end">
-            <Button
-              variant="default"
-              className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full px-8"
-              onClick={handleSaveField}
-            >
-              Save
             </Button>
           </div>
         </div>
@@ -544,10 +655,9 @@ export default function OrganizationCustomFieldsPage() {
             {fields.map((field) => (
               <TableRow
                 key={field.id}
-                className={`hover:bg-gray-50 cursor-pointer ${
+                className={`hover:bg-gray-50 ${
                   selectedField === field.id ? "bg-gray-100" : ""
                 }`}
-                onClick={() => showFieldDetails(field)}
               >
                 <TableCell className="font-medium">
                   {formatDisplayName(field)}
@@ -559,10 +669,7 @@ export default function OrganizationCustomFieldsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditPanel(field);
-                      }}
+                      onClick={() => openEditPanel(field)}
                       className="h-8 w-8 p-0 text-gray-500 hover:text-[#006064]"
                     >
                       <Edit className="h-4 w-4" />
@@ -571,10 +678,7 @@ export default function OrganizationCustomFieldsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteField(field.id);
-                      }}
+                      onClick={() => handleDeleteField(field.id)}
                       className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
                     >
                       <Trash className="h-4 w-4" />
