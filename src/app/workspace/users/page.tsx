@@ -20,6 +20,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  InviteUsersDialog,
+  SelectedUser,
+  UserRole,
+  UserData,
+} from "@/components/workspace/invite-users-dialog";
 
 // Mock user data
 interface User {
@@ -28,6 +34,70 @@ interface User {
   role: "Administrator" | "Editor" | "Viewer";
   isCurrentUser: boolean;
 }
+
+// Mock existing users data for the organization
+const existingOrganizationUsers: UserData[] = [
+  {
+    id: "101",
+    name: "Emily Chen",
+    email: "emily.chen@example.com",
+    role: "Editor",
+  },
+  {
+    id: "102",
+    name: "Marcus Johnson",
+    email: "marcus.johnson@example.com",
+    role: "Viewer",
+  },
+  {
+    id: "103",
+    name: "Sophia Lee",
+    email: "sophia.lee@example.com",
+    role: "Administrator",
+  },
+  {
+    id: "104",
+    name: "David Rodriguez",
+    email: "david.rodriguez@example.com",
+    role: "Editor",
+  },
+  {
+    id: "105",
+    name: "Aiden Patel",
+    email: "aiden.patel@example.com",
+    role: "Viewer",
+  },
+  {
+    id: "106",
+    name: "Olivia Kim",
+    email: "olivia.kim@example.com",
+    role: "Viewer",
+  },
+  {
+    id: "107",
+    name: "Noah Williams",
+    email: "noah.williams@example.com",
+    role: "Editor",
+  },
+  {
+    id: "108",
+    name: "Isabella Martinez",
+    email: "isabella.martinez@example.com",
+    role: "Viewer",
+  },
+  {
+    id: "109",
+    name: "Ethan Thompson",
+    email: "ethan.thompson@example.com",
+    role: "Viewer",
+  },
+  {
+    id: "110",
+    name: "Ava Garcia",
+    email: "ava.garcia@example.com",
+    role: "Editor",
+  },
+];
 
 export default function UsersPage() {
   // Mock workspace data
@@ -54,6 +124,7 @@ export default function UsersPage() {
     },
   ]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Get the appropriate icon for a role
@@ -105,38 +176,42 @@ export default function UsersPage() {
   };
 
   // Handler for inviting users
-  const handleInviteUser = () => {
-    // Invitation logic would go here
-    console.log("Invite user modal would open");
-  };
+  const handleInviteUsers = async (
+    selectedUsers: SelectedUser[],
+    role: UserRole
+  ) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const actions = (
-    <>
-      <Button
-        variant="outline"
-        className="border-red-300 text-red-700 hover:bg-red-50"
-        onClick={() => setIsDeleteDialogOpen(true)}
-      >
-        <Trash2 className="h-4 w-4 mr-2" />
-        Delete workspace
-      </Button>
-      <Button
-        variant="default"
-        className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-        onClick={handleInviteUser}
-      >
-        <UserPlus className="h-4 w-4 mr-2" />
-        Invite users
-      </Button>
-    </>
-  );
+      // Process the invited users
+      console.log("Inviting users:", selectedUsers, "with role:", role);
+
+      // In a real implementation, you would send this to your API
+      // and then update the user list with the response
+
+      // For this demo, let's simulate adding users to the list
+      const newUsers = selectedUsers.map((user) => ({
+        id: user.id || `new-${Math.random().toString(36).substring(2, 9)}`,
+        name: user.name || user.email.split("@")[0],
+        role: role,
+        isCurrentUser: false,
+      }));
+
+      setUsers((prev) => [...prev, ...newUsers]);
+
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error inviting users:", error);
+      return Promise.reject(error);
+    }
+  };
 
   return (
     <>
       <CardHeaderLayout
         title="User Management"
         description="Manage workspace users and their permissions."
-        actions={actions}
       >
         <div className="p-0 -m-6">
           <div className="w-full border-b px-6 py-3 bg-gray-50 grid grid-cols-2">
@@ -212,6 +287,26 @@ export default function UsersPage() {
               </div>
             </div>
           ))}
+
+          {/* Table footer with action buttons */}
+          <div className="w-full border-t px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-50"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete workspace
+            </Button>
+            <Button
+              variant="default"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+              onClick={() => setIsInviteDialogOpen(true)}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Invite users
+            </Button>
+          </div>
         </div>
       </CardHeaderLayout>
 
@@ -229,6 +324,16 @@ export default function UsersPage() {
         icon={<AlertTriangle className="h-12 w-12" />}
         validationText={workspaceName}
         validationLabel={`To confirm, please type the workspace name "${workspaceName}"`}
+      />
+
+      {/* Invite Users Dialog */}
+      <InviteUsersDialog
+        open={isInviteDialogOpen}
+        onOpenChange={setIsInviteDialogOpen}
+        contextName={workspaceName}
+        existingUsers={existingOrganizationUsers}
+        onInvite={handleInviteUsers}
+        defaultRole="Editor"
       />
     </>
   );
