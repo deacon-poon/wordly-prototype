@@ -24,30 +24,12 @@ export default function SessionDefaultsPage() {
     "Spanish (LatAm)",
   ]);
 
-  const actions = (
-    <>
-      <Button
-        variant="outline"
-        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-      >
-        Cancel
-      </Button>
-      <Button
-        variant="default"
-        className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-      >
-        Save Changes
-      </Button>
-    </>
-  );
-
   return (
     <CardHeaderLayout
       title="Session Defaults"
       description="Configure your workspace settings and preferences."
-      actions={actions}
     >
-      <div className="space-y-6">
+      <div className="space-y-6 relative pb-16">
         {/* Minutes Pool */}
         <div className="grid grid-cols-3 gap-4 items-start">
           <div className="pt-2">
@@ -248,6 +230,16 @@ export default function SessionDefaultsPage() {
               </RadioGroup>
             </div>
           </div>
+        </div>
+
+        {/* Fixed position Save button at bottom */}
+        <div className="absolute bottom-0 right-0 py-4 px-6">
+          <Button
+            variant="default"
+            className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+          >
+            Save Changes
+          </Button>
         </div>
       </div>
     </CardHeaderLayout>
