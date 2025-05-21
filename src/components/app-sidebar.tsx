@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sidebar";
 
 import { NavWorkspace } from "@/components/nav-workspace";
-import { NavUser } from "@/components/nav-user";
 import Image from "next/image";
 
 export function AppSidebar() {
@@ -39,9 +38,7 @@ export function AppSidebar() {
       <SidebarNav className="flex-grow overflow-y-auto">
         <NavWorkspace pathname={pathname} />
       </SidebarNav>
-      <SidebarFooter>
-        <NavUser />
-      </SidebarFooter>
+      <SidebarFooter>{/* NavUser component removed from here */}</SidebarFooter>
     </Sidebar>
   );
 }

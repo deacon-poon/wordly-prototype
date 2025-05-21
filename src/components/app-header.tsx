@@ -94,7 +94,7 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
       : "Dashboard");
 
   return (
-    <header className="flex sticky top-0 h-16 shrink-0 items-center gap-2 px-4 z-20 shadow-sm bg-gradient-to-r from-brand-teal/15 via-brand-teal/5 to-brand-pink/5 w-full">
+    <header className="flex sticky top-0 h-16 shrink-0 items-center gap-2 px-6 z-20 shadow-sm bg-gradient-to-r from-brand-teal/15 via-brand-teal/5 to-brand-pink/5 w-full">
       {/* Left Section */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
