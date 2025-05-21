@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Edit2,
   Eye,
-  Archive,
+  Trash2,
   Plus,
 } from "lucide-react";
 import {
@@ -80,11 +80,15 @@ export default function UsersPage() {
     }
   };
 
-  // Handler for archive workspace
-  const handleArchiveWorkspace = () => {
-    if (confirm("Are you sure you want to archive this workspace?")) {
-      // Archive logic would go here
-      console.log("Workspace archived");
+  // Handler for delete workspace
+  const handleDeleteWorkspace = () => {
+    if (
+      confirm(
+        "Are you sure you want to delete this workspace? This action cannot be undone."
+      )
+    ) {
+      // Delete logic would go here
+      console.log("Workspace deleted");
     }
   };
 
@@ -98,11 +102,11 @@ export default function UsersPage() {
     <>
       <Button
         variant="outline"
-        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-        onClick={handleArchiveWorkspace}
+        className="border-red-300 text-red-700 hover:bg-red-50"
+        onClick={handleDeleteWorkspace}
       >
-        <Archive className="h-4 w-4 mr-2" />
-        Archive workspace
+        <Trash2 className="h-4 w-4 mr-2" />
+        Delete workspace
       </Button>
       <Button
         variant="default"
