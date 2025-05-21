@@ -159,23 +159,6 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         {...props}
       >
         {children}
-        <div className="absolute right-2 top-4 z-20 hidden h-6 w-6 text-brand-teal transition-all group-hover:block">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => dispatch(toggleSidebar())}
-            className="h-6 w-6 p-0 hover:bg-transparent"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4 text-brand-teal" />
-            ) : (
-              <ChevronLeft className="h-4 w-4 text-brand-teal" />
-            )}
-            <span className="sr-only">
-              {isCollapsed ? "Expand" : "Collapse"} sidebar
-            </span>
-          </Button>
-        </div>
       </aside>
     );
   }
