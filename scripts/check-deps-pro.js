@@ -111,27 +111,45 @@ depcruise.on("close", (code) => {
       `${colors.green}${colors.bold}All dependencies are valid! ✓${colors.reset}`
     );
 
-    // Generate a dependency graph visualization for documentation
-    console.log(
-      `\n${colors.blue}Generating dependency graph...${colors.reset}`
-    );
+    // Check if GraphViz is installed before trying to generate graphs
+    let graphvizInstalled = false;
     try {
-      const graphDir = path.join(process.cwd(), "docs");
-      if (!fs.existsSync(graphDir)) {
-        fs.mkdirSync(graphDir, { recursive: true });
-      }
-
-      execSync(
-        "npx depcruise --config .dependency-cruiser.js --output-type dot src | dot -T svg > docs/dependency-graph.svg",
-        { stdio: "inherit" }
-      );
-
-      console.log(
-        `${colors.green}Dependency graph generated at docs/dependency-graph.svg${colors.reset}`
-      );
+      execSync("which dot", { stdio: "ignore" });
+      graphvizInstalled = true;
     } catch (error) {
+      // GraphViz not installed
+    }
+
+    if (graphvizInstalled) {
+      // Generate a dependency graph visualization for documentation
       console.log(
-        `${colors.yellow}Could not generate dependency graph (GraphViz may not be installed).${colors.reset}`
+        `\n${colors.blue}Generating dependency graph...${colors.reset}`
+      );
+      try {
+        const graphDir = path.join(process.cwd(), "docs");
+        if (!fs.existsSync(graphDir)) {
+          fs.mkdirSync(graphDir, { recursive: true });
+        }
+
+        execSync(
+          "npx depcruise --config .dependency-cruiser.js --output-type dot src | dot -T svg > docs/dependency-graph.svg",
+          { stdio: "inherit" }
+        );
+
+        console.log(
+          `${colors.green}Dependency graph generated at docs/dependency-graph.svg${colors.reset}`
+        );
+      } catch (error) {
+        console.log(
+          `${colors.yellow}Could not generate dependency graph: ${error.message}${colors.reset}`
+        );
+      }
+    } else {
+      console.log(
+        `${colors.yellow}GraphViz not installed - skipping dependency graph generation.${colors.reset}`
+      );
+      console.log(
+        `${colors.yellow}Install GraphViz to enable visualization features.${colors.reset}`
       );
     }
 
