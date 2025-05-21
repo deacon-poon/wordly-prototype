@@ -16,6 +16,8 @@ import {
   ExternalLink,
   Info,
   Settings,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
 import {
@@ -40,6 +42,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 // Mock user data
 interface User {
@@ -70,6 +73,11 @@ export default function OrganizationUsersPage() {
   const [selectedRole, setSelectedRole] = useState("All Roles");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Mock organization data
+  const organizationName = "Wordly";
 
   const [users, setUsers] = useState<User[]>([
     {
@@ -254,20 +262,33 @@ export default function OrganizationUsersPage() {
     ? users.find((user) => user.id === selectedUserId)
     : null;
 
+  // Handle delete organization
+  const handleDeleteOrganization = async () => {
+    try {
+      setIsDeleting(true);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Delete logic would go here
+      console.log("Organization deleted");
+
+      // Note: Dialog will be closed automatically after successful validation
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const actions = (
     <>
       <Button
         variant="outline"
-        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-        onClick={() => {
-          if (confirm("Are you sure you want to archive this organization?")) {
-            // Archive logic would go here
-            console.log("Organization archived");
-          }
-        }}
+        className="border-red-300 text-red-700 hover:bg-red-50"
+        onClick={() => setIsDeleteDialogOpen(true)}
       >
-        <Archive className="h-4 w-4 mr-2" />
-        Archive organization
+        <Trash2 className="h-4 w-4 mr-2" />
+        Delete organization
       </Button>
       <Button
         variant="default"
@@ -871,6 +892,22 @@ export default function OrganizationUsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Organization Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Delete Organization"
+        description="This action will permanently delete the organization and all its data, including workspaces, sessions, transcripts, and user assignments. This cannot be undone."
+        onConfirm={handleDeleteOrganization}
+        confirmText="Delete Organization"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+        icon={<AlertTriangle className="h-12 w-12" />}
+        validationText={organizationName}
+        validationLabel={`To confirm, please type the organization name "${organizationName}"`}
+      />
     </>
   );
 }
