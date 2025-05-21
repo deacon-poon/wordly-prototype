@@ -30,6 +30,9 @@ interface User {
 }
 
 export default function UsersPage() {
+  // Mock workspace data
+  const workspaceName = "Main HQ";
+
   const [users, setUsers] = useState<User[]>([
     {
       id: "1",
@@ -93,8 +96,7 @@ export default function UsersPage() {
       // Delete logic would go here
       console.log("Workspace deleted");
 
-      // Close the dialog after deletion
-      setIsDeleteDialogOpen(false);
+      // Note: Dialog will be closed automatically after successful validation
     } catch (error) {
       console.error("Error deleting workspace:", error);
     } finally {
@@ -218,13 +220,15 @@ export default function UsersPage() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         title="Delete Workspace"
-        description="Are you sure you want to delete this workspace? This action cannot be undone and will permanently delete all data associated with this workspace."
+        description="This action will permanently delete the workspace and all its data, including sessions, transcripts, and user assignments. This cannot be undone."
         onConfirm={handleDeleteWorkspace}
         confirmText="Delete Workspace"
         cancelText="Cancel"
         variant="destructive"
         isLoading={isDeleting}
         icon={<AlertTriangle className="h-12 w-12" />}
+        validationText={workspaceName}
+        validationLabel={`To confirm, please type the workspace name "${workspaceName}"`}
       />
     </>
   );
