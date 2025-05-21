@@ -164,24 +164,24 @@ export function TranscriptDetailView({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b pb-4 mb-4">
+      <div className="flex items-center justify-between border-b pb-3 px-4 pt-4 mb-2">
         <div>
-          <h1 className="text-2xl font-bold">
-            {session.name}{" "}
+          <h2 className="text-xl font-semibold">
+            {session.name}
             <span className="text-gray-500 text-sm font-normal ml-2">
               {session.datetime} {session.timezone}
             </span>
-          </h1>
+          </h2>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => onDelete()}>
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             Delete
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="h-3.5 w-3.5 mr-1.5" />
                 Download
               </Button>
             </DropdownMenuTrigger>
@@ -236,9 +236,9 @@ export function TranscriptDetailView({
             className={showComparison ? "bg-gray-100" : ""}
           >
             {showComparison ? (
-              <ChevronRight className="h-4 w-4 mr-2" />
+              <ChevronRight className="h-3.5 w-3.5 mr-1.5" />
             ) : (
-              <ChevronLeft className="h-4 w-4 mr-2" />
+              <ChevronLeft className="h-3.5 w-3.5 mr-1.5" />
             )}
             {showComparison ? "Hide Comparison" : "Compare"}
           </Button>
@@ -246,35 +246,35 @@ export function TranscriptDetailView({
       </div>
 
       {/* Tab Navigation and Language Selection */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between px-4 mb-3 gap-y-2">
         <Tabs
           value={selectedTab}
           onValueChange={(value) => {
             setSelectedTab(value as "transcript" | "summary");
             // Don't reset language selection when switching tabs
           }}
-          className="w-[400px]"
+          className="w-[200px]"
         >
           <TabsList>
             <TabsTrigger value="transcript" className="flex items-center">
-              <FileTextIcon className="h-4 w-4 mr-2" />
+              <FileTextIcon className="h-3.5 w-3.5 mr-1.5" />
               Transcript
             </TabsTrigger>
             <TabsTrigger value="summary" className="flex items-center">
-              <FileQuestion className="h-4 w-4 mr-2" />
+              <FileQuestion className="h-3.5 w-3.5 mr-1.5" />
               Summary
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center">
-            <span className="text-sm text-gray-500 mr-2">Language:</span>
+            <span className="text-xs text-gray-500 mr-1.5">Language:</span>
             <Select
               value={selectedLanguage}
               onValueChange={(value) => setSelectedLanguage(value)}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[140px] h-8 text-xs">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
@@ -289,8 +289,8 @@ export function TranscriptDetailView({
 
           {showComparison && (
             <>
-              <div className="flex items-center ml-2">
-                <span className="text-sm text-gray-500 mr-2">Compare:</span>
+              <div className="flex items-center">
+                <span className="text-xs text-gray-500 mr-1.5">Compare:</span>
                 <Select
                   value={comparisonMode}
                   onValueChange={(value) => {
@@ -309,8 +309,8 @@ export function TranscriptDetailView({
                     }
                   }}
                 >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select comparison mode" />
+                  <SelectTrigger className="w-[140px] h-8 text-xs">
+                    <SelectValue placeholder="Select mode" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="language">
@@ -323,13 +323,13 @@ export function TranscriptDetailView({
                 </Select>
               </div>
 
-              <div className="flex items-center ml-2">
-                <span className="text-sm text-gray-500 mr-2">In:</span>
+              <div className="flex items-center">
+                <span className="text-xs text-gray-500 mr-1.5">In:</span>
                 <Select
                   value={compareLanguage || ""}
                   onValueChange={(value) => setCompareLanguage(value || null)}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[140px] h-8 text-xs">
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
                   <SelectContent>
@@ -351,8 +351,8 @@ export function TranscriptDetailView({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" className="h-8">
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
                 Add
               </Button>
             </DropdownMenuTrigger>
@@ -405,11 +405,11 @@ export function TranscriptDetailView({
       {/* Content Area */}
       <ResizablePanelGroup
         direction="horizontal"
-        className="flex-grow border rounded-md overflow-hidden"
+        className="flex-1 border-t overflow-hidden"
       >
         <ResizablePanel defaultSize={showComparison ? 50 : 100} minSize={30}>
           <div className="h-full overflow-auto p-4">
-            <div className="mb-2 text-sm font-medium text-gray-500">
+            <div className="mb-2 text-xs font-medium text-gray-500">
               {selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)}:{" "}
               {getLanguageName(selectedLanguage)}
             </div>
@@ -417,7 +417,7 @@ export function TranscriptDetailView({
               primaryContent.map((line, index) => (
                 <div
                   key={index}
-                  className="py-2 px-3 rounded-md bg-gray-100 mb-2"
+                  className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm leading-relaxed"
                 >
                   {line}
                 </div>
@@ -432,11 +432,11 @@ export function TranscriptDetailView({
 
         {showComparison && (
           <>
-            <ResizableHandle />
+            <ResizableHandle withHandle />
 
             <ResizablePanel defaultSize={50} minSize={30}>
               <div className="h-full overflow-auto p-4">
-                <div className="mb-2 text-sm font-medium text-gray-500">
+                <div className="mb-2 text-xs font-medium text-gray-500">
                   {comparisonMode === "language"
                     ? `${
                         selectedTab.charAt(0).toUpperCase() +
@@ -459,7 +459,7 @@ export function TranscriptDetailView({
                   secondaryContent.map((line, index) => (
                     <div
                       key={index}
-                      className="py-2 px-3 rounded-md bg-gray-100 mb-2"
+                      className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm leading-relaxed"
                     >
                       {line}
                     </div>
