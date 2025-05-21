@@ -169,18 +169,10 @@ export function AppShell({
                 transition: "min-width 0.2s ease-in-out",
               }}
             >
-              <div className="h-full overflow-auto bg-white border-l">
+              <div className="h-full overflow-auto bg-white border-l relative">
                 <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                   <h2 className="font-semibold">{rightPanelTitle}</h2>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center text-xs text-gray-600 font-medium"
-                    >
-                      <Edit className="h-3.5 w-3.5 mr-1.5" />
-                      Edit
-                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -224,7 +216,15 @@ export function AppShell({
                     </Button>
                   </div>
                 </div>
-                <div className="overflow-auto p-4">{rightPanel}</div>
+                <div className="overflow-auto p-4 pb-20">{rightPanel}</div>
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-end">
+                  <Button
+                    variant="default"
+                    className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+                  >
+                    Save Changes
+                  </Button>
+                </div>
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
@@ -254,14 +254,6 @@ export function AppShell({
               <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                 <h2 className="font-semibold">{rightPanelTitle}</h2>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex items-center text-xs text-gray-600 font-medium"
-                  >
-                    <Edit className="h-3.5 w-3.5 mr-1.5" />
-                    Edit
-                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -311,8 +303,16 @@ export function AppShell({
                   </Button>
                 </div>
               </div>
-              <div className="overflow-auto p-4 h-[calc(100%-56px)]">
+              <div className="overflow-auto p-4 pb-20 h-[calc(100%-56px)]">
                 {rightPanel}
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-end">
+                <Button
+                  variant="default"
+                  className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+                >
+                  Save Changes
+                </Button>
               </div>
             </div>
           </div>
