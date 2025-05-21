@@ -233,7 +233,7 @@ export default function SessionDefaultsPage() {
         </div>
 
         {/* Fixed position Save button at bottom */}
-        <div className="absolute bottom-0 right-0 py-6 px-8">
+        <div className="absolute bottom-0 right-0">
           <Button
             variant="default"
             className="bg-brand-teal hover:bg-brand-teal/90 text-white px-6"
