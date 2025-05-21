@@ -126,7 +126,7 @@ export default function UsersPage() {
         onClick={handleInviteUser}
       >
         <UserPlus className="h-4 w-4 mr-2" />
-        Invite another user
+        Invite users
       </Button>
     </>
   );
