@@ -86,6 +86,9 @@ export function TranscriptDetailView({
     )?.language || null
   );
   const [showComparison, setShowComparison] = useState<boolean>(true);
+  const [comparisonMode, setComparisonMode] = useState<"language" | "content">(
+    "content"
+  );
 
   // Get available languages for current tab type
   const getAvailableLanguagesForType = (type: "transcript" | "summary") => {
@@ -126,11 +129,24 @@ export function TranscriptDetailView({
   // Available languages for current tab
   const availableTabLanguages = getAvailableLanguagesForType(selectedTab);
 
+  // Available languages for the opposite tab (for content comparison)
+  const oppositeTabType =
+    selectedTab === "transcript" ? "summary" : "transcript";
+  const availableOppositeTabLanguages =
+    getAvailableLanguagesForType(oppositeTabType);
+
   // Get transcript content
   const primaryContent = getContent(selectedLanguage, selectedTab);
-  const secondaryContent = compareLanguage
-    ? getContent(compareLanguage, selectedTab)
-    : [];
+
+  // Get comparison content based on mode
+  const secondaryContent =
+    comparisonMode === "language"
+      ? compareLanguage
+        ? getContent(compareLanguage, selectedTab)
+        : []
+      : compareLanguage
+      ? getContent(compareLanguage, oppositeTabType)
+      : [];
 
   // Options for creating new translations/summaries
   const missingLanguages = availableLanguages.filter(
@@ -235,8 +251,7 @@ export function TranscriptDetailView({
           value={selectedTab}
           onValueChange={(value) => {
             setSelectedTab(value as "transcript" | "summary");
-            setSelectedLanguage("original"); // Reset to original when switching tabs
-            setCompareLanguage(null);
+            // Don't reset language selection when switching tabs
           }}
           className="w-[400px]"
         >
@@ -273,26 +288,65 @@ export function TranscriptDetailView({
           </div>
 
           {showComparison && (
-            <div className="flex items-center ml-4">
-              <span className="text-sm text-gray-500 mr-2">Compare with:</span>
-              <Select
-                value={compareLanguage || ""}
-                onValueChange={(value) => setCompareLanguage(value || null)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableTabLanguages
-                    .filter((lang) => lang !== selectedLanguage)
-                    .map((langCode) => (
+            <>
+              <div className="flex items-center ml-2">
+                <span className="text-sm text-gray-500 mr-2">Compare:</span>
+                <Select
+                  value={comparisonMode}
+                  onValueChange={(value) => {
+                    setComparisonMode(value as "language" | "content");
+                    // Reset comparison language when switching modes
+                    if (value === "language") {
+                      setCompareLanguage(
+                        availableTabLanguages.find(
+                          (l) => l !== selectedLanguage
+                        ) || null
+                      );
+                    } else {
+                      setCompareLanguage(
+                        availableOppositeTabLanguages[0] || null
+                      );
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select comparison mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="language">
+                      Same type, different language
+                    </SelectItem>
+                    <SelectItem value="content">
+                      Transcript vs. Summary
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center ml-2">
+                <span className="text-sm text-gray-500 mr-2">In:</span>
+                <Select
+                  value={compareLanguage || ""}
+                  onValueChange={(value) => setCompareLanguage(value || null)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(comparisonMode === "language"
+                      ? availableTabLanguages.filter(
+                          (l) => l !== selectedLanguage
+                        )
+                      : availableOppositeTabLanguages
+                    ).map((langCode) => (
                       <SelectItem key={langCode} value={langCode}>
                         {getLanguageName(langCode)}
                       </SelectItem>
                     ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           )}
 
           <DropdownMenu>
@@ -356,6 +410,7 @@ export function TranscriptDetailView({
         <ResizablePanel defaultSize={showComparison ? 50 : 100} minSize={30}>
           <div className="h-full overflow-auto p-4">
             <div className="mb-2 text-sm font-medium text-gray-500">
+              {selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)}:{" "}
               {getLanguageName(selectedLanguage)}
             </div>
             {primaryContent.length > 0 ? (
@@ -382,9 +437,23 @@ export function TranscriptDetailView({
             <ResizablePanel defaultSize={50} minSize={30}>
               <div className="h-full overflow-auto p-4">
                 <div className="mb-2 text-sm font-medium text-gray-500">
-                  {compareLanguage
-                    ? getLanguageName(compareLanguage)
-                    : "Select language to compare"}
+                  {comparisonMode === "language"
+                    ? `${
+                        selectedTab.charAt(0).toUpperCase() +
+                        selectedTab.slice(1)
+                      }: ${
+                        compareLanguage
+                          ? getLanguageName(compareLanguage)
+                          : "Select language"
+                      }`
+                    : `${
+                        oppositeTabType.charAt(0).toUpperCase() +
+                        oppositeTabType.slice(1)
+                      }: ${
+                        compareLanguage
+                          ? getLanguageName(compareLanguage)
+                          : "Select language"
+                      }`}
                 </div>
                 {secondaryContent.length > 0 ? (
                   secondaryContent.map((line, index) => (
