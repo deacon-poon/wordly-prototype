@@ -29,7 +29,7 @@ export default function SessionDefaultsPage() {
       title="Session Defaults"
       description="Configure your workspace settings and preferences."
     >
-      <div className="space-y-6 relative pb-16">
+      <div className="space-y-6 relative pb-24">
         {/* Minutes Pool */}
         <div className="grid grid-cols-3 gap-4 items-start">
           <div className="pt-2">
@@ -233,10 +233,10 @@ export default function SessionDefaultsPage() {
         </div>
 
         {/* Fixed position Save button at bottom */}
-        <div className="absolute bottom-0 right-0 py-4 px-6">
+        <div className="absolute bottom-0 right-0 py-6 px-8">
           <Button
             variant="default"
-            className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+            className="bg-brand-teal hover:bg-brand-teal/90 text-white px-6"
           >
             Save Changes
           </Button>
