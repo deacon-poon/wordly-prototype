@@ -10,7 +10,7 @@ import {
   Edit2,
   Eye,
   Trash2,
-  Plus,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 // Mock user data
 interface User {
@@ -49,6 +50,8 @@ export default function UsersPage() {
       isCurrentUser: false,
     },
   ]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Get the appropriate icon for a role
   const getRoleIcon = (role: User["role"]) => {
@@ -81,14 +84,21 @@ export default function UsersPage() {
   };
 
   // Handler for delete workspace
-  const handleDeleteWorkspace = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete this workspace? This action cannot be undone."
-      )
-    ) {
+  const handleDeleteWorkspace = async () => {
+    try {
+      setIsDeleting(true);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Delete logic would go here
       console.log("Workspace deleted");
+
+      // Close the dialog after deletion
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting workspace:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -103,7 +113,7 @@ export default function UsersPage() {
       <Button
         variant="outline"
         className="border-red-300 text-red-700 hover:bg-red-50"
-        onClick={handleDeleteWorkspace}
+        onClick={() => setIsDeleteDialogOpen(true)}
       >
         <Trash2 className="h-4 w-4 mr-2" />
         Delete workspace
@@ -120,86 +130,102 @@ export default function UsersPage() {
   );
 
   return (
-    <CardHeaderLayout
-      title="User Management"
-      description="Manage workspace users and their permissions."
-      actions={actions}
-    >
-      <div className="p-0 -m-6">
-        <div className="w-full border-b px-6 py-3 bg-gray-50 grid grid-cols-2">
-          <div className="font-medium text-gray-700">Name</div>
-          <div className="font-medium text-gray-700">Role</div>
-        </div>
-
-        {users.map((user, index) => (
-          <div
-            key={user.id}
-            className={`w-full px-6 py-4 grid grid-cols-2 items-center ${
-              index < users.length - 1 ? "border-b" : ""
-            }`}
-          >
-            <div className="font-medium text-gray-900">
-              {user.name}{" "}
-              {user.isCurrentUser && (
-                <span className="text-gray-500 font-normal">(you)</span>
-              )}
-            </div>
-            <div className="flex justify-between items-center">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="text-gray-800 border-gray-300 h-9 flex items-center justify-between"
-                  >
-                    <div className="flex items-center">
-                      {getRoleIcon(user.role)}
-                      {user.role}
-                    </div>
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem
-                    onClick={() => handleRoleChange(user.id, "Administrator")}
-                    className={
-                      user.role === "Administrator" ? "bg-gray-100" : ""
-                    }
-                  >
-                    <ShieldCheck className="h-4 w-4 mr-2" />
-                    Administrator
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleRoleChange(user.id, "Editor")}
-                    className={user.role === "Editor" ? "bg-gray-100" : ""}
-                  >
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Editor
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleRoleChange(user.id, "Viewer")}
-                    className={user.role === "Viewer" ? "bg-gray-100" : ""}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Viewer
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {!user.isCurrentUser && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveUser(user.id)}
-                  className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
-                >
-                  <XCircle className="h-5 w-5" />
-                  <span className="sr-only">Remove user</span>
-                </Button>
-              )}
-            </div>
+    <>
+      <CardHeaderLayout
+        title="User Management"
+        description="Manage workspace users and their permissions."
+        actions={actions}
+      >
+        <div className="p-0 -m-6">
+          <div className="w-full border-b px-6 py-3 bg-gray-50 grid grid-cols-2">
+            <div className="font-medium text-gray-700">Name</div>
+            <div className="font-medium text-gray-700">Role</div>
           </div>
-        ))}
-      </div>
-    </CardHeaderLayout>
+
+          {users.map((user, index) => (
+            <div
+              key={user.id}
+              className={`w-full px-6 py-4 grid grid-cols-2 items-center ${
+                index < users.length - 1 ? "border-b" : ""
+              }`}
+            >
+              <div className="font-medium text-gray-900">
+                {user.name}{" "}
+                {user.isCurrentUser && (
+                  <span className="text-gray-500 font-normal">(you)</span>
+                )}
+              </div>
+              <div className="flex justify-between items-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="text-gray-800 border-gray-300 h-9 flex items-center justify-between"
+                    >
+                      <div className="flex items-center">
+                        {getRoleIcon(user.role)}
+                        {user.role}
+                      </div>
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChange(user.id, "Administrator")}
+                      className={
+                        user.role === "Administrator" ? "bg-gray-100" : ""
+                      }
+                    >
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                      Administrator
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChange(user.id, "Editor")}
+                      className={user.role === "Editor" ? "bg-gray-100" : ""}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Editor
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleRoleChange(user.id, "Viewer")}
+                      className={user.role === "Viewer" ? "bg-gray-100" : ""}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Viewer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {!user.isCurrentUser && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveUser(user.id)}
+                    className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                  >
+                    <XCircle className="h-5 w-5" />
+                    <span className="sr-only">Remove user</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardHeaderLayout>
+
+      {/* Delete Workspace Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Delete Workspace"
+        description="Are you sure you want to delete this workspace? This action cannot be undone and will permanently delete all data associated with this workspace."
+        onConfirm={handleDeleteWorkspace}
+        confirmText="Delete Workspace"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+        icon={<AlertTriangle className="h-12 w-12" />}
+      />
+    </>
   );
 }
