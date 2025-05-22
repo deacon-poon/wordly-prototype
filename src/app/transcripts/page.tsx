@@ -30,6 +30,7 @@ import {
   FileQuestion,
   ArrowUp,
   ArrowDown,
+  Search,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,8 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // Mock data
 const mockTranscripts = [
@@ -195,6 +198,8 @@ function TranscriptsPageContent() {
   const [transcriptContent, setTranscriptContent] = useState(
     mockTranscriptContent
   );
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentView, setCurrentView] = useState<"list" | "detail">("list");
 
   // Filtered and sorted transcripts
   const filteredTranscripts = transcripts.filter(
@@ -258,6 +263,16 @@ function TranscriptsPageContent() {
 
   const handleSelectTranscript = (id: string) => {
     setSelectedTranscriptId(id);
+    setCurrentView("detail");
+  };
+
+  const handleToggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const handleBackToList = () => {
+    setCurrentView("list");
+    setIsFullscreen(false);
   };
 
   const handleGenerateTranslation = () => {
@@ -315,260 +330,299 @@ function TranscriptsPageContent() {
     );
   };
 
+  // On smaller screens, show either list or detail view
+  // On larger screens (lg+), show both in a panel layout unless fullscreen is enabled
   return (
     <div className="flex flex-col h-full">
-      {/* Header and search */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Transcripts</h1>
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Search transcripts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-72"
-          />
-          <Button>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-        </div>
+      {/* Mobile/Tablet View Tabs */}
+      <div className="lg:hidden mb-4">
+        <Tabs
+          defaultValue="list"
+          value={currentView}
+          onValueChange={(value) => setCurrentView(value as "list" | "detail")}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list">Transcript List</TabsTrigger>
+            <TabsTrigger value="detail" disabled={!selectedTranscript}>
+              Selected Transcript
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      {/* Selected Items Actions */}
-      {selectedTranscripts.length > 0 && (
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-gray-600">
-            {selectedTranscripts.length} item(s) selected
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleGenerateTranslation}
-          >
-            <Languages className="mr-2 h-4 w-4" />
-            Translate
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleGenerateSummary("en-US")}
-          >
-            <FileQuestion className="mr-2 h-4 w-4" />
-            Summarize
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadSelected}>
-            <Download className="mr-2 h-4 w-4" />
-            Download
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleDeleteSelected}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      )}
+      {/* Mobile/Tablet View */}
+      <div className="lg:hidden flex-1">
+        {currentView === "list" && (
+          <div className="flex flex-col h-full bg-white rounded-lg border shadow-sm">
+            {/* Header and search */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h1 className="text-lg font-semibold">Transcripts</h1>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" title="Refresh">
+                  <RefreshCcw className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
 
-      {/* Main content with resizable panels */}
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex-1 border rounded-md overflow-hidden"
-      >
-        {/* Transcript list panel */}
-        <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-          <div className="h-full overflow-auto">
-            <Table>
-              <TableHeader className="sticky top-0 bg-white z-10">
-                <TableRow>
-                  <TableHead className="w-[40px]">
-                    <Checkbox
-                      checked={
-                        selectedTranscripts.length === transcripts.length &&
-                        transcripts.length > 0
-                      }
-                      onCheckedChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer"
-                    onClick={() => handleSort("name")}
-                  >
-                    <div className="flex items-center">
-                      Name <SortIndicator column="name" />
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer w-[180px] hidden md:table-cell"
-                    onClick={() => handleSort("date")}
-                  >
-                    <div className="flex items-center">
-                      Date <SortIndicator column="date" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-[40px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTranscripts.length > 0 ? (
-                  sortedTranscripts.map((transcript) => (
-                    <TableRow
-                      key={transcript.id}
-                      className={`cursor-pointer hover:bg-gray-50 ${
-                        selectedTranscriptId === transcript.id
-                          ? "bg-gray-100"
-                          : ""
-                      }`}
-                      onClick={() => handleSelectTranscript(transcript.id)}
+            <div className="px-4 py-3 border-b">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search transcripts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            {/* Selected Items Actions */}
+            {selectedTranscripts.length > 0 && (
+              <div className="flex items-center gap-2 p-3 border-b bg-gray-50">
+                <span className="text-sm text-gray-600">
+                  {selectedTranscripts.length} selected
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateTranslation}
+                  className="h-8"
+                >
+                  <Languages className="h-3.5 w-3.5 mr-1.5" />
+                  Translate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleGenerateSummary("en-US")}
+                  className="h-8"
+                >
+                  <FileQuestion className="h-3.5 w-3.5 mr-1.5" />
+                  Summarize
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadSelected}
+                  className="h-8"
+                >
+                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                  Download
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteSelected}
+                  className="h-8"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Delete
+                </Button>
+              </div>
+            )}
+
+            {/* Transcript list */}
+            <div className="flex-1 overflow-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-white z-10">
+                  <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={
+                          selectedTranscripts.length === transcripts.length &&
+                          transcripts.length > 0
+                        }
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer"
+                      onClick={() => handleSort("name")}
                     >
-                      <TableCell className="p-2">
-                        <Checkbox
-                          checked={selectedTranscripts.includes(transcript.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedTranscripts((prev) => [
-                                ...prev,
-                                transcript.id,
-                              ]);
-                            } else {
-                              setSelectedTranscripts((prev) =>
-                                prev.filter((id) => id !== transcript.id)
-                              );
-                            }
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium hover:text-blue-600">
-                          {transcript.name}
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge
-                              variant="outline"
-                              className="bg-gray-50 text-xs"
-                            >
-                              <FileText className="mr-1 h-3 w-3" />
-                              {transcript.languages.length}
-                            </Badge>
-                            {transcript.hasSummary && (
+                      <div className="flex items-center">
+                        Name <SortIndicator column="name" />
+                      </div>
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer w-[180px] hidden md:table-cell"
+                      onClick={() => handleSort("date")}
+                    >
+                      <div className="flex items-center">
+                        Date <SortIndicator column="date" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="w-[40px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedTranscripts.length > 0 ? (
+                    sortedTranscripts.map((transcript) => (
+                      <TableRow
+                        key={transcript.id}
+                        className={`cursor-pointer hover:bg-gray-50 ${
+                          selectedTranscriptId === transcript.id
+                            ? "bg-gray-100"
+                            : ""
+                        }`}
+                        onClick={() => handleSelectTranscript(transcript.id)}
+                      >
+                        <TableCell className="p-2">
+                          <Checkbox
+                            checked={selectedTranscripts.includes(
+                              transcript.id
+                            )}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedTranscripts((prev) => [
+                                  ...prev,
+                                  transcript.id,
+                                ]);
+                              } else {
+                                setSelectedTranscripts((prev) =>
+                                  prev.filter((id) => id !== transcript.id)
+                                );
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium hover:text-blue-600">
+                            {transcript.name}
+                            <div className="flex flex-wrap gap-1 mt-1">
                               <Badge
                                 variant="outline"
                                 className="bg-gray-50 text-xs"
                               >
-                                <FileQuestion className="mr-1 h-3 w-3" />
-                                Summary
+                                <FileText className="mr-1 h-3 w-3" />
+                                {transcript.languages.length}
                               </Badge>
-                            )}
+                              {transcript.hasSummary && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-gray-50 text-xs"
+                                >
+                                  <FileQuestion className="mr-1 h-3 w-3" />
+                                  Summary
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1 md:hidden">
+                              {transcript.date} · {transcript.duration}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500 mt-1 md:hidden">
-                            {transcript.date} · {transcript.duration}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <div>{transcript.date}</div>
+                          <div className="text-xs text-gray-500">
+                            {transcript.duration}
                           </div>
+                        </TableCell>
+                        <TableCell className="p-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTranslate("en-US");
+                                }}
+                              >
+                                <Languages className="mr-2 h-4 w-4" />
+                                Translate
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownload({
+                                    languages: ["original"],
+                                    types: ["transcript"],
+                                  });
+                                }}
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEdit(transcript.id);
+                                }}
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                Edit Transcript
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleGenerateSummary("en-US");
+                                }}
+                              >
+                                <FileQuestion className="mr-2 h-4 w-4" />
+                                Summarize
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleShare(transcript.id);
+                                }}
+                              >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Share
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete();
+                                }}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8">
+                        <div className="text-gray-500">
+                          {searchQuery
+                            ? "No transcripts found matching your search."
+                            : "No transcripts available."}
                         </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <div>{transcript.date}</div>
-                        <div className="text-xs text-gray-500">
-                          {transcript.duration}
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-1">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleTranslate("en-US");
-                              }}
-                            >
-                              <Languages className="mr-2 h-4 w-4" />
-                              Translate
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownload({
-                                  languages: ["original"],
-                                  types: ["transcript"],
-                                });
-                              }}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Download
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                alert("Sharing transcript");
-                              }}
-                            >
-                              <Share2 className="mr-2 h-4 w-4" />
-                              Share
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete();
-                              }}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
-                      {searchQuery ? (
-                        <div>
-                          <p className="text-lg font-semibold">
-                            No matching transcripts found
-                          </p>
-                          <p className="text-gray-500">
-                            Try a different search term
-                          </p>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-lg font-semibold">
-                            No transcripts yet
-                          </p>
-                          <p className="text-gray-500">
-                            Transcripts will appear here after you create them
-                          </p>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </ResizablePanel>
+        )}
 
-        <ResizableHandle withHandle />
-
-        {/* Transcript detail panel */}
-        <ResizablePanel defaultSize={70}>
-          <div className="h-full overflow-auto p-0">
-            {selectedTranscript ? (
+        {currentView === "detail" && selectedTranscript && (
+          <div className="flex flex-col h-full bg-white rounded-lg border shadow-sm">
+            <div className="px-4 py-2 border-b">
+              <Button variant="outline" size="sm" onClick={handleBackToList}>
+                ← Back to List
+              </Button>
+            </div>
+            <div className="flex-1">
               <TranscriptDetailView
                 session={mockSession}
                 transcripts={transcriptContent}
@@ -578,26 +632,343 @@ function TranscriptsPageContent() {
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onGenerateSummary={handleGenerateSummary}
+                isFullscreen={isFullscreen}
+                onToggleFullscreen={handleToggleFullscreen}
               />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                <div className="text-center">
-                  <FileText className="h-12 w-12 mb-4 mx-auto text-gray-300" />
-                  <p className="text-lg font-semibold">
-                    Select a transcript to view
-                  </p>
-                  <p className="text-gray-400">
-                    Click on any transcript in the list to view its details
-                  </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop View: Resizable Panels */}
+      <div className="hidden lg:block flex-1">
+        {isFullscreen && selectedTranscript ? (
+          <div className="h-full bg-white rounded-lg border shadow-sm">
+            <TranscriptDetailView
+              session={mockSession}
+              transcripts={transcriptContent}
+              availableLanguages={availableLanguages}
+              onTranslate={handleTranslate}
+              onDownload={handleDownload}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+              onGenerateSummary={handleGenerateSummary}
+              isFullscreen={true}
+              onToggleFullscreen={handleToggleFullscreen}
+            />
+          </div>
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="h-full border rounded-lg overflow-hidden bg-white"
+          >
+            {/* List Panel */}
+            <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+              <div className="flex flex-col h-full">
+                {/* Header and search */}
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h1 className="text-lg font-semibold">Transcripts</h1>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" title="Refresh">
+                      <RefreshCcw className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="px-4 py-3 border-b">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search transcripts..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Selected Items Actions */}
+                {selectedTranscripts.length > 0 && (
+                  <div className="flex items-center gap-2 p-3 border-b bg-gray-50">
+                    <span className="text-sm text-gray-600">
+                      {selectedTranscripts.length} selected
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateTranslation}
+                      className="h-8"
+                    >
+                      <Languages className="h-3.5 w-3.5 mr-1.5" />
+                      Translate
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateSummary("en-US")}
+                      className="h-8"
+                    >
+                      <FileQuestion className="h-3.5 w-3.5 mr-1.5" />
+                      Summarize
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadSelected}
+                      className="h-8"
+                    >
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      Download
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleDeleteSelected}
+                      className="h-8"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      Delete
+                    </Button>
+                  </div>
+                )}
+
+                {/* Transcript list */}
+                <div className="flex-1 overflow-auto">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-white z-10">
+                      <TableRow>
+                        <TableHead className="w-[40px]">
+                          <Checkbox
+                            checked={
+                              selectedTranscripts.length ===
+                                transcripts.length && transcripts.length > 0
+                            }
+                            onCheckedChange={toggleSelectAll}
+                          />
+                        </TableHead>
+                        <TableHead
+                          className="cursor-pointer"
+                          onClick={() => handleSort("name")}
+                        >
+                          <div className="flex items-center">
+                            Name <SortIndicator column="name" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="cursor-pointer w-[180px]"
+                          onClick={() => handleSort("date")}
+                        >
+                          <div className="flex items-center">
+                            Date <SortIndicator column="date" />
+                          </div>
+                        </TableHead>
+                        <TableHead className="w-[40px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sortedTranscripts.length > 0 ? (
+                        sortedTranscripts.map((transcript) => (
+                          <TableRow
+                            key={transcript.id}
+                            className={`cursor-pointer hover:bg-gray-50 ${
+                              selectedTranscriptId === transcript.id
+                                ? "bg-gray-100"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleSelectTranscript(transcript.id)
+                            }
+                          >
+                            <TableCell className="p-2">
+                              <Checkbox
+                                checked={selectedTranscripts.includes(
+                                  transcript.id
+                                )}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedTranscripts((prev) => [
+                                      ...prev,
+                                      transcript.id,
+                                    ]);
+                                  } else {
+                                    setSelectedTranscripts((prev) =>
+                                      prev.filter((id) => id !== transcript.id)
+                                    );
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium hover:text-blue-600">
+                                {transcript.name}
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-gray-50 text-xs"
+                                  >
+                                    <FileText className="mr-1 h-3 w-3" />
+                                    {transcript.languages.length}
+                                  </Badge>
+                                  {transcript.hasSummary && (
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-gray-50 text-xs"
+                                    >
+                                      <FileQuestion className="mr-1 h-3 w-3" />
+                                      Summary
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>{transcript.date}</div>
+                              <div className="text-xs text-gray-500">
+                                {transcript.duration}
+                              </div>
+                            </TableCell>
+                            <TableCell className="p-1">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTranslate("en-US");
+                                    }}
+                                  >
+                                    <Languages className="mr-2 h-4 w-4" />
+                                    Translate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownload({
+                                        languages: ["original"],
+                                        types: ["transcript"],
+                                      });
+                                    }}
+                                  >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(transcript.id);
+                                    }}
+                                  >
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Edit Transcript
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleGenerateSummary("en-US");
+                                    }}
+                                  >
+                                    <FileQuestion className="mr-2 h-4 w-4" />
+                                    Summarize
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleShare(transcript.id);
+                                    }}
+                                  >
+                                    <Share2 className="mr-2 h-4 w-4" />
+                                    Share
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete();
+                                    }}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8">
+                            <div className="text-gray-500">
+                              {searchQuery
+                                ? "No transcripts found matching your search."
+                                : "No transcripts available."}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
-            )}
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+            </ResizablePanel>
+
+            <ResizableHandle withHandle />
+
+            {/* Detail Panel */}
+            <ResizablePanel defaultSize={70}>
+              <div className="h-full">
+                {selectedTranscript ? (
+                  <TranscriptDetailView
+                    session={mockSession}
+                    transcripts={transcriptContent}
+                    availableLanguages={availableLanguages}
+                    onTranslate={handleTranslate}
+                    onDownload={handleDownload}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onGenerateSummary={handleGenerateSummary}
+                    isFullscreen={false}
+                    onToggleFullscreen={handleToggleFullscreen}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 mb-4 mx-auto text-gray-300" />
+                      <p className="text-lg font-semibold">
+                        Select a transcript to view
+                      </p>
+                      <p className="text-gray-400">
+                        Click on any transcript in the list to view its details
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
+      </div>
     </div>
   );
 }
+
+// This function is needed for proper type checking
+const handleShare = (id: string) => {
+  alert(`Sharing transcript ${id}`);
+};
 
 export default function TranscriptsPage() {
   return <TranscriptsPageContent />;

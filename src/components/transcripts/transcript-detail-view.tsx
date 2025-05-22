@@ -14,10 +14,13 @@ import {
   FileQuestion,
   Plus,
   Pencil,
-  Globe,
+  Check,
+  X,
+  ChevronDown,
+  ChevronUp,
   Languages,
-  Edit3,
-  ExternalLink,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   Select,
@@ -33,7 +37,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -60,6 +75,8 @@ interface TranscriptDetailViewProps {
   onDelete: () => void;
   onEdit: (transcriptId: string) => void;
   onGenerateSummary: (language: string) => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export function TranscriptDetailView({
@@ -71,45 +88,42 @@ export function TranscriptDetailView({
   onDelete,
   onEdit,
   onGenerateSummary,
+  isFullscreen = false,
+  onToggleFullscreen,
 }: TranscriptDetailViewProps) {
   // State
-  const [originalLanguage, setOriginalLanguage] = useState<string>("original");
-  const [translationLanguage, setTranslationLanguage] = useState<string>(
-    transcripts.find((t) => t.type === "translation")?.language || "en-US"
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("original");
+  const [summaryExpanded, setSummaryExpanded] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [editedContent, setEditedContent] = useState<{ [key: string]: string }>(
+    {}
   );
-  const [selectedTab, setSelectedTab] = useState<string>("transcript");
-  const [editMode, setEditMode] = useState<boolean>(false);
 
-  // Get available languages for original, translation and summary
-  const getAvailableLanguagesForType = (
-    type: "original" | "translation" | "summary"
-  ) => {
+  // Get available languages for transcript and summary
+  const getAvailableLanguagesForType = (type: "transcript" | "summary") => {
     const languageCodes = transcripts
-      .filter((t) => {
-        if (type === "original") return t.type === "original";
-        if (type === "translation") return t.type === "translation";
-        return t.type === "summary";
-      })
+      .filter((t) =>
+        type === "transcript"
+          ? t.type === "original" || t.type === "translation"
+          : t.type === "summary"
+      )
       .map((t) => t.language);
 
-    // Always include "original" for original
-    if (type === "original" && !languageCodes.includes("original")) {
+    // Always include "original" for transcripts
+    if (type === "transcript" && !languageCodes.includes("original")) {
       languageCodes.unshift("original");
     }
 
     return languageCodes;
   };
 
-  // Get content for selected language and type
-  const getContent = (
-    language: string,
-    type: "original" | "translation" | "summary"
-  ) => {
+  // Get content
+  const getContent = (language: string, type: "transcript" | "summary") => {
     const searchType =
-      type === "original"
-        ? "original"
-        : type === "translation"
-        ? "translation"
+      type === "transcript"
+        ? language === "original"
+          ? "original"
+          : "translation"
         : "summary";
 
     const content = transcripts.find(
@@ -121,27 +135,31 @@ export function TranscriptDetailView({
     return content?.content || [];
   };
 
-  // Available languages for different types
-  const availableOriginalLanguages = getAvailableLanguagesForType("original");
-  const availableTranslationLanguages =
-    getAvailableLanguagesForType("translation");
+  // Get transcripts and summaries for the selected language
+  const transcriptContent = getContent(selectedLanguage, "transcript");
+  const summaryContent = getContent(selectedLanguage, "summary");
+
+  // Available languages
+  const availableTranscriptLanguages =
+    getAvailableLanguagesForType("transcript");
   const availableSummaryLanguages = getAvailableLanguagesForType("summary");
 
-  // Get content
-  const originalContent = getContent(originalLanguage, "original");
-  const translationContent = getContent(translationLanguage, "translation");
-  const originalSummaryContent = getContent(originalLanguage, "summary");
-  const translationSummaryContent = getContent(translationLanguage, "summary");
-
-  // Options for creating new translations/summaries
-  const missingTranslationLanguages = availableLanguages.filter(
-    (lang) => !availableTranslationLanguages.includes(lang.code)
+  // Missing languages (for translation options)
+  const missingLanguages = availableLanguages.filter(
+    (lang) =>
+      !availableTranscriptLanguages.includes(lang.code) &&
+      lang.code !== "original"
   );
 
+  // Missing summary languages
   const missingSummaryLanguages = availableLanguages.filter(
     (lang) =>
       !availableSummaryLanguages.includes(lang.code) && lang.code !== "original"
   );
+
+  // Determine if summary is available in selected language
+  const hasSummaryInSelectedLanguage =
+    availableSummaryLanguages.includes(selectedLanguage);
 
   // Function to get language name by code
   const getLanguageName = (code: string) => {
@@ -149,285 +167,329 @@ export function TranscriptDetailView({
     return availableLanguages.find((l) => l.code === code)?.name || code;
   };
 
+  // Handle language change
+  const handleLanguageChange = (language: string) => {
+    // If user selects a language that doesn't exist, offer to translate
+    if (
+      !availableTranscriptLanguages.includes(language) &&
+      language !== "original"
+    ) {
+      onTranslate(language);
+    } else {
+      setSelectedLanguage(language);
+      // Cancel edit mode when language changes
+      if (editMode) {
+        setEditMode(false);
+        setEditedContent({});
+      }
+    }
+  };
+
+  // Handle edit mode
+  const handleToggleEditMode = () => {
+    if (editMode) {
+      // Save changes (in a real app, we would call an API here)
+      setEditMode(false);
+      setEditedContent({});
+      onEdit(transcripts.find((t) => t.type === "original")?.id || "");
+    } else {
+      setEditMode(true);
+    }
+  };
+
+  // Handle editing a segment
+  const handleEditSegment = (index: number, newText: string) => {
+    setEditedContent((prev) => ({
+      ...prev,
+      [index]: newText,
+    }));
+  };
+
+  // Render a transcript segment
+  const renderSegment = (text: string, index: number) => {
+    if (editMode && selectedLanguage === "original") {
+      return (
+        <div
+          key={index}
+          className="py-3 px-4 rounded-md bg-gray-50 mb-3 text-sm leading-relaxed group relative"
+        >
+          <textarea
+            value={
+              editedContent[index] !== undefined ? editedContent[index] : text
+            }
+            onChange={(e) => handleEditSegment(index, e.target.value)}
+            className="w-full min-h-[60px] p-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={index}
+        className={cn(
+          "py-3 px-4 rounded-md mb-3 text-sm leading-relaxed group relative",
+          editMode ? "hover:bg-blue-50 cursor-text" : "bg-gray-50"
+        )}
+        onClick={() => editMode && handleEditSegment(index, text)}
+      >
+        {text}
+        {editMode && selectedLanguage === "original" && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditSegment(index, text);
+            }}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b pb-2 px-4 pt-3">
+      <div className="flex items-center justify-between border-b pb-3 px-4 pt-4 mb-2">
         <div>
-          <h2 className="text-lg font-semibold flex items-center">
+          <h2 className="text-xl font-semibold">
             {session.name}
             <span className="text-gray-500 text-sm font-normal ml-2">
               {session.datetime} {session.timezone}
             </span>
           </h2>
         </div>
+
         <div className="flex items-center gap-2">
-          <Tabs
-            value={selectedTab}
-            onValueChange={setSelectedTab}
-            className="mr-4"
-          >
-            <TabsList>
-              <TabsTrigger value="transcript" className="text-xs px-3">
-                Transcript
-              </TabsTrigger>
-              <TabsTrigger value="summary" className="text-xs px-3">
-                Summary
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Unified Language Selector */}
+          <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="original">Original</SelectItem>
+              {availableLanguages.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  {lang.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Action Buttons */}
+          {onToggleFullscreen && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onToggleFullscreen}
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
 
           <Button
-            variant="outline"
+            variant={editMode ? "default" : "outline"}
             size="sm"
-            onClick={() => setEditMode(!editMode)}
+            onClick={handleToggleEditMode}
+            disabled={selectedLanguage !== "original" && !editMode}
           >
-            <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-            {editMode ? "View Mode" : "Edit Mode"}
+            {editMode ? (
+              <>
+                <Check className="h-3.5 w-3.5 mr-1.5" />
+                Save
+              </>
+            ) : (
+              <>
+                <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                Edit
+              </>
+            )}
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDownload({ languages: ["all"], types: ["all"] })}
-          >
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            Download
-          </Button>
+          {editMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditMode(false);
+                setEditedContent({});
+              }}
+            >
+              <X className="h-3.5 w-3.5 mr-1.5" />
+              Cancel
+            </Button>
+          )}
 
           <Button variant="outline" size="sm" onClick={() => onDelete()}>
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             Delete
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                Download
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() =>
+                  onDownload({
+                    languages: [selectedLanguage],
+                    types: ["transcript"],
+                  })
+                }
+              >
+                <FileTextIcon className="h-4 w-4 mr-2" />
+                Download Transcript
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() =>
+                  onDownload({
+                    languages: [selectedLanguage],
+                    types: ["summary"],
+                  })
+                }
+                disabled={!hasSummaryInSelectedLanguage}
+              >
+                <FileQuestion className="h-4 w-4 mr-2" />
+                Download Summary
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuLabel className="text-xs text-gray-500">
+                Format
+              </DropdownMenuLabel>
+              <DropdownMenuItem>SRT (Subtitles)</DropdownMenuItem>
+              <DropdownMenuItem>VTT (Web Subtitles)</DropdownMenuItem>
+              <DropdownMenuItem>Text File</DropdownMenuItem>
+              <DropdownMenuItem>Word Document</DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={() =>
+                  onDownload({ languages: ["all"], types: ["all"] })
+                }
+              >
+                Download Everything
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {missingLanguages.length > 0 && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-gray-500">
+                    Translate transcript to:
+                  </DropdownMenuLabel>
+                  {missingLanguages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.code}
+                      onClick={() => onTranslate(lang.code)}
+                    >
+                      <Languages className="h-4 w-4 mr-2" />
+                      {lang.name}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                </>
+              )}
+
+              {missingSummaryLanguages.length > 0 && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-gray-500">
+                    Generate summary in:
+                  </DropdownMenuLabel>
+                  {missingSummaryLanguages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.code}
+                      onClick={() => onGenerateSummary(lang.code)}
+                    >
+                      <FileQuestion className="h-4 w-4 mr-2" />
+                      {lang.name}
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <TabsContent value="transcript" className="flex-1 mt-0 p-0">
-        {/* Content Area */}
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 overflow-hidden"
-        >
-          {/* Original Language Panel */}
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <div className="h-full overflow-auto flex flex-col">
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+      {/* Content Area - Side-by-side layout */}
+      <div className="flex-1 overflow-hidden">
+        {/* Use ResizablePanelGroup for side-by-side layout */}
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Transcript Panel */}
+          <ResizablePanel defaultSize={60} minSize={30}>
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white border-b z-10">
                 <div className="flex items-center">
-                  <FileTextIcon className="h-3.5 w-3.5 mr-1.5" />
-                  <span className="font-medium">Original Language</span>
+                  <FileTextIcon className="h-4 w-4 mr-2" />
+                  <span className="font-medium">Transcript</span>
+                  {selectedLanguage !== "original" && (
+                    <span className="ml-2 text-sm text-gray-500">
+                      ({getLanguageName(selectedLanguage)})
+                    </span>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={originalLanguage}
-                    onValueChange={setOriginalLanguage}
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableOriginalLanguages.map((langCode) => (
-                        <SelectItem key={langCode} value={langCode}>
-                          {getLanguageName(langCode)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() =>
-                      onEdit(
-                        transcripts.find((t) => t.type === "original")?.id || ""
-                      )
-                    }
-                    disabled={
-                      !transcripts.some((t) => t.type === "original") ||
-                      editMode
-                    }
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                {editMode && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">Editing Mode</span>
+                  </div>
+                )}
               </div>
 
-              <div className={cn("p-4", editMode ? "flex-1" : "")}>
-                {originalContent.length > 0 ? (
-                  editMode ? (
-                    <textarea
-                      className="w-full h-full min-h-[300px] p-3 text-sm border rounded-md"
-                      defaultValue={originalContent.join("\n\n")}
-                    />
-                  ) : (
-                    originalContent.map((line, index) => (
-                      <div
-                        key={index}
-                        className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm leading-relaxed"
-                      >
-                        {line}
-                      </div>
-                    ))
+              <div className="p-4 overflow-auto flex-1">
+                {transcriptContent.length > 0 ? (
+                  transcriptContent.map((line, index) =>
+                    renderSegment(line, index)
                   )
                 ) : (
                   <div className="flex items-center justify-center h-32 text-gray-500">
-                    No transcript available in this language.
-                  </div>
-                )}
-              </div>
-            </div>
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
-
-          {/* Translation Panel */}
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <div className="h-full overflow-auto flex flex-col">
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
-                <div className="flex items-center">
-                  <Languages className="h-3.5 w-3.5 mr-1.5" />
-                  <span className="font-medium">Translation</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={translationLanguage}
-                    onValueChange={setTranslationLanguage}
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTranslationLanguages.length > 0 ? (
-                        availableTranslationLanguages.map((langCode) => (
-                          <SelectItem key={langCode} value={langCode}>
-                            {getLanguageName(langCode)}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className="px-2 py-1.5 text-xs text-gray-500">
-                          No translations available
-                        </div>
-                      )}
-
-                      {missingTranslationLanguages.length > 0 && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <div className="px-2 py-1.5 text-xs text-gray-500">
-                            Translate to:
-                          </div>
-                          {missingTranslationLanguages.map((lang) => (
-                            <SelectItem
-                              key={lang.code}
-                              value={`translate:${lang.code}`}
-                              onClick={() => onTranslate(lang.code)}
-                            >
-                              + {lang.name}
-                            </SelectItem>
-                          ))}
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className={cn("p-4", editMode ? "flex-1" : "")}>
-                {translationContent.length > 0 ? (
-                  editMode ? (
-                    <textarea
-                      className="w-full h-full min-h-[300px] p-3 text-sm border rounded-md"
-                      defaultValue={translationContent.join("\n\n")}
-                    />
-                  ) : (
-                    translationContent.map((line, index) => (
-                      <div
-                        key={index}
-                        className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm leading-relaxed"
-                      >
-                        {line}
+                    {missingLanguages.length > 0 ? (
+                      <div className="text-center">
+                        <p className="mb-2">
+                          No transcript available in this language.
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onTranslate(selectedLanguage)}
+                        >
+                          Translate to {getLanguageName(selectedLanguage)}
+                        </Button>
                       </div>
-                    ))
-                  )
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <p className="mb-2">
-                      No translation available for this language.
-                    </p>
-                    {missingTranslationLanguages.length > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          onTranslate(missingTranslationLanguages[0].code)
-                        }
-                      >
-                        Translate to {missingTranslationLanguages[0].name}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </TabsContent>
-
-      <TabsContent value="summary" className="flex-1 mt-0 p-0">
-        {/* Summary Content Area */}
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 overflow-hidden"
-        >
-          {/* Original Summary Panel */}
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <div className="h-full overflow-auto">
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
-                <div className="flex items-center">
-                  <FileQuestion className="h-3.5 w-3.5 mr-1.5" />
-                  <span className="font-medium">Original Summary</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={originalLanguage}
-                    onValueChange={setOriginalLanguage}
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableOriginalLanguages.map((langCode) => (
-                        <SelectItem key={langCode} value={langCode}>
-                          {getLanguageName(langCode)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="p-4">
-                {originalSummaryContent.length > 0 ? (
-                  originalSummaryContent.map((line, index) => (
-                    <div
-                      key={index}
-                      className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm leading-relaxed"
-                    >
-                      {line}
-                    </div>
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <p className="mb-2">
-                      No summary available for this language.
-                    </p>
-                    {originalLanguage !== "original" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onGenerateSummary(originalLanguage)}
-                      >
-                        Generate Summary
-                      </Button>
+                    ) : (
+                      "No transcript content available."
                     )}
                   </div>
                 )}
@@ -437,122 +499,46 @@ export function TranscriptDetailView({
 
           <ResizableHandle withHandle />
 
-          {/* Translation Summary Panel */}
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <div className="h-full overflow-auto">
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+          {/* Summary Panel */}
+          <ResizablePanel defaultSize={40} minSize={20}>
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white border-b z-10">
                 <div className="flex items-center">
-                  <FileQuestion className="h-3.5 w-3.5 mr-1.5" />
-                  <span className="font-medium">Translated Summary</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={translationLanguage}
-                    onValueChange={setTranslationLanguage}
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTranslationLanguages.length > 0 ? (
-                        availableTranslationLanguages.map((langCode) => (
-                          <SelectItem key={langCode} value={langCode}>
-                            {getLanguageName(langCode)}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className="px-2 py-1.5 text-xs text-gray-500">
-                          No translations available
-                        </div>
-                      )}
-
-                      {missingSummaryLanguages.length > 0 && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <div className="px-2 py-1.5 text-xs text-gray-500">
-                            Generate summary in:
-                          </div>
-                          {missingSummaryLanguages.map((lang) => (
-                            <SelectItem
-                              key={lang.code}
-                              value={`generate:${lang.code}`}
-                              onClick={() => onGenerateSummary(lang.code)}
-                            >
-                              + {lang.name}
-                            </SelectItem>
-                          ))}
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FileQuestion className="h-4 w-4 mr-2" />
+                  <span className="font-medium">Summary</span>
                 </div>
               </div>
 
-              <div className="p-4">
-                {translationSummaryContent.length > 0 ? (
-                  translationSummaryContent.map((line, index) => (
+              <div className="p-4 overflow-auto flex-1">
+                {summaryContent.length > 0 ? (
+                  summaryContent.map((line, index) => (
                     <div
                       key={index}
-                      className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm leading-relaxed"
+                      className="py-2 px-3 rounded-md bg-gray-50 mb-2 text-sm"
                     >
                       {line}
                     </div>
                   ))
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                    <p className="mb-2">
-                      No summary available for this language.
+                  <div className="flex flex-col items-center justify-center text-center h-full">
+                    <FileQuestion className="h-6 w-6 text-gray-400 mb-2" />
+                    <p className="text-gray-600 mb-3">
+                      No summary available in this language
                     </p>
-                    {translationLanguage !== "original" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onGenerateSummary(translationLanguage)}
-                      >
-                        Generate Summary
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onGenerateSummary(selectedLanguage)}
+                    >
+                      Generate Summary
+                    </Button>
                   </div>
                 )}
               </div>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
-      </TabsContent>
-
-      {/* Edit Mode Button (shown at bottom when in edit mode) */}
-      {editMode && (
-        <div className="flex justify-end p-4 border-t bg-gray-50">
-          <Button
-            variant="outline"
-            size="sm"
-            className="mr-2"
-            onClick={() => setEditMode(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-            size="sm"
-          >
-            Save Changes
-          </Button>
-        </div>
-      )}
-
-      {/* Full Edit View Button */}
-      <Button
-        variant="outline"
-        size="sm"
-        className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full px-3 py-1 bg-white shadow-md border-gray-200"
-        onClick={() => {
-          // Logic to open full editing view
-          onEdit(transcripts.find((t) => t.type === "original")?.id || "");
-        }}
-      >
-        <ExternalLink className="h-3.5 w-3.5" />
-        <span className="text-xs">Open in Editor</span>
-      </Button>
+      </div>
     </div>
   );
 }
