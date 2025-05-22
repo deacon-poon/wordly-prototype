@@ -43,6 +43,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  InviteUsersDialog,
+  SelectedUser,
+  UserRole,
+} from "@/components/workspace/invite-users-dialog";
 
 // Mock user data
 interface User {
@@ -75,6 +80,7 @@ export default function OrganizationUsersPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
   // Mock organization data
   const organizationName = "Wordly";
@@ -280,8 +286,74 @@ export default function OrganizationUsersPage() {
     }
   };
 
+  // Add this function for inviting users
+  const handleInviteUsers = async (
+    selectedUsers: SelectedUser[],
+    role: UserRole
+  ) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Process the invited users
+      console.log("Inviting users:", selectedUsers, "with role:", role);
+
+      // For this demo, let's add the users to the list
+      const newUsers = selectedUsers.map((user) => ({
+        id: user.id || `new-${Math.random().toString(36).substring(2, 9)}`,
+        name: user.name || user.email.split("@")[0],
+        workspace: "Main HQ", // Default workspace
+        role: role as User["role"],
+        isCurrentUser: false,
+        workspaceRoles: [{ workspaceName: "Main HQ", role: role }],
+      }));
+
+      setUsers((prev) => [...prev, ...newUsers]);
+
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error inviting users:", error);
+      return Promise.reject(error);
+    }
+  };
+
+  // Mock existing users data for the organization
+  const existingOrganizationUsers = [
+    {
+      id: "101",
+      name: "Emily Chen",
+      email: "emily.chen@example.com",
+      role: "Editor",
+    },
+    {
+      id: "102",
+      name: "Marcus Johnson",
+      email: "marcus.johnson@example.com",
+      role: "Viewer",
+    },
+    {
+      id: "103",
+      name: "Sophia Lee",
+      email: "sophia.lee@example.com",
+      role: "Administrator",
+    },
+    {
+      id: "104",
+      name: "David Rodriguez",
+      email: "david.rodriguez@example.com",
+      role: "Editor",
+    },
+    {
+      id: "105",
+      name: "Aiden Patel",
+      email: "aiden.patel@example.com",
+      role: "Viewer",
+    },
+  ];
+
+  // Define the actions for the CardHeaderLayout
   const actions = (
-    <>
+    <div className="flex gap-2">
       <Button
         variant="outline"
         className="border-red-300 text-red-700 hover:bg-red-50"
@@ -293,14 +365,12 @@ export default function OrganizationUsersPage() {
       <Button
         variant="default"
         className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-        onClick={() => {
-          // Code to handle inviting a user
-        }}
+        onClick={() => setIsInviteDialogOpen(true)}
       >
         <UserPlus className="h-4 w-4 mr-2" />
-        Invite another user
+        Invite user
       </Button>
-    </>
+    </div>
   );
 
   // Available workspaces for assignment (excluding ones already assigned to the user)
@@ -907,6 +977,19 @@ export default function OrganizationUsersPage() {
         icon={<AlertTriangle className="h-12 w-12" />}
         validationText={organizationName}
         validationLabel={`To confirm, please type the organization name "${organizationName}"`}
+      />
+
+      {/* Invite Users Dialog */}
+      <InviteUsersDialog
+        open={isInviteDialogOpen}
+        onOpenChange={setIsInviteDialogOpen}
+        contextName={organizationName}
+        contextType="organization"
+        existingUsers={existingOrganizationUsers}
+        onInvite={handleInviteUsers}
+        defaultRole="Editor"
+        title="Invite Users to Organization"
+        description={`Invited users will be given access to the ${organizationName} organization and can be assigned to specific workspaces.`}
       />
     </>
   );
