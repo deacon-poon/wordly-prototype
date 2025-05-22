@@ -355,8 +355,8 @@ export function InviteUsersDialog({
                   placeholder="Search users or type an email to invite"
                   value={searchQuery}
                   onValueChange={setSearchQuery}
-                  className="border-b focus:ring-0 h-10"
-                  icon={<Search className="h-4 w-4 text-gray-500" />}
+                  className="border-b focus:ring-0 h-10 pl-3"
+                  icon={<Search className="h-4 w-4 text-gray-500 mr-2" />}
                 />
                 <CommandList className="max-h-[240px]">
                   {filteredUsers.length === 0 && searchQuery.trim() && (
@@ -391,33 +391,33 @@ export function InviteUsersDialog({
                       heading="Users"
                       className="font-semibold text-gray-900"
                     >
-                      {filteredUsers.map((user) => (
-                        <CommandItem
-                          key={user.id}
-                          value={user.email}
-                          onSelect={() => addUser(user)}
-                          className={cn(
-                            "flex items-center gap-2 cursor-pointer py-2 px-2 hover:bg-gray-50",
-                            selectedUsers.some(
-                              (selected) => selected.email === user.email
-                            ) && "bg-blue-50"
-                          )}
-                        >
-                          {selectedUsers.some(
-                            (selected) => selected.email === user.email
-                          ) ? (
-                            <Check className="h-4 w-4 text-brand-teal" />
-                          ) : (
-                            <div className="w-4" />
-                          )}
-                          <div className="flex flex-col">
-                            <span className="font-medium">{user.name}</span>
-                            <span className="text-xs text-gray-500">
-                              {user.email}
-                            </span>
+                      {filteredUsers.map((user) => {
+                        const isSelected = selectedUsers.some(
+                          (selected) => selected.email === user.email
+                        );
+                        return (
+                          <div
+                            key={user.id}
+                            className={cn(
+                              "flex items-center gap-2 cursor-pointer py-2 px-2 hover:bg-gray-50 text-gray-900",
+                              isSelected && "bg-blue-50"
+                            )}
+                            onClick={() => addUser(user)}
+                          >
+                            <div className="w-4 flex-shrink-0">
+                              {isSelected && (
+                                <Check className="h-4 w-4 text-brand-teal" />
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{user.name}</span>
+                              <span className="text-xs text-gray-500">
+                                {user.email}
+                              </span>
+                            </div>
                           </div>
-                        </CommandItem>
-                      ))}
+                        );
+                      })}
                     </CommandGroup>
                   )}
                 </CommandList>
