@@ -350,16 +350,14 @@ export function InviteUsersDialog({
             </Label>
             <div className="relative">
               <Command className="border rounded-md overflow-visible">
-                <div className="flex items-center border-b px-3">
-                  <Search className="h-4 w-4 text-gray-500 mr-2" />
-                  <CommandInput
-                    id="user-search"
-                    placeholder="Search users or type an email to invite"
-                    value={searchQuery}
-                    onValueChange={setSearchQuery}
-                    className="border-none focus:ring-0 h-10"
-                  />
-                </div>
+                <CommandInput
+                  id="user-search"
+                  placeholder="Search users or type an email to invite"
+                  value={searchQuery}
+                  onValueChange={setSearchQuery}
+                  className="border-b focus:ring-0 h-10"
+                  icon={<Search className="h-4 w-4 text-gray-500" />}
+                />
                 <CommandList className="max-h-[240px]">
                   {filteredUsers.length === 0 && searchQuery.trim() && (
                     <div className="p-2">
@@ -391,7 +389,7 @@ export function InviteUsersDialog({
                   {filteredUsers.length > 0 && (
                     <CommandGroup
                       heading="Users"
-                      className="font-medium text-gray-700"
+                      className="font-semibold text-gray-900"
                     >
                       {filteredUsers.map((user) => (
                         <CommandItem
@@ -399,10 +397,10 @@ export function InviteUsersDialog({
                           value={user.email}
                           onSelect={() => addUser(user)}
                           className={cn(
-                            "flex items-center gap-2 cursor-pointer py-2 px-2",
+                            "flex items-center gap-2 cursor-pointer py-2 px-2 hover:bg-gray-50",
                             selectedUsers.some(
                               (selected) => selected.email === user.email
-                            ) && "bg-gray-100"
+                            ) && "bg-blue-50"
                           )}
                         >
                           {selectedUsers.some(
