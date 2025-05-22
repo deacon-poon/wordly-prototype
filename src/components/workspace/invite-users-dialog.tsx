@@ -92,34 +92,7 @@ export function InviteUsersDialog({
   const handleInvite = async () => {
     try {
       setIsSubmitting(true);
-
-      // Process emails from the text input if on the new tab
-      if (selectedTab === "new" && newUserEmails.trim()) {
-        const emails = newUserEmails
-          .split(",")
-          .map((email) => email.trim())
-          .filter((email) => email && /^\S+@\S+\.\S+$/.test(email));
-
-        // Add new email addresses
-        const newUsers = emails.map((email) => ({
-          email,
-          isExisting: false,
-        }));
-
-        // Add to the selection
-        const updatedUsers = [...selectedUsers];
-        newUsers.forEach((newUser) => {
-          if (!updatedUsers.some((u) => u.email === newUser.email)) {
-            updatedUsers.push(newUser);
-          }
-        });
-
-        await onInvite(updatedUsers, selectedRole);
-      } else {
-        // Just send the already selected users
-        await onInvite(selectedUsers, selectedRole);
-      }
-
+      await onInvite(selectedUsers, selectedRole);
       // Close dialog
       onOpenChange(false);
     } catch (error) {
@@ -145,6 +118,22 @@ export function InviteUsersDialog({
     setSearchQuery("");
   };
 
+  const addNewEmail = (email: string) => {
+    if (
+      !selectedUsers.some((user) => user.email === email) &&
+      /^\S+@\S+\.\S+$/.test(email)
+    ) {
+      setSelectedUsers([
+        ...selectedUsers,
+        {
+          email,
+          isExisting: false,
+        },
+      ]);
+      setSearchQuery("");
+    }
+  };
+
   const removeUser = (email: string) => {
     setSelectedUsers(selectedUsers.filter((user) => user.email !== email));
   };
@@ -157,14 +146,11 @@ export function InviteUsersDialog({
     );
   });
 
-  const handleNewEmailsChange = (value: string) => {
-    setNewUserEmails(value);
+  const isValidEmail = (email: string) => {
+    return /^\S+@\S+\.\S+$/.test(email);
   };
 
-  const isValidInvite =
-    selectedTab === "existing"
-      ? selectedUsers.length > 0
-      : newUserEmails.trim().length > 0;
+  const isValidInvite = selectedUsers.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,51 +162,76 @@ export function InviteUsersDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs
-          defaultValue="existing"
-          value={selectedTab}
-          onValueChange={(value) => setSelectedTab(value as "existing" | "new")}
-          className="mt-4"
-        >
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="existing">Select Existing Users</TabsTrigger>
-            <TabsTrigger value="new">Invite New Users</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="existing" className="space-y-4">
-            {/* Selected Users */}
-            {selectedUsers.length > 0 && (
-              <div className="flex flex-wrap gap-2 p-2 border rounded-md mb-3">
-                {selectedUsers.map((user) => (
-                  <div
-                    key={user.email}
-                    className="flex items-center bg-gray-100 px-2 py-1 rounded-md text-sm"
+        <div className="space-y-4 mt-4">
+          {/* Selected Users */}
+          {selectedUsers.length > 0 && (
+            <div className="flex flex-wrap gap-2 p-2 border rounded-md mb-3">
+              {selectedUsers.map((user) => (
+                <div
+                  key={user.email}
+                  className={`flex items-center px-2 py-1 rounded-md text-sm ${
+                    user.isExisting ? "bg-gray-100" : "bg-blue-50"
+                  }`}
+                >
+                  {user.isExisting ? (
+                    user.name || user.email
+                  ) : (
+                    <span className="flex items-center">
+                      <Mail className="h-3 w-3 mr-1" />
+                      {user.email}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeUser(user.email)}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
                   >
-                    {user.name || user.email}
-                    <button
-                      type="button"
-                      onClick={() => removeUser(user.email)}
-                      className="ml-1 text-gray-500 hover:text-gray-700"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
-            {/* User Search */}
-            <Command className="border rounded-md overflow-visible">
-              <CommandInput
-                placeholder="Search users..."
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                className="border-none focus:ring-0"
-                icon={<Search className="h-4 w-4" />}
-              />
-              <CommandList>
-                <CommandEmpty>No users found.</CommandEmpty>
-                <CommandGroup heading="Available Users">
+          {/* Unified Search */}
+          <Command className="border rounded-md overflow-visible">
+            <CommandInput
+              placeholder="Search existing users or enter email to invite..."
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              className="border-none focus:ring-0"
+              icon={<Search className="h-4 w-4" />}
+            />
+            <CommandList>
+              {filteredUsers.length === 0 && searchQuery.trim() && (
+                <div className="p-2">
+                  {isValidEmail(searchQuery) ? (
+                    <div className="py-3 px-2">
+                      <p className="text-sm mb-2">
+                        No matching users. Invite by email?
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addNewEmail(searchQuery)}
+                        className="w-full justify-start"
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Invite {searchQuery}
+                      </Button>
+                    </div>
+                  ) : (
+                    <CommandEmpty>
+                      {searchQuery.includes("@")
+                        ? "Please enter a valid email address."
+                        : "No users found. Try typing an email address to invite."}
+                    </CommandEmpty>
+                  )}
+                </div>
+              )}
+
+              {filteredUsers.length > 0 && (
+                <CommandGroup heading="Existing Users">
                   {filteredUsers.map((user) => (
                     <CommandItem
                       key={user.id}
@@ -249,29 +260,15 @@ export function InviteUsersDialog({
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              </CommandList>
-            </Command>
-          </TabsContent>
+              )}
+            </CommandList>
+          </Command>
 
-          <TabsContent value="new" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="emails">Email(s):</Label>
-              <div className="relative">
-                <Mail className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  id="emails"
-                  value={newUserEmails}
-                  onChange={(e) => handleNewEmailsChange(e.target.value)}
-                  placeholder="user@example.com, another@example.com"
-                  className="pl-8"
-                />
-              </div>
-              <p className="text-xs text-gray-500">
-                You can specify multiple emails separated by commas.
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
+          <p className="text-xs text-gray-500 mt-1">
+            Search for existing users or enter email addresses to invite new
+            users.
+          </p>
+        </div>
 
         <div className="space-y-2 mt-6">
           <Label>Role:</Label>
