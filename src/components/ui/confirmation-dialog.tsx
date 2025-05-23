@@ -96,7 +96,19 @@ export function ConfirmationDialog({
           </div>
         )}
 
-        <DialogFooter className="mt-4">
+        <div className="flex justify-start mt-6 border-t pt-4">
+          <Button
+            variant={variant === "destructive" ? "destructive" : "default"}
+            onClick={handleConfirm}
+            className={`mr-2 ${
+              variant === "destructive"
+                ? ""
+                : "bg-brand-teal hover:bg-brand-teal/90"
+            }`}
+            disabled={isLoading || (!!validationText && !isValid)}
+          >
+            {isLoading ? "Processing..." : confirmText}
+          </Button>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -104,19 +116,7 @@ export function ConfirmationDialog({
           >
             {cancelText}
           </Button>
-          <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            onClick={handleConfirm}
-            className={
-              variant === "destructive"
-                ? ""
-                : "bg-brand-teal hover:bg-brand-teal/90"
-            }
-            disabled={isLoading || (!!validationText && !isValid)}
-          >
-            {isLoading ? "Processing..." : confirmText}
-          </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

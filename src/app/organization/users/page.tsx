@@ -118,6 +118,53 @@ export default function OrganizationUsersPage() {
         { workspaceName: "Sales", role: "Viewer" },
       ],
     },
+    {
+      id: "4",
+      name: "Sarah Matthews",
+      workspace: "3 workspaces",
+      role: "Mixed",
+      isCurrentUser: false,
+      workspaceRoles: [
+        { workspaceName: "Marketing", role: "Editor" },
+        { workspaceName: "Development", role: "Viewer" },
+        { workspaceName: "Sales", role: "Editor" },
+      ],
+    },
+    {
+      id: "5",
+      name: "Michael Chen",
+      workspace: "Main HQ",
+      role: "Editor",
+      isCurrentUser: false,
+      workspaceRoles: [{ workspaceName: "Main HQ", role: "Editor" }],
+    },
+    {
+      id: "6",
+      name: "Olivia Rodriguez",
+      workspace: "Support",
+      role: "Administrator",
+      isCurrentUser: false,
+      workspaceRoles: [{ workspaceName: "Support", role: "Administrator" }],
+    },
+    {
+      id: "7",
+      name: "Aiden Smith",
+      workspace: "Development",
+      role: "Editor",
+      isCurrentUser: false,
+      workspaceRoles: [{ workspaceName: "Development", role: "Editor" }],
+    },
+    {
+      id: "8",
+      name: "Emma Wilson",
+      workspace: "2 workspaces",
+      role: "Mixed",
+      isCurrentUser: false,
+      workspaceRoles: [
+        { workspaceName: "Sales", role: "Administrator" },
+        { workspaceName: "Support", role: "Viewer" },
+      ],
+    },
   ]);
 
   // Get the appropriate icon for a role
@@ -434,7 +481,6 @@ export default function OrganizationUsersPage() {
       <CardHeaderLayout
         title="All Users"
         description="Manage users across all workspaces in your organization."
-        actions={actions}
       >
         <div className="p-0 -m-6">
           <div className="w-full px-6 py-3 bg-gray-50 grid grid-cols-3 border-b">
@@ -809,6 +855,28 @@ export default function OrganizationUsersPage() {
             ))
           )}
         </div>
+
+        {/* Relocated Action Buttons - Fixed Position */}
+        <div className="sticky bottom-0 left-0 right-0 p-4 bg-white border-t flex justify-end items-center">
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-50"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete organization
+            </Button>
+            <Button
+              variant="default"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+              onClick={() => setIsInviteDialogOpen(true)}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Invite user
+            </Button>
+          </div>
+        </div>
       </CardHeaderLayout>
 
       {/* User Role Management Modal */}
@@ -945,21 +1013,17 @@ export default function OrganizationUsersPage() {
             )}
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setModalOpen(false)}
-              className="mr-2"
-            >
-              Cancel
-            </Button>
+          <div className="flex justify-start mt-6 border-t pt-4">
             <Button
               onClick={() => setModalOpen(false)}
-              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+              className="bg-brand-teal hover:bg-brand-teal/90 text-white mr-2"
             >
               Save changes
             </Button>
-          </DialogFooter>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
