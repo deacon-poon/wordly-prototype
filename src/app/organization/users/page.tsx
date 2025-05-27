@@ -18,6 +18,7 @@ import {
   Settings,
   Trash2,
   AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
 import {
@@ -48,6 +49,13 @@ import {
   SelectedUser,
   UserRole,
 } from "@/components/workspace/invite-users-dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 // Mock user data
 interface User {
@@ -481,6 +489,7 @@ export default function OrganizationUsersPage() {
       <CardHeaderLayout
         title="All Users"
         description="Manage users across all workspaces in your organization."
+        actions={actions}
       >
         <div className="p-0 -m-6">
           <div className="w-full px-6 py-3 bg-gray-50 grid grid-cols-3 border-b">
@@ -541,11 +550,11 @@ export default function OrganizationUsersPage() {
                     Administrator
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => setSelectedRole("Mixed")}
-                    className={selectedRole === "Mixed" ? "bg-gray-100" : ""}
+                    onClick={() => setSelectedRole("Editor")}
+                    className={selectedRole === "Editor" ? "bg-gray-100" : ""}
                   >
                     <Edit2 className="h-4 w-4 mr-2" />
-                    Mixed
+                    Editor
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setSelectedRole("Viewer")}
@@ -553,6 +562,13 @@ export default function OrganizationUsersPage() {
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Viewer
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedRole("Mixed")}
+                    className={selectedRole === "Mixed" ? "bg-gray-100" : ""}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Mixed
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -565,60 +581,302 @@ export default function OrganizationUsersPage() {
             </div>
           ) : (
             filteredUsers.map((user, index) => (
-              <div
+              <Accordion
                 key={user.id}
-                className={`w-full px-6 py-4 grid grid-cols-3 items-center ${
+                type="single"
+                collapsible
+                className={`w-full ${
                   index < filteredUsers.length - 1 ? "border-b" : ""
                 }`}
               >
-                <div className="font-medium text-gray-900">
-                  <a href="#" className="text-brand-teal hover:underline">
-                    {user.name}
-                  </a>{" "}
-                  {user.isCurrentUser && (
-                    <span className="text-gray-500 font-normal">(you)</span>
-                  )}
-                </div>
-                <div className="text-gray-700">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="text-gray-700 border-gray-300 h-9 flex items-center justify-between"
-                      >
-                        <span className="flex items-center">
-                          {user.workspace}
-                          <ChevronDown className="ml-1.5 h-4 w-4" />
+                <AccordionItem value={user.id} className="border-none">
+                  <div className="px-6 py-4 grid grid-cols-3 items-center">
+                    <div className="font-medium text-gray-900 flex items-center">
+                      <a href="#" className="text-brand-teal hover:underline">
+                        {user.name}
+                      </a>{" "}
+                      {user.isCurrentUser && (
+                        <span className="text-gray-500 font-normal ml-1">
+                          (you)
                         </span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-64">
-                      {user.workspaceRoles && (
-                        <>
-                          <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                            Assigned workspaces
-                          </DropdownMenuLabel>
+                      )}
+                    </div>
+                    <div className="text-gray-700">
+                      {user.workspaceRoles && user.workspaceRoles.length > 1 ? (
+                        <AccordionTrigger className="p-0 hover:no-underline">
+                          <Button
+                            variant="outline"
+                            className="text-gray-700 border-gray-300 h-9 flex items-center justify-between w-auto"
+                          >
+                            <span className="flex items-center">
+                              {user.workspace}
+                            </span>
+                          </Button>
+                        </AccordionTrigger>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span>{user.workspace}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 rounded-full hover:bg-gray-50 text-gray-400 hover:text-brand-teal"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                                <span className="sr-only">Add workspace</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="start"
+                              className="w-[200px]"
+                            >
+                              <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                Add to workspace
+                              </DropdownMenuLabel>
+                              {getAvailableWorkspaces(user).map(
+                                (workspace, i) => (
+                                  <DropdownMenuItem
+                                    key={i}
+                                    onClick={() =>
+                                      handleAddWorkspace(user.id, workspace)
+                                    }
+                                  >
+                                    {workspace}
+                                  </DropdownMenuItem>
+                                )
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-gray-700">
+                      <div className="flex items-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-auto px-3 py-1 rounded-full border ${getRoleBadgeClass(
+                                user.role
+                              )}`}
+                            >
+                              <div className="flex items-center">
+                                {getRoleIcon(user.role)}
+                                {user.role}
+                                <ChevronDown className="ml-1 h-3 w-3" />
+                              </div>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-64">
+                            <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                              Role settings
+                            </DropdownMenuLabel>
+
+                            {user.workspaceRoles?.length === 1 ? (
+                              // Single workspace - show simple role options
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleRoleChange(user.id, "Administrator")
+                                  }
+                                  className={
+                                    user.role === "Administrator"
+                                      ? "bg-gray-100"
+                                      : ""
+                                  }
+                                >
+                                  <ShieldCheck className="h-4 w-4 mr-2" />
+                                  Administrator
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleRoleChange(user.id, "Editor")
+                                  }
+                                  className={
+                                    user.role === "Editor" ? "bg-gray-100" : ""
+                                  }
+                                >
+                                  <Edit2 className="h-4 w-4 mr-2" />
+                                  Editor
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleRoleChange(user.id, "Viewer")
+                                  }
+                                  className={
+                                    user.role === "Viewer" ? "bg-gray-100" : ""
+                                  }
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Viewer
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              // Multiple workspaces - show info and manage button
+                              <>
+                                <div className="px-2 py-1 mb-1">
+                                  <p className="text-xs text-gray-500">
+                                    This user has multiple workspace assignments
+                                    with different roles.
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <div
+                              className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-brand-teal"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleManageWorkspaces(user.id);
+                              }}
+                            >
+                              <div className="flex items-center">
+                                <Settings className="h-3.5 w-3.5 mr-2" />
+                                Advanced role management
+                              </div>
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      <div className="flex items-center">
+                        {!user.isCurrentUser && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  "Are you sure you want to remove this user?"
+                                )
+                              ) {
+                                setUsers(users.filter((u) => u.id !== user.id));
+                              }
+                            }}
+                            className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                          >
+                            <XCircle className="h-5 w-5" />
+                            <span className="sr-only">Remove user</span>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {user.workspaceRoles && user.workspaceRoles.length > 1 && (
+                    <AccordionContent className="pt-0 pb-2 px-6">
+                      <div className="border-t pt-3 pb-1">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">
+                          Workspace Assignments
+                        </h4>
+                        <div className="space-y-2">
                           {user.workspaceRoles.map((wr, i) => (
                             <div
                               key={i}
-                              className="px-2 py-2 cursor-default hover:bg-gray-50"
+                              className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-md transition-colors"
                             >
-                              <div className="w-full flex items-center justify-between group">
-                                <span>{wr.workspaceName}</span>
+                              <span className="text-sm font-medium text-gray-800">
+                                {wr.workspaceName}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className={`h-auto px-3 py-1 rounded-full border ${
+                                        wr.role === "Administrator"
+                                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                                          : wr.role === "Editor"
+                                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                          : "bg-gray-50 text-gray-700 border-gray-200"
+                                      }`}
+                                    >
+                                      <div className="flex items-center">
+                                        {wr.role === "Administrator" && (
+                                          <ShieldCheck className="h-3.5 w-3.5 mr-1" />
+                                        )}
+                                        {wr.role === "Editor" && (
+                                          <Edit2 className="h-3.5 w-3.5 mr-1" />
+                                        )}
+                                        {wr.role === "Viewer" && (
+                                          <Eye className="h-3.5 w-3.5 mr-1" />
+                                        )}
+                                        {wr.role}
+                                        <ChevronDown className="ml-1 h-3 w-3" />
+                                      </div>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start">
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleWorkspaceRoleChange(
+                                          user.id,
+                                          wr.workspaceName,
+                                          "Administrator"
+                                        )
+                                      }
+                                      className={
+                                        wr.role === "Administrator"
+                                          ? "bg-gray-100"
+                                          : ""
+                                      }
+                                    >
+                                      <ShieldCheck className="h-4 w-4 mr-2" />
+                                      Administrator
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleWorkspaceRoleChange(
+                                          user.id,
+                                          wr.workspaceName,
+                                          "Editor"
+                                        )
+                                      }
+                                      className={
+                                        wr.role === "Editor"
+                                          ? "bg-gray-100"
+                                          : ""
+                                      }
+                                    >
+                                      <Edit2 className="h-4 w-4 mr-2" />
+                                      Editor
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleWorkspaceRoleChange(
+                                          user.id,
+                                          wr.workspaceName,
+                                          "Viewer"
+                                        )
+                                      }
+                                      className={
+                                        wr.role === "Viewer"
+                                          ? "bg-gray-100"
+                                          : ""
+                                      }
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      Viewer
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+
                                 {user.workspaceRoles &&
                                   user.workspaceRoles.length > 1 && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
+                                      onClick={() =>
                                         handleRemoveWorkspace(
                                           user.id,
                                           wr.workspaceName
-                                        );
-                                      }}
-                                      className="h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600"
+                                        )
+                                      }
+                                      className="h-7 w-7 p-0 rounded-full hover:bg-red-50 hover:text-red-600"
                                     >
                                       <XCircle className="h-3.5 w-3.5" />
                                       <span className="sr-only">
@@ -629,253 +887,45 @@ export default function OrganizationUsersPage() {
                               </div>
                             </div>
                           ))}
-                        </>
-                      )}
+                        </div>
 
-                      {getAvailableWorkspaces(user).length > 0 && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                            Add to workspace
-                          </DropdownMenuLabel>
-                          {getAvailableWorkspaces(user).map((workspace, i) => (
-                            <div
-                              key={`add-${i}`}
-                              className="px-2 py-2 cursor-pointer hover:bg-gray-50"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleAddWorkspace(user.id, workspace);
-                              }}
-                            >
-                              <div className="flex items-center">
-                                <Plus className="h-3.5 w-3.5 mr-2 text-brand-teal" />
-                                {workspace}
-                              </div>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="flex items-center justify-between text-gray-700">
-                  <div className="flex items-center">
-                    {user.workspaceRoles ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`h-auto px-3 py-1 rounded-full border hover:bg-gray-50 ${getRoleBadgeClass(
-                              user.role
-                            )}`}
-                          >
-                            <div className="flex items-center">
-                              {getRoleIcon(user.role)}
-                              {user.role}
-                            </div>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-64">
-                          <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                            Role settings
-                          </DropdownMenuLabel>
-
-                          {user.workspaceRoles.length === 1 ? (
-                            // Single workspace - show simple role options
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleRoleChange(user.id, "Administrator")
-                                }
-                                className={
-                                  user.role === "Administrator"
-                                    ? "bg-gray-100"
-                                    : ""
-                                }
-                              >
-                                <ShieldCheck className="h-4 w-4 mr-2" />
-                                Administrator
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleRoleChange(user.id, "Editor")
-                                }
-                                className={
-                                  user.role === "Editor" ? "bg-gray-100" : ""
-                                }
-                              >
-                                <Edit2 className="h-4 w-4 mr-2" />
-                                Editor
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  handleRoleChange(user.id, "Viewer")
-                                }
-                                className={
-                                  user.role === "Viewer" ? "bg-gray-100" : ""
-                                }
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Viewer
-                              </DropdownMenuItem>
-                            </>
-                          ) : (
-                            // Multiple workspaces - show list with edit option
-                            <>
-                              <div className="px-2 py-1 mb-1">
-                                <p className="text-xs text-gray-500">
-                                  This user has multiple workspace assignments
-                                  with different roles:
-                                </p>
-                              </div>
-                              {user.workspaceRoles.map((wr, idx) => (
-                                <div
-                                  key={idx}
-                                  className="px-2 py-1.5 flex items-center justify-between text-xs"
+                        {getAvailableWorkspaces(user).length > 0 && (
+                          <div className="mt-3">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full justify-start text-gray-700 bg-white"
                                 >
-                                  <span className="text-gray-600 mr-3">
-                                    {wr.workspaceName}
-                                  </span>
-                                  <span
-                                    className={`px-2 py-0.5 rounded-full flex items-center ${
-                                      wr.role === "Administrator"
-                                        ? "bg-blue-50 text-blue-700"
-                                        : wr.role === "Editor"
-                                        ? "bg-emerald-50 text-emerald-700"
-                                        : "bg-gray-50 text-gray-600"
-                                    }`}
-                                  >
-                                    {wr.role === "Administrator" && (
-                                      <ShieldCheck className="h-3 w-3 mr-1" />
-                                    )}
-                                    {wr.role === "Editor" && (
-                                      <Edit2 className="h-3 w-3 mr-1" />
-                                    )}
-                                    {wr.role === "Viewer" && (
-                                      <Eye className="h-3 w-3 mr-1" />
-                                    )}
-                                    {wr.role}
-                                  </span>
-                                </div>
-                              ))}
-                            </>
-                          )}
-                          <DropdownMenuSeparator />
-                          <div
-                            className="px-2 py-2 cursor-pointer hover:bg-gray-50 text-brand-teal"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleManageWorkspaces(user.id);
-                            }}
-                          >
-                            <div className="flex items-center">
-                              <Settings className="h-3.5 w-3.5 mr-2" />
-                              Advanced role management
-                            </div>
+                                  <Plus className="h-3.5 w-3.5 mr-2 text-brand-teal" />
+                                  Add to another workspace
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="w-[200px]">
+                                {getAvailableWorkspaces(user).map(
+                                  (workspace, i) => (
+                                    <DropdownMenuItem
+                                      key={i}
+                                      onClick={() =>
+                                        handleAddWorkspace(user.id, workspace)
+                                      }
+                                    >
+                                      {workspace}
+                                    </DropdownMenuItem>
+                                  )
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`h-auto px-3 py-1 rounded-full border hover:bg-gray-50 ${getRoleBadgeClass(
-                              user.role
-                            )}`}
-                          >
-                            <div className="flex items-center">
-                              {getRoleIcon(user.role)}
-                              {user.role}
-                            </div>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          <DropdownMenuItem
-                            onClick={() =>
-                              handleRoleChange(user.id, "Administrator")
-                            }
-                            className={
-                              user.role === "Administrator" ? "bg-gray-100" : ""
-                            }
-                          >
-                            <ShieldCheck className="h-4 w-4 mr-2" />
-                            Administrator
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleRoleChange(user.id, "Editor")}
-                            className={
-                              user.role === "Editor" ? "bg-gray-100" : ""
-                            }
-                          >
-                            <Edit2 className="h-4 w-4 mr-2" />
-                            Editor
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleRoleChange(user.id, "Viewer")}
-                            className={
-                              user.role === "Viewer" ? "bg-gray-100" : ""
-                            }
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Viewer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-
-                  <div className="flex items-center">
-                    {!user.isCurrentUser && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              "Are you sure you want to remove this user?"
-                            )
-                          ) {
-                            setUsers(users.filter((u) => u.id !== user.id));
-                          }
-                        }}
-                        className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
-                      >
-                        <XCircle className="h-5 w-5" />
-                        <span className="sr-only">Remove user</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
+                        )}
+                      </div>
+                    </AccordionContent>
+                  )}
+                </AccordionItem>
+              </Accordion>
             ))
           )}
-        </div>
-
-        {/* Relocated Action Buttons - Fixed Position */}
-        <div className="sticky bottom-0 left-0 right-0 p-4 bg-white border-t flex justify-end items-center">
-          <div className="flex space-x-3">
-            <Button
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-50"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete organization
-            </Button>
-            <Button
-              variant="default"
-              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-              onClick={() => setIsInviteDialogOpen(true)}
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite user
-            </Button>
-          </div>
         </div>
       </CardHeaderLayout>
 
@@ -903,68 +953,87 @@ export default function OrganizationUsersPage() {
                     <div className="px-4 py-3 bg-gray-50 border-b font-medium">
                       {workspace.workspaceName}
                     </div>
-                    <div className="px-4 py-3 space-y-2">
-                      <div
-                        onClick={() =>
-                          handleWorkspaceRoleChange(
-                            selectedUser.id,
-                            workspace.workspaceName,
-                            "Administrator"
-                          )
-                        }
-                        className="flex items-center cursor-pointer py-1.5 px-1 hover:bg-gray-50 rounded-md"
-                      >
-                        {workspace.role === "Administrator" ? (
-                          <CheckSquare className="h-5 w-5 mr-2 text-brand-teal" />
-                        ) : (
-                          <Square className="h-5 w-5 mr-2 text-gray-300" />
-                        )}
-                        <div className="flex items-center">
-                          <ShieldCheck className="h-4 w-4 mr-2 text-blue-600" />
-                          <span className="font-medium">Administrator</span>
-                        </div>
-                      </div>
-
-                      <div
-                        onClick={() =>
-                          handleWorkspaceRoleChange(
-                            selectedUser.id,
-                            workspace.workspaceName,
-                            "Editor"
-                          )
-                        }
-                        className="flex items-center cursor-pointer py-1.5 px-1 hover:bg-gray-50 rounded-md"
-                      >
-                        {workspace.role === "Editor" ? (
-                          <CheckSquare className="h-5 w-5 mr-2 text-brand-teal" />
-                        ) : (
-                          <Square className="h-5 w-5 mr-2 text-gray-300" />
-                        )}
-                        <div className="flex items-center">
-                          <Edit2 className="h-4 w-4 mr-2 text-emerald-600" />
-                          <span className="font-medium">Editor</span>
-                        </div>
-                      </div>
-
-                      <div
-                        onClick={() =>
-                          handleWorkspaceRoleChange(
-                            selectedUser.id,
-                            workspace.workspaceName,
-                            "Viewer"
-                          )
-                        }
-                        className="flex items-center cursor-pointer py-1.5 px-1 hover:bg-gray-50 rounded-md"
-                      >
-                        {workspace.role === "Viewer" ? (
-                          <CheckSquare className="h-5 w-5 mr-2 text-brand-teal" />
-                        ) : (
-                          <Square className="h-5 w-5 mr-2 text-gray-300" />
-                        )}
-                        <div className="flex items-center">
-                          <Eye className="h-4 w-4 mr-2 text-gray-600" />
-                          <span className="font-medium">Viewer</span>
-                        </div>
+                    <div className="px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Current role</span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-auto px-3 py-1 rounded-full border ${
+                                workspace.role === "Administrator"
+                                  ? "bg-blue-50 text-blue-700 border-blue-200"
+                                  : workspace.role === "Editor"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-gray-50 text-gray-700 border-gray-200"
+                              }`}
+                            >
+                              <div className="flex items-center">
+                                {workspace.role === "Administrator" && (
+                                  <ShieldCheck className="h-3.5 w-3.5 mr-1" />
+                                )}
+                                {workspace.role === "Editor" && (
+                                  <Edit2 className="h-3.5 w-3.5 mr-1" />
+                                )}
+                                {workspace.role === "Viewer" && (
+                                  <Eye className="h-3.5 w-3.5 mr-1" />
+                                )}
+                                {workspace.role}
+                                <ChevronDown className="ml-1 h-3 w-3" />
+                              </div>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleWorkspaceRoleChange(
+                                  selectedUser.id,
+                                  workspace.workspaceName,
+                                  "Administrator"
+                                )
+                              }
+                              className={
+                                workspace.role === "Administrator"
+                                  ? "bg-gray-100"
+                                  : ""
+                              }
+                            >
+                              <ShieldCheck className="h-4 w-4 mr-2" />
+                              Administrator
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleWorkspaceRoleChange(
+                                  selectedUser.id,
+                                  workspace.workspaceName,
+                                  "Editor"
+                                )
+                              }
+                              className={
+                                workspace.role === "Editor" ? "bg-gray-100" : ""
+                              }
+                            >
+                              <Edit2 className="h-4 w-4 mr-2" />
+                              Editor
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleWorkspaceRoleChange(
+                                  selectedUser.id,
+                                  workspace.workspaceName,
+                                  "Viewer"
+                                )
+                              }
+                              className={
+                                workspace.role === "Viewer" ? "bg-gray-100" : ""
+                              }
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Viewer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </div>
