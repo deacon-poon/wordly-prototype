@@ -377,7 +377,7 @@ export function InviteUsersDialog({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -457,7 +457,7 @@ export function InviteUsersDialog({
                     // Ensure dropdown stays open when typing
                     setIsInputFocused(true);
                   }}
-                  className="border-b focus:ring-0 h-10 pl-3"
+                  className="border-none shadow-none focus:ring-0 h-10 pl-3"
                   icon={<Search className="h-4 w-4 text-gray-500 mr-2" />}
                   onFocus={() => setIsInputFocused(true)}
                   ref={inputRef}
@@ -493,7 +493,7 @@ export function InviteUsersDialog({
                                 variant="outline"
                                 className="bg-blue-50 text-blue-700 border-blue-200"
                               >
-                                GUEST
+                                Invite user
                               </Badge>
                             </div>
                           ) : (
@@ -519,9 +519,6 @@ export function InviteUsersDialog({
                                     </span>
                                   </div>
                                 </div>
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
-                                  Select a person
-                                </span>
                               </CommandEmpty>
                             </div>
                           )}
@@ -582,9 +579,12 @@ export function InviteUsersDialog({
                                   </div>
                                 </div>
                                 {!isSelected && (
-                                  <span className="text-xs text-gray-500">
-                                    Select user
-                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-blue-50 text-blue-700 border-blue-200"
+                                  >
+                                    Invite user
+                                  </Badge>
                                 )}
                               </div>
                             );
