@@ -157,8 +157,16 @@ export function InviteUsersDialog({
           role: defaultUserRole,
         },
       ]);
+    } else {
+      // If user is already selected, remove them (toggle selection)
+      setSelectedUsers(
+        selectedUsers.filter((selected) => selected.email !== user.email)
+      );
     }
-    setSearchQuery("");
+    // Keep focus on the input and don't clear the search query
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   const addNewEmail = (email: string) => {
@@ -175,6 +183,12 @@ export function InviteUsersDialog({
         },
       ]);
       setSearchQuery("");
+      // Keep the dropdown open
+      setIsInputFocused(true);
+      // Focus back on the input
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
   };
 
@@ -277,185 +291,9 @@ export function InviteUsersDialog({
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          {/* Search Input */}
-          <div className="space-y-3">
-            <div className="relative">
-              <Command
-                className="border rounded-md overflow-visible"
-                ref={commandRef}
-              >
-                <CommandInput
-                  id="user-search"
-                  placeholder="Add emails or people"
-                  value={searchQuery}
-                  onValueChange={setSearchQuery}
-                  className="border-b focus:ring-0 h-10 pl-3"
-                  icon={<Search className="h-4 w-4 text-gray-500 mr-2" />}
-                  onFocus={() => setIsInputFocused(true)}
-                  ref={inputRef}
-                />
-                {isInputFocused && (
-                  <div className="absolute top-full left-0 z-50 w-full mt-1 bg-white border rounded-md shadow-lg">
-                    <CommandList className="max-h-[240px]">
-                      {filteredUsers.length === 0 && searchQuery.trim() && (
-                        <div>
-                          {isValidEmail(searchQuery) ? (
-                            <div
-                              className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
-                              onClick={() => {
-                                addNewEmail(searchQuery);
-                                setIsInputFocused(false);
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarFallback className="bg-blue-100 text-blue-600">
-                                    <Mail className="h-4 w-4" />
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">
-                                    {searchQuery}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    Keep typing to invite email
-                                  </span>
-                                </div>
-                              </div>
-                              <Badge
-                                variant="outline"
-                                className="bg-blue-50 text-blue-700 border-blue-200"
-                              >
-                                GUEST
-                              </Badge>
-                            </div>
-                          ) : (
-                            <CommandEmpty className="py-3">
-                              {searchQuery.includes("@")
-                                ? "Please enter a valid email address"
-                                : "No users found. Type an email address to invite"}
-                            </CommandEmpty>
-                          )}
-                        </div>
-                      )}
-
-                      {filteredUsers.length > 0 && (
-                        <CommandGroup
-                          heading="Users"
-                          className="font-semibold text-gray-900"
-                        >
-                          {filteredUsers.map((user) => {
-                            const isSelected = selectedUsers.some(
-                              (selected) => selected.email === user.email
-                            );
-                            return (
-                              <div
-                                key={user.id}
-                                className={cn(
-                                  "flex items-center justify-between cursor-pointer py-2 px-3 hover:bg-gray-50 text-gray-900",
-                                  isSelected && "bg-blue-50"
-                                )}
-                                onClick={() => {
-                                  addUser(user);
-                                  setIsInputFocused(false);
-                                }}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="relative">
-                                    <Avatar className="h-8 w-8">
-                                      <AvatarImage src={user.avatarUrl || ""} />
-                                      <AvatarFallback
-                                        className={getAvatarColor(user.email)}
-                                      >
-                                        {getInitials(user.name)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    {isSelected && (
-                                      <div className="absolute -bottom-1 -right-1 bg-brand-teal text-white rounded-full flex items-center justify-center w-4 h-4 border border-white">
-                                        <Check className="h-3 w-3" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-sm">
-                                      {user.name}
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {user.email}
-                                    </span>
-                                  </div>
-                                </div>
-                                {!isSelected && (
-                                  <span className="text-xs text-gray-500">
-                                    Select user
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </div>
-                )}
-              </Command>
-            </div>
-
-            <div className="flex justify-between items-center text-xs text-gray-500">
-              <div>Search for users or type an email address to invite</div>
-              <div className="flex items-center">
-                <span className="mr-1">Default role:</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                    >
-                      <span className="flex items-center gap-1">
-                        {getRoleIcon(defaultUserRole)}
-                        {defaultUserRole}
-                        <ChevronDown className="h-3 w-3" />
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem
-                      onClick={() => setDefaultUserRole("Administrator")}
-                      className={
-                        defaultUserRole === "Administrator" ? "bg-gray-100" : ""
-                      }
-                    >
-                      <ShieldCheck className="h-4 w-4 mr-2" />
-                      Administrator
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setDefaultUserRole("Editor")}
-                      className={
-                        defaultUserRole === "Editor" ? "bg-gray-100" : ""
-                      }
-                    >
-                      <Edit2 className="h-4 w-4 mr-2" />
-                      Editor
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => setDefaultUserRole("Viewer")}
-                      className={
-                        defaultUserRole === "Viewer" ? "bg-gray-100" : ""
-                      }
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Viewer
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </div>
-
           {/* Selected Users */}
           {selectedUsers.length > 0 && (
-            <div className="mt-6">
+            <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <div className="text-sm font-medium">Selected Users</div>
                 {selectedUsers.length > 1 && (
@@ -602,27 +440,185 @@ export function InviteUsersDialog({
               </div>
             </div>
           )}
+
+          {/* Search Input */}
+          <div className="space-y-3">
+            <div className="relative">
+              <Command
+                className="border rounded-md overflow-visible"
+                ref={commandRef}
+              >
+                <CommandInput
+                  id="user-search"
+                  placeholder="Add emails or people"
+                  value={searchQuery}
+                  onValueChange={(value) => {
+                    setSearchQuery(value);
+                    // Ensure dropdown stays open when typing
+                    setIsInputFocused(true);
+                  }}
+                  className="border-b focus:ring-0 h-10 pl-3"
+                  icon={<Search className="h-4 w-4 text-gray-500 mr-2" />}
+                  onFocus={() => setIsInputFocused(true)}
+                  ref={inputRef}
+                />
+                {isInputFocused && (
+                  <div className="absolute top-full left-0 z-50 w-full mt-1 bg-white border rounded-md shadow-lg">
+                    <CommandList className="max-h-[240px]">
+                      {filteredUsers.length === 0 && searchQuery.trim() && (
+                        <div>
+                          {isValidEmail(searchQuery) ? (
+                            <div
+                              className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => {
+                                addNewEmail(searchQuery);
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback className="bg-blue-100 text-blue-600">
+                                    <Mail className="h-4 w-4" />
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-sm">
+                                    {searchQuery}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    Keep typing to invite email
+                                  </span>
+                                </div>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="bg-blue-50 text-blue-700 border-blue-200"
+                              >
+                                GUEST
+                              </Badge>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="px-3 py-2 text-xs text-gray-500 font-semibold">
+                                Invite by email
+                              </div>
+                              <CommandEmpty className="py-3 px-3">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                                      <Mail className="h-4 w-4" />
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-sm">
+                                      {searchQuery}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {searchQuery.includes("@")
+                                        ? "Complete email address to invite"
+                                        : "Type an email address to invite"}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
+                                  Select a person
+                                </span>
+                              </CommandEmpty>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {filteredUsers.length === 0 && !searchQuery.trim() && (
+                        <CommandEmpty className="py-3 text-center text-sm text-gray-500">
+                          Select a person or type an email address
+                        </CommandEmpty>
+                      )}
+
+                      {filteredUsers.length > 0 && (
+                        <CommandGroup
+                          heading={
+                            searchQuery.trim() ? undefined : "Select a person"
+                          }
+                          className="font-semibold text-gray-900"
+                        >
+                          {filteredUsers.map((user) => {
+                            const isSelected = selectedUsers.some(
+                              (selected) => selected.email === user.email
+                            );
+                            return (
+                              <div
+                                key={user.id}
+                                className={cn(
+                                  "flex items-center justify-between cursor-pointer py-2 px-3 hover:bg-gray-50 text-gray-900",
+                                  isSelected && "bg-blue-50"
+                                )}
+                                onClick={() => {
+                                  addUser(user);
+                                }}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="relative">
+                                    <Avatar className="h-8 w-8">
+                                      <AvatarImage src={user.avatarUrl || ""} />
+                                      <AvatarFallback
+                                        className={getAvatarColor(user.email)}
+                                      >
+                                        {getInitials(user.name)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    {isSelected && (
+                                      <div className="absolute -bottom-1 -right-1 bg-brand-teal text-white rounded-full flex items-center justify-center w-4 h-4 border border-white">
+                                        <Check className="h-3 w-3" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-sm">
+                                      {user.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {user.email}
+                                    </span>
+                                  </div>
+                                </div>
+                                {!isSelected && (
+                                  <span className="text-xs text-gray-500">
+                                    Select user
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </CommandGroup>
+                      )}
+                    </CommandList>
+                  </div>
+                )}
+              </Command>
+            </div>
+          </div>
         </div>
 
-        <div className="flex justify-start mt-6 border-t pt-4">
+        <div className="flex justify-end mt-6 border-t pt-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+            className="mr-2"
+          >
+            Cancel
+          </Button>
           <Button
             variant="default"
             onClick={handleInvite}
             disabled={!isValidInvite || isSubmitting}
-            className="bg-brand-teal hover:bg-brand-teal/90 mr-2"
+            className="bg-brand-teal hover:bg-brand-teal/90"
           >
             {isSubmitting
               ? "Inviting..."
               : `Invite ${
                   selectedUsers.length > 0 ? `(${selectedUsers.length})` : ""
                 }`}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
           </Button>
         </div>
       </DialogContent>
