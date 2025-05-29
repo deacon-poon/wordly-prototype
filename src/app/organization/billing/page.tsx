@@ -94,109 +94,159 @@ export default function BillingProjectsPage() {
 
   // Sample transactions data
   const [transactions, setTransactions] = useState<Transaction[]>([
-    // Usage transactions - Project 1 (Gardendale City)
+    // Most recent transactions
     {
-      id: "t1",
-      date: "2023-12-01",
-      description: "City Council Meeting",
-      minutes: 120,
+      id: "t38",
+      date: "2023-12-22",
+      description: "Year-end performance review",
+      minutes: 240,
       user: "Sarah Johnson",
       projectId: "1",
-      session: "Session #1234",
+      session: "Session #1250",
+      type: "usage",
+    },
+    {
+      id: "t39",
+      date: "2023-12-22",
+      description: "Final deployment testing",
+      minutes: 180,
+      user: "Alex Thompson",
+      projectId: "2",
+      session: "Session #1251",
+      type: "usage",
+    },
+    {
+      id: "t40",
+      date: "2023-12-21",
+      description: "Community feedback session",
+      minutes: 155,
+      user: "Jennifer Lee",
+      projectId: "3",
+      session: "Session #1249",
+      type: "usage",
+    },
+    {
+      id: "t41",
+      date: "2023-12-21",
+      description: "Holiday allocation bonus",
+      minutes: 500,
+      user: "Admin",
+      projectId: "1",
+      type: "allocation",
+    },
+    {
+      id: "t42",
+      date: "2023-12-21",
+      description: "Year-end compliance audit credit",
+      minutes: -25,
+      user: "Compliance Officer",
+      projectId: "2",
+      type: "adjustment",
+    },
+
+    // Usage transactions for Project 1
+    {
+      id: "t1",
+      date: "2023-12-20",
+      description: "Website audit session",
+      minutes: 120,
+      user: "John Doe",
+      projectId: "1",
+      session: "Session #1248",
       type: "usage",
     },
     {
       id: "t2",
-      date: "2023-12-05",
-      description: "Budget Review Session",
+      date: "2023-12-19",
+      description: "Content review and optimization",
       minutes: 90,
-      user: "Mark Wilson",
+      user: "Sarah Johnson",
       projectId: "1",
-      session: "Session #1235",
+      session: "Session #1247",
       type: "usage",
     },
     {
       id: "t3",
-      date: "2023-12-08",
-      description: "Planning Commission Meeting",
-      minutes: 75,
-      user: "Lisa Chen",
+      date: "2023-12-18",
+      description: "Technical SEO analysis",
+      minutes: 150,
+      user: "Mike Chen",
       projectId: "1",
-      session: "Session #1237",
+      session: "Session #1246",
       type: "usage",
     },
     {
       id: "t4",
-      date: "2023-12-12",
-      description: "Emergency Council Session",
-      minutes: 45,
-      user: "David Miller",
+      date: "2023-12-15",
+      description: "User experience consultation",
+      minutes: 200,
+      user: "Alice Brown",
       projectId: "1",
-      session: "Session #1238",
+      session: "Session #1243",
       type: "usage",
     },
     {
       id: "t5",
-      date: "2023-12-15",
-      description: "Public Hearing - Zoning",
+      date: "2023-12-12",
+      description: "Performance optimization",
       minutes: 180,
-      user: "Sarah Johnson",
+      user: "David Wilson",
       projectId: "1",
-      session: "Session #1239",
+      session: "Session #1240",
       type: "usage",
     },
 
-    // Usage transactions - Project 2 (Parks and Rec)
+    // Usage transactions for Project 2
     {
       id: "t6",
-      date: "2023-12-03",
-      description: "Parks Committee Meeting",
-      minutes: 60,
-      user: "David Miller",
+      date: "2023-12-19",
+      description: "API endpoint testing",
+      minutes: 75,
+      user: "Emma Davis",
       projectId: "2",
-      session: "Session #1236",
+      session: "Session #1245",
       type: "usage",
     },
     {
       id: "t7",
-      date: "2023-12-10",
-      description: "Recreation Planning Session",
-      minutes: 90,
-      user: "Amy Rodriguez",
+      date: "2023-12-17",
+      description: "Database optimization",
+      minutes: 160,
+      user: "Alex Thompson",
       projectId: "2",
-      session: "Session #1240",
+      session: "Session #1242",
       type: "usage",
     },
     {
       id: "t8",
       date: "2023-12-14",
-      description: "Youth Programs Review",
-      minutes: 45,
-      user: "Mike Thompson",
+      description: "Security audit",
+      minutes: 130,
+      user: "Lisa Wang",
       projectId: "2",
       session: "Session #1241",
       type: "usage",
     },
-
-    // Usage transactions - Project 3 (Safety Outreach)
     {
       id: "t9",
-      date: "2023-12-02",
-      description: "Fire Prevention Workshop",
-      minutes: 120,
-      user: "Jennifer Lee",
-      projectId: "3",
-      session: "Session #1242",
+      date: "2023-12-11",
+      description: "Load testing session",
+      minutes: 95,
+      user: "Tom Rodriguez",
+      projectId: "2",
+      session: "Session #1238",
       type: "usage",
     },
+
+    // Usage transactions for Project 3
     {
       id: "t10",
-      date: "2023-12-09",
-      description: "Emergency Preparedness Training",
-      minutes: 150,
-      user: "Robert Garcia",
+      date: "2023-12-18",
+      description: "Community moderation",
+      minutes: 85,
+      user: "Kevin Martinez",
       projectId: "3",
-      session: "Session #1243",
+      session: "Session #1245",
       type: "usage",
     },
     {
@@ -207,6 +257,26 @@ export default function BillingProjectsPage() {
       user: "Jennifer Lee",
       projectId: "3",
       session: "Session #1244",
+      type: "usage",
+    },
+    {
+      id: "t25",
+      date: "2023-12-13",
+      description: "Content moderation training",
+      minutes: 140,
+      user: "Rachel Green",
+      projectId: "3",
+      session: "Session #1239",
+      type: "usage",
+    },
+    {
+      id: "t26",
+      date: "2023-12-10",
+      description: "Safety policy review",
+      minutes: 110,
+      user: "Michael Scott",
+      projectId: "3",
+      session: "Session #1237",
       type: "usage",
     },
 
@@ -254,6 +324,51 @@ export default function BillingProjectsPage() {
       minutes: 200,
       user: "Emergency Admin",
       projectId: "3",
+      type: "allocation",
+    },
+    {
+      id: "t27",
+      date: "2023-11-01",
+      description: "Monthly allocation - November",
+      minutes: 1800,
+      user: "Admin",
+      projectId: "1",
+      type: "allocation",
+    },
+    {
+      id: "t28",
+      date: "2023-11-01",
+      description: "Monthly allocation - November",
+      minutes: 450,
+      user: "Admin",
+      projectId: "2",
+      type: "allocation",
+    },
+    {
+      id: "t29",
+      date: "2023-11-01",
+      description: "Monthly allocation - November",
+      minutes: 1200,
+      user: "Admin",
+      projectId: "3",
+      type: "allocation",
+    },
+    {
+      id: "t30",
+      date: "2023-10-15",
+      description: "Q4 budget increase",
+      minutes: 500,
+      user: "Finance Admin",
+      projectId: "1",
+      type: "allocation",
+    },
+    {
+      id: "t31",
+      date: "2023-10-15",
+      description: "Development sprint allocation",
+      minutes: 250,
+      user: "Tech Lead",
+      projectId: "2",
       type: "allocation",
     },
 
@@ -309,6 +424,60 @@ export default function BillingProjectsPage() {
       description: "Year-end adjustment",
       minutes: 100,
       user: "Admin",
+      projectId: "1",
+      type: "adjustment",
+    },
+    {
+      id: "t32",
+      date: "2023-11-28",
+      description: "Service credit for downtime",
+      minutes: -80,
+      user: "Customer Success",
+      projectId: "2",
+      type: "adjustment",
+    },
+    {
+      id: "t33",
+      date: "2023-11-22",
+      description: "Holiday bonus credit",
+      minutes: 150,
+      user: "Admin",
+      projectId: "3",
+      type: "adjustment",
+    },
+    {
+      id: "t34",
+      date: "2023-11-18",
+      description: "Error correction - overpayment refund",
+      minutes: -120,
+      user: "Finance Admin",
+      projectId: "1",
+      type: "adjustment",
+    },
+    {
+      id: "t35",
+      date: "2023-11-10",
+      description: "Performance bonus credit",
+      minutes: 75,
+      user: "Admin",
+      projectId: "2",
+      type: "adjustment",
+    },
+    {
+      id: "t36",
+      date: "2023-10-30",
+      description: "Migration credit",
+      minutes: 200,
+      user: "Tech Support",
+      projectId: "3",
+      type: "adjustment",
+    },
+    {
+      id: "t37",
+      date: "2023-10-25",
+      description: "Beta testing compensation",
+      minutes: 90,
+      user: "Product Team",
       projectId: "1",
       type: "adjustment",
     },
@@ -452,6 +621,11 @@ export default function BillingProjectsPage() {
         ? projectTransactions
         : projectTransactions.filter((t) => t.type === activeTab);
 
+    // Sort transactions by date (most recent first)
+    const sortedTransactions = filteredTransactions.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
     // Calculate stats
     const totalUsage = projectTransactions
       .filter((t) => t.type === "usage")
@@ -583,7 +757,7 @@ export default function BillingProjectsPage() {
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-base font-semibold">Transaction History</h4>
               <span className="text-sm text-gray-500">
-                {filteredTransactions.length} transactions
+                {sortedTransactions.length} transactions
               </span>
             </div>
 
@@ -653,8 +827,8 @@ export default function BillingProjectsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((transaction) => (
+                {sortedTransactions.length > 0 ? (
+                  sortedTransactions.map((transaction) => (
                     <TableRow key={transaction.id} className="hover:bg-gray-50">
                       <TableCell className="font-mono text-sm py-3">
                         {new Date(transaction.date).toLocaleDateString(
