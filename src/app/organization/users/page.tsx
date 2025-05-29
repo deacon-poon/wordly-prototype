@@ -679,7 +679,7 @@ export default function OrganizationUsersPage() {
                                       • Click to manage roles
                                     </span>
                                   </div>
-                                  <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200 accordion-open:rotate-180" />
+                                  <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200 accordion-open:rotate-180 ml-1" />
                                 </div>
                               </AccordionTrigger>
                               <AccordionContent className="px-3 pb-3">
@@ -688,7 +688,7 @@ export default function OrganizationUsersPage() {
                                   {user.workspaceRoles.map((wr, i) => (
                                     <div
                                       key={i}
-                                      className="flex items-center justify-between p-2.5 bg-gray-50 rounded-md border border-gray-100 hover:bg-gray-100/70 transition-colors duration-150"
+                                      className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100/70 transition-all duration-150"
                                     >
                                       <span className="text-sm font-medium text-gray-700">
                                         {wr.workspaceName}
@@ -699,7 +699,7 @@ export default function OrganizationUsersPage() {
                                             <Button
                                               variant="outline"
                                               size="sm"
-                                              className={`h-6 text-xs font-medium border ${getRoleBadgeClass(
+                                              className={`h-6 text-xs font-medium ${getRoleBadgeClass(
                                                 wr.role
                                               )} hover:opacity-80 transition-opacity duration-150`}
                                             >
@@ -800,7 +800,7 @@ export default function OrganizationUsersPage() {
                                             size="sm"
                                             className="w-full h-8 text-xs text-gray-600 border-dashed border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-150"
                                           >
-                                            <Plus className="h-3 w-3 mr-1" />
+                                            <Plus className="h-4 w-4 mr-2" />
                                             Add to another workspace
                                           </Button>
                                         </DropdownMenuTrigger>
@@ -868,7 +868,7 @@ export default function OrganizationUsersPage() {
                                           size="sm"
                                           className="h-6 w-6 p-0 text-gray-500 hover:text-brand-teal hover:bg-gray-100 rounded transition-colors duration-200"
                                         >
-                                          <Plus className="h-3.5 w-3.5" />
+                                          <Plus className="h-4 w-4" />
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent
