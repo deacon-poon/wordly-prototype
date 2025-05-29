@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
@@ -14,6 +14,8 @@ import {
   User,
   Clock,
   BarChart3,
+  Mail,
+  CreditCard,
 } from "lucide-react";
 import {
   Table,
@@ -42,444 +44,491 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 
-// Sample billing project data
-interface BillingProject {
+interface Account {
   id: string;
-  name: string;
-  workspace: string;
+  title: string;
+  accountId: string;
+  service: "Active" | "Inactive" | "Suspended";
   description: string;
-  balance: string;
-  minutesValue: number;
+  ownerEmail: string;
+  ownerName: string;
+  availableMinutes: number;
+  consumedMinutes: number;
+  allowOverage: boolean;
 }
 
-// Sample transaction data
 interface Transaction {
   id: string;
-  date: string;
+  time: string; // Full timestamp
   description: string;
-  minutes: number;
-  user: string;
-  projectId: string;
-  session?: string;
-  type: "usage" | "allocation" | "adjustment";
+  amount: number; // in minutes
+  type: "credit" | "debit" | "adjustment" | "usage";
+  balance: number; // Running balance after transaction
+  user: string; // Email address
+  label?: string;
+  note?: string;
+  accountId: string;
 }
 
 export default function BillingProjectsPage() {
-  const [projects, setProjects] = useState<BillingProject[]>([
+  const [projects, setProjects] = useState<Account[]>([
     {
       id: "1",
-      name: "Gardendale City",
-      workspace: "Gardendale City",
+      title: "Gardendale City",
+      accountId: "Gardendale City",
+      service: "Active",
       description: "the main project for Gardendale city council",
-      balance: "5,514 minutes",
-      minutesValue: 5514,
+      ownerEmail: "gardendale@city.gov",
+      ownerName: "Gardendale City Council",
+      availableMinutes: 5514,
+      consumedMinutes: 0,
+      allowOverage: true,
     },
     {
       id: "2",
-      name: "Parks and Rec",
-      workspace: "Gardendale City",
+      title: "Parks and Rec",
+      accountId: "Gardendale City",
+      service: "Active",
       description: "-",
-      balance: "14 minutes",
-      minutesValue: 14,
+      ownerEmail: "parks@gardendale.gov",
+      ownerName: "Gardendale Parks and Recreation",
+      availableMinutes: 14,
+      consumedMinutes: 0,
+      allowOverage: true,
     },
     {
       id: "3",
-      name: "Safety Outreach",
-      workspace: "Gardendale City",
+      title: "Safety Outreach",
+      accountId: "Gardendale City",
+      service: "Active",
       description: "funding for disaster preparedness and fire prevention",
-      balance: "5,514 minutes",
-      minutesValue: 5514,
+      ownerEmail: "safety@gardendale.gov",
+      ownerName: "Gardendale Safety Outreach",
+      availableMinutes: 5514,
+      consumedMinutes: 0,
+      allowOverage: true,
     },
   ]);
+
+  // Navigation state
+  const [navigationLevel, setNavigationLevel] = useState<
+    "organization" | "workspace" | "accounts"
+  >("accounts");
+  const [currentWorkspace, setCurrentWorkspace] =
+    useState<string>("All Workspaces");
 
   // Sample transactions data
   const [transactions, setTransactions] = useState<Transaction[]>([
     // Most recent transactions
     {
       id: "t38",
-      date: "2023-12-22",
+      time: "2023-12-22T14:00:00",
       description: "Year-end performance review",
-      minutes: 240,
-      user: "Sarah Johnson",
-      projectId: "1",
-      session: "Session #1250",
+      amount: 240,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t39",
-      date: "2023-12-22",
+      time: "2023-12-22T15:00:00",
       description: "Final deployment testing",
-      minutes: 180,
-      user: "Alex Thompson",
-      projectId: "2",
-      session: "Session #1251",
+      amount: 180,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t40",
-      date: "2023-12-21",
+      time: "2023-12-21T13:00:00",
       description: "Community feedback session",
-      minutes: 155,
-      user: "Jennifer Lee",
-      projectId: "3",
-      session: "Session #1249",
+      amount: 155,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t41",
-      date: "2023-12-21",
+      time: "2023-12-21T14:00:00",
       description: "Holiday allocation bonus",
-      minutes: 500,
-      user: "Admin",
-      projectId: "1",
-      type: "allocation",
+      amount: 500,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t42",
-      date: "2023-12-21",
+      time: "2023-12-21T14:00:00",
       description: "Year-end compliance audit credit",
-      minutes: -25,
-      user: "Compliance Officer",
-      projectId: "2",
+      amount: -25,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
 
     // Usage transactions for Project 1
     {
       id: "t1",
-      date: "2023-12-20",
+      time: "2023-12-20T10:00:00",
       description: "Website audit session",
-      minutes: 120,
-      user: "John Doe",
-      projectId: "1",
-      session: "Session #1248",
+      amount: 120,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t2",
-      date: "2023-12-19",
+      time: "2023-12-19T11:00:00",
       description: "Content review and optimization",
-      minutes: 90,
-      user: "Sarah Johnson",
-      projectId: "1",
-      session: "Session #1247",
+      amount: 90,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t3",
-      date: "2023-12-18",
+      time: "2023-12-18T12:00:00",
       description: "Technical SEO analysis",
-      minutes: 150,
-      user: "Mike Chen",
-      projectId: "1",
-      session: "Session #1246",
+      amount: 150,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t4",
-      date: "2023-12-15",
+      time: "2023-12-15T13:00:00",
       description: "User experience consultation",
-      minutes: 200,
-      user: "Alice Brown",
-      projectId: "1",
-      session: "Session #1243",
+      amount: 200,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t5",
-      date: "2023-12-12",
+      time: "2023-12-12T14:00:00",
       description: "Performance optimization",
-      minutes: 180,
-      user: "David Wilson",
-      projectId: "1",
-      session: "Session #1240",
+      amount: 180,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
 
     // Usage transactions for Project 2
     {
       id: "t6",
-      date: "2023-12-19",
+      time: "2023-12-19T11:00:00",
       description: "API endpoint testing",
-      minutes: 75,
-      user: "Emma Davis",
-      projectId: "2",
-      session: "Session #1245",
+      amount: 75,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t7",
-      date: "2023-12-17",
+      time: "2023-12-17T12:00:00",
       description: "Database optimization",
-      minutes: 160,
-      user: "Alex Thompson",
-      projectId: "2",
-      session: "Session #1242",
+      amount: 160,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t8",
-      date: "2023-12-14",
+      time: "2023-12-14T13:00:00",
       description: "Security audit",
-      minutes: 130,
-      user: "Lisa Wang",
-      projectId: "2",
-      session: "Session #1241",
+      amount: 130,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t9",
-      date: "2023-12-11",
+      time: "2023-12-11T14:00:00",
       description: "Load testing session",
-      minutes: 95,
-      user: "Tom Rodriguez",
-      projectId: "2",
-      session: "Session #1238",
+      amount: 95,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
 
     // Usage transactions for Project 3
     {
       id: "t10",
-      date: "2023-12-18",
+      time: "2023-12-18T11:00:00",
       description: "Community moderation",
-      minutes: 85,
-      user: "Kevin Martinez",
-      projectId: "3",
-      session: "Session #1245",
+      amount: 85,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t11",
-      date: "2023-12-16",
+      time: "2023-12-16T12:00:00",
       description: "Community Safety Forum",
-      minutes: 105,
-      user: "Jennifer Lee",
-      projectId: "3",
-      session: "Session #1244",
+      amount: 105,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t25",
-      date: "2023-12-13",
+      time: "2023-12-13T13:00:00",
       description: "Content moderation training",
-      minutes: 140,
-      user: "Rachel Green",
-      projectId: "3",
-      session: "Session #1239",
+      amount: 140,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t26",
-      date: "2023-12-10",
+      time: "2023-12-10T14:00:00",
       description: "Safety policy review",
-      minutes: 110,
-      user: "Michael Scott",
-      projectId: "3",
-      session: "Session #1237",
+      amount: 110,
       type: "usage",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
 
     // Allocation transactions
     {
       id: "t12",
-      date: "2023-12-01",
+      time: "2023-12-01T10:00:00",
       description: "Monthly allocation - December",
-      minutes: 2000,
-      user: "Admin",
-      projectId: "1",
-      type: "allocation",
+      amount: 2000,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t13",
-      date: "2023-12-01",
+      time: "2023-12-01T10:00:00",
       description: "Monthly allocation - December",
-      minutes: 500,
-      user: "Admin",
-      projectId: "2",
-      type: "allocation",
+      amount: 500,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t14",
-      date: "2023-12-01",
+      time: "2023-12-01T10:00:00",
       description: "Monthly allocation - December",
-      minutes: 1500,
-      user: "Admin",
-      projectId: "3",
-      type: "allocation",
+      amount: 1500,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t15",
-      date: "2023-11-15",
+      time: "2023-11-15T10:00:00",
       description: "Additional allocation for budget review",
-      minutes: 300,
-      user: "Finance Admin",
-      projectId: "1",
-      type: "allocation",
+      amount: 300,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t16",
-      date: "2023-11-20",
+      time: "2023-11-20T10:00:00",
       description: "Emergency funding allocation",
-      minutes: 200,
-      user: "Emergency Admin",
-      projectId: "3",
-      type: "allocation",
+      amount: 200,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t27",
-      date: "2023-11-01",
+      time: "2023-11-01T10:00:00",
       description: "Monthly allocation - November",
-      minutes: 1800,
-      user: "Admin",
-      projectId: "1",
-      type: "allocation",
+      amount: 1800,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t28",
-      date: "2023-11-01",
+      time: "2023-11-01T10:00:00",
       description: "Monthly allocation - November",
-      minutes: 450,
-      user: "Admin",
-      projectId: "2",
-      type: "allocation",
+      amount: 450,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t29",
-      date: "2023-11-01",
+      time: "2023-11-01T10:00:00",
       description: "Monthly allocation - November",
-      minutes: 1200,
-      user: "Admin",
-      projectId: "3",
-      type: "allocation",
+      amount: 1200,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t30",
-      date: "2023-10-15",
+      time: "2023-10-15T10:00:00",
       description: "Q4 budget increase",
-      minutes: 500,
-      user: "Finance Admin",
-      projectId: "1",
-      type: "allocation",
+      amount: 500,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t31",
-      date: "2023-10-15",
+      time: "2023-10-15T10:00:00",
       description: "Development sprint allocation",
-      minutes: 250,
-      user: "Tech Lead",
-      projectId: "2",
-      type: "allocation",
+      amount: 250,
+      type: "credit",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
 
     // Adjustment transactions
     {
       id: "t17",
-      date: "2023-12-05",
+      time: "2023-12-05T10:00:00",
       description: "Correction for double billing",
-      minutes: -30,
-      user: "Admin",
-      projectId: "1",
+      amount: -30,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t18",
-      date: "2023-12-07",
+      time: "2023-12-07T10:00:00",
       description: "Manual adjustment - technical issue",
-      minutes: -15,
-      user: "Tech Support",
-      projectId: "2",
+      amount: -15,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t19",
-      date: "2023-12-11",
+      time: "2023-12-11T10:00:00",
       description: "Retroactive discount applied",
-      minutes: -45,
-      user: "Billing Admin",
-      projectId: "1",
+      amount: -45,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t20",
-      date: "2023-12-13",
+      time: "2023-12-13T10:00:00",
       description: "Credit for cancelled session",
-      minutes: -60,
-      user: "Admin",
-      projectId: "3",
+      amount: -60,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t21",
-      date: "2023-12-18",
+      time: "2023-12-18T10:00:00",
       description: "Billing error correction",
-      minutes: 25,
-      user: "Finance Admin",
-      projectId: "2",
+      amount: 25,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t22",
-      date: "2023-12-20",
+      time: "2023-12-20T10:00:00",
       description: "Year-end adjustment",
-      minutes: 100,
-      user: "Admin",
-      projectId: "1",
+      amount: 100,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t32",
-      date: "2023-11-28",
+      time: "2023-11-28T10:00:00",
       description: "Service credit for downtime",
-      minutes: -80,
-      user: "Customer Success",
-      projectId: "2",
+      amount: -80,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t33",
-      date: "2023-11-22",
+      time: "2023-11-22T10:00:00",
       description: "Holiday bonus credit",
-      minutes: 150,
-      user: "Admin",
-      projectId: "3",
+      amount: 150,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t34",
-      date: "2023-11-18",
+      time: "2023-11-18T10:00:00",
       description: "Error correction - overpayment refund",
-      minutes: -120,
-      user: "Finance Admin",
-      projectId: "1",
+      amount: -120,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
     {
       id: "t35",
-      date: "2023-11-10",
+      time: "2023-11-10T10:00:00",
       description: "Performance bonus credit",
-      minutes: 75,
-      user: "Admin",
-      projectId: "2",
+      amount: 75,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "2",
     },
     {
       id: "t36",
-      date: "2023-10-30",
+      time: "2023-10-30T10:00:00",
       description: "Migration credit",
-      minutes: 200,
-      user: "Tech Support",
-      projectId: "3",
+      amount: 200,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "3",
     },
     {
       id: "t37",
-      date: "2023-10-25",
+      time: "2023-10-25T10:00:00",
       description: "Beta testing compensation",
-      minutes: 90,
-      user: "Product Team",
-      projectId: "1",
+      amount: 90,
       type: "adjustment",
+      balance: 5514,
+      user: "gardendale@city.gov",
+      accountId: "1",
     },
   ]);
 
@@ -530,11 +579,11 @@ export default function BillingProjectsPage() {
   const filteredProjects =
     workspaceFilter === "all"
       ? projects
-      : projects.filter((project) => project.workspace === workspaceFilter);
+      : projects.filter((project) => project.accountId === workspaceFilter);
 
   // Get unique workspaces for filter dropdown
   const workspaces = Array.from(
-    new Set(projects.map((project) => project.workspace))
+    new Set(projects.map((project) => project.accountId))
   );
 
   // Show project transactions in the side panel
@@ -543,7 +592,7 @@ export default function BillingProjectsPage() {
     if (!selectedProject) return;
 
     const projectTransactions = transactions.filter(
-      (t) => t.projectId === projectId
+      (t) => t.accountId === projectId
     );
 
     // Generate the panel content
@@ -568,22 +617,23 @@ export default function BillingProjectsPage() {
   const showCombinedView = () => {
     if (filteredProjects.length > 0) {
       const allTransactions = transactions.filter((t) =>
-        filteredProjects.some((p) => p.id === t.projectId)
+        filteredProjects.some((p) => p.id === t.accountId)
       );
 
-      const combinedProject: BillingProject = {
+      const combinedProject: Account = {
         id: "combined",
-        name: "All Projects Combined",
-        workspace: "All Workspaces",
+        title: "All Projects Combined",
+        accountId: "All Workspaces",
+        service: "Active",
         description: `Viewing ${filteredProjects.length} projects`,
-        balance: `${filteredProjects.reduce(
-          (sum, p) => sum + p.minutesValue,
-          0
-        )} minutes`,
-        minutesValue: filteredProjects.reduce(
-          (sum, p) => sum + p.minutesValue,
+        ownerEmail: "",
+        ownerName: "",
+        availableMinutes: filteredProjects.reduce(
+          (sum, p) => sum + p.availableMinutes,
           0
         ),
+        consumedMinutes: 0,
+        allowOverage: true,
       };
 
       const panelContent = renderTransactionsPanel(
@@ -612,7 +662,7 @@ export default function BillingProjectsPage() {
 
   // Render the transactions panel with better proportions and scalable design
   const renderTransactionsPanel = (
-    project: BillingProject,
+    project: Account,
     projectTransactions: Transaction[]
   ) => {
     // Filter transactions based on the active tab
@@ -623,30 +673,30 @@ export default function BillingProjectsPage() {
 
     // Sort transactions by date (most recent first)
     const sortedTransactions = filteredTransactions.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
     );
 
     // Calculate stats
     const totalUsage = projectTransactions
       .filter((t) => t.type === "usage")
-      .reduce((sum, t) => sum + t.minutes, 0);
-    const totalAllocation = projectTransactions
-      .filter((t) => t.type === "allocation")
-      .reduce((sum, t) => sum + t.minutes, 0);
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalCredit = projectTransactions
+      .filter((t) => t.type === "credit")
+      .reduce((sum, t) => sum + t.amount, 0);
     const totalAdjustments = projectTransactions
       .filter((t) => t.type === "adjustment")
-      .reduce((sum, t) => sum + t.minutes, 0);
+      .reduce((sum, t) => sum + t.amount, 0);
 
     // For combined view, calculate total balance
     const totalBalance =
       selectedProject === "all_combined"
-        ? filteredProjects.reduce((sum, p) => sum + p.minutesValue, 0)
-        : project?.minutesValue || 0;
+        ? filteredProjects.reduce((sum, p) => sum + p.availableMinutes, 0)
+        : project?.availableMinutes || 0;
 
     const displayBalance =
       selectedProject === "all_combined"
         ? `${totalBalance.toLocaleString()} total`
-        : project?.balance || "0";
+        : project?.availableMinutes.toLocaleString();
 
     return (
       <div className="h-full flex flex-col overflow-hidden">
@@ -654,17 +704,17 @@ export default function BillingProjectsPage() {
         <div className="flex-shrink-0 border-b bg-white">
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {project?.name || "Combined View"}
+              <div className="flex-1 min-w-0 mr-4">
+                <h3 className="text-lg font-semibold truncate">
+                  {project?.title || "Combined View"}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 mt-1 truncate">
                   {project
-                    ? `${project.workspace} • ${project.description}`
+                    ? `${project.accountId} • ${project.description}`
                     : `${filteredProjects.length} projects combined`}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge
                   variant="outline"
                   className="bg-[#e0f7fa] text-[#006064] border-0"
@@ -682,15 +732,15 @@ export default function BillingProjectsPage() {
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-gray-50 rounded-lg p-3 border">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-gray-500 mb-1">
                       Current Balance
                     </div>
-                    <div className="text-base font-semibold">
+                    <div className="text-base font-semibold truncate">
                       {totalBalance.toLocaleString()}
                     </div>
                   </div>
-                  <div className="h-6 w-6 bg-[#e0f7fa] rounded-full flex items-center justify-center">
+                  <div className="h-6 w-6 bg-[#e0f7fa] rounded-full flex items-center justify-center flex-shrink-0">
                     <div className="w-2 h-2 bg-[#00838f] rounded-full"></div>
                   </div>
                 </div>
@@ -698,15 +748,15 @@ export default function BillingProjectsPage() {
 
               <div className="bg-gray-50 rounded-lg p-3 border">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-gray-500 mb-1">
                       Total Used
                     </div>
-                    <div className="text-base font-semibold text-blue-600">
+                    <div className="text-base font-semibold text-blue-600 truncate">
                       {totalUsage.toLocaleString()}
                     </div>
                   </div>
-                  <div className="h-6 w-6 bg-blue-50 rounded-full flex items-center justify-center">
+                  <div className="h-6 w-6 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   </div>
                 </div>
@@ -714,31 +764,31 @@ export default function BillingProjectsPage() {
 
               <div className="bg-gray-50 rounded-lg p-3 border">
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-medium text-gray-500 mb-1">
                       Net Adjustments
                     </div>
                     <div
-                      className={`text-base font-semibold ${
-                        totalAdjustments + totalAllocation >= 0
+                      className={`text-base font-semibold truncate ${
+                        totalAdjustments + totalCredit >= 0
                           ? "text-green-600"
                           : "text-red-600"
                       }`}
                     >
-                      {totalAdjustments + totalAllocation > 0 ? "+" : ""}
-                      {(totalAdjustments + totalAllocation).toLocaleString()}
+                      {totalAdjustments + totalCredit > 0 ? "+" : ""}
+                      {(totalAdjustments + totalCredit).toLocaleString()}
                     </div>
                   </div>
                   <div
-                    className={`h-6 w-6 rounded-full flex items-center justify-center ${
-                      totalAdjustments + totalAllocation >= 0
+                    className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      totalAdjustments + totalCredit >= 0
                         ? "bg-green-50"
                         : "bg-red-50"
                     }`}
                   >
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        totalAdjustments + totalAllocation >= 0
+                        totalAdjustments + totalCredit >= 0
                           ? "bg-green-500"
                           : "bg-red-500"
                       }`}
@@ -782,12 +832,12 @@ export default function BillingProjectsPage() {
                   )
                 </TabsTrigger>
                 <TabsTrigger
-                  value="allocation"
+                  value="credit"
                   className="flex-1 data-[state=active]:bg-gray-100"
                 >
-                  Allocations (
+                  Credits (
                   {
-                    projectTransactions.filter((t) => t.type === "allocation")
+                    projectTransactions.filter((t) => t.type === "credit")
                       .length
                   }
                   )
@@ -809,98 +859,142 @@ export default function BillingProjectsPage() {
 
           {/* Scrollable Transaction List */}
           <div className="flex-1 overflow-auto">
-            <Table>
-              <TableHeader className="bg-gray-50 sticky top-0">
-                <TableRow>
-                  <TableHead className="w-[100px] text-xs font-medium">
-                    Date
-                  </TableHead>
-                  <TableHead className="text-xs font-medium">
-                    Description
-                  </TableHead>
-                  <TableHead className="w-[80px] text-xs font-medium">
-                    User
-                  </TableHead>
-                  <TableHead className="w-[100px] text-right text-xs font-medium">
-                    Minutes
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTransactions.length > 0 ? (
-                  sortedTransactions.map((transaction) => (
-                    <TableRow key={transaction.id} className="hover:bg-gray-50">
-                      <TableCell className="font-mono text-sm py-3">
-                        {new Date(transaction.date).toLocaleDateString(
-                          "en-US",
-                          { month: "short", day: "numeric" }
-                        )}
-                      </TableCell>
-                      <TableCell className="py-3">
-                        <div>
-                          <div className="font-medium text-sm flex items-center gap-2">
-                            {transaction.description}
+            <div className="w-full">
+              <Table>
+                <TableHeader className="bg-gray-50 sticky top-0">
+                  <TableRow>
+                    <TableHead className="text-xs font-medium w-auto min-w-[70px]">
+                      Time
+                    </TableHead>
+                    <TableHead className="text-xs font-medium w-auto">
+                      Description
+                    </TableHead>
+                    <TableHead className="text-xs font-medium w-auto min-w-[45px]">
+                      User
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium w-auto min-w-[45px]">
+                      Amount
+                    </TableHead>
+                    <TableHead className="text-right text-xs font-medium w-auto min-w-[50px]">
+                      Balance
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedTransactions.length > 0 ? (
+                    sortedTransactions.map((transaction) => (
+                      <TableRow
+                        key={transaction.id}
+                        className="hover:bg-gray-50"
+                      >
+                        <TableCell className="font-mono text-xs py-3 w-auto min-w-[70px]">
+                          <div className="text-[10px] leading-tight">
+                            {new Date(transaction.time).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </div>
+                          <div className="text-[9px] text-gray-500">
+                            {new Date(transaction.time).toLocaleTimeString(
+                              "en-US",
+                              {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              }
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3 w-auto">
+                          <div className="space-y-1">
+                            <div className="text-xs font-medium leading-tight">
+                              <div className="truncate max-w-[120px]">
+                                {transaction.description}
+                              </div>
+                            </div>
                             <Badge
                               variant="outline"
-                              className={`px-1.5 py-0.5 text-xs font-normal ${
+                              className={`text-[9px] px-1 py-0.5 font-normal ${
                                 transaction.type === "usage"
                                   ? "bg-blue-50 text-blue-700 border-blue-200"
-                                  : transaction.type === "allocation"
+                                  : transaction.type === "credit"
                                   ? "bg-green-50 text-green-700 border-green-200"
+                                  : transaction.type === "debit"
+                                  ? "bg-red-50 text-red-700 border-red-200"
                                   : "bg-orange-50 text-orange-700 border-orange-200"
                               }`}
                             >
                               {transaction.type}
                             </Badge>
                           </div>
-                          {transaction.session && (
-                            <div className="text-xs text-gray-500 mt-1 font-mono">
-                              {transaction.session}
-                            </div>
-                          )}
+                        </TableCell>
+                        <TableCell className="text-xs text-gray-600 py-3 font-mono w-auto min-w-[45px]">
+                          <div
+                            className="truncate text-[10px] max-w-[40px]"
+                            title={transaction.user}
+                          >
+                            {transaction.user.split("@")[0].slice(0, 4)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium font-mono py-3 w-auto min-w-[45px]">
+                          <span
+                            className={`text-[10px] ${
+                              transaction.amount < 0
+                                ? "text-red-600"
+                                : transaction.type === "credit"
+                                ? "text-green-600"
+                                : transaction.type === "usage"
+                                ? "text-blue-600"
+                                : "text-gray-900"
+                            }`}
+                          >
+                            {transaction.amount > 0 &&
+                            transaction.type === "credit"
+                              ? "+"
+                              : transaction.amount < 0
+                              ? ""
+                              : transaction.type === "usage"
+                              ? "-"
+                              : ""}
+                            {Math.abs(transaction.amount) >= 1000
+                              ? `${
+                                  Math.round(
+                                    Math.abs(transaction.amount) / 100
+                                  ) / 10
+                                }k`
+                              : Math.abs(transaction.amount).toString()}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-medium font-mono py-3 w-auto min-w-[50px]">
+                          <span className="text-[10px] text-gray-900">
+                            {transaction.balance >= 1000
+                              ? `${Math.round(transaction.balance / 100) / 10}k`
+                              : transaction.balance.toString()}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="h-32 text-center text-gray-500 py-8"
+                      >
+                        <div className="flex flex-col items-center justify-center">
+                          <p className="text-sm">No transactions found</p>
+                          <p className="text-xs mt-1 text-gray-400">
+                            Try a different filter
+                          </p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-gray-600 py-3">
-                        {transaction.user}
-                      </TableCell>
-                      <TableCell className="text-right font-medium font-mono py-3">
-                        <span
-                          className={`text-sm ${
-                            transaction.minutes < 0
-                              ? "text-red-600"
-                              : transaction.type === "allocation"
-                              ? "text-green-600"
-                              : transaction.type === "usage"
-                              ? "text-blue-600"
-                              : "text-gray-900"
-                          }`}
-                        >
-                          {transaction.minutes > 0 &&
-                          transaction.type !== "usage"
-                            ? "+"
-                            : ""}
-                          {transaction.minutes.toLocaleString()}
-                        </span>
-                      </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="h-32 text-center text-gray-500 py-8"
-                    >
-                      <div className="flex flex-col items-center justify-center">
-                        <p className="text-sm">No transactions found</p>
-                        <p className="text-xs mt-1 text-gray-400">
-                          Try a different filter
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       </div>
@@ -911,30 +1005,135 @@ export default function BillingProjectsPage() {
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-6 flex justify-between items-start">
         <div>
-          <h2 className="text-xl font-semibold">Billing Projects</h2>
+          <h2 className="text-xl font-semibold">Billing Accounts</h2>
           <p className="text-gray-500 mt-1">
-            Track and allocate minutes across workspaces with billing projects.
+            Track and manage minute allocations across accounts with transaction
+            history.
           </p>
         </div>
         <Button
           variant="default"
           className="bg-brand-teal hover:bg-brand-teal/90 text-white"
           onClick={() => {
-            // Handle add new billing project
+            // Handle add new billing account
           }}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add New Billing Project
+          Add New Account
         </Button>
+      </div>
+
+      {/* Breadcrumb Navigation */}
+      <div className="border-t border-gray-200 bg-white px-6 py-3">
+        <div className="flex items-center gap-2 text-sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            onClick={() => setNavigationLevel("organization")}
+          >
+            Wordly Organization
+          </Button>
+          <ArrowRight className="h-3 w-3 text-gray-400" />
+
+          {navigationLevel === "organization" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 bg-gray-100 text-gray-900 font-medium"
+              disabled
+            >
+              Overview
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={() => setNavigationLevel("workspace")}
+              >
+                {currentWorkspace === "All Workspaces"
+                  ? "All Workspaces"
+                  : `${currentWorkspace} Workspace`}
+              </Button>
+              <ArrowRight className="h-3 w-3 text-gray-400" />
+
+              {navigationLevel === "workspace" ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 bg-gray-100 text-gray-900 font-medium"
+                  disabled
+                >
+                  Workspace Details
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 bg-gray-100 text-gray-900 font-medium"
+                  disabled
+                >
+                  Billing Accounts
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Context Info */}
+        {navigationLevel === "accounts" && (
+          <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span>{filteredProjects.length} accounts</span>
+              <span>•</span>
+              <span>{workspaces.length} workspaces</span>
+              <span>•</span>
+              <span>
+                {filteredProjects
+                  .reduce((sum, p) => sum + p.availableMinutes, 0)
+                  .toLocaleString()}{" "}
+                total minutes
+              </span>
+            </div>
+
+            {/* Workspace Filter in Breadcrumb Context */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Workspace:</span>
+              <Select
+                value={currentWorkspace}
+                onValueChange={(value) => {
+                  setCurrentWorkspace(value);
+                  setWorkspaceFilter(
+                    value === "All Workspaces" ? "all" : value
+                  );
+                }}
+              >
+                <SelectTrigger className="h-7 w-[140px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All Workspaces">All Workspaces</SelectItem>
+                  {workspaces.map((workspace) => (
+                    <SelectItem key={workspace} value={workspace}>
+                      {workspace}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Selection and Filters Section */}
       <div className="border-t border-gray-200 bg-gray-50">
         <div className="p-4">
-          {/* Cleaner header row with view toggle and filters */}
+          {/* Cleaner header row with view toggle and search */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* View Mode Toggle - More subtle */}
+              {/* View Mode Toggle */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">View:</span>
                 <div className="flex rounded-md border border-gray-200 bg-white">
@@ -964,33 +1163,12 @@ export default function BillingProjectsPage() {
                   </button>
                 </div>
               </div>
-
-              {/* Workspace Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Workspace:</span>
-                <Select
-                  value={workspaceFilter}
-                  onValueChange={handleFilterChange}
-                >
-                  <SelectTrigger className="h-8 text-sm border-gray-200 bg-white px-3 py-1 w-[160px]">
-                    <SelectValue placeholder="Select workspace" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All workspaces</SelectItem>
-                    {workspaces.map((workspace) => (
-                      <SelectItem key={workspace} value={workspace}>
-                        {workspace}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Search */}
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Search projects..."
+                placeholder="Search accounts..."
                 className="h-8 max-w-[200px] text-sm"
               />
             </div>
@@ -998,7 +1176,7 @@ export default function BillingProjectsPage() {
         </div>
       </div>
 
-      {/* Projects Table */}
+      {/* Accounts Table */}
       <div className="border-t border-gray-200">
         <Table>
           <TableHeader className="bg-gray-50">
@@ -1009,84 +1187,126 @@ export default function BillingProjectsPage() {
                 )}
               </TableHead>
               <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Billing Project
+                Account
               </TableHead>
               <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Workspace
+                Owner
               </TableHead>
               <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Description
+                Service
               </TableHead>
-              <TableHead className="text-right pr-6 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Balance
+              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Available
+              </TableHead>
+              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Consumed
+              </TableHead>
+              <TableHead className="text-xs font-medium text-gray-500 uppercase tracking-wide text-right pr-6">
+                Allow Overage
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => (
-                <TableRow
-                  key={project.id}
-                  className={`hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 ${
-                    selectedProject === project.id
-                      ? "bg-blue-50 border-l-2 border-l-blue-500"
-                      : ""
-                  }`}
-                  onClick={(event) => handleRowSelect(project.id, event)}
-                >
-                  <TableCell className="pl-6 py-4">
-                    {selectedProject !== "all_combined" && (
-                      <input
-                        type="radio"
-                        name="project_selection"
-                        value={project.id}
-                        checked={selectedProject === project.id}
-                        onChange={() => handleRowSelect(project.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <div className="font-medium text-gray-900">
-                      {project.name}
+            {filteredProjects.map((account) => (
+              <TableRow
+                key={account.id}
+                className={`cursor-pointer transition-colors hover:bg-gray-50 ${
+                  selectedProject === account.id
+                    ? "bg-blue-50 border-l-4 border-blue-500"
+                    : ""
+                }`}
+                onClick={() => handleRowSelect(account.id)}
+              >
+                <TableCell className="pl-6 py-4">
+                  {selectedProject !== "all_combined" && (
+                    <input
+                      type="radio"
+                      name="account-selection"
+                      checked={selectedProject === account.id}
+                      onChange={() => handleRowSelect(account.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                  )}
+                </TableCell>
+                <TableCell className="py-4">
+                  <div>
+                    <div className="font-medium text-gray-900 flex items-center gap-2">
+                      <span className="truncate">{account.title}</span>
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-1.5 py-0.5 font-mono flex-shrink-0"
+                      >
+                        {account.accountId}
+                      </Badge>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-4">
-                    <span className="text-sm text-gray-600">
-                      {project.workspace}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-4">
-                    {project.description === "-" ? (
-                      <span className="text-sm text-gray-400 italic">
-                        No description
-                      </span>
-                    ) : (
-                      <span className="text-sm text-gray-600">
-                        {project.description}
-                      </span>
+                    {account.description && account.description !== "-" && (
+                      <div className="text-sm text-gray-500 mt-1 truncate">
+                        {account.description}
+                      </div>
                     )}
-                  </TableCell>
-                  <TableCell className="text-right pr-6 py-4">
-                    <span className="font-medium text-gray-900">
-                      {project.balance}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center py-8">
-                  <div className="flex flex-col items-center justify-center text-gray-500">
-                    <p className="text-sm mb-2">No billing projects found</p>
-                    <p className="text-xs text-gray-400">
-                      Try changing your filter or add a new billing project
-                    </p>
                   </div>
                 </TableCell>
+                <TableCell className="py-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 flex items-center gap-1">
+                      <User className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                      <span className="truncate">{account.ownerName}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                      <Mail className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                      <span className="truncate">{account.ownerEmail}</span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  <Badge
+                    variant={
+                      account.service === "Active" ? "default" : "secondary"
+                    }
+                    className={`text-xs ${
+                      account.service === "Active"
+                        ? "bg-green-100 text-green-800 border-green-200"
+                        : account.service === "Inactive"
+                        ? "bg-gray-100 text-gray-800 border-gray-200"
+                        : "bg-red-100 text-red-800 border-red-200"
+                    }`}
+                  >
+                    {account.service}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                    <span className="font-medium text-gray-900">
+                      {account.availableMinutes.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-gray-500">mins</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-1">
+                    <CreditCard className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                    <span className="font-medium text-gray-900">
+                      {account.consumedMinutes.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-gray-500">mins</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right pr-6 py-4">
+                  <Badge
+                    variant={account.allowOverage ? "default" : "secondary"}
+                    className={`text-xs ${
+                      account.allowOverage
+                        ? "bg-blue-100 text-blue-800 border-blue-200"
+                        : "bg-gray-100 text-gray-800 border-gray-200"
+                    }`}
+                  >
+                    {account.allowOverage ? "Yes" : "No"}
+                  </Badge>
+                </TableCell>
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </div>
