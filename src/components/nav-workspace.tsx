@@ -111,12 +111,6 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       icon: Settings,
     },
     {
-      id: "accounts",
-      title: "Accounts",
-      href: "/organization/accounts",
-      icon: Building2,
-    },
-    {
       id: "billing",
       title: "Billing",
       href: "/organization/billing",
