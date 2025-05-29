@@ -41,6 +41,7 @@ import {
 interface User {
   id: string;
   name: string;
+  email: string;
   role: "Administrator" | "Editor" | "Viewer";
   isCurrentUser: boolean;
 }
@@ -117,18 +118,21 @@ export default function UsersPage() {
     {
       id: "1",
       name: "Aisha Patel",
+      email: "aisha.patel@example.com",
       role: "Administrator",
       isCurrentUser: true,
     },
     {
       id: "2",
       name: "Carlos Mendoza",
+      email: "carlos.mendoza@example.com",
       role: "Editor",
       isCurrentUser: false,
     },
     {
       id: "3",
       name: "Jamal Johnson",
+      email: "jamal.johnson@example.com",
       role: "Viewer",
       isCurrentUser: false,
     },
@@ -218,6 +222,9 @@ export default function UsersPage() {
       const newUsers = selectedUsers.map((user) => ({
         id: user.id || `new-${Math.random().toString(36).substring(2, 9)}`,
         name: user.name || user.email.split("@")[0],
+        email:
+          user.email ||
+          `new-${Math.random().toString(36).substring(2, 9)}@example.com`,
         role: role,
         isCurrentUser: false,
       }));
@@ -264,8 +271,22 @@ export default function UsersPage() {
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                  >
+                    Name
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                  >
+                    Role
+                  </Button>
+                </TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -292,36 +313,36 @@ export default function UsersPage() {
                         </Avatar>
                         <div className="flex flex-col">
                           <div className="flex items-center">
-                            <a
-                              href="#"
-                              className="text-brand-teal hover:underline"
-                            >
+                            <span className="text-gray-900 font-medium">
                               {user.name}
-                            </a>
+                            </span>
                             {user.isCurrentUser && (
                               <span className="text-gray-500 font-normal text-xs ml-1">
                                 (you)
                               </span>
                             )}
                           </div>
+                          <span className="text-gray-500 text-sm">
+                            {user.email}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Badge
+                          <Button
                             variant="outline"
                             className={`${getRoleBadgeClass(
                               user.role
-                            )} font-normal cursor-pointer hover:bg-gray-100/70 transition-colors duration-150`}
+                            )} font-normal h-auto px-2 py-1 cursor-pointer hover:bg-gray-100/70 transition-colors duration-150 border`}
                           >
                             <div className="flex items-center gap-1">
                               {getRoleIcon(user.role)}
                               <span>{user.role}</span>
                               <ChevronDown className="h-3 w-3 ml-1 text-gray-500" />
                             </div>
-                          </Badge>
+                          </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
                           <DropdownMenuItem

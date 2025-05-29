@@ -74,6 +74,7 @@ import { Separator } from "@/components/ui/separator";
 interface User {
   id: string;
   name: string;
+  email: string;
   workspace: string;
   role: "Administrator" | "Mixed" | "Viewer" | "Editor";
   isCurrentUser: boolean;
@@ -108,6 +109,7 @@ export default function OrganizationUsersPage() {
     {
       id: "1",
       name: "Deacon Poon",
+      email: "deacon.poon@example.com",
       workspace: "Main HQ",
       role: "Administrator",
       isCurrentUser: true,
@@ -116,6 +118,7 @@ export default function OrganizationUsersPage() {
     {
       id: "2",
       name: "Carlos Mendoza",
+      email: "carlos.mendoza@example.com",
       workspace: "2 workspaces",
       role: "Mixed",
       isCurrentUser: false,
@@ -127,6 +130,7 @@ export default function OrganizationUsersPage() {
     {
       id: "3",
       name: "Jamal Johnson",
+      email: "jamal.johnson@example.com",
       workspace: "4 workspaces",
       role: "Viewer",
       isCurrentUser: false,
@@ -140,6 +144,7 @@ export default function OrganizationUsersPage() {
     {
       id: "4",
       name: "Sarah Matthews",
+      email: "sarah.matthews@example.com",
       workspace: "3 workspaces",
       role: "Mixed",
       isCurrentUser: false,
@@ -152,6 +157,7 @@ export default function OrganizationUsersPage() {
     {
       id: "5",
       name: "Michael Chen",
+      email: "michael.chen@example.com",
       workspace: "Main HQ",
       role: "Editor",
       isCurrentUser: false,
@@ -160,6 +166,7 @@ export default function OrganizationUsersPage() {
     {
       id: "6",
       name: "Olivia Rodriguez",
+      email: "olivia.rodriguez@example.com",
       workspace: "Support",
       role: "Administrator",
       isCurrentUser: false,
@@ -168,6 +175,7 @@ export default function OrganizationUsersPage() {
     {
       id: "7",
       name: "Aiden Smith",
+      email: "aiden.smith@example.com",
       workspace: "Development",
       role: "Editor",
       isCurrentUser: false,
@@ -176,6 +184,7 @@ export default function OrganizationUsersPage() {
     {
       id: "8",
       name: "Emma Wilson",
+      email: "emma.wilson@example.com",
       workspace: "2 workspaces",
       role: "Mixed",
       isCurrentUser: false,
@@ -357,6 +366,7 @@ export default function OrganizationUsersPage() {
       const newUsers = selectedUsers.map((user) => ({
         id: user.id || `new-${Math.random().toString(36).substring(2, 9)}`,
         name: user.name || user.email.split("@")[0],
+        email: user.email || `newuser@example.com`,
         workspace: "Main HQ", // Default workspace
         role: role as User["role"],
         isCurrentUser: false,
@@ -495,7 +505,14 @@ export default function OrganizationUsersPage() {
           <Table>
             <TableHeader className="bg-gray-50">
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                  >
+                    Name
+                  </Button>
+                </TableHead>
                 <TableHead>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -607,18 +624,18 @@ export default function OrganizationUsersPage() {
                         </Avatar>
                         <div className="flex flex-col">
                           <div className="flex items-center">
-                            <a
-                              href="#"
-                              className="text-brand-teal hover:underline"
-                            >
+                            <span className="text-gray-900 font-medium">
                               {user.name}
-                            </a>
+                            </span>
                             {user.isCurrentUser && (
                               <span className="text-gray-500 font-normal text-xs ml-1">
                                 (you)
                               </span>
                             )}
                           </div>
+                          <span className="text-gray-500 text-sm">
+                            {user.email}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
