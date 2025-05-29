@@ -634,13 +634,48 @@ export default function OrganizationUsersPage() {
                               value={`user-${user.id}`}
                               className="border-none"
                             >
-                              <AccordionTrigger className="flex-auto [&>svg]:hidden px-3 py-2 hover:no-underline">
+                              <AccordionTrigger className="flex-auto [&>svg]:hidden px-3 py-2 hover:no-underline group/trigger">
                                 <div className="flex items-center justify-between w-full">
                                   <div className="flex items-center">
-                                    <span className="text-sm font-medium text-gray-800">
-                                      {user.workspace}
-                                    </span>
-                                    <span className="text-xs text-gray-500 ml-2">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-sm font-medium text-gray-800 cursor-pointer">
+                                            {user.workspace}
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                          side="bottom"
+                                          align="start"
+                                          className="max-w-[200px]"
+                                        >
+                                          <div className="space-y-1">
+                                            <p className="text-xs font-medium">
+                                              Workspaces assigned:
+                                            </p>
+                                            {user.workspaceRoles.map(
+                                              (wr, i) => (
+                                                <div
+                                                  key={i}
+                                                  className="flex items-center justify-between text-xs"
+                                                >
+                                                  <span>
+                                                    {wr.workspaceName}
+                                                  </span>
+                                                  <Badge
+                                                    variant="outline"
+                                                    className="text-xs ml-2"
+                                                  >
+                                                    {wr.role}
+                                                  </Badge>
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                    <span className="text-xs text-gray-500 ml-2 opacity-0 group-hover/trigger:opacity-100 transition-opacity duration-200">
                                       • Click to manage roles
                                     </span>
                                   </div>
@@ -810,14 +845,14 @@ export default function OrganizationUsersPage() {
                           </Accordion>
                         </Card>
                       ) : (
-                        <Card className="border border-gray-200">
+                        <Card className="border border-gray-200 group/single">
                           <div className="px-3 py-2 flex items-center justify-between">
                             <div className="flex items-center">
                               <span className="text-sm font-medium text-gray-800">
                                 {user.workspace}
                               </span>
                               {getAvailableWorkspaces(user).length > 0 && (
-                                <span className="text-xs text-gray-500 ml-2">
+                                <span className="text-xs text-gray-500 ml-2 opacity-0 group-hover/single:opacity-100 transition-opacity duration-200">
                                   • Add to more workspaces
                                 </span>
                               )}
