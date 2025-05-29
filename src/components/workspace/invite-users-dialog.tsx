@@ -78,6 +78,7 @@ export interface InviteUsersProps {
   defaultRole?: UserRole;
   title?: string;
   description?: string;
+  allowEmailInvites?: boolean;
 }
 
 export function InviteUsersDialog({
@@ -90,6 +91,7 @@ export function InviteUsersDialog({
   defaultRole = "Editor",
   title = "Add New User(s)",
   description,
+  allowEmailInvites = true,
 }: InviteUsersProps) {
   const [selectedUsers, setSelectedUsers] = useState<SelectedUser[]>([]);
   const [defaultUserRole, setDefaultUserRole] = useState<UserRole>(defaultRole);
@@ -341,20 +343,12 @@ export function InviteUsersDialog({
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <Avatar className="h-8 w-8">
-                          {user.isExisting ? (
-                            <>
-                              <AvatarImage src="" />
-                              <AvatarFallback
-                                className={getAvatarColor(user.email)}
-                              >
-                                {getInitials(user.name || "")}
-                              </AvatarFallback>
-                            </>
-                          ) : (
-                            <AvatarFallback className="bg-blue-100 text-blue-600">
-                              <Mail className="h-4 w-4" />
-                            </AvatarFallback>
-                          )}
+                          <AvatarImage src="" />
+                          <AvatarFallback
+                            className={getAvatarColor(user.email)}
+                          >
+                            {getInitials(user.name || "")}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="absolute -bottom-1 -right-1 bg-brand-teal text-white rounded-full flex items-center justify-center w-4 h-4 border border-white">
                           <Check className="h-3 w-3" />
@@ -367,11 +361,6 @@ export function InviteUsersDialog({
                         {user.name && (
                           <span className="text-xs text-gray-500">
                             {user.email}
-                          </span>
-                        )}
-                        {!user.isExisting && (
-                          <span className="text-xs text-blue-600">
-                            Will be invited
                           </span>
                         )}
                       </div>
@@ -450,7 +439,11 @@ export function InviteUsersDialog({
               >
                 <CommandInput
                   id="user-search"
-                  placeholder="Add emails or people"
+                  placeholder={
+                    allowEmailInvites
+                      ? "Add emails or people"
+                      : "Search for people to invite"
+                  }
                   value={searchQuery}
                   onValueChange={(value) => {
                     setSearchQuery(value);
@@ -466,68 +459,89 @@ export function InviteUsersDialog({
                   <div className="absolute top-full left-0 z-50 w-full mt-1 bg-white border rounded-md shadow-lg">
                     <CommandList className="max-h-[240px]">
                       {filteredUsers.length === 0 && searchQuery.trim() && (
-                        <div>
-                          {isValidEmail(searchQuery) ? (
-                            <div
-                              className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
-                              onClick={() => {
-                                addNewEmail(searchQuery);
-                              }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarFallback className="bg-blue-100 text-blue-600">
-                                    <Mail className="h-4 w-4" />
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <span className="font-medium text-sm">
-                                    {searchQuery}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    Keep typing to invite email
-                                  </span>
-                                </div>
-                              </div>
-                              <Badge
-                                variant="outline"
-                                className="bg-blue-50 text-blue-700 border-blue-200"
-                              >
-                                Invite user
-                              </Badge>
-                            </div>
-                          ) : (
-                            <div>
-                              <div className="px-3 py-2 text-xs text-gray-500 font-semibold">
-                                Invite by email
-                              </div>
-                              <CommandEmpty className="py-3 px-3">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                                      <Mail className="h-4 w-4" />
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-sm">
-                                      {searchQuery}
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {searchQuery.includes("@")
-                                        ? "Complete email address to invite"
-                                        : "Type an email address to invite"}
-                                    </span>
+                        <>
+                          {allowEmailInvites ? (
+                            <>
+                              {isValidEmail(searchQuery) ? (
+                                <div
+                                  className="flex items-center justify-between p-3 hover:bg-gray-50 cursor-pointer"
+                                  onClick={() => {
+                                    addNewEmail(searchQuery);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <Avatar className="h-8 w-8">
+                                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                                        <Mail className="h-4 w-4" />
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-sm">
+                                        {searchQuery}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        Keep typing to invite email
+                                      </span>
+                                    </div>
                                   </div>
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-blue-50 text-blue-700 border-blue-200"
+                                  >
+                                    Invite user
+                                  </Badge>
                                 </div>
-                              </CommandEmpty>
-                            </div>
+                              ) : (
+                                <div>
+                                  <div className="px-3 py-2 text-xs text-gray-500 font-semibold">
+                                    Invite by email
+                                  </div>
+                                  <CommandEmpty className="py-3 px-3">
+                                    <div className="flex items-center gap-3">
+                                      <Avatar className="h-8 w-8">
+                                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                                          <Mail className="h-4 w-4" />
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex flex-col">
+                                        <span className="font-medium text-sm">
+                                          {searchQuery}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                          {searchQuery.includes("@")
+                                            ? "Complete email address to invite"
+                                            : "Type an email address to invite"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </CommandEmpty>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <CommandEmpty className="py-6 text-center">
+                              <div className="flex flex-col items-center gap-3">
+                                <div className="rounded-full bg-gray-100 p-3">
+                                  <User className="h-6 w-6 text-gray-400" />
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium text-gray-900">
+                                    No users found
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Try searching for a different name or check
+                                    the user list.
+                                  </p>
+                                </div>
+                              </div>
+                            </CommandEmpty>
                           )}
-                        </div>
+                        </>
                       )}
 
                       {filteredUsers.length === 0 && !searchQuery.trim() && (
-                        <CommandEmpty className="py-3 text-center text-sm text-gray-500">
-                          Select a person or type an email address
+                        <CommandEmpty className="py-6 text-center text-sm text-gray-500">
+                          Search for people to invite to {contextName}
                         </CommandEmpty>
                       )}
 
