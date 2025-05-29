@@ -18,6 +18,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
@@ -131,13 +141,27 @@ export default function UsersPage() {
   const getRoleIcon = (role: User["role"]) => {
     switch (role) {
       case "Administrator":
-        return <ShieldCheck className="h-4 w-4 mr-2" />;
+        return <ShieldCheck className="h-4 w-4" />;
       case "Editor":
-        return <Edit2 className="h-4 w-4 mr-2" />;
+        return <Edit2 className="h-4 w-4" />;
       case "Viewer":
-        return <Eye className="h-4 w-4 mr-2" />;
+        return <Eye className="h-4 w-4" />;
       default:
         return null;
+    }
+  };
+
+  // Get the appropriate badge class for a role
+  const getRoleBadgeClass = (role: User["role"]) => {
+    switch (role) {
+      case "Administrator":
+        return "bg-blue-50 text-blue-700 border-blue-200";
+      case "Editor":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "Viewer":
+        return "bg-gray-50 text-gray-700 border-gray-200";
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200";
     }
   };
 
@@ -207,106 +231,149 @@ export default function UsersPage() {
     }
   };
 
+  // Define the actions for the CardHeaderLayout
+  const actions = (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        className="border-red-300 text-red-700 hover:bg-red-50"
+        onClick={() => setIsDeleteDialogOpen(true)}
+      >
+        <Trash2 className="h-4 w-4 mr-2" />
+        Delete workspace
+      </Button>
+      <Button
+        variant="default"
+        className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+        onClick={() => setIsInviteDialogOpen(true)}
+      >
+        <UserPlus className="h-4 w-4 mr-2" />
+        Invite users
+      </Button>
+    </div>
+  );
+
   return (
     <>
       <CardHeaderLayout
         title="User Management"
         description="Manage workspace users and their permissions."
+        actions={actions}
       >
         <div className="p-0 -m-6">
-          <div className="w-full border-b px-6 py-3 bg-gray-50 grid grid-cols-2">
-            <div className="font-medium text-gray-700">Name</div>
-            <div className="font-medium text-gray-700">Role</div>
-          </div>
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
 
-          {users.map((user, index) => (
-            <div
-              key={user.id}
-              className={`w-full px-6 py-4 grid grid-cols-2 items-center ${
-                index < users.length - 1 ? "border-b" : ""
-              }`}
-            >
-              <div className="font-medium text-gray-900">
-                {user.name}{" "}
-                {user.isCurrentUser && (
-                  <span className="text-gray-500 font-normal">(you)</span>
-                )}
-              </div>
-              <div className="flex justify-between items-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="text-gray-800 border-gray-300 h-9 flex items-center justify-between"
-                    >
-                      <div className="flex items-center">
-                        {getRoleIcon(user.role)}
-                        {user.role}
-                      </div>
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem
-                      onClick={() => handleRoleChange(user.id, "Administrator")}
-                      className={
-                        user.role === "Administrator" ? "bg-gray-100" : ""
-                      }
-                    >
-                      <ShieldCheck className="h-4 w-4 mr-2" />
-                      Administrator
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleRoleChange(user.id, "Editor")}
-                      className={user.role === "Editor" ? "bg-gray-100" : ""}
-                    >
-                      <Edit2 className="h-4 w-4 mr-2" />
-                      Editor
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleRoleChange(user.id, "Viewer")}
-                      className={user.role === "Viewer" ? "bg-gray-100" : ""}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Viewer
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {!user.isCurrentUser && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveUser(user.id)}
-                    className="ml-2 h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+            <TableBody>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={3}
+                    className="text-center py-8 text-gray-500"
                   >
-                    <XCircle className="h-5 w-5" />
-                    <span className="sr-only">Remove user</span>
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* Table footer with action buttons */}
-          <div className="w-full border-t px-6 py-4 bg-gray-50 flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-50"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete workspace
-            </Button>
-            <Button
-              variant="default"
-              className="bg-brand-teal hover:bg-brand-teal/90 text-white"
-              onClick={() => setIsInviteDialogOpen(true)}
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Invite users
-            </Button>
-          </div>
+                    No users found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                users.map((user) => (
+                  <TableRow key={user.id} className="group">
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
+                            {user.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <div className="flex items-center">
+                            <a
+                              href="#"
+                              className="text-brand-teal hover:underline"
+                            >
+                              {user.name}
+                            </a>
+                            {user.isCurrentUser && (
+                              <span className="text-gray-500 font-normal text-xs ml-1">
+                                (you)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Badge
+                            variant="outline"
+                            className={`${getRoleBadgeClass(
+                              user.role
+                            )} font-normal cursor-pointer hover:bg-gray-100/70 transition-colors duration-150`}
+                          >
+                            <div className="flex items-center gap-1">
+                              {getRoleIcon(user.role)}
+                              <span>{user.role}</span>
+                              <ChevronDown className="h-3 w-3 ml-1 text-gray-500" />
+                            </div>
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleRoleChange(user.id, "Administrator")
+                            }
+                            className={
+                              user.role === "Administrator" ? "bg-gray-100" : ""
+                            }
+                          >
+                            <ShieldCheck className="h-4 w-4 mr-2" />
+                            Administrator
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleRoleChange(user.id, "Editor")}
+                            className={
+                              user.role === "Editor" ? "bg-gray-100" : ""
+                            }
+                          >
+                            <Edit2 className="h-4 w-4 mr-2" />
+                            Editor
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleRoleChange(user.id, "Viewer")}
+                            className={
+                              user.role === "Viewer" ? "bg-gray-100" : ""
+                            }
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Viewer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {!user.isCurrentUser && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveUser(user.id)}
+                          className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                        >
+                          <XCircle className="h-5 w-5" />
+                          <span className="sr-only">Remove user</span>
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </CardHeaderLayout>
 
