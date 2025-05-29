@@ -1,8 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
+  // Redirect to sessions as the default page
+  redirect("/sessions");
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
@@ -18,10 +22,10 @@ export default function Home() {
           </div>
           <nav className="flex items-center gap-6">
             <Link
-              href="/dashboard"
+              href="/sessions"
               className="text-sm font-medium hover:underline"
             >
-              Dashboard
+              Sessions
             </Link>
             <Link href="/login" className="text-sm font-medium hover:underline">
               Login
@@ -37,7 +41,7 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center">
             <Button asChild>
-              <Link href="/dashboard">View Dashboard</Link>
+              <Link href="/sessions">View Sessions</Link>
             </Button>
             <Button variant="outline">
               <Link href="/login">Sign In</Link>

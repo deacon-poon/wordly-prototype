@@ -4,7 +4,7 @@ import * as React from "react";
 import { useSelector } from "react-redux";
 import { selectSidebarCollapsed } from "@/store/slices/sidebarSlice";
 import { cn } from "@/lib/utils";
-import { User, ChevronDown, LogOut, Shield, Settings } from "lucide-react";
+import { ChevronDown, LogOut, Settings } from "lucide-react";
 
 // Fix imports for UI components
 import { Badge } from "../components/ui/badge";
@@ -90,14 +90,6 @@ export function NavUser() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4 text-brand-teal" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Shield className="mr-2 h-4 w-4 text-brand-teal" />
-              <span>Permissions</span>
-            </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4 text-brand-teal" />
               <span>Settings</span>

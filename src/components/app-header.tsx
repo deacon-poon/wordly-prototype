@@ -14,9 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-// Import user related components
-import { NavUser } from "@/components/nav-user";
+import { useWorkspace } from "@/contexts/workspace-context";
 
 interface AppHeaderProps {
   title?: string;
@@ -24,16 +22,17 @@ interface AppHeaderProps {
 
 export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
   const pathname = usePathname();
+  const { activeWorkspace } = useWorkspace();
 
   // Generate breadcrumb items from pathname
   const getBreadcrumbItems = () => {
     const segments = pathname.split("/").filter(Boolean);
 
     if (segments.length === 0) {
-      return [{ label: "Home", href: "/", active: true }];
+      return [{ label: activeWorkspace, href: "/", active: true }];
     }
 
-    const items = [{ label: "Home", href: "/", active: false }];
+    const items = [{ label: activeWorkspace, href: "/", active: false }];
 
     let currentPath = "";
 
@@ -128,9 +127,6 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
             <span className="sr-only">Notifications</span>
           </Button>
         </div>
-
-        {/* User Profile - using NavUser component */}
-        <NavUser />
       </div>
     </header>
   );

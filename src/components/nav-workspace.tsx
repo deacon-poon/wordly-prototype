@@ -28,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useWorkspace } from "@/contexts/workspace-context";
 
 interface NavWorkspaceProps {
   pathname: string;
@@ -44,23 +44,10 @@ interface WorkspaceItem {
 
 export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
   const isCollapsed = useSelector(selectSidebarCollapsed);
-  const [activeWorkspace, setActiveWorkspace] = React.useState("Main HQ");
-
-  // Workspaces
-  const workspaces = [
-    { id: 1, name: "Main HQ", role: "Admin" },
-    { id: 2, name: "Marketing Team", role: "Member" },
-    { id: 3, name: "Sales Department", role: "Viewer" },
-  ];
+  const { activeWorkspace, setActiveWorkspace, workspaces } = useWorkspace();
 
   // Main navigation items
   const mainItems: WorkspaceItem[] = [
-    {
-      id: "dashboard",
-      title: "Dashboard",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
     {
       id: "sessions",
       title: "Sessions",
@@ -139,11 +126,11 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
 
   return (
     <>
-      {/* Workspace Selector */}
+      {/* Workspace Selector with Main Navigation underneath */}
       <SidebarSection>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center justify-between p-3 mb-2 rounded-md bg-gray-100/80 cursor-pointer hover:bg-gray-200/80 transition-colors">
+            <div className="flex items-center justify-between p-3 mb-3 rounded-md bg-gray-100/80 cursor-pointer hover:bg-gray-200/80 transition-colors">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-brand-teal" />
                 {!isCollapsed && (
@@ -184,10 +171,8 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
             </DropdownMenuContent>
           )}
         </DropdownMenu>
-      </SidebarSection>
 
-      {/* Main Navigation */}
-      <SidebarSection>
+        {/* Main Navigation under workspace */}
         <div className="space-y-1">
           {mainItems.map((item) => (
             <Link key={item.id} href={item.href} onClick={onClick}>
@@ -216,9 +201,9 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
         </div>
       </SidebarSection>
 
-      {/* Org-wide Admin */}
+      {/* Organization Section with Enhanced Visual Distinction */}
       <SidebarSection title={isCollapsed ? "" : "Organization"}>
-        <div className="space-y-1">
+        <div className="bg-gradient-to-r from-brand-teal/5 via-brand-teal/3 to-brand-teal/5 border border-brand-teal/15 rounded-lg space-y-1 shadow-sm">
           {organizationAdminItems.map((item) => (
             <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem
