@@ -114,7 +114,7 @@ export default function OrganizationLayout({
               {!isMobile ? (
                 /* Desktop: Side-by-side resizable panels */
                 <ResizablePanelGroup direction="horizontal" className="h-full">
-                  <ResizablePanel defaultSize={70} minSize={50}>
+                  <ResizablePanel defaultSize={60} minSize={45}>
                     <div className="h-full overflow-auto">
                       <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
                         {children}
@@ -124,7 +124,7 @@ export default function OrganizationLayout({
 
                   <ResizableHandle withHandle />
 
-                  <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
+                  <ResizablePanel defaultSize={40} minSize={25} maxSize={55}>
                     <div className="h-full overflow-auto bg-white border-l">
                       <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                         <h2 className="font-semibold">{panelTitle}</h2>
@@ -159,8 +159,8 @@ export default function OrganizationLayout({
                       className="h-full"
                     >
                       <ResizablePanel
-                        defaultSize={40}
-                        minSize={30}
+                        defaultSize={30}
+                        minSize={20}
                         className="pointer-events-none"
                       >
                         {/* Empty panel to take up space - content shows through */}
@@ -173,9 +173,9 @@ export default function OrganizationLayout({
                       />
 
                       <ResizablePanel
-                        defaultSize={60}
-                        minSize={40}
-                        maxSize={70}
+                        defaultSize={70}
+                        minSize={50}
+                        maxSize={80}
                         className="pointer-events-auto"
                       >
                         <div className="h-full overflow-auto bg-white border-l shadow-lg">
