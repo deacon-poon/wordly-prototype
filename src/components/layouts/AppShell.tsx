@@ -310,7 +310,7 @@ export function AppShell({
               onClick={toggleMobilePanel}
               className="fixed bottom-6 right-6 z-30 bg-white shadow-md rounded-full h-12 w-12 p-0 flex justify-center items-center"
             >
-              <ListFilter className="h-5 w-5 text-brand-teal" />
+              <ListFilter className="h-5 w-5 text-gray-600" />
             </Button>
           )}
       </div>

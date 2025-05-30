@@ -18,7 +18,9 @@ export default function Home() {
               width={32}
               height={32}
             />
-            <span className="text-2xl font-bold text-brand-teal">wordly</span>
+            <span className="text-2xl font-bold text-primary-teal-600">
+              wordly
+            </span>
           </div>
           <nav className="flex items-center gap-6">
             <Link

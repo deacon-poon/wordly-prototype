@@ -28,7 +28,9 @@ export function TeamSwitcher() {
         </div>
         {!isCollapsed && (
           <div className="flex flex-col justify-center">
-            <span className="text-xl font-bold text-brand-teal">Wordly</span>
+            <span className="text-xl font-bold text-primary-teal-600">
+              Wordly
+            </span>
           </div>
         )}
       </div>

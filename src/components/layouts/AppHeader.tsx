@@ -45,10 +45,10 @@ export function AppHeader({ title = "Dashboard", actions }: AppHeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9"
+          className="h-9 w-9 hover:bg-gray-100/80"
           onClick={() => dispatch(toggleSidebar())}
         >
-          <Menu className="h-4 w-4 text-brand-teal" />
+          <Menu className="h-4 w-4 text-gray-600 hover:text-gray-800 transition-colors" />
           <span className="sr-only">Toggle sidebar</span>
         </Button>
 

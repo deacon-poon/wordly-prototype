@@ -56,7 +56,7 @@ export function NavProjects({ pathname }: NavProjectsProps) {
           <Button
             variant="outline"
             size="sm"
-            className="w-full justify-start text-xs text-brand-teal border-dashed border-brand-teal/20 hover:bg-brand-teal/5"
+            className="w-full justify-start text-xs text-secondary-navy-600 border-dashed border-secondary-navy-200 hover:bg-secondary-navy-50"
           >
             <Plus className="h-3.5 w-3.5 mr-2" />
             Add Project

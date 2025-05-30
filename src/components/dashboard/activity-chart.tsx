@@ -95,7 +95,7 @@ export function ActivityChart() {
               size="sm"
               className={`h-8 text-xs ${
                 timeframe === "week"
-                  ? "bg-brand-teal/10 text-brand-teal border-brand-teal"
+                  ? "bg-primary-teal-100 text-primary-teal-700 border-primary-teal-300"
                   : ""
               }`}
               onClick={() => setTimeframe("week")}
@@ -107,7 +107,7 @@ export function ActivityChart() {
               size="sm"
               className={`h-8 text-xs ${
                 timeframe === "month"
-                  ? "bg-brand-teal/10 text-brand-teal border-brand-teal"
+                  ? "bg-primary-teal-100 text-primary-teal-700 border-primary-teal-300"
                   : ""
               }`}
               onClick={() => setTimeframe("month")}
@@ -119,7 +119,7 @@ export function ActivityChart() {
               size="sm"
               className={`h-8 text-xs ${
                 timeframe === "year"
-                  ? "bg-brand-teal/10 text-brand-teal border-brand-teal"
+                  ? "bg-primary-teal-100 text-primary-teal-700 border-primary-teal-300"
                   : ""
               }`}
               onClick={() => setTimeframe("year")}

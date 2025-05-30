@@ -54,7 +54,7 @@ export function AppSidebar() {
             height={36}
           />
           {!isCollapsed && (
-            <span className="text-xl font-bold text-brand-teal ml-2">
+            <span className="text-xl font-bold text-primary-teal-600 ml-2">
               wordly
             </span>
           )}
@@ -85,7 +85,7 @@ export function AppSidebar() {
                 width={28}
                 height={28}
               />
-              <span className="text-xl font-bold text-brand-teal ml-2">
+              <span className="text-xl font-bold text-primary-teal-600 ml-2">
                 wordly
               </span>
             </div>

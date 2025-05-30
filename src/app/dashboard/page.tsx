@@ -225,7 +225,7 @@ export default function DashboardPage() {
                   <span>+20.1% from last month</span>
                 </div>
               </div>
-              <div className="p-2 rounded bg-brand-teal/10 text-brand-teal">
+              <div className="p-2 rounded bg-primary-teal-100 text-primary-teal-700">
                 <Clock className="h-5 w-5" />
               </div>
             </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                   <span>+15% from last month</span>
                 </div>
               </div>
-              <div className="p-2 rounded bg-brand-teal/10 text-brand-teal">
+              <div className="p-2 rounded bg-primary-teal-100 text-primary-teal-700">
                 <BarChart3 className="h-5 w-5" />
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                   <span>+12.5% from last month</span>
                 </div>
               </div>
-              <div className="p-2 rounded bg-brand-teal/10 text-brand-teal">
+              <div className="p-2 rounded bg-primary-teal-100 text-primary-teal-700">
                 <Users className="h-5 w-5" />
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
                   <span>+7.2% from last month</span>
                 </div>
               </div>
-              <div className="p-2 rounded bg-brand-teal/10 text-brand-teal">
+              <div className="p-2 rounded bg-primary-teal-100 text-primary-teal-700">
                 <TrendingUp className="h-5 w-5" />
               </div>
             </div>
@@ -311,7 +311,11 @@ export default function DashboardPage() {
                 Your most recent sessions
               </CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-brand-teal">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-secondary-navy-600"
+            >
               View all
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>

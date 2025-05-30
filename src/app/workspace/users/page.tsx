@@ -274,7 +274,7 @@ export default function UsersPage() {
                 <TableHead>
                   <Button
                     variant="ghost"
-                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-secondary-navy-600 flex items-center"
                   >
                     Name
                   </Button>
@@ -282,7 +282,7 @@ export default function UsersPage() {
                 <TableHead>
                   <Button
                     variant="ghost"
-                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-brand-teal flex items-center"
+                    className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-secondary-navy-600 flex items-center"
                   >
                     Role
                   </Button>
@@ -307,7 +307,7 @@ export default function UsersPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-brand-teal/10 text-brand-teal">
+                          <AvatarFallback className="bg-gray-100 text-gray-600">
                             {user.name.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>

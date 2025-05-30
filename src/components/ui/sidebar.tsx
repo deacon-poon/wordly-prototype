@@ -93,11 +93,11 @@ function SidebarTrigger({ className, ...props }: SidebarTriggerProps) {
     <Button
       variant="ghost"
       size="icon"
-      className={cn("h-9 w-9 p-0", className)}
+      className={cn("h-9 w-9 p-0 hover:bg-gray-100/80", className)}
       onClick={() => dispatch(toggleSidebar())}
       {...props}
     >
-      <Menu className="h-4 w-4 text-primary-teal-600" />
+      <Menu className="h-4 w-4 text-gray-600 hover:text-gray-800 transition-colors" />
       <span className="sr-only">Toggle sidebar</span>
     </Button>
   );

@@ -43,9 +43,9 @@ export function NavUser() {
             )}
           >
             <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9 border-2 border-brand-teal/20">
+              <Avatar className="h-9 w-9 border-2 border-gray-200">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="bg-brand-teal/10 text-brand-teal font-medium">
+                <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
                   {user.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -58,7 +58,7 @@ export function NavUser() {
                     <span className="text-xs text-gray-500">{user.role}</span>
                     <Badge
                       variant="outline"
-                      className="h-4 px-1 text-[10px] bg-brand-teal/5 text-brand-teal border-brand-teal/20"
+                      className="h-4 px-1 text-[10px] bg-secondary-navy-50 text-secondary-navy-600 border-secondary-navy-200"
                     >
                       Admin
                     </Badge>
@@ -66,9 +66,7 @@ export function NavUser() {
                 </div>
               )}
             </div>
-            {!isCollapsed && (
-              <ChevronDown className="h-4 w-4 text-brand-teal" />
-            )}
+            {!isCollapsed && <ChevronDown className="h-4 w-4 text-gray-500" />}
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 shadow-lg">
@@ -78,7 +76,7 @@ export function NavUser() {
                 <p className="text-sm font-medium leading-none">{user.name}</p>
                 <Badge
                   variant="outline"
-                  className="h-5 text-[10px] bg-brand-teal/5 text-brand-teal border-brand-teal/20"
+                  className="h-5 text-[10px] bg-secondary-navy-50 text-secondary-navy-600 border-secondary-navy-200"
                 >
                   Admin
                 </Badge>
@@ -91,13 +89,13 @@ export function NavUser() {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4 text-brand-teal" />
+              <Settings className="mr-2 h-4 w-4 text-gray-600" />
               <span>Settings</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <LogOut className="mr-2 h-4 w-4 text-brand-teal" />
+            <LogOut className="mr-2 h-4 w-4 text-gray-600" />
             <span>Log out</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

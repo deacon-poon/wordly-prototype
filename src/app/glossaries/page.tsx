@@ -358,7 +358,7 @@ export default function GlossariesPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveLanguage(lang.code)}
-                  className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                  className="h-6 w-6 p-0 text-secondary-navy-600 border-secondary-navy-300 hover:bg-secondary-navy-50"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -467,7 +467,7 @@ export default function GlossariesPage() {
           </Button>
           <Button
             variant="outline"
-            className="text-brand-teal border-brand-teal hover:bg-brand-teal/10"
+            className="text-secondary-navy-600 border-secondary-navy-300 hover:bg-secondary-navy-50"
           >
             Add Language
           </Button>

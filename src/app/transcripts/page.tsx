@@ -616,7 +616,7 @@ function TranscriptsPageContent() {
                           />
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium hover:text-blue-600">
+                          <div className="font-medium hover:text-secondary-navy-600">
                             {transcript.name}
                             <div className="flex flex-wrap gap-1 mt-1">
                               <Badge
@@ -937,7 +937,7 @@ function TranscriptsPageContent() {
                               />
                             </TableCell>
                             <TableCell>
-                              <div className="font-medium hover:text-blue-600">
+                              <div className="font-medium hover:text-secondary-navy-600">
                                 {transcript.name}
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   <Badge

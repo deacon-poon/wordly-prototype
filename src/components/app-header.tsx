@@ -121,9 +121,13 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
       <div className="flex items-center gap-3 ml-auto">
         {/* Notification Bell */}
         <div className="relative">
-          <Button variant="ghost" size="icon" className="h-9 w-9">
-            <Bell className="h-5 w-5 text-gray-600" />
-            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-brand-teal"></span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 hover:bg-gray-100/80"
+          >
+            <Bell className="h-5 w-5 text-gray-600 hover:text-gray-800 transition-colors" />
+            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-accent-light-blue-500"></span>
             <span className="sr-only">Notifications</span>
           </Button>
         </div>
