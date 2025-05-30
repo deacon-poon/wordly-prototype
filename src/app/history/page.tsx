@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AppShell, AppHeader, AppSidebar } from "@/components/layouts";
+import { Button } from "@/components/ui/button";
 import {
   Clock,
   Search,
@@ -17,7 +17,6 @@ import {
   Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -101,6 +100,11 @@ export default function HistoryPage() {
     setShowRightPanel(false);
   };
 
+  const handleSessionSelect = (session: Session) => {
+    console.log("Selected session in history:", session.id, session.title);
+    setSelectedSession(session);
+  };
+
   const columns: TableColumn<Session>[] = [
     {
       header: "ID",
@@ -168,219 +172,116 @@ export default function HistoryPage() {
   ];
 
   return (
-    <AppShell
-      sidebar={<AppSidebar />}
-      header={<AppHeader title="History" />}
-      showRightPanel={showRightPanel}
-      rightPanelTitle="Usage Summary"
-      onRightPanelClose={handleCloseRightPanel}
-      rightPanel={
-        <div className="space-y-4">
-          {/* Session summary */}
-          <div>
-            <h2 className="text-xl font-semibold mb-1">
-              {selectedSession.title}
-            </h2>
-            <div className="flex items-center gap-2">
-              <Hash className="w-4 h-4 text-gray-400" />
-              <p className="text-sm text-gray-500">{selectedSession.id}</p>
-              <StatusBadge status={selectedSession.status} />
-            </div>
+    <div className="p-6">
+      <div className="flex flex-col space-y-6">
+        {/* Filters and search row */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" className="h-9">
+              <Calendar className="h-4 w-4 mr-2" />
+              <span>Date Range</span>
+            </Button>
+            <Button variant="outline" size="sm" className="h-9">
+              <Filter className="h-4 w-4 mr-2" />
+              <span>Filters</span>
+            </Button>
+            <Button variant="outline" size="sm" className="h-9">
+              <BarChart className="h-4 w-4 mr-2" />
+              <span>Analytics</span>
+            </Button>
           </div>
 
-          {/* Session details in two columns */}
-          <div className="grid grid-cols-[120px_1fr] gap-y-4">
-            <div className="flex items-center">
-              <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
-              <p className="text-sm font-medium text-gray-500">Start time:</p>
-            </div>
-            <p className="text-sm font-medium">
-              {selectedSession.date} {selectedSession.time}
-            </p>
-
-            <div className="flex items-center">
-              <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
-              <p className="text-sm font-medium text-gray-500">Duration:</p>
-            </div>
-            <p className="text-sm font-medium">
-              {selectedSession.duration} mins
-            </p>
-
-            <div className="flex items-center">
-              <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
-              <p className="text-sm font-medium text-gray-500">Usage:</p>
-            </div>
-            <p className="text-sm font-medium">
-              {selectedSession.usedDuration} mins
-            </p>
-          </div>
-
-          {/* Progress bar for usage */}
-          <div className="py-4 border-b">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-500">Usage / Duration</span>
-              <span className="text-sm font-medium">
-                {selectedSession.usedDuration} / {selectedSession.duration} mins
-              </span>
-            </div>
-            <Progress
-              value={
-                (selectedSession.usedDuration / selectedSession.duration) * 100
-              }
-              className="h-2"
-              indicatorColor="bg-brand-teal"
-            />
-          </div>
-
-          {/* Presenters section */}
-          <Accordion
-            type="single"
-            collapsible
-            defaultValue="presenters"
-            className="w-full"
-          >
-            <AccordionItem value="presenters" className="border-b">
-              <AccordionTrigger className="py-3">
-                <div className="flex items-center">
-                  <p className="text-sm font-medium">Presenters:</p>
-                  <span className="ml-2 text-sm">
-                    {selectedSession.presenters.length}
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                {selectedSession.presenters.map((presenter, index) => (
-                  <div key={index} className="py-2">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm">{presenter.name}:</span>
-                      <span className="text-sm font-medium">
-                        {presenter.duration} mins
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={100}
-                        className="h-2 flex-1"
-                        indicatorColor="bg-brand-teal"
-                      />
-                      <span className="text-xs text-gray-500">Present</span>
-                    </div>
-                  </div>
-                ))}
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Attendees section */}
-            <AccordionItem value="attendees" className="border-b">
-              <AccordionTrigger className="py-3">
-                <div className="flex items-center">
-                  <p className="text-sm font-medium">Attendees:</p>
-                  <span className="ml-2 text-sm">
-                    {selectedSession.attendees}
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                {selectedSession.languages.map((language, index) => (
-                  <div key={index} className="py-2 flex justify-between">
-                    <span className="text-sm">{language.name}:</span>
-                    <span className="text-sm font-medium">
-                      {language.count}
-                    </span>
-                  </div>
-                ))}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      }
-    >
-      <div className="p-6">
-        <div className="flex flex-col space-y-6">
-          {/* Filters and search row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" className="h-9">
-                <Calendar className="h-4 w-4 mr-2" />
-                <span>Date Range</span>
-              </Button>
-              <Button variant="outline" size="sm" className="h-9">
-                <Filter className="h-4 w-4 mr-2" />
-                <span>Filters</span>
-              </Button>
-              <Button variant="outline" size="sm" className="h-9">
-                <BarChart className="h-4 w-4 mr-2" />
-                <span>Analytics</span>
-              </Button>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Search sessions..."
-                  className="h-9 pl-9 pr-3 w-full md:w-[250px]"
-                />
-              </div>
-              <Button className="bg-brand-teal hover:bg-brand-teal/90 text-white h-9">
-                <Users className="h-4 w-4 mr-2" />
-                <span>My Sessions</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Summary card */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center py-2 border-b">
-                <div className="flex items-center">
-                  <span className="text-sm font-medium">
-                    Sessions: {mockSessions.length}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span className="text-sm font-medium">
-                    Duration:{" "}
-                    {mockSessions.reduce(
-                      (acc, session) => acc + session.usedDuration,
-                      0
-                    )}{" "}
-                    mins
-                  </span>
-                </div>
-              </div>
-
-              {/* Session list using DataTable */}
-              <DataTable
-                data={mockSessions}
-                columns={columns}
-                onRowClick={setSelectedSession}
-                selectedItem={selectedSession}
-                idField="id"
+          <div className="flex items-center space-x-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search sessions..."
+                className="h-9 pl-9 pr-3 w-full md:w-[250px]"
               />
+            </div>
+            <Button className="bg-brand-teal hover:bg-brand-teal/90 text-white h-9">
+              <Users className="h-4 w-4 mr-2" />
+              <span>My Sessions</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Summary card */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center py-2 border-b">
+              <div className="flex items-center">
+                <span className="text-sm font-medium">
+                  Sessions: {mockSessions.length}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-sm font-medium">
+                  Duration:{" "}
+                  {mockSessions.reduce(
+                    (acc, session) => acc + session.usedDuration,
+                    0
+                  )}{" "}
+                  mins
+                </span>
+              </div>
+            </div>
+
+            {/* Session list using DataTable */}
+            <DataTable
+              data={mockSessions}
+              columns={columns}
+              onRowClick={handleSessionSelect}
+              selectedItem={selectedSession}
+              idField="id"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Selected session indicator */}
+        {selectedSession && (
+          <Card className="mt-4">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    Selected Session
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {selectedSession.title} ({selectedSession.id})
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSessionSelect(mockSessions[0])}
+                >
+                  Reset Selection
+                </Button>
+              </div>
             </CardContent>
           </Card>
+        )}
 
-          {/* Pagination */}
-          <div className="flex justify-center items-center gap-2">
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>«</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>‹</span>
-            </Button>
-            <Button className="h-9 w-9 p-0 bg-brand-teal text-white">
-              <span>1</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>›</span>
-            </Button>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0">
-              <span>»</span>
-            </Button>
-          </div>
+        {/* Pagination */}
+        <div className="flex justify-center items-center gap-2">
+          <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+            <span>«</span>
+          </Button>
+          <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+            <span>‹</span>
+          </Button>
+          <Button className="h-9 w-9 p-0 bg-brand-teal text-white">
+            <span>1</span>
+          </Button>
+          <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+            <span>›</span>
+          </Button>
+          <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+            <span>»</span>
+          </Button>
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }

@@ -37,9 +37,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AppHeader } from "@/components/app-header";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -486,178 +483,172 @@ export default function GlossariesPage() {
   );
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <AppHeader title="Glossaries" />
-        <main className="flex-1 overflow-hidden bg-[#f8f9fa]">
-          {!isMobile ? (
-            /* Desktop: Resizable Layout */
-            <ResizablePanelGroup direction="horizontal" className="h-full">
-              {/* Main Panel */}
-              <ResizablePanel defaultSize={showAddForm ? 60 : 100} minSize={50}>
-                <div className="h-full flex flex-col bg-white">
-                  {/* Header */}
-                  <div className="p-6 border-b">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h1 className="text-2xl font-bold">Glossaries</h1>
-                        <p className="text-gray-600">
-                          Manage terminology and translation glossaries
-                        </p>
-                      </div>
-                      <Button
-                        onClick={() => setShowAddForm(true)}
-                        className="bg-brand-teal hover:bg-brand-teal/90"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Glossary
-                      </Button>
-                    </div>
-
-                    {/* Search */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
+    <main className="flex-1 overflow-hidden bg-[#f8f9fa] h-full">
+      {!isMobile ? (
+        /* Desktop: Resizable Layout */
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Main Panel */}
+          <ResizablePanel defaultSize={showAddForm ? 60 : 100} minSize={50}>
+            <div className="h-full flex flex-col bg-white">
+              {/* Header */}
+              <div className="p-6 border-b">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h1 className="text-2xl font-bold">Glossaries</h1>
+                    <p className="text-gray-600">
+                      Manage terminology and translation glossaries
+                    </p>
                   </div>
-
-                  {/* Tabs */}
-                  <div className="border-b">
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className="h-12 w-full justify-start rounded-none border-0 bg-transparent p-0">
-                        <TabsTrigger
-                          value="available"
-                          className="rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
-                        >
-                          Available
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="pending"
-                          className="rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
-                        >
-                          Pending
-                        </TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 overflow-auto p-6">
-                    {filteredGlossaries.length > 0 ? (
-                      <div className="grid gap-4">
-                        {filteredGlossaries.map(renderGlossaryCard)}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                        <BookOpen className="h-12 w-12 mb-4 text-gray-300" />
-                        <h3 className="text-lg font-semibold mb-2">
-                          No glossaries found
-                        </h3>
-                        <p className="text-center text-gray-400">
-                          {searchQuery
-                            ? "Try adjusting your search terms"
-                            : `No ${activeTab} glossaries available`}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  <Button
+                    onClick={() => setShowAddForm(true)}
+                    className="bg-brand-teal hover:bg-brand-teal/90"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Glossary
+                  </Button>
                 </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="border-b">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="h-12 w-full justify-start rounded-none border-0 bg-transparent p-0">
+                    <TabsTrigger
+                      value="available"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
+                    >
+                      Available
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="pending"
+                      className="rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
+                    >
+                      Pending
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-auto p-6">
+                {filteredGlossaries.length > 0 ? (
+                  <div className="grid gap-4">
+                    {filteredGlossaries.map(renderGlossaryCard)}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <BookOpen className="h-12 w-12 mb-4 text-gray-300" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      No glossaries found
+                    </h3>
+                    <p className="text-center text-gray-400">
+                      {searchQuery
+                        ? "Try adjusting your search terms"
+                        : `No ${activeTab} glossaries available`}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </ResizablePanel>
+
+          {/* Add Glossary Panel */}
+          {showAddForm && (
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
+                {renderAddGlossaryForm()}
               </ResizablePanel>
-
-              {/* Add Glossary Panel */}
-              {showAddForm && (
-                <>
-                  <ResizableHandle withHandle />
-                  <ResizablePanel defaultSize={40} minSize={30} maxSize={60}>
-                    {renderAddGlossaryForm()}
-                  </ResizablePanel>
-                </>
-              )}
-            </ResizablePanelGroup>
+            </>
+          )}
+        </ResizablePanelGroup>
+      ) : (
+        /* Mobile: Stacked Layout */
+        <div className="h-full">
+          {showAddForm ? (
+            renderAddGlossaryForm()
           ) : (
-            /* Mobile: Stacked Layout */
-            <div className="h-full">
-              {showAddForm ? (
-                renderAddGlossaryForm()
-              ) : (
-                <div className="h-full flex flex-col bg-white">
-                  {/* Mobile Header */}
-                  <div className="p-4 border-b">
-                    <div className="flex items-center justify-between mb-4">
-                      <h1 className="text-xl font-bold">Glossaries</h1>
-                      <Button
-                        onClick={() => setShowAddForm(true)}
-                        size="sm"
-                        className="bg-brand-teal hover:bg-brand-teal/90"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Mobile Search */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Mobile Tabs */}
-                  <div className="border-b">
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className="h-12 w-full justify-start rounded-none border-0 bg-transparent p-0">
-                        <TabsTrigger
-                          value="available"
-                          className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
-                        >
-                          Available
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="pending"
-                          className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
-                        >
-                          Pending
-                        </TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                  </div>
-
-                  {/* Mobile Content */}
-                  <div className="flex-1 overflow-auto p-4">
-                    {filteredGlossaries.length > 0 ? (
-                      <div className="space-y-4">
-                        {filteredGlossaries.map(renderGlossaryCard)}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                        <BookOpen className="h-12 w-12 mb-4 text-gray-300" />
-                        <h3 className="text-lg font-semibold mb-2">
-                          No glossaries found
-                        </h3>
-                        <p className="text-center text-gray-400">
-                          {searchQuery
-                            ? "Try adjusting your search terms"
-                            : `No ${activeTab} glossaries available`}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+            <div className="h-full flex flex-col bg-white">
+              {/* Mobile Header */}
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between mb-4">
+                  <h1 className="text-xl font-bold">Glossaries</h1>
+                  <Button
+                    onClick={() => setShowAddForm(true)}
+                    size="sm"
+                    className="bg-brand-teal hover:bg-brand-teal/90"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
+
+                {/* Mobile Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Tabs */}
+              <div className="border-b">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="h-12 w-full justify-start rounded-none border-0 bg-transparent p-0">
+                    <TabsTrigger
+                      value="available"
+                      className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
+                    >
+                      Available
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="pending"
+                      className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-brand-teal data-[state=active]:bg-transparent"
+                    >
+                      Pending
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+
+              {/* Mobile Content */}
+              <div className="flex-1 overflow-auto p-4">
+                {filteredGlossaries.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredGlossaries.map(renderGlossaryCard)}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <BookOpen className="h-12 w-12 mb-4 text-gray-300" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      No glossaries found
+                    </h3>
+                    <p className="text-center text-gray-400">
+                      {searchQuery
+                        ? "Try adjusting your search terms"
+                        : `No ${activeTab} glossaries available`}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+        </div>
+      )}
+    </main>
   );
 }

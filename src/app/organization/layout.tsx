@@ -1,9 +1,6 @@
 "use client";
 
-import { AppHeader } from "@/components/app-header";
-import { AppSidebar } from "@/components/app-sidebar";
 import { usePathname } from "next/navigation";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useState, useEffect } from "react";
 import {
   ResizablePanelGroup,
@@ -104,28 +101,71 @@ export default function OrganizationLayout({
     pathname.includes("/organization/billing");
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <AppHeader title="Organization Management" />
-        <main className="flex-1 overflow-auto bg-[#f8f9fa] relative">
-          {useResizablePanel && showPanel ? (
+    <main className="flex-1 overflow-auto bg-[#f8f9fa] relative h-full">
+      {useResizablePanel && showPanel ? (
+        <>
+          {!isMobile ? (
+            /* Desktop: Side-by-side resizable panels */
+            <ResizablePanelGroup direction="horizontal" className="h-full">
+              <ResizablePanel defaultSize={60} minSize={45}>
+                <div className="h-full overflow-auto">
+                  <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto h-full">
+                    {children}
+                  </div>
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
+              <ResizablePanel defaultSize={40} minSize={25} maxSize={55}>
+                <div className="h-full overflow-auto bg-white border-l">
+                  <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
+                    <h2 className="font-semibold">{panelTitle}</h2>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 p-0"
+                      onClick={closePanel}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
+                    </Button>
+                  </div>
+                  {detailsPanel}
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            /* Mobile/Tablet: Overlapping resizable panel */
             <>
-              {!isMobile ? (
-                /* Desktop: Side-by-side resizable panels */
+              {/* Main content takes full width */}
+              <div className="h-full overflow-auto">
+                <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
+                  {children}
+                </div>
+              </div>
+
+              {/* Overlapping resizable panel */}
+              <div className="absolute inset-0 z-40 pointer-events-none">
                 <ResizablePanelGroup direction="horizontal" className="h-full">
-                  <ResizablePanel defaultSize={60} minSize={45}>
-                    <div className="h-full overflow-auto">
-                      <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
-                        {children}
-                      </div>
-                    </div>
+                  <ResizablePanel
+                    defaultSize={30}
+                    minSize={20}
+                    className="pointer-events-none"
+                  >
+                    {/* Empty panel to take up space - content shows through */}
+                    <div className="h-full"></div>
                   </ResizablePanel>
 
-                  <ResizableHandle withHandle />
+                  <ResizableHandle withHandle className="pointer-events-auto" />
 
-                  <ResizablePanel defaultSize={40} minSize={25} maxSize={55}>
-                    <div className="h-full overflow-auto bg-white border-l">
+                  <ResizablePanel
+                    defaultSize={70}
+                    minSize={50}
+                    maxSize={80}
+                    className="pointer-events-auto"
+                  >
+                    <div className="h-full overflow-auto bg-white border-l shadow-lg">
                       <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
                         <h2 className="font-semibold">{panelTitle}</h2>
                         <Button
@@ -142,70 +182,15 @@ export default function OrganizationLayout({
                     </div>
                   </ResizablePanel>
                 </ResizablePanelGroup>
-              ) : (
-                /* Mobile/Tablet: Overlapping resizable panel */
-                <>
-                  {/* Main content takes full width */}
-                  <div className="h-full overflow-auto">
-                    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
-                      {children}
-                    </div>
-                  </div>
-
-                  {/* Overlapping resizable panel */}
-                  <div className="absolute inset-0 z-40 pointer-events-none">
-                    <ResizablePanelGroup
-                      direction="horizontal"
-                      className="h-full"
-                    >
-                      <ResizablePanel
-                        defaultSize={30}
-                        minSize={20}
-                        className="pointer-events-none"
-                      >
-                        {/* Empty panel to take up space - content shows through */}
-                        <div className="h-full"></div>
-                      </ResizablePanel>
-
-                      <ResizableHandle
-                        withHandle
-                        className="pointer-events-auto"
-                      />
-
-                      <ResizablePanel
-                        defaultSize={70}
-                        minSize={50}
-                        maxSize={80}
-                        className="pointer-events-auto"
-                      >
-                        <div className="h-full overflow-auto bg-white border-l shadow-lg">
-                          <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
-                            <h2 className="font-semibold">{panelTitle}</h2>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 p-0"
-                              onClick={closePanel}
-                            >
-                              <X className="h-4 w-4" />
-                              <span className="sr-only">Close</span>
-                            </Button>
-                          </div>
-                          {detailsPanel}
-                        </div>
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
-                  </div>
-                </>
-              )}
+              </div>
             </>
-          ) : (
-            <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
-              {children}
-            </div>
           )}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+        </>
+      ) : (
+        <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto">
+          {children}
+        </div>
+      )}
+    </main>
   );
 }

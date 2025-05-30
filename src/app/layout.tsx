@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { roboto } from "./font";
 import "./globals.css";
 import { Providers } from "@/store/providers";
+import { AppShellProvider } from "@/components/layouts/AppShellProvider";
 
 export const metadata: Metadata = {
   title: "Wordly - Intelligent Speech Platform",
@@ -16,8 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${roboto.variable}`}>
-      <body className={`font-sans antialiased`}>
-        <Providers>{children}</Providers>
+      <body className={`font-sans antialiased h-screen overflow-hidden`}>
+        <Providers>
+          <AppShellProvider>{children}</AppShellProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -137,8 +137,8 @@ export function AppShell({
               <ResizableHandle withHandle />
 
               <ResizablePanel defaultSize={40} minSize={25} maxSize={55}>
-                <div className="h-full overflow-auto bg-white border-l">
-                  <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
+                <div className="h-full bg-white border-l flex flex-col">
+                  <div className="p-4 border-b bg-white z-10 flex items-center justify-between shrink-0">
                     <h2 className="font-semibold">{rightPanelTitle}</h2>
                     <div className="flex items-center gap-2">
                       <DropdownMenu>
@@ -184,8 +184,8 @@ export function AppShell({
                       </Button>
                     </div>
                   </div>
-                  <div className="overflow-auto p-4 pb-20">{rightPanel}</div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-end">
+                  <div className="flex-1 overflow-auto p-4">{rightPanel}</div>
+                  <div className="p-4 border-t bg-white flex justify-end shrink-0">
                     <Button
                       variant="default"
                       className="bg-brand-teal hover:bg-brand-teal/90 text-white"
@@ -222,8 +222,8 @@ export function AppShell({
                     maxSize={80}
                     className="pointer-events-auto"
                   >
-                    <div className="h-full overflow-auto bg-white border-l shadow-lg">
-                      <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
+                    <div className="h-full bg-white border-l shadow-lg flex flex-col">
+                      <div className="p-4 border-b bg-white z-10 flex items-center justify-between shrink-0">
                         <h2 className="font-semibold">{rightPanelTitle}</h2>
                         <div className="flex items-center gap-2">
                           <DropdownMenu>
@@ -276,10 +276,10 @@ export function AppShell({
                           </Button>
                         </div>
                       </div>
-                      <div className="overflow-auto p-4 pb-20 h-[calc(100%-56px)]">
+                      <div className="flex-1 overflow-auto p-4">
                         {rightPanel}
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white flex justify-end">
+                      <div className="p-4 border-t bg-white flex justify-end shrink-0">
                         <Button
                           variant="default"
                           className="bg-brand-teal hover:bg-brand-teal/90 text-white"

@@ -469,10 +469,9 @@ function TranscriptsPageContent() {
     );
   };
 
-  // On smaller screens, show either list or detail view
   // On larger screens (lg+), show both in a panel layout unless fullscreen is enabled
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-4 max-w-full mx-auto">
       {/* Mobile/Tablet View Tabs */}
       <div className="lg:hidden mb-4">
         <Tabs
