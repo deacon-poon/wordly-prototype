@@ -93,11 +93,11 @@ function SidebarTrigger({ className, ...props }: SidebarTriggerProps) {
     <Button
       variant="ghost"
       size="icon"
-      className={cn("h-9 w-9 p-0 hover:bg-gray-100/80", className)}
+      className={cn("h-9 w-9 p-0 hover:bg-primary-teal-50", className)}
       onClick={() => dispatch(toggleSidebar())}
       {...props}
     >
-      <Menu className="h-4 w-4 text-gray-600 hover:text-gray-800 transition-colors" />
+      <Menu className="h-4 w-4 text-secondary-navy-600 hover:text-primary-teal-600 transition-colors" />
       <span className="sr-only">Toggle sidebar</span>
     </Button>
   );
@@ -255,13 +255,17 @@ function SidebarItem({
     <div
       className={cn(
         "group flex cursor-pointer items-center rounded-md px-3 py-3",
-        // Hover state: White background with pronounced shadow - visible against any background
-        "hover:bg-white hover:shadow-[0_3px_12px_rgba(79,209,197,0.3)] hover:scale-[1.02] transition-all duration-300 ease-in-out",
+        // Hover state: Only apply light teal hover to inactive items
+        !isActive &&
+          "hover:bg-primary-teal-50 hover:shadow-[0_2px_8px_rgba(79,209,197,0.2)] hover:scale-[1.01] transition-all duration-200 ease-in-out",
+        // Active items get a subtle darker hover instead
+        isActive &&
+          "hover:brightness-110 transition-all duration-200 ease-in-out",
         // Active state: Different styling based on variant
         isActive
           ? variant === "organization"
-            ? "bg-white shadow-[0_2px_8px_rgba(79,209,197,0.2)] font-medium" // White background for organization section
-            : "bg-gradient-to-r from-primary-teal-50 via-primary-teal-25 to-primary-teal-50 font-medium" // Default gradient
+            ? "bg-primary-teal-500 text-white shadow-[0_2px_8px_rgba(79,209,197,0.4)] font-medium" // Strong primary teal background for organization section
+            : "bg-primary-teal-600 text-white font-medium" // Strong primary teal background
           : "text-secondary-navy-600", // 20% rule for secondary text
         className
       )}
@@ -271,9 +275,9 @@ function SidebarItem({
         <div
           className={cn(
             "mr-3 flex h-5 w-5 items-center justify-center transition-colors duration-300",
-            // Active: Strong navy for clear differentiation, Inactive: Lighter navy, Hover: Even stronger navy
-            isActive ? "text-secondary-navy-800" : "text-secondary-navy-500",
-            "group-hover:text-secondary-navy-800"
+            // Active: White icons on primary teal background, Inactive: Lighter navy, Hover: Primary teal on this item only
+            isActive ? "text-white" : "text-secondary-navy-500",
+            !isActive && "group-hover:text-primary-teal-600"
           )}
         >
           {icon}
@@ -283,9 +287,9 @@ function SidebarItem({
         <span
           className={cn(
             "text-sm font-medium transition-colors duration-300",
-            // Active: Deep navy text for strong contrast, Inactive: Regular navy, Hover: Stronger navy
-            isActive ? "text-secondary-navy-900" : "text-secondary-navy-600",
-            "group-hover:text-secondary-navy-900"
+            // Active: White text on primary teal background, Inactive: Regular navy, Hover: Primary teal on this item only
+            isActive ? "text-white" : "text-secondary-navy-600",
+            !isActive && "group-hover:text-primary-teal-700"
           )}
         >
           {title}

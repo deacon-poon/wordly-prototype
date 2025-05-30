@@ -209,7 +209,7 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
 
       {/* Organization Section with Enhanced Visual Distinction */}
       <SidebarSection title={isCollapsed ? "" : "Organization"}>
-        <div className="bg-gradient-to-r from-primary-teal-50 via-primary-teal-25 to-secondary-navy-50 border border-accent-light-blue-200 rounded-lg space-y-1 shadow-sm p-1">
+        <div className="border border-primary-teal-200 rounded-lg space-y-1 p-1">
           {organizationAdminItems.map((item) => (
             <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem

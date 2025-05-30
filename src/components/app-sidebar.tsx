@@ -28,7 +28,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="bg-gradient-to-b from-primary-teal-25 to-white border-r border-accent-light-blue-200">
+    <Sidebar className="bg-white border-r border-gray-200">
       <SidebarHeader className="flex items-center justify-start px-4">
         <div className="flex items-center">
           <Image
