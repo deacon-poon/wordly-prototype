@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAppShell } from "@/components/layouts/AppShellProvider";
 import {
   Clock,
   Search,
@@ -95,6 +96,7 @@ const mockSessions: Session[] = [
 export default function HistoryPage() {
   const [selectedSession, setSelectedSession] = useState(mockSessions[0]);
   const [showRightPanel, setShowRightPanel] = useState(true);
+  const { openRightPanel, closeRightPanel } = useAppShell();
 
   const handleCloseRightPanel = () => {
     setShowRightPanel(false);
@@ -103,6 +105,118 @@ export default function HistoryPage() {
   const handleSessionSelect = (session: Session) => {
     console.log("Selected session in history:", session.id, session.title);
     setSelectedSession(session);
+    openRightPanel("Usage Summary", renderHistoryDetails(session));
+  };
+
+  const renderHistoryDetails = (session: Session) => {
+    return (
+      <div className="space-y-4">
+        {/* Session summary */}
+        <div>
+          <h2 className="text-xl font-semibold mb-1">{session.title}</h2>
+          <div className="flex items-center gap-2">
+            <Hash className="w-4 h-4 text-gray-400" />
+            <p className="text-sm text-gray-500">{session.id}</p>
+            <StatusBadge status={session.status} />
+          </div>
+        </div>
+
+        {/* Session details in two columns */}
+        <div className="grid grid-cols-[120px_1fr] gap-y-4">
+          <div className="flex items-center">
+            <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Start time:</p>
+          </div>
+          <p className="text-sm font-medium">
+            {session.date} {session.time}
+          </p>
+
+          <div className="flex items-center">
+            <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Duration:</p>
+          </div>
+          <p className="text-sm font-medium">{session.duration} mins</p>
+
+          <div className="flex items-center">
+            <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Usage:</p>
+          </div>
+          <p className="text-sm font-medium">{session.usedDuration} mins</p>
+        </div>
+
+        {/* Progress bar for usage */}
+        <div className="py-4 border-b">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-500">Usage / Duration</span>
+            <span className="text-sm font-medium">
+              {session.usedDuration} / {session.duration} mins
+            </span>
+          </div>
+          <Progress
+            value={(session.usedDuration / session.duration) * 100}
+            className="h-2"
+            indicatorColor="bg-brand-teal"
+          />
+        </div>
+
+        {/* Presenters section */}
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="presenters"
+          className="w-full"
+        >
+          <AccordionItem value="presenters" className="border-b">
+            <AccordionTrigger className="py-3">
+              <div className="flex items-center">
+                <p className="text-sm font-medium">Presenters:</p>
+                <span className="ml-2 text-sm">
+                  {session.presenters.length}
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              {session.presenters.map((presenter, index) => (
+                <div key={index} className="py-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm">{presenter.name}:</span>
+                    <span className="text-sm font-medium">
+                      {presenter.duration} mins
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Progress
+                      value={100}
+                      className="h-2 flex-1"
+                      indicatorColor="bg-brand-teal"
+                    />
+                    <span className="text-xs text-gray-500">Present</span>
+                  </div>
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Attendees section */}
+          <AccordionItem value="attendees" className="border-b">
+            <AccordionTrigger className="py-3">
+              <div className="flex items-center">
+                <p className="text-sm font-medium">Attendees:</p>
+                <span className="ml-2 text-sm">{session.attendees}</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              {session.languages.map((language, index) => (
+                <div key={index} className="py-2 flex justify-between">
+                  <span className="text-sm">{language.name}:</span>
+                  <span className="text-sm font-medium">{language.count}</span>
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    );
   };
 
   const columns: TableColumn<Session>[] = [
@@ -237,31 +351,6 @@ export default function HistoryPage() {
             />
           </CardContent>
         </Card>
-
-        {/* Selected session indicator */}
-        {selectedSession && (
-          <Card className="mt-4">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium text-gray-900">
-                    Selected Session
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {selectedSession.title} ({selectedSession.id})
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleSessionSelect(mockSessions[0])}
-                >
-                  Reset Selection
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Pagination */}
         <div className="flex justify-center items-center gap-2">

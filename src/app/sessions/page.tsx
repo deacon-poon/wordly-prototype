@@ -18,6 +18,16 @@ import {
   ChevronDown,
   X as CloseIcon,
   QrCode as QrCodeIcon,
+  Key,
+  Calendar as CalendarIcon,
+  User as UserIcon,
+  Clock as ClockIcon,
+  Globe,
+  ToggleLeft,
+  Lock,
+  Pin,
+  Volume2,
+  Mic,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +44,7 @@ import {
   StatusBadge,
   type TableColumn,
 } from "@/components/ui/data-table";
+import { useAppShell } from "@/components/layouts/AppShellProvider";
 
 // Define the session type
 interface Session {
@@ -52,6 +63,7 @@ interface Session {
   pinned?: boolean;
   selections?: string[];
   voicePack?: string;
+  autoSelect?: boolean;
 }
 
 const mockSessions: Session[] = [
@@ -71,6 +83,7 @@ const mockSessions: Session[] = [
     pinned: true,
     selections: ["Arabic", "Chinese (Simplified)"],
     voicePack: "Voice Pack 1",
+    autoSelect: true,
   },
   {
     id: "SES-002",
@@ -128,10 +141,109 @@ export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<Session | undefined>(
     undefined
   );
+  const { openRightPanel, closeRightPanel } = useAppShell();
 
   const handleSessionSelect = (session: Session) => {
     console.log("Selected session:", session.id, session.title);
     setSelectedSession(session);
+    openRightPanel("Session Details", renderSessionDetails(session));
+  };
+
+  const renderSessionDetails = (session: Session) => {
+    return (
+      <div className="space-y-4">
+        {/* Session summary */}
+        <div>
+          <h2 className="text-xl font-semibold mb-1">{session.title}</h2>
+          <div className="flex items-center gap-2">
+            <Hash className="w-4 h-4 text-gray-400" />
+            <p className="text-sm text-gray-500">{session.id}</p>
+            <StatusBadge status={session.status} />
+          </div>
+        </div>
+
+        {/* Session details in two columns */}
+        <div className="grid grid-cols-[120px_1fr] gap-y-4">
+          <div className="flex items-center">
+            <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Presenter:</p>
+          </div>
+          <p className="text-sm font-medium">{session.presenter}</p>
+
+          <div className="flex items-center">
+            <Key className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Passcode:</p>
+          </div>
+          <p className="text-sm font-medium">{session.passcode}</p>
+
+          <div className="flex items-center">
+            <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Start Date:</p>
+          </div>
+          <p className="text-sm font-medium">
+            {session.date} {session.time}
+          </p>
+
+          <div className="flex items-center">
+            <Users className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Account:</p>
+          </div>
+          <p className="text-sm font-medium">{session.account}</p>
+
+          <div className="flex items-center">
+            <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Duration:</p>
+          </div>
+          <p className="text-sm font-medium">{session.duration} mins</p>
+
+          <div className="flex items-center">
+            <Globe className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Language:</p>
+          </div>
+          <p className="text-sm font-medium">{session.language}</p>
+
+          <div className="flex items-center">
+            <ToggleLeft className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Auto Select:</p>
+          </div>
+          <div className="flex items-center">
+            <Check className="w-4 h-4 mr-1 text-green-600" />
+            <p className="text-sm font-medium">
+              {session.autoSelect ? "Yes" : "No"}
+            </p>
+          </div>
+
+          <div className="flex items-center">
+            <Users className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Selections:</p>
+          </div>
+          <p className="text-sm font-medium">{session.selections}</p>
+
+          <div className="flex items-center">
+            <Lock className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Access:</p>
+          </div>
+          <p className="text-sm font-medium">{session.access}</p>
+
+          <div className="flex items-center">
+            <Pin className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Pinned:</p>
+          </div>
+          <div className="flex items-center">
+            <Check className="w-4 h-4 mr-1 text-green-600" />
+            <p className="text-sm font-medium">
+              {session.pinned ? "Yes" : "No"}
+            </p>
+          </div>
+
+          <div className="flex items-center">
+            <Volume2 className="w-4 h-4 mr-2 text-gray-400" />
+            <p className="text-sm font-medium text-gray-500">Voice Pack:</p>
+          </div>
+          <p className="text-sm font-medium">{session.voicePack}</p>
+        </div>
+      </div>
+    );
   };
 
   const columns: TableColumn<Session>[] = [
@@ -309,31 +421,6 @@ export default function SessionsPage() {
               />
             </CardContent>
           </Card>
-
-          {/* Selected session indicator */}
-          {selectedSession && (
-            <Card className="mt-4">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">
-                      Selected Session
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {selectedSession.title} ({selectedSession.id})
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedSession(undefined)}
-                  >
-                    Clear Selection
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>

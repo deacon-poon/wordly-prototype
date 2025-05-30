@@ -1,9 +1,33 @@
 "use client";
 
+import React, { createContext, useContext, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AppShell } from "./AppShell";
 import { AppHeader } from "../app-header";
 import { AppSidebar } from "../app-sidebar";
+
+interface RightPanelState {
+  isOpen: boolean;
+  title: string;
+  content: React.ReactNode;
+}
+
+interface AppShellContextType {
+  rightPanel: RightPanelState;
+  setRightPanel: (panel: Partial<RightPanelState>) => void;
+  openRightPanel: (title: string, content: React.ReactNode) => void;
+  closeRightPanel: () => void;
+}
+
+const AppShellContext = createContext<AppShellContextType | null>(null);
+
+export function useAppShell() {
+  const context = useContext(AppShellContext);
+  if (!context) {
+    throw new Error("useAppShell must be used within AppShellProvider");
+  }
+  return context;
+}
 
 interface AppShellProviderProps {
   children: React.ReactNode;
@@ -11,6 +35,11 @@ interface AppShellProviderProps {
 
 export function AppShellProvider({ children }: AppShellProviderProps) {
   const pathname = usePathname();
+  const [rightPanel, setRightPanelState] = useState<RightPanelState>({
+    isOpen: false,
+    title: "",
+    content: null,
+  });
 
   // Determine if we should show AppShell (skip for auth pages)
   const shouldShowAppShell =
@@ -43,16 +72,45 @@ export function AppShellProvider({ children }: AppShellProviderProps) {
     }
   };
 
+  const setRightPanel = (panel: Partial<RightPanelState>) => {
+    setRightPanelState((prev) => ({ ...prev, ...panel }));
+  };
+
+  const openRightPanel = (title: string, content: React.ReactNode) => {
+    setRightPanelState({
+      isOpen: true,
+      title,
+      content,
+    });
+  };
+
+  const closeRightPanel = () => {
+    setRightPanelState((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const contextValue: AppShellContextType = {
+    rightPanel,
+    setRightPanel,
+    openRightPanel,
+    closeRightPanel,
+  };
+
   if (!shouldShowAppShell) {
     return <>{children}</>;
   }
 
   return (
-    <AppShell
-      sidebar={<AppSidebar />}
-      header={<AppHeader title={getPageTitle()} />}
-    >
-      {children}
-    </AppShell>
+    <AppShellContext.Provider value={contextValue}>
+      <AppShell
+        sidebar={<AppSidebar />}
+        header={<AppHeader title={getPageTitle()} />}
+        rightPanel={rightPanel.content}
+        showRightPanel={rightPanel.isOpen}
+        rightPanelTitle={rightPanel.title}
+        onRightPanelClose={closeRightPanel}
+      >
+        {children}
+      </AppShell>
+    </AppShellContext.Provider>
   );
 }
