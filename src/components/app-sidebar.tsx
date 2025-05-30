@@ -14,13 +14,21 @@ import {
 import { NavWorkspace } from "@/components/nav-workspace";
 import { NavUser } from "@/components/nav-user";
 import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const isCollapsed = useSelector(selectSidebarCollapsed);
 
+  // This would come from your user auth state in a real app
+  const user = {
+    displayName: "Deacon Poon",
+    email: "deacon@wordly.ai",
+    avatar: "/avatars/01.png",
+  };
+
   return (
-    <Sidebar className="flex flex-col h-screen border-r shadow-sm z-30">
+    <Sidebar className="bg-gradient-to-b from-primary-teal-25 to-white border-r border-accent-light-blue-200">
       <SidebarHeader className="flex items-center justify-start px-4">
         <div className="flex items-center">
           <Image
@@ -30,7 +38,7 @@ export function AppSidebar() {
             height={36}
           />
           {!isCollapsed && (
-            <span className="text-xl font-bold text-brand-teal ml-2">
+            <span className="text-xl font-bold text-primary-teal-600 ml-2">
               wordly
             </span>
           )}
@@ -39,8 +47,25 @@ export function AppSidebar() {
       <SidebarNav className="flex-grow overflow-y-auto">
         <NavWorkspace pathname={pathname} />
       </SidebarNav>
-      <SidebarFooter>
-        <NavUser />
+      <SidebarFooter className="p-0 m-0 mt-2">
+        <div className="flex items-center gap-3 p-4 bg-primary-teal-25 hover:bg-primary-teal-50 rounded-lg transition-colors">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="/placeholder-user.jpg" alt={user?.displayName} />
+            <AvatarFallback className="bg-primary-teal-100 text-secondary-navy-700">
+              {user?.displayName?.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          {!isCollapsed && (
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-secondary-navy-700">
+                {user?.displayName}
+              </span>
+              <span className="text-xs text-secondary-navy-500">
+                {user?.email}
+              </span>
+            </div>
+          )}
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

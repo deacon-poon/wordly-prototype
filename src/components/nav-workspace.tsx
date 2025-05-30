@@ -27,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/contexts/workspace-context";
 
@@ -124,43 +125,54 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       <SidebarSection>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center justify-between p-3 mb-3 rounded-md bg-gray-100/80 cursor-pointer hover:bg-gray-200/80 transition-colors">
+            <div className="flex items-center justify-between p-3 mb-3 rounded-md border border-accent-light-blue-200 cursor-pointer hover:border-accent-light-blue-300 transition-all duration-200 shadow-sm">
               <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-brand-teal" />
+                <Building2 className="h-4 w-4 text-primary-teal-600" />
                 {!isCollapsed && (
                   <div className="flex items-center gap-1">
-                    <span className="text-sm font-medium text-gray-800">
+                    <span className="text-sm font-medium text-secondary-navy-600">
                       Workspace:
                     </span>
-                    <span className="text-sm font-bold text-gray-900">
+                    <span className="text-sm font-bold text-secondary-navy-700">
                       {activeWorkspace}
                     </span>
-                    <ChevronDown className="h-3.5 w-3.5 text-gray-500 ml-1" />
+                    <ChevronDown className="h-3.5 w-3.5 text-secondary-navy-500 ml-1" />
                   </div>
                 )}
               </div>
             </div>
           </DropdownMenuTrigger>
           {!isCollapsed && (
-            <DropdownMenuContent align="start" className="w-[220px]">
+            <DropdownMenuContent className="w-56 border border-accent-light-blue-200">
+              <DropdownMenuLabel className="text-secondary-navy-600">
+                Switch workspace
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
               {workspaces.map((workspace) => (
                 <DropdownMenuItem
                   key={workspace.id}
-                  className="cursor-pointer"
+                  className="flex items-center gap-2 hover:bg-primary-teal-50 focus:bg-primary-teal-50 border border-transparent hover:border-accent-light-blue-300 focus:border-accent-light-blue-300"
                   onClick={() => setActiveWorkspace(workspace.name)}
                 >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{workspace.name}</span>
-                    <span className="text-xs text-gray-500">
+                  <div className="h-6 w-6 rounded bg-gradient-to-br from-primary-teal-400 to-primary-teal-600 flex items-center justify-center text-white text-xs font-medium">
+                    {workspace.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-secondary-navy-700 font-medium">
+                      {workspace.name}
+                    </div>
+                    <div className="text-secondary-navy-500 text-xs">
                       {workspace.role}
-                    </span>
+                    </div>
                   </div>
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Building2 className="mr-2 h-4 w-4 text-brand-teal" />
-                <span className="font-medium">Create New Workspace</span>
+                <Building2 className="mr-2 h-4 w-4 text-primary-teal-600" />
+                <span className="font-medium text-secondary-navy-700">
+                  Create New Workspace
+                </span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           )}
@@ -197,13 +209,14 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
 
       {/* Organization Section with Enhanced Visual Distinction */}
       <SidebarSection title={isCollapsed ? "" : "Organization"}>
-        <div className="bg-gradient-to-r from-brand-teal/5 via-brand-teal/3 to-brand-teal/5 border border-brand-teal/15 rounded-lg space-y-1 shadow-sm">
+        <div className="bg-gradient-to-r from-primary-teal-50 via-primary-teal-25 to-secondary-navy-50 border border-accent-light-blue-200 rounded-lg space-y-1 shadow-sm p-1">
           {organizationAdminItems.map((item) => (
             <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem
                 icon={<item.icon className="h-4 w-4" />}
                 title={item.title}
                 isActive={pathname === item.href}
+                variant="organization"
               />
             </Link>
           ))}

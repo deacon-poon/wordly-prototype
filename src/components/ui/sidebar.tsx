@@ -97,7 +97,7 @@ function SidebarTrigger({ className, ...props }: SidebarTriggerProps) {
       onClick={() => dispatch(toggleSidebar())}
       {...props}
     >
-      <Menu className="h-4 w-4 text-brand-teal" />
+      <Menu className="h-4 w-4 text-primary-teal-600" />
       <span className="sr-only">Toggle sidebar</span>
     </Button>
   );
@@ -236,8 +236,9 @@ function SidebarSection({
 
 interface SidebarItemProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
-  title: string;
+  title?: string;
   isActive?: boolean;
+  variant?: "default" | "organization";
 }
 
 function SidebarItem({
@@ -245,6 +246,7 @@ function SidebarItem({
   icon,
   title,
   isActive,
+  variant = "default",
   ...props
 }: SidebarItemProps) {
   const isCollapsed = useSelector(selectSidebarCollapsed);
@@ -252,8 +254,15 @@ function SidebarItem({
   return (
     <div
       className={cn(
-        "group flex cursor-pointer items-center rounded-md px-3 py-3 hover:bg-gray-100",
-        isActive ? "bg-gray-100 font-medium" : "text-gray-700",
+        "group flex cursor-pointer items-center rounded-md px-3 py-3",
+        // Hover state: White background with pronounced shadow - visible against any background
+        "hover:bg-white hover:shadow-[0_3px_12px_rgba(79,209,197,0.3)] hover:scale-[1.02] transition-all duration-300 ease-in-out",
+        // Active state: Different styling based on variant
+        isActive
+          ? variant === "organization"
+            ? "bg-white shadow-[0_2px_8px_rgba(79,209,197,0.2)] font-medium" // White background for organization section
+            : "bg-gradient-to-r from-primary-teal-50 via-primary-teal-25 to-primary-teal-50 font-medium" // Default gradient
+          : "text-secondary-navy-600", // 20% rule for secondary text
         className
       )}
       {...props}
@@ -261,8 +270,10 @@ function SidebarItem({
       {icon && (
         <div
           className={cn(
-            "mr-3 flex h-5 w-5 items-center justify-center",
-            isActive ? "text-brand-teal" : "text-brand-teal"
+            "mr-3 flex h-5 w-5 items-center justify-center transition-colors duration-300",
+            // Active: Strong navy for clear differentiation, Inactive: Lighter navy, Hover: Even stronger navy
+            isActive ? "text-secondary-navy-800" : "text-secondary-navy-500",
+            "group-hover:text-secondary-navy-800"
           )}
         >
           {icon}
@@ -271,8 +282,10 @@ function SidebarItem({
       {!isCollapsed && (
         <span
           className={cn(
-            "text-sm font-medium",
-            isActive ? "text-gray-900" : "text-gray-700"
+            "text-sm font-medium transition-colors duration-300",
+            // Active: Deep navy text for strong contrast, Inactive: Regular navy, Hover: Stronger navy
+            isActive ? "text-secondary-navy-900" : "text-secondary-navy-600",
+            "group-hover:text-secondary-navy-900"
           )}
         >
           {title}
