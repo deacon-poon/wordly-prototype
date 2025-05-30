@@ -12,16 +12,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary brand colors */
-    --primary: 187 76% 33%;
+    /* Primary brand colors - updated palette */
+    --primary: 194 74% 33%; /* Primary teal */
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 84% 14%; /* Secondary navy */
+    --secondary-foreground: 210 40% 98%;
 
     /* UI colors */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
+    --accent: 189 74% 54%; /* Accent light blue */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     /* Semantic colors */
@@ -36,29 +36,66 @@
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
 
-    /* Brand colors */
-    --brand-teal: 187 76% 33%;
-    --brand-pink: 328 100% 44%;
+    /* Brand colors - New Wordly Palette */
+    --brand-primary-teal: 194 74% 33%;
+    --brand-secondary-navy: 220 84% 14%;
+    --brand-accent-light-blue: 189 74% 54%;
 
-    /* Teal palette */
+    /* Primary Teal palette */
+    --primary-teal-50: 192 60% 95%;
+    --primary-teal-100: 192 65% 87%;
+    --primary-teal-200: 192 65% 77%;
+    --primary-teal-300: 192 65% 62%;
+    --primary-teal-400: 194 68% 48%;
+    --primary-teal-500: 194 74% 33%; /* Base primary teal #128197 */
+    --primary-teal-600: 194 78% 29%;
+    --primary-teal-700: 194 82% 25%;
+    --primary-teal-800: 194 86% 21%;
+    --primary-teal-900: 194 90% 17%;
+
+    /* Secondary Navy palette */
+    --secondary-navy-50: 220 60% 95%;
+    --secondary-navy-100: 220 65% 87%;
+    --secondary-navy-200: 220 65% 77%;
+    --secondary-navy-300: 220 65% 62%;
+    --secondary-navy-400: 220 71% 48%;
+    --secondary-navy-500: 220 84% 14%; /* Base secondary navy #0B1C3A */
+    --secondary-navy-600: 220 88% 12%;
+    --secondary-navy-700: 220 92% 10%;
+    --secondary-navy-800: 220 96% 8%;
+    --secondary-navy-900: 220 100% 6%;
+
+    /* Accent Light Blue palette */
+    --accent-light-blue-50: 189 80% 96%;
+    --accent-light-blue-100: 189 80% 89%;
+    --accent-light-blue-200: 189 80% 80%;
+    --accent-light-blue-300: 189 80% 66%;
+    --accent-light-blue-400: 189 77% 58%;
+    --accent-light-blue-500: 189 74% 54%; /* Base accent light blue #26C7E6 */
+    --accent-light-blue-600: 189 78% 45%;
+    --accent-light-blue-700: 189 82% 37%;
+    --accent-light-blue-800: 189 86% 29%;
+    --accent-light-blue-900: 189 90% 21%;
+
+    /* Legacy Teal palette (deprecated - use primary-teal instead) */
     --teal-50: 187 60% 94%;
     --teal-100: 187 65% 85%;
     --teal-200: 187 65% 74%;
     --teal-300: 187 65% 58%;
     --teal-400: 187 71% 45%;
-    --teal-500: 187 76% 33%; /* Base teal */
+    --teal-500: 187 76% 33%;
     --teal-600: 187 80% 26%;
     --teal-700: 187 85% 20%;
     --teal-800: 187 90% 14%;
     --teal-900: 187 95% 8%;
 
-    /* Pink palette */
+    /* Legacy Pink palette (deprecated) */
     --pink-50: 328 100% 94%;
     --pink-100: 328 100% 86%;
     --pink-200: 328 100% 76%;
     --pink-300: 328 100% 67%;
     --pink-400: 328 100% 57%;
-    --pink-500: 328 100% 44%; /* Base pink */
+    --pink-500: 328 100% 44%;
     --pink-600: 328 100% 35%;
     --pink-700: 328 100% 26%;
     --pink-800: 328 100% 17%;

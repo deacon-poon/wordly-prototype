@@ -32,30 +32,73 @@ module.exports = {
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         brand: {
-          teal: "#118197", // Base teal-500
-          pink: "#E0007B", // Base pink-500
+          "primary-teal": "#128197", // Base primary teal-500
+          "secondary-navy": "#0B1C3A", // Base secondary navy-500
+          "accent-light-blue": "#26C7E6", // Base accent light blue-500
+          // Legacy colors (deprecated)
+          teal: "#118197",
+          pink: "#E0007B",
         },
-        // Extended brand teal palette
+        // New Primary Teal palette
+        "primary-teal": {
+          50: "#E8F6F8",
+          100: "#C5E8ED",
+          200: "#9DD9E0",
+          300: "#6AC4D1",
+          400: "#3DAFC2",
+          500: "#128197", // Base primary teal
+          600: "#0F6F85",
+          700: "#0C5D73",
+          800: "#094B61",
+          900: "#06394F",
+        },
+        // New Secondary Navy palette
+        "secondary-navy": {
+          50: "#E8EDF5",
+          100: "#C5D3E8",
+          200: "#9BB4D9",
+          300: "#6688C4",
+          400: "#3A5FAF",
+          500: "#0B1C3A", // Base secondary navy
+          600: "#091731",
+          700: "#071228",
+          800: "#050E1F",
+          900: "#030916",
+        },
+        // New Accent Light Blue palette
+        "accent-light-blue": {
+          50: "#E9FAFD",
+          100: "#C8F2FA",
+          200: "#9BEAF6",
+          300: "#5EDBEF",
+          400: "#3BD1EA",
+          500: "#26C7E6", // Base accent light blue
+          600: "#20A8C4",
+          700: "#1A89A2",
+          800: "#146A80",
+          900: "#0E4B5E",
+        },
+        // Legacy Extended brand teal palette (deprecated)
         teal: {
           50: "#E6F4F7",
           100: "#C5E8EE",
           200: "#9ED2DC",
           300: "#5CB9CA",
           400: "#30A3B7",
-          500: "#118197", // Base teal
+          500: "#118197", // Legacy base teal
           600: "#0C687A",
           700: "#08505D",
           800: "#063840",
           900: "#021F24",
         },
-        // Extended brand pink palette
+        // Legacy Extended brand pink palette (deprecated)
         pink: {
           50: "#FCE6F1",
           100: "#F9BFD9",
           200: "#F693C1",
           300: "#F367A9",
           400: "#F13B91",
-          500: "#E0007B", // Base pink
+          500: "#E0007B", // Legacy base pink
           600: "#B30062",
           700: "#85004A",
           800: "#570031",

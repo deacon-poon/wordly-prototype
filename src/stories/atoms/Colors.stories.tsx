@@ -78,10 +78,15 @@ type Story = StoryObj<typeof StoryComponent>;
  * # Wordly Color Palette
  *
  * This is the comprehensive color palette for the Wordly design system.
- * It includes the primary brand colors (teal and pink), along with green and red
+ * It includes the primary brand colors (teal, navy, and light blue), along with green and red
  * for affirmative and destructive actions, and a gray scale for UI elements.
  *
  * Each color has 10 shades, labeled from 50 (lightest) to 900 (darkest).
+ *
+ * ## Brand Colors
+ * - **Primary Teal (#128197)**: Main brand color for primary actions and navigation
+ * - **Secondary Navy (#0BaC3A)**: Secondary brand color for depth and contrast
+ * - **Accent Light Blue (#26C7E6)**: Accent color for highlights and interactive elements
  *
  * ## WCAG Compliance
  *
@@ -98,36 +103,53 @@ export const AllColors: Story = {
         <h2 className="text-2xl font-bold mb-4">Brand Colors</h2>
         <div className="space-y-10">
           <ColorSet
-            title="Teal Palette"
-            description="Primary brand color used for UI elements, buttons, and links."
+            title="Primary Teal Palette"
+            description="Primary brand color used for navigation, primary buttons, and key UI elements."
             colors={[
-              { name: "Teal 50", value: "#E6F4F7" },
-              { name: "Teal 100", value: "#C5E8EE" },
-              { name: "Teal 200", value: "#9ED2DC" },
-              { name: "Teal 300", value: "#5CB9CA" },
-              { name: "Teal 400", value: "#30A3B7" },
-              { name: "Teal 500", value: "#118197", textColor: "text-white" },
-              { name: "Teal 600", value: "#0C687A", textColor: "text-white" },
-              { name: "Teal 700", value: "#08505D", textColor: "text-white" },
-              { name: "Teal 800", value: "#063840", textColor: "text-white" },
-              { name: "Teal 900", value: "#021F24", textColor: "text-white" },
+              { name: "Teal 50", value: "#E8F6F8" },
+              { name: "Teal 100", value: "#C5E8ED" },
+              { name: "Teal 200", value: "#9DD9E0" },
+              { name: "Teal 300", value: "#6AC4D1" },
+              { name: "Teal 400", value: "#3DAFC2" },
+              { name: "Teal 500", value: "#128197" },
+              { name: "Teal 600", value: "#0F6F85" },
+              { name: "Teal 700", value: "#0C5D73" },
+              { name: "Teal 800", value: "#094B61" },
+              { name: "Teal 900", value: "#06394F" },
             ]}
           />
 
           <ColorSet
-            title="Pink Palette"
-            description="Secondary brand color used for accents and highlights."
+            title="Secondary Navy Palette"
+            description="Secondary brand color used for depth, contrast, and supporting elements."
             colors={[
-              { name: "Pink 50", value: "#FCE6F1" },
-              { name: "Pink 100", value: "#F9BFD9" },
-              { name: "Pink 200", value: "#F693C1" },
-              { name: "Pink 300", value: "#F367A9", textColor: "text-white" },
-              { name: "Pink 400", value: "#F13B91", textColor: "text-white" },
-              { name: "Pink 500", value: "#E0007B", textColor: "text-white" },
-              { name: "Pink 600", value: "#B30062", textColor: "text-white" },
-              { name: "Pink 700", value: "#85004A", textColor: "text-white" },
-              { name: "Pink 800", value: "#570031", textColor: "text-white" },
-              { name: "Pink 900", value: "#290019", textColor: "text-white" },
+              { name: "Navy 50", value: "#E8EDF5" },
+              { name: "Navy 100", value: "#C5D3E8" },
+              { name: "Navy 200", value: "#9BB4D9" },
+              { name: "Navy 300", value: "#6688C4" },
+              { name: "Navy 400", value: "#3A5FAF" },
+              { name: "Navy 500", value: "#0B1C3A" },
+              { name: "Navy 600", value: "#091731" },
+              { name: "Navy 700", value: "#071228" },
+              { name: "Navy 800", value: "#050E1F" },
+              { name: "Navy 900", value: "#030916" },
+            ]}
+          />
+
+          <ColorSet
+            title="Accent Light Blue Palette"
+            description="Accent color used for highlights, links, and interactive feedback."
+            colors={[
+              { name: "Light Blue 50", value: "#E9FAFD" },
+              { name: "Light Blue 100", value: "#C8F2FA" },
+              { name: "Light Blue 200", value: "#9BEAF6" },
+              { name: "Light Blue 300", value: "#5EDBEF" },
+              { name: "Light Blue 400", value: "#3BD1EA" },
+              { name: "Light Blue 500", value: "#26C7E6" },
+              { name: "Light Blue 600", value: "#20A8C4" },
+              { name: "Light Blue 700", value: "#1A89A2" },
+              { name: "Light Blue 800", value: "#146A80" },
+              { name: "Light Blue 900", value: "#0E4B5E" },
             ]}
           />
         </div>
@@ -137,36 +159,36 @@ export const AllColors: Story = {
         <h2 className="text-2xl font-bold mb-4">Semantic Colors</h2>
         <div className="space-y-10">
           <ColorSet
-            title="Green Palette"
+            title="Success Green Palette"
             description="Used for affirmative actions, success states, and approvals."
             colors={[
               { name: "Green 50", value: "#E6F6EC" },
               { name: "Green 100", value: "#C5E8D2" },
               { name: "Green 200", value: "#9CD7B0" },
               { name: "Green 300", value: "#66C188" },
-              { name: "Green 400", value: "#34AD67", textColor: "text-white" },
-              { name: "Green 500", value: "#0C9A4E", textColor: "text-white" },
-              { name: "Green 600", value: "#0A7B3F", textColor: "text-white" },
-              { name: "Green 700", value: "#085D2F", textColor: "text-white" },
-              { name: "Green 800", value: "#053E20", textColor: "text-white" },
-              { name: "Green 900", value: "#021F10", textColor: "text-white" },
+              { name: "Green 400", value: "#34AD67" },
+              { name: "Green 500", value: "#0C9A4E" },
+              { name: "Green 600", value: "#0A7B3F" },
+              { name: "Green 700", value: "#085D2F" },
+              { name: "Green 800", value: "#053E20" },
+              { name: "Green 900", value: "#021F10" },
             ]}
           />
 
           <ColorSet
-            title="Red Palette"
+            title="Error Red Palette"
             description="Used for destructive actions, errors, and warnings."
             colors={[
               { name: "Red 50", value: "#FCEBEA" },
               { name: "Red 100", value: "#F9CFCC" },
               { name: "Red 200", value: "#F5A8A2" },
-              { name: "Red 300", value: "#F07870", textColor: "text-white" },
-              { name: "Red 400", value: "#EA4F45", textColor: "text-white" },
-              { name: "Red 500", value: "#E62D21", textColor: "text-white" },
-              { name: "Red 600", value: "#B8221A", textColor: "text-white" },
-              { name: "Red 700", value: "#8A1A13", textColor: "text-white" },
-              { name: "Red 800", value: "#5C110D", textColor: "text-white" },
-              { name: "Red 900", value: "#2E0906", textColor: "text-white" },
+              { name: "Red 300", value: "#F07870" },
+              { name: "Red 400", value: "#EA4F45" },
+              { name: "Red 500", value: "#E62D21" },
+              { name: "Red 600", value: "#B8221A" },
+              { name: "Red 700", value: "#8A1A13" },
+              { name: "Red 800", value: "#5C110D" },
+              { name: "Red 900", value: "#2E0906" },
             ]}
           />
         </div>
@@ -184,13 +206,43 @@ export const AllColors: Story = {
               { name: "Gray 200", value: "#E3E6E8" },
               { name: "Gray 300", value: "#CDD2D7" },
               { name: "Gray 400", value: "#9BA3AB" },
-              { name: "Gray 500", value: "#646E78", textColor: "text-white" },
-              { name: "Gray 600", value: "#495057", textColor: "text-white" },
-              { name: "Gray 700", value: "#343A40", textColor: "text-white" },
-              { name: "Gray 800", value: "#212529", textColor: "text-white" },
-              { name: "Gray 900", value: "#121416", textColor: "text-white" },
+              { name: "Gray 500", value: "#646E78" },
+              { name: "Gray 600", value: "#495057" },
+              { name: "Gray 700", value: "#343A40" },
+              { name: "Gray 800", value: "#212529" },
+              { name: "Gray 900", value: "#121416" },
             ]}
           />
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-2xl font-bold mb-4">Usage Guidelines</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-4 border rounded-lg">
+            <h3 className="font-semibold text-primary-teal-500 mb-2">
+              Primary Teal
+            </h3>
+            <p className="text-sm text-gray-600">
+              Use for primary buttons, navigation, and key brand elements.
+            </p>
+          </div>
+          <div className="p-4 border rounded-lg">
+            <h3 className="font-semibold text-secondary-navy-500 mb-2">
+              Secondary Navy
+            </h3>
+            <p className="text-sm text-gray-600">
+              Use for secondary actions, headings, and supporting content.
+            </p>
+          </div>
+          <div className="p-4 border rounded-lg">
+            <h3 className="font-semibold text-accent-light-blue-500 mb-2">
+              Accent Light Blue
+            </h3>
+            <p className="text-sm text-gray-600">
+              Use for links, highlights, and interactive feedback.
+            </p>
+          </div>
         </div>
       </section>
     </div>
