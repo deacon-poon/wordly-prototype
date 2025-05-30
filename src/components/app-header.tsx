@@ -93,7 +93,7 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
       : "Dashboard");
 
   return (
-    <header className="flex sticky top-0 h-14 shrink-0 items-center gap-2 px-6 z-20 shadow-sm bg-gradient-to-r from-primary-teal-50 via-primary-teal-50 to-secondary-navy-100 w-full">
+    <header className="flex sticky top-0 h-14 shrink-0 items-center gap-2 px-6 z-20 shadow-sm bg-gradient-to-r from-primary-teal-50 via-primary-teal-200 to-primary-teal-600 w-full">
       {/* Left Section */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
@@ -101,17 +101,26 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
       </div>
 
       <Breadcrumb className="hidden md:flex">
-        <BreadcrumbList>
+        <BreadcrumbList className="text-secondary-navy-700">
           {breadcrumbItems.map((item, index) => (
             <React.Fragment key={index}>
               <BreadcrumbItem>
                 {item.active ? (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="font-medium text-secondary-navy-900">
+                    {item.label}
+                  </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                  <BreadcrumbLink
+                    href={item.href}
+                    className="text-secondary-navy-600 hover:text-secondary-navy-900 transition-colors duration-200"
+                  >
+                    {item.label}
+                  </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-              {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
+              {index < breadcrumbItems.length - 1 && (
+                <BreadcrumbSeparator className="text-secondary-navy-500" />
+              )}
             </React.Fragment>
           ))}
         </BreadcrumbList>
@@ -124,10 +133,10 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 hover:bg-gray-100/80"
+            className="h-9 w-9 hover:bg-white/20"
           >
-            <Bell className="h-5 w-5 text-gray-600 hover:text-gray-800 transition-colors" />
-            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-accent-light-blue-500"></span>
+            <Bell className="h-5 w-5 text-white hover:text-white/90 transition-colors" />
+            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-accent-light-blue-400"></span>
             <span className="sr-only">Notifications</span>
           </Button>
         </div>
