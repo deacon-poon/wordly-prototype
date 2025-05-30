@@ -35,6 +35,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { TranscriptDetailView } from "@/components/transcripts/transcript-detail-view";
+import { EnhancedTranscriptEditor } from "@/components/transcripts/enhanced-transcript-editor";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -186,6 +187,106 @@ const mockSession = {
   timezone: "(GMT-5)",
 };
 
+// Enhanced mock data for new editor
+const mockTranscriptSegments = [
+  {
+    id: "seg-1",
+    startTime: 0,
+    endTime: 3,
+    speakerId: "speaker-1",
+    speakerName: "Deacon Poon",
+    originalText: "Hello, hello, hello.",
+    translatedText: "Hola, hola, hola.",
+    confidence: 0.95,
+    isEdited: false,
+    glossaryTermsUsed: [],
+  },
+  {
+    id: "seg-2",
+    startTime: 3,
+    endTime: 7,
+    speakerId: "speaker-1",
+    speakerName: "Deacon Poon",
+    originalText: "I am naughty boy deacon.",
+    translatedText: "Soy un chico travieso diácono.",
+    confidence: 0.87,
+    isEdited: false,
+    glossaryTermsUsed: ["naughty boy"],
+  },
+  {
+    id: "seg-3",
+    startTime: 7,
+    endTime: 11,
+    speakerId: "speaker-1",
+    speakerName: "Deacon Poon",
+    originalText: "你好，她是信使，你們喜歡明我講什麽?",
+    translatedText:
+      "Hello, she is the messenger, what would you like me to talk about?",
+    confidence: 0.92,
+    isEdited: false,
+    glossaryTermsUsed: ["messenger"],
+  },
+  {
+    id: "seg-4",
+    startTime: 11,
+    endTime: 13,
+    speakerId: "speaker-1",
+    speakerName: "Deacon Poon",
+    originalText: "हिंदी",
+    translatedText: "Hindi",
+    confidence: 0.98,
+    isEdited: false,
+    glossaryTermsUsed: [],
+  },
+];
+
+const mockSpeakers = [
+  {
+    id: "speaker-1",
+    name: "Deacon Poon",
+    language: "Multilingual",
+    avatar: undefined,
+  },
+  {
+    id: "speaker-2",
+    name: "Attendee 1",
+    language: "English",
+    avatar: undefined,
+  },
+];
+
+const mockSessionInfo = {
+  id: "ssod-5071",
+  title: "SSOD-5071",
+  date: "May 7, 2025 8:57 PM",
+  duration: "56:23",
+  status: "completed" as const,
+  participants: 8,
+  selectedGlossary: {
+    id: "glossary-1",
+    name: "Technical Terms",
+    description: "Common technical terminology for product discussions",
+  },
+};
+
+const mockAvailableGlossaries = [
+  {
+    id: "glossary-1",
+    name: "Technical Terms",
+    description: "Common technical terminology for product discussions",
+  },
+  {
+    id: "glossary-2",
+    name: "Business Vocabulary",
+    description: "Business and corporate terminology",
+  },
+  {
+    id: "glossary-3",
+    name: "Medical Terms",
+    description: "Healthcare and medical terminology",
+  },
+];
+
 function TranscriptsPageContent() {
   const [transcripts, setTranscripts] = useState(mockTranscripts);
   const [selectedTranscripts, setSelectedTranscripts] = useState<string[]>([]);
@@ -200,6 +301,7 @@ function TranscriptsPageContent() {
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentView, setCurrentView] = useState<"list" | "detail">("list");
+  const [isEnhancedEditorOpen, setIsEnhancedEditorOpen] = useState(false);
 
   // Filtered and sorted transcripts
   const filteredTranscripts = transcripts.filter(
@@ -275,14 +377,22 @@ function TranscriptsPageContent() {
     setIsFullscreen(false);
   };
 
-  const handleGenerateTranslation = () => {
-    alert(
-      `Generating translations for ${selectedTranscripts.length} transcript(s)`
+  const handleGenerateTranslation = (
+    targetLanguage: string,
+    useGlossary: boolean
+  ) => {
+    console.log(
+      "Generating translation to:",
+      targetLanguage,
+      "with glossary:",
+      useGlossary
     );
+    // In a real app, call translation API
   };
 
   const handleGenerateSummary = (language: string) => {
-    alert(`Generating summary for ${language}`);
+    console.log("Generating summary in:", language);
+    // In a real app, call summary API
   };
 
   const handleDeleteSelected = () => {
@@ -317,7 +427,36 @@ function TranscriptsPageContent() {
   };
 
   const handleEdit = (transcriptId: string) => {
-    alert(`Editing transcript ${transcriptId}`);
+    console.log("Edit transcript:", transcriptId);
+    // Open enhanced editor
+    setIsEnhancedEditorOpen(true);
+  };
+
+  // Enhanced editor handlers
+  const handleSaveSegments = (segments: any[]) => {
+    console.log("Saving transcript segments:", segments);
+    // In a real app, save to backend
+  };
+
+  const handleUpdateGlossary = (glossaryId: string) => {
+    console.log("Updating glossary:", glossaryId);
+    // In a real app, update session glossary
+  };
+
+  const handleNavigateToSession = () => {
+    console.log("Navigate to session");
+    // In a real app, navigate to sessions page
+    window.location.href = "/sessions";
+  };
+
+  const handleNavigateToGlossary = (glossaryId: string) => {
+    console.log("Navigate to glossary:", glossaryId);
+    // In a real app, navigate to glossary page
+    window.location.href = `/glossaries?id=${glossaryId}`;
+  };
+
+  const handleCloseEnhancedEditor = () => {
+    setIsEnhancedEditorOpen(false);
   };
 
   // Sort indicator component
@@ -382,15 +521,6 @@ function TranscriptsPageContent() {
                 <span className="text-sm text-gray-600">
                   {selectedTranscripts.length} selected
                 </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGenerateTranslation}
-                  className="h-8"
-                >
-                  <Languages className="h-3.5 w-3.5 mr-1.5" />
-                  Translate
-                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -623,18 +753,35 @@ function TranscriptsPageContent() {
               </Button>
             </div>
             <div className="flex-1">
-              <TranscriptDetailView
-                session={mockSession}
-                transcripts={transcriptContent}
-                availableLanguages={availableLanguages}
-                onTranslate={handleTranslate}
-                onDownload={handleDownload}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-                onGenerateSummary={handleGenerateSummary}
-                isFullscreen={isFullscreen}
-                onToggleFullscreen={handleToggleFullscreen}
-              />
+              {isEnhancedEditorOpen ? (
+                <EnhancedTranscriptEditor
+                  sessionInfo={mockSessionInfo}
+                  segments={mockTranscriptSegments}
+                  speakers={mockSpeakers}
+                  availableLanguages={availableLanguages}
+                  availableGlossaries={mockAvailableGlossaries}
+                  onSave={handleSaveSegments}
+                  onGenerateTranslation={handleGenerateTranslation}
+                  onGenerateSummary={handleGenerateSummary}
+                  onUpdateGlossary={handleUpdateGlossary}
+                  onNavigateToSession={handleNavigateToSession}
+                  onNavigateToGlossary={handleNavigateToGlossary}
+                  onClose={handleCloseEnhancedEditor}
+                />
+              ) : (
+                <TranscriptDetailView
+                  session={mockSession}
+                  transcripts={transcriptContent}
+                  availableLanguages={availableLanguages}
+                  onTranslate={handleTranslate}
+                  onDownload={handleDownload}
+                  onDelete={handleDelete}
+                  onEdit={handleEdit}
+                  onGenerateSummary={handleGenerateSummary}
+                  isFullscreen={isFullscreen}
+                  onToggleFullscreen={handleToggleFullscreen}
+                />
+              )}
             </div>
           </div>
         )}
@@ -693,15 +840,6 @@ function TranscriptsPageContent() {
                     <span className="text-sm text-gray-600">
                       {selectedTranscripts.length} selected
                     </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleGenerateTranslation}
-                      className="h-8"
-                    >
-                      <Languages className="h-3.5 w-3.5 mr-1.5" />
-                      Translate
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -931,18 +1069,37 @@ function TranscriptsPageContent() {
             <ResizablePanel defaultSize={70}>
               <div className="h-full">
                 {selectedTranscript ? (
-                  <TranscriptDetailView
-                    session={mockSession}
-                    transcripts={transcriptContent}
-                    availableLanguages={availableLanguages}
-                    onTranslate={handleTranslate}
-                    onDownload={handleDownload}
-                    onDelete={handleDelete}
-                    onEdit={handleEdit}
-                    onGenerateSummary={handleGenerateSummary}
-                    isFullscreen={false}
-                    onToggleFullscreen={handleToggleFullscreen}
-                  />
+                  <>
+                    {isEnhancedEditorOpen ? (
+                      <EnhancedTranscriptEditor
+                        sessionInfo={mockSessionInfo}
+                        segments={mockTranscriptSegments}
+                        speakers={mockSpeakers}
+                        availableLanguages={availableLanguages}
+                        availableGlossaries={mockAvailableGlossaries}
+                        onSave={handleSaveSegments}
+                        onGenerateTranslation={handleGenerateTranslation}
+                        onGenerateSummary={handleGenerateSummary}
+                        onUpdateGlossary={handleUpdateGlossary}
+                        onNavigateToSession={handleNavigateToSession}
+                        onNavigateToGlossary={handleNavigateToGlossary}
+                        onClose={handleCloseEnhancedEditor}
+                      />
+                    ) : (
+                      <TranscriptDetailView
+                        session={mockSession}
+                        transcripts={transcriptContent}
+                        availableLanguages={availableLanguages}
+                        onTranslate={handleTranslate}
+                        onDownload={handleDownload}
+                        onDelete={handleDelete}
+                        onEdit={handleEdit}
+                        onGenerateSummary={handleGenerateSummary}
+                        isFullscreen={isFullscreen}
+                        onToggleFullscreen={handleToggleFullscreen}
+                      />
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500">
                     <div className="text-center">
