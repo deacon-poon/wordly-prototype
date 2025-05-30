@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { NavUser } from "@/components/nav-user";
 
 interface AppHeaderProps {
   title?: string;
@@ -85,9 +84,6 @@ export function AppHeader({ title = "Dashboard", actions }: AppHeaderProps) {
             <span className="sr-only">Notifications</span>
           </Button>
         </div>
-
-        {/* User Profile - using NavUser component */}
-        <NavUser />
       </div>
     </header>
   );
