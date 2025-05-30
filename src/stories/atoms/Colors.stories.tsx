@@ -106,16 +106,16 @@ export const AllColors: Story = {
             title="Primary Teal Palette"
             description="Primary brand color used for navigation, primary buttons, and key UI elements."
             colors={[
-              { name: "Teal 50", value: "#E8F6F8" },
-              { name: "Teal 100", value: "#C5E8ED" },
-              { name: "Teal 200", value: "#9DD9E0" },
-              { name: "Teal 300", value: "#6AC4D1" },
-              { name: "Teal 400", value: "#3DAFC2" },
+              { name: "Teal 50", value: "#E0F8F8" },
+              { name: "Teal 100", value: "#B3EFEF" },
+              { name: "Teal 200", value: "#80E5E5" },
+              { name: "Teal 300", value: "#4DD8D8" },
+              { name: "Teal 400", value: "#26C7CC" },
               { name: "Teal 500", value: "#128197" },
-              { name: "Teal 600", value: "#0F6F85" },
-              { name: "Teal 700", value: "#0C5D73" },
-              { name: "Teal 800", value: "#094B61" },
-              { name: "Teal 900", value: "#06394F" },
+              { name: "Teal 600", value: "#0F7287" },
+              { name: "Teal 700", value: "#0C6377" },
+              { name: "Teal 800", value: "#095466" },
+              { name: "Teal 900", value: "#064556" },
             ]}
           />
 
@@ -140,16 +140,16 @@ export const AllColors: Story = {
             title="Accent Light Blue Palette"
             description="Accent color used for highlights, links, and interactive feedback."
             colors={[
-              { name: "Light Blue 50", value: "#E9FAFD" },
-              { name: "Light Blue 100", value: "#C8F2FA" },
-              { name: "Light Blue 200", value: "#9BEAF6" },
-              { name: "Light Blue 300", value: "#5EDBEF" },
-              { name: "Light Blue 400", value: "#3BD1EA" },
+              { name: "Light Blue 50", value: "#F0F9FB" },
+              { name: "Light Blue 100", value: "#D6EDF3" },
+              { name: "Light Blue 200", value: "#AFDAE6" },
+              { name: "Light Blue 300", value: "#7BC2D3" },
+              { name: "Light Blue 400", value: "#51C4DC" },
               { name: "Light Blue 500", value: "#26C7E6" },
-              { name: "Light Blue 600", value: "#20A8C4" },
-              { name: "Light Blue 700", value: "#1A89A2" },
-              { name: "Light Blue 800", value: "#146A80" },
-              { name: "Light Blue 900", value: "#0E4B5E" },
+              { name: "Light Blue 600", value: "#1FA5C1" },
+              { name: "Light Blue 700", value: "#18839C" },
+              { name: "Light Blue 800", value: "#116177" },
+              { name: "Light Blue 900", value: "#0A3F52" },
             ]}
           />
         </div>

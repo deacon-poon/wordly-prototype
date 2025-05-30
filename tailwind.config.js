@@ -41,16 +41,16 @@ module.exports = {
         },
         // New Primary Teal palette
         "primary-teal": {
-          50: "#E8F6F8",
-          100: "#C5E8ED",
-          200: "#9DD9E0",
-          300: "#6AC4D1",
-          400: "#3DAFC2",
+          50: "#E0F8F8",
+          100: "#B3EFEF",
+          200: "#80E5E5",
+          300: "#4DD8D8",
+          400: "#26C7CC",
           500: "#128197", // Base primary teal
-          600: "#0F6F85",
-          700: "#0C5D73",
-          800: "#094B61",
-          900: "#06394F",
+          600: "#0F7287",
+          700: "#0C6377",
+          800: "#095466",
+          900: "#064556",
         },
         // New Secondary Navy palette
         "secondary-navy": {
@@ -67,16 +67,16 @@ module.exports = {
         },
         // New Accent Light Blue palette
         "accent-light-blue": {
-          50: "#E9FAFD",
-          100: "#C8F2FA",
-          200: "#9BEAF6",
-          300: "#5EDBEF",
-          400: "#3BD1EA",
+          50: "#F0F9FB",
+          100: "#D6EDF3",
+          200: "#AFDAE6",
+          300: "#7BC2D3",
+          400: "#51C4DC",
           500: "#26C7E6", // Base accent light blue
-          600: "#20A8C4",
-          700: "#1A89A2",
-          800: "#146A80",
-          900: "#0E4B5E",
+          600: "#1FA5C1",
+          700: "#18839C",
+          800: "#116177",
+          900: "#0A3F52",
         },
         // Legacy Extended brand teal palette (deprecated)
         teal: {
