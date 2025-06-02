@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   ChevronRight,
   Users,
+  UserCheck,
 } from "lucide-react";
 import { CardHeaderLayout } from "@/components/workspace/card-header-layout";
 import {
@@ -525,6 +526,9 @@ export default function OrganizationUsersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[180px]">
+                      <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                        Filter by workspace
+                      </DropdownMenuLabel>
                       {workspaces.map((workspace) => (
                         <DropdownMenuItem
                           key={workspace}
@@ -539,7 +543,7 @@ export default function OrganizationUsersPage() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableHead>
-                <TableHead>
+                <TableHead className="px-6">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -551,6 +555,9 @@ export default function OrganizationUsersPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[180px]">
+                      <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                        Filter by role
+                      </DropdownMenuLabel>
                       <DropdownMenuItem
                         onClick={() => setSelectedRole("All Roles")}
                         className={
@@ -605,11 +612,14 @@ export default function OrganizationUsersPage() {
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-center py-8 text-gray-500"
-                  >
-                    No users found matching the selected filters.
+                  <TableCell colSpan={3} className="h-32 text-center">
+                    <div className="text-gray-500">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm font-medium">No users found</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Users matching your filters will appear here
+                      </p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -693,10 +703,21 @@ export default function OrganizationUsersPage() {
                                       </Tooltip>
                                     </TooltipProvider>
                                     <span className="text-xs text-gray-500 ml-2 opacity-0 group-hover/trigger:opacity-100 transition-opacity duration-200">
-                                      • Click to manage roles
+                                      • Click to manage workspaces
                                     </span>
                                   </div>
-                                  <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200 accordion-open:rotate-180 ml-1" />
+                                  <div className="flex items-center gap-2">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-primary-teal-600 border-primary-teal-200 bg-primary-teal-25 font-normal text-xs"
+                                    >
+                                      <div className="flex items-center gap-1">
+                                        <UserCheck className="h-3 w-3" />
+                                        <span>Mixed</span>
+                                      </div>
+                                    </Badge>
+                                    <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200 accordion-open:rotate-180" />
+                                  </div>
                                 </div>
                               </AccordionTrigger>
                               <AccordionContent className="px-3 pb-3">
@@ -863,7 +884,7 @@ export default function OrganizationUsersPage() {
                         </Card>
                       ) : (
                         <Card className="border border-gray-200 group/single">
-                          <div className="px-3 py-2 flex items-center justify-between">
+                          <div className="px-3 py-2 pr-6 flex items-center justify-between">
                             <div className="flex items-center">
                               <span className="text-sm font-medium text-gray-800">
                                 {user.workspace}
@@ -874,92 +895,24 @@ export default function OrganizationUsersPage() {
                                 </span>
                               )}
                             </div>
-                            {getAvailableWorkspaces(user).length > 0 && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-6 w-6 p-0 text-gray-500 hover:text-secondary-navy-600 hover:bg-gray-100 rounded transition-colors duration-200"
-                                        >
-                                          <Plus className="h-4 w-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent
-                                        align="end"
-                                        className="w-[200px]"
-                                      >
-                                        <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                                          Add {user.name.split(" ")[0]} to
-                                          workspace
-                                        </DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        {getAvailableWorkspaces(user).map(
-                                          (workspace, i) => (
-                                            <DropdownMenuItem
-                                              key={i}
-                                              onClick={() =>
-                                                handleAddWorkspace(
-                                                  user.id,
-                                                  workspace
-                                                )
-                                              }
-                                              className="flex items-center justify-between"
-                                            >
-                                              <span>{workspace}</span>
-                                              <Badge
-                                                variant="outline"
-                                                className="text-xs text-gray-500"
-                                              >
-                                                Viewer
-                                              </Badge>
-                                            </DropdownMenuItem>
-                                          )
-                                        )}
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Add to workspace</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
+                            <Badge
+                              variant="outline"
+                              className={`${getRoleBadgeClass(
+                                user.workspaceRoles?.[0]?.role || user.role
+                              )} font-normal text-xs`}
+                            >
+                              <div className="flex items-center gap-1">
+                                {getRoleIcon(
+                                  user.workspaceRoles?.[0]?.role || user.role
+                                )}
+                                <span>
+                                  {user.workspaceRoles?.[0]?.role || user.role}
+                                </span>
+                              </div>
+                            </Badge>
                           </div>
                         </Card>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`${getRoleBadgeClass(
-                          user.role
-                        )} font-normal`}
-                      >
-                        <div className="flex items-center gap-1">
-                          {getRoleIcon(user.role)}
-                          <span>{user.role}</span>
-                          {user.workspaceRoles &&
-                            user.workspaceRoles.length > 1 && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="h-3 w-3 ml-1 text-gray-400" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>
-                                      Multiple workspace roles - manage in
-                                      workspace column
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                        </div>
-                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       {!user.isCurrentUser && (
