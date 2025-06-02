@@ -514,105 +514,109 @@ export default function OrganizationUsersPage() {
                     Name
                   </Button>
                 </TableHead>
-                <TableHead>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-secondary-navy-600 flex items-center"
-                      >
-                        Workspace
-                        <ChevronDown className="ml-1 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[180px]">
-                      <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                        Filter by workspace
-                      </DropdownMenuLabel>
-                      {workspaces.map((workspace) => (
+                <TableHead colSpan={2} className="px-3">
+                  <div className="flex items-center justify-between">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-secondary-navy-600 flex items-center"
+                        >
+                          Workspace
+                          <ChevronDown className="ml-1 h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-[180px]">
+                        <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                          Filter by workspace
+                        </DropdownMenuLabel>
+                        {workspaces.map((workspace) => (
+                          <DropdownMenuItem
+                            key={workspace}
+                            onClick={() => setSelectedWorkspace(workspace)}
+                            className={
+                              selectedWorkspace === workspace
+                                ? "bg-gray-100"
+                                : ""
+                            }
+                          >
+                            {workspace}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-secondary-navy-600 flex items-center"
+                        >
+                          Role
+                          <ChevronDown className="ml-1 h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-[180px]">
+                        <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                          Filter by role
+                        </DropdownMenuLabel>
                         <DropdownMenuItem
-                          key={workspace}
-                          onClick={() => setSelectedWorkspace(workspace)}
+                          onClick={() => setSelectedRole("All Roles")}
                           className={
-                            selectedWorkspace === workspace ? "bg-gray-100" : ""
+                            selectedRole === "All Roles" ? "bg-gray-100" : ""
                           }
                         >
-                          {workspace}
+                          All Roles
                         </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedRole("Administrator")}
+                          className={
+                            selectedRole === "Administrator"
+                              ? "bg-gray-100"
+                              : ""
+                          }
+                        >
+                          <ShieldCheck className="h-4 w-4 mr-2" />
+                          Administrator
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedRole("Editor")}
+                          className={
+                            selectedRole === "Editor" ? "bg-gray-100" : ""
+                          }
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Editor
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedRole("Viewer")}
+                          className={
+                            selectedRole === "Viewer" ? "bg-gray-100" : ""
+                          }
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Viewer
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setSelectedRole("Mixed")}
+                          className={
+                            selectedRole === "Mixed" ? "bg-gray-100" : ""
+                          }
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Mixed
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableHead>
-                <TableHead className="px-6">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-8 p-0 text-gray-700 font-medium hover:bg-transparent hover:text-secondary-navy-600 flex items-center"
-                      >
-                        Role
-                        <ChevronDown className="ml-1 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[180px]">
-                      <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
-                        Filter by role
-                      </DropdownMenuLabel>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedRole("All Roles")}
-                        className={
-                          selectedRole === "All Roles" ? "bg-gray-100" : ""
-                        }
-                      >
-                        All Roles
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedRole("Administrator")}
-                        className={
-                          selectedRole === "Administrator" ? "bg-gray-100" : ""
-                        }
-                      >
-                        <ShieldCheck className="h-4 w-4 mr-2" />
-                        Administrator
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedRole("Editor")}
-                        className={
-                          selectedRole === "Editor" ? "bg-gray-100" : ""
-                        }
-                      >
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Editor
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedRole("Viewer")}
-                        className={
-                          selectedRole === "Viewer" ? "bg-gray-100" : ""
-                        }
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Viewer
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedRole("Mixed")}
-                        className={
-                          selectedRole === "Mixed" ? "bg-gray-100" : ""
-                        }
-                      >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Mixed
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableHead>
-                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-32 text-center">
+                  <TableCell colSpan={2} className="h-32 text-center">
                     <div className="text-gray-500">
                       <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p className="text-sm font-medium">No users found</p>
@@ -884,7 +888,7 @@ export default function OrganizationUsersPage() {
                         </Card>
                       ) : (
                         <Card className="border border-gray-200 group/single">
-                          <div className="px-3 py-2 pr-6 flex items-center justify-between">
+                          <div className="px-3 py-2 pr-8 flex items-center justify-between">
                             <div className="flex items-center">
                               <span className="text-sm font-medium text-gray-800">
                                 {user.workspace}
@@ -912,27 +916,6 @@ export default function OrganizationUsersPage() {
                             </Badge>
                           </div>
                         </Card>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {!user.isCurrentUser && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                "Are you sure you want to remove this user?"
-                              )
-                            ) {
-                              setUsers(users.filter((u) => u.id !== user.id));
-                            }
-                          }}
-                          className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          <span className="sr-only">Remove user</span>
-                        </Button>
                       )}
                     </TableCell>
                   </TableRow>
