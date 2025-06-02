@@ -292,7 +292,7 @@ export default function OrganizationUsersPage() {
 
           const newWorkspaceRoles = [
             ...currentWorkspaces,
-            { workspaceName, role: "Viewer" as const },
+            { workspaceName, role: "Editor" as const },
           ];
 
           return {
@@ -872,7 +872,7 @@ export default function OrganizationUsersPage() {
                                                   variant="outline"
                                                   className="text-xs text-gray-500"
                                                 >
-                                                  Viewer
+                                                  Editor
                                                 </Badge>
                                               </DropdownMenuItem>
                                             )
@@ -888,33 +888,123 @@ export default function OrganizationUsersPage() {
                         </Card>
                       ) : (
                         <Card className="border border-gray-200 group/single">
-                          <div className="px-3 py-2 pr-8 flex items-center justify-between">
-                            <div className="flex items-center">
-                              <span className="text-sm font-medium text-gray-800">
-                                {user.workspace}
-                              </span>
-                              {getAvailableWorkspaces(user).length > 0 && (
-                                <span className="text-xs text-gray-500 ml-2 opacity-0 group-hover/single:opacity-100 transition-opacity duration-200">
-                                  • Add to more workspaces
-                                </span>
-                              )}
-                            </div>
-                            <Badge
-                              variant="outline"
-                              className={`${getRoleBadgeClass(
-                                user.workspaceRoles?.[0]?.role || user.role
-                              )} font-normal text-xs`}
+                          {getAvailableWorkspaces(user).length > 0 ? (
+                            <Accordion
+                              type="single"
+                              collapsible
+                              className="w-full"
                             >
-                              <div className="flex items-center gap-1">
-                                {getRoleIcon(
-                                  user.workspaceRoles?.[0]?.role || user.role
-                                )}
-                                <span>
-                                  {user.workspaceRoles?.[0]?.role || user.role}
+                              <AccordionItem
+                                value={`user-${user.id}`}
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="flex-auto [&>svg]:hidden px-3 py-2 hover:no-underline group/trigger">
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center">
+                                      <span className="text-sm font-medium text-gray-800">
+                                        {user.workspace}
+                                      </span>
+                                      <span className="text-xs text-gray-500 ml-2 opacity-0 group-hover/trigger:opacity-100 transition-opacity duration-200">
+                                        • Click to add workspaces
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        variant="outline"
+                                        className={`${getRoleBadgeClass(
+                                          user.workspaceRoles?.[0]?.role ||
+                                            user.role
+                                        )} font-normal text-xs`}
+                                      >
+                                        <div className="flex items-center gap-1">
+                                          {getRoleIcon(
+                                            user.workspaceRoles?.[0]?.role ||
+                                              user.role
+                                          )}
+                                          <span>
+                                            {user.workspaceRoles?.[0]?.role ||
+                                              user.role}
+                                          </span>
+                                        </div>
+                                      </Badge>
+                                      <ChevronDown className="h-4 w-4 text-gray-500 transition-transform duration-200 accordion-open:rotate-180" />
+                                    </div>
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="px-3 pb-3">
+                                  <Separator className="mb-3" />
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full h-8 text-xs text-gray-600 border-dashed border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-150"
+                                      >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add to another workspace
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                      align="center"
+                                      className="w-[200px]"
+                                    >
+                                      <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                                        Add {user.name.split(" ")[0]} to
+                                        workspace
+                                      </DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
+                                      {getAvailableWorkspaces(user).map(
+                                        (workspace, i) => (
+                                          <DropdownMenuItem
+                                            key={i}
+                                            onClick={() =>
+                                              handleAddWorkspace(
+                                                user.id,
+                                                workspace
+                                              )
+                                            }
+                                            className="flex items-center justify-between"
+                                          >
+                                            <span>{workspace}</span>
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs text-gray-500"
+                                            >
+                                              Editor
+                                            </Badge>
+                                          </DropdownMenuItem>
+                                        )
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          ) : (
+                            <div className="px-3 py-2 flex items-center justify-between">
+                              <div className="flex items-center">
+                                <span className="text-sm font-medium text-gray-800">
+                                  {user.workspace}
                                 </span>
                               </div>
-                            </Badge>
-                          </div>
+                              <Badge
+                                variant="outline"
+                                className={`${getRoleBadgeClass(
+                                  user.workspaceRoles?.[0]?.role || user.role
+                                )} font-normal text-xs`}
+                              >
+                                <div className="flex items-center gap-1">
+                                  {getRoleIcon(
+                                    user.workspaceRoles?.[0]?.role || user.role
+                                  )}
+                                  <span>
+                                    {user.workspaceRoles?.[0]?.role ||
+                                      user.role}
+                                  </span>
+                                </div>
+                              </Badge>
+                            </div>
+                          )}
                         </Card>
                       )}
                     </TableCell>
