@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash, Save } from "lucide-react";
+import { Plus, Edit2, Trash, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -603,7 +603,7 @@ export default function OrganizationCustomFieldsPage() {
               onClick={() => openEditPanel(field)}
               className="mr-2"
             >
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit2 className="h-4 w-4 mr-2" />
               Edit Field
             </Button>
             <Button
@@ -672,7 +672,7 @@ export default function OrganizationCustomFieldsPage() {
                       onClick={() => openEditPanel(field)}
                       className="h-8 w-8 p-0 text-gray-500 hover:text-[#006064]"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4" />
                       <span className="sr-only">Edit</span>
                     </Button>
                     <Button
