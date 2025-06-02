@@ -41,6 +41,7 @@ module.exports = {
         },
         // New Primary Teal palette
         "primary-teal": {
+          25: "#F0FCFC",
           50: "#E0F8F8",
           100: "#B3EFEF",
           200: "#80E5E5",
@@ -54,6 +55,7 @@ module.exports = {
         },
         // New Secondary Navy palette
         "secondary-navy": {
+          25: "#F4F6FA",
           50: "#E8EDF5",
           100: "#C5D3E8",
           200: "#9BB4D9",

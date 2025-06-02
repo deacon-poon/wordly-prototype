@@ -147,7 +147,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       <aside
         ref={ref}
         className={cn(
-          "group flex flex-col h-screen text-gray-800 border-r shadow-md will-change-[width] bg-white",
+          "flex flex-col h-screen text-gray-800 border-r shadow-md will-change-[width] bg-white",
           {
             "w-[70px] transition-[width] duration-300 ease-in-out": isCollapsed,
             "w-[240px] transition-[width] duration-300 ease-in-out":
@@ -254,17 +254,19 @@ function SidebarItem({
   return (
     <div
       className={cn(
-        "group flex cursor-pointer items-center rounded-md px-3 py-3",
+        "flex cursor-pointer items-center rounded-md px-3 py-3 transition-all duration-200 ease-in-out",
+        // Base styling for inactive items
+        !isActive && "text-secondary-navy-600",
         // Hover state: Only apply light teal hover to inactive items
         !isActive &&
-          "hover:bg-primary-teal-50 hover:shadow-[0_2px_8px_rgba(79,209,197,0.2)] hover:scale-[1.01] transition-all duration-200 ease-in-out",
+          "hover:bg-primary-teal-50 hover:shadow-[0_2px_8px_rgba(18,129,151,0.2)] hover:scale-[1.01]",
         // Active items get a subtle darker hover instead
         isActive &&
           "hover:brightness-110 transition-all duration-200 ease-in-out",
         // Active state: Different styling based on variant
         isActive
           ? variant === "organization"
-            ? "bg-primary-teal-500 text-white shadow-[0_2px_8px_rgba(79,209,197,0.4)] font-medium" // Strong primary teal background for organization section
+            ? "bg-primary-teal-500 text-white shadow-[0_2px_8px_rgba(18,129,151,0.4)] font-medium" // Strong primary teal background for organization section
             : "bg-primary-teal-600 text-white font-medium" // Strong primary teal background
           : "text-secondary-navy-600", // 20% rule for secondary text
         className
@@ -275,9 +277,10 @@ function SidebarItem({
         <div
           className={cn(
             "mr-3 flex h-5 w-5 items-center justify-center transition-colors duration-300",
-            // Active: White icons on primary teal background, Inactive: Lighter navy, Hover: Primary teal on this item only
+            // Base styling: Active gets white icons, inactive gets navy
             isActive ? "text-white" : "text-secondary-navy-500",
-            !isActive && "group-hover:text-primary-teal-600"
+            // Individual hover for icons only on inactive items
+            !isActive && "hover:text-primary-teal-600"
           )}
         >
           {icon}
@@ -287,9 +290,10 @@ function SidebarItem({
         <span
           className={cn(
             "text-sm font-medium transition-colors duration-300",
-            // Active: White text on primary teal background, Inactive: Regular navy, Hover: Primary teal on this item only
+            // Base styling: Active gets white text, inactive gets navy
             isActive ? "text-white" : "text-secondary-navy-600",
-            !isActive && "group-hover:text-primary-teal-700"
+            // Individual hover for text only on inactive items
+            !isActive && "hover:text-primary-teal-700"
           )}
         >
           {title}

@@ -42,6 +42,7 @@
     --brand-accent-light-blue: 189 74% 54%;
 
     /* Primary Teal palette */
+    --primary-teal-25: 180 100% 98%;
     --primary-teal-50: 180 100% 95%;
     --primary-teal-100: 180 100% 83%;
     --primary-teal-200: 180 100% 71%;
@@ -54,6 +55,7 @@
     --primary-teal-900: 194 90% 20%;
 
     /* Secondary Navy palette */
+    --secondary-navy-25: 220 50% 98%;
     --secondary-navy-50: 220 60% 95%;
     --secondary-navy-100: 220 65% 87%;
     --secondary-navy-200: 220 65% 77%;
