@@ -1017,7 +1017,7 @@ export default function OrganizationUsersPage() {
         defaultRole="Editor"
         title="Invite Users to Organization"
         description={`Invited users will be given access to the ${organizationName} organization and can be assigned to specific workspaces.`}
-        allowEmailInvites={false}
+        allowEmailInvites={true}
       />
     </>
   );

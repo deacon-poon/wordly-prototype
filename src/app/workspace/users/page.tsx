@@ -422,6 +422,7 @@ export default function UsersPage() {
         existingUsers={existingOrganizationUsers}
         onInvite={handleInviteUsers}
         defaultRole="Editor"
+        allowEmailInvites={false}
       />
     </>
   );
