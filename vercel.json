@@ -1,20 +1,3 @@
 {
-  "version": 2,
-  "framework": "nextjs",
-  "public": true,
-  "github": {
-    "enabled": true,
-    "silent": true
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
-    }
-  ]
+  "version": 2
 }
