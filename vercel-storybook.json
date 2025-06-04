@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "wordly-storybook",
   "buildCommand": "npm run build:storybook",
   "devCommand": "npm run dev:storybook",
   "installCommand": "npm install",
@@ -8,7 +9,9 @@
   "regions": ["sfo1"],
   "git": {
     "deploymentEnabled": {
-      "main": true
+      "main": true,
+      "develop": true
     }
-  }
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./src/stories/ ./.storybook/ ./tailwind.config.mjs ./src/app/globals.css"
 }
