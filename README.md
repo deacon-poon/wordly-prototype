@@ -1,4 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wordly Prototype
+
+A comprehensive dashboard and mobile application for managing interpretation sessions.
+
+## Project Structure
+
+- **Web Dashboard** (`/src`) - Next.js application for managing sessions and organizations
+- **Mobile App** (`/mobile-app`) - React Native/Expo application for attendees and presenters
+
+## Development
+
+### Web Dashboard
+
+```bash
+npm install
+npm run dev
+```
+
+### Mobile App
+
+```bash
+cd mobile-app
+npm install
+npm start
+```
+
+## Build Status
+
+✅ Web dashboard builds successfully  
+✅ Mobile app foundation ready  
+✅ Build configuration optimized for Vercel deployment
+
+_Last updated: January 2025_
 
 ## Getting Started
 
