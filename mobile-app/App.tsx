@@ -18,6 +18,9 @@ console.log("App component loading...", { Platform: Platform.OS });
 const { width: screenWidth } = Dimensions.get("window");
 const isMobileWeb = Platform.OS === "web" && screenWidth < 768;
 
+// Updated accent color from #00B4D8 to #28E6B6
+const ACCENT_COLOR = "#28E6B6";
+
 // Language options from specification: English, Spanish, French, Japanese, Chinese (Simplified), German
 const SUPPORTED_LANGUAGES = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -146,13 +149,13 @@ export default function App() {
                   flexDirection: "row",
                   alignItems: "center",
                   backgroundColor:
-                    selectedLanguage === lang.code ? "#00B4D8" : "#ffffff",
+                    selectedLanguage === lang.code ? ACCENT_COLOR : "#ffffff",
                   paddingHorizontal: 16,
                   paddingVertical: 12,
                   borderRadius: 8,
                   borderWidth: 1,
                   borderColor:
-                    selectedLanguage === lang.code ? "#00B4D8" : "#e2e8f0",
+                    selectedLanguage === lang.code ? ACCENT_COLOR : "#e2e8f0",
                   minWidth: 100,
                 }}
                 onPress={() => {
@@ -196,12 +199,12 @@ export default function App() {
               style={{
                 flex: 1,
                 backgroundColor:
-                  joinMode === "attendee" ? "#00B4D8" : "#ffffff",
+                  joinMode === "attendee" ? ACCENT_COLOR : "#ffffff",
                 paddingVertical: 16,
                 paddingHorizontal: 20,
                 borderRadius: 8,
                 borderWidth: 1,
-                borderColor: joinMode === "attendee" ? "#00B4D8" : "#e2e8f0",
+                borderColor: joinMode === "attendee" ? ACCENT_COLOR : "#e2e8f0",
                 alignItems: "center",
               }}
               onPress={() => {
@@ -233,12 +236,13 @@ export default function App() {
               style={{
                 flex: 1,
                 backgroundColor:
-                  joinMode === "presenter" ? "#00B4D8" : "#ffffff",
+                  joinMode === "presenter" ? ACCENT_COLOR : "#ffffff",
                 paddingVertical: 16,
                 paddingHorizontal: 20,
                 borderRadius: 8,
                 borderWidth: 1,
-                borderColor: joinMode === "presenter" ? "#00B4D8" : "#e2e8f0",
+                borderColor:
+                  joinMode === "presenter" ? ACCENT_COLOR : "#e2e8f0",
                 alignItems: "center",
               }}
               onPress={() => {
@@ -319,9 +323,9 @@ export default function App() {
               width: 20,
               height: 20,
               borderWidth: 2,
-              borderColor: "#00B4D8",
+              borderColor: ACCENT_COLOR,
               borderRadius: 4,
-              backgroundColor: showPasscode ? "#00B4D8" : "#ffffff",
+              backgroundColor: showPasscode ? ACCENT_COLOR : "#ffffff",
               alignItems: "center",
               justifyContent: "center",
               marginRight: 12,
@@ -380,7 +384,7 @@ export default function App() {
         {/* Action Buttons */}
         <TouchableOpacity
           style={{
-            backgroundColor: "#00B4D8",
+            backgroundColor: ACCENT_COLOR,
             paddingVertical: 16,
             borderRadius: 8,
             alignItems: "center",
@@ -404,7 +408,7 @@ export default function App() {
           style={{
             backgroundColor: "#ffffff",
             borderWidth: 1,
-            borderColor: "#00B4D8",
+            borderColor: ACCENT_COLOR,
             paddingVertical: 16,
             borderRadius: 8,
             alignItems: "center",
@@ -414,7 +418,7 @@ export default function App() {
         >
           <Text
             style={{
-              color: "#00B4D8",
+              color: ACCENT_COLOR,
               fontSize: 16,
               fontWeight: "600",
             }}

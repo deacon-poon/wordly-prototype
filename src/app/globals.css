@@ -21,7 +21,7 @@
     /* UI colors */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 189 74% 54%; /* Accent light blue */
+    --accent: 158 74% 54%; /* Accent green */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     /* Semantic colors */
@@ -39,7 +39,7 @@
     /* Brand colors - New Wordly Palette */
     --brand-primary-teal: 194 74% 33%;
     --brand-secondary-navy: 220 84% 14%;
-    --brand-accent-light-blue: 189 74% 54%;
+    --brand-accent-green: 158 74% 54%;
 
     /* Primary Teal palette */
     --primary-teal-25: 180 100% 98%;
@@ -67,17 +67,17 @@
     --secondary-navy-800: 220 96% 8%;
     --secondary-navy-900: 220 100% 6%;
 
-    /* Accent Light Blue palette */
-    --accent-light-blue-50: 195 40% 97%;
-    --accent-light-blue-100: 195 40% 88%;
-    --accent-light-blue-200: 195 40% 77%;
-    --accent-light-blue-300: 195 40% 65%;
-    --accent-light-blue-400: 190 55% 58%;
-    --accent-light-blue-500: 189 74% 54%; /* Base accent light blue #26C7E6 */
-    --accent-light-blue-600: 191 72% 44%;
-    --accent-light-blue-700: 193 70% 35%;
-    --accent-light-blue-800: 195 68% 27%;
-    --accent-light-blue-900: 197 66% 19%;
+    /* Accent Green palette */
+    --accent-green-50: 158 50% 97%;
+    --accent-green-100: 158 60% 90%;
+    --accent-green-200: 158 65% 82%;
+    --accent-green-300: 158 70% 73%;
+    --accent-green-400: 158 72% 63%;
+    --accent-green-500: 158 74% 54%; /* Base accent green #28E6B6 */
+    --accent-green-600: 158 76% 45%;
+    --accent-green-700: 158 78% 36%;
+    --accent-green-800: 158 80% 27%;
+    --accent-green-900: 158 82% 18%;
 
     /* Legacy Teal palette (deprecated - use primary-teal instead) */
     --teal-50: 187 60% 94%;
@@ -221,6 +221,15 @@
   color: #118197;
 }
 
+.bg-brand-green {
+  background-color: #28e6b6;
+}
+
+.text-brand-green {
+  color: #28e6b6;
+}
+
+/* Legacy brand pink - deprecated */
 .bg-brand-pink {
   background-color: #e0007b;
 }

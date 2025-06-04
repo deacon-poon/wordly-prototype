@@ -24,7 +24,7 @@ module.exports = {
           950: "#172554",
         },
         wordly: {
-          blue: "#00B4D8",
+          blue: "#28E6B6",
           teal: "#0077B6",
           navy: "#03045E",
         },

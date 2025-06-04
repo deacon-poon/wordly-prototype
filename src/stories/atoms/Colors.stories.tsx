@@ -78,7 +78,7 @@ type Story = StoryObj<typeof StoryComponent>;
  * # Wordly Color Palette
  *
  * This is the comprehensive color palette for the Wordly design system.
- * It includes the primary brand colors (teal, navy, and light blue), along with green and red
+ * It includes the primary brand colors (teal, navy, and accent green), along with green and red
  * for affirmative and destructive actions, and a gray scale for UI elements.
  *
  * Each color has 10 shades, labeled from 50 (lightest) to 900 (darkest).
@@ -86,7 +86,7 @@ type Story = StoryObj<typeof StoryComponent>;
  * ## Brand Colors
  * - **Primary Teal (#128197)**: Main brand color for primary actions and navigation
  * - **Secondary Navy (#0BaC3A)**: Secondary brand color for depth and contrast
- * - **Accent Light Blue (#26C7E6)**: Accent color for highlights and interactive elements
+ * - **Accent Green (#28E6B6)**: Accent color for highlights and interactive elements
  *
  * ## WCAG Compliance
  *
@@ -137,19 +137,19 @@ export const AllColors: Story = {
           />
 
           <ColorSet
-            title="Accent Light Blue Palette"
+            title="Accent Green Palette"
             description="Accent color used for highlights, links, and interactive feedback."
             colors={[
-              { name: "Light Blue 50", value: "#F0F9FB" },
-              { name: "Light Blue 100", value: "#D6EDF3" },
-              { name: "Light Blue 200", value: "#AFDAE6" },
-              { name: "Light Blue 300", value: "#7BC2D3" },
-              { name: "Light Blue 400", value: "#51C4DC" },
-              { name: "Light Blue 500", value: "#26C7E6" },
-              { name: "Light Blue 600", value: "#1FA5C1" },
-              { name: "Light Blue 700", value: "#18839C" },
-              { name: "Light Blue 800", value: "#116177" },
-              { name: "Light Blue 900", value: "#0A3F52" },
+              { name: "Green 50", value: "#E6FDF9" },
+              { name: "Green 100", value: "#C2FAF0" },
+              { name: "Green 200", value: "#85F4E1" },
+              { name: "Green 300", value: "#48EDD2" },
+              { name: "Green 400", value: "#38E9CB" },
+              { name: "Green 500", value: "#28E6B6" },
+              { name: "Green 600", value: "#20B892" },
+              { name: "Green 700", value: "#188A6E" },
+              { name: "Green 800", value: "#105C4A" },
+              { name: "Green 900", value: "#082E25" },
             ]}
           />
         </div>
@@ -236,8 +236,8 @@ export const AllColors: Story = {
             </p>
           </div>
           <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold text-accent-light-blue-500 mb-2">
-              Accent Light Blue
+            <h3 className="font-semibold text-accent-green-500 mb-2">
+              Accent Green
             </h3>
             <p className="text-sm text-gray-600">
               Use for links, highlights, and interactive feedback.
