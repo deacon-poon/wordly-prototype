@@ -1,0 +1,9 @@
+# Exclude mobile app directory from Vercel builds
+mobile-app/
+
+# Exclude mobile app node_modules
+mobile-app/node_modules/
+
+# Exclude mobile app build artifacts
+mobile-app/.expo/
+mobile-app/dist/ 
