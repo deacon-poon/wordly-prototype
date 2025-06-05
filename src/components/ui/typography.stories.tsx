@@ -187,7 +187,15 @@ export const Blockquote: Story = {
   args: {
     variant: "blockquote",
     children:
-      "This is a blockquote, used for quoting external sources or highlighting important information.",
+      "A powerful translation platform that breaks down language barriers in real-time communication.",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Taglines, descriptions, or emphasized secondary text. Perfect for subtitles and explanatory content.",
+      },
+    },
   },
 };
 
@@ -501,12 +509,11 @@ export const CompleteTypeScale: Story = {
           <div className="group hover:bg-muted/50 p-4 rounded-lg transition-colors">
             <div className="space-y-4">
               <Typography variant="blockquote">
-                "Blockquotes are used for citing external sources, highlighting
-                important quotes, or emphasizing key statements. They should be
-                used sparingly and with proper attribution."
+                Perfect for taglines, subtitles, and descriptive text that
+                accompanies headlines or provides context.
               </Typography>
               <Typography variant="small" className="text-muted-foreground">
-                — Usage: External quotes, testimonials, emphasis
+                — Usage: Taglines, descriptions, emphasized secondary text
               </Typography>
             </div>
           </div>
@@ -549,6 +556,10 @@ export const CompleteTypeScale: Story = {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-4 p-6 border rounded-lg">
             <Typography variant="h3">Article Layout</Typography>
+            <Typography variant="blockquote">
+              Understanding how typography creates hierarchy and improves
+              readability in modern web applications.
+            </Typography>
             <Typography variant="lead">
               This is how typography works in a typical article or blog post
               layout.
@@ -588,8 +599,9 @@ export const CompleteTypeScale: Story = {
                 Secondary information and helpers
               </Typography>
             </div>
-            <Typography variant="blockquote" className="text-sm">
-              "User feedback and testimonials work great in blockquote format."
+            <Typography variant="blockquote">
+              Transform global communication with real-time language
+              intelligence.
             </Typography>
           </div>
         </div>

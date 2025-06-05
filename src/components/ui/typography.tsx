@@ -31,7 +31,7 @@ const typographyVariants = cva("", {
       small: "text-sm font-medium leading-none",
       muted: "text-sm text-muted-foreground",
       label: "text-sm font-medium leading-none",
-      blockquote: "border-l-2 pl-6 italic",
+      blockquote: "text-lg text-muted-foreground italic leading-relaxed",
       code: "relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
       link: "font-medium text-primary underline underline-offset-4",
     },
