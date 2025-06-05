@@ -63,6 +63,42 @@ Button.displayName = "Button";
 const meta: Meta<typeof Button> = {
   title: "Design System/Button",
   component: Button,
+  parameters: {
+    layout: "centered",
+    docs: {
+      description: {
+        component: `
+# Button Component
+
+Interactive buttons for user actions, following Wordly's design system and brand color strategy.
+
+## Brand Color Strategy (70-20-10 Principle)
+- **70% Teal** (#118197): Primary brand color for main actions and affirmative buttons
+- **20% Navy** (#0C2A3A): Secondary brand color for supporting elements
+- **10% Accent Green** (#28E6B6): Accent color for highlights and visual interest (not for buttons)
+
+## Button Variants
+- **Default**: Primary teal for main actions (CTA, submit, confirm)
+- **Success**: Functional green for positive confirmations (save successful, task complete)
+- **Destructive**: Red for dangerous actions (delete, cancel)
+- **Secondary/Outline/Ghost**: Neutral colors for secondary actions
+
+## Design Principles
+- **Clarity**: Clear visual hierarchy with appropriate contrast
+- **Accessibility**: WCAG 2.1 AA compliant with focus states
+- **Consistency**: Unified spacing, sizing, and interaction patterns
+- **Purpose**: Each variant serves a specific functional purpose
+
+## Usage Guidelines
+- Use primary (teal) for the most important action on a page
+- Success green is for functional feedback, not brand expression
+- Maintain proper spacing between buttons (minimum 8px)
+- Consider mobile touch targets (minimum 44px)
+        `,
+      },
+    },
+  },
+  tags: ["autodocs"],
   argTypes: {
     variant: {
       control: "select",
@@ -75,7 +111,7 @@ const meta: Meta<typeof Button> = {
         "link",
         "success",
       ],
-      description: "The visual style of the button",
+      description: "The visual style and semantic meaning of the button",
     },
     size: {
       control: "select",
@@ -103,98 +139,154 @@ export default meta;
 type Story = StoryObj<typeof Button>;
 
 /**
- * ## Default Button
+ * ## Primary Button (Default)
  *
- * The default button using the primary brand color (teal).
+ * The primary action button using our brand teal color. Use for the most important action on a page.
+ * Perfect for CTAs, form submissions, and primary navigation.
  */
 export const Default: Story = {
   args: {
-    children: "Default Button",
+    children: "Primary Action",
   },
-};
-
-/**
- * ## Destructive Button
- *
- * Used for destructive actions like delete or cancel.
- * Uses the red color palette.
- */
-export const Destructive: Story = {
-  args: {
-    variant: "destructive",
-    children: "Destructive Button",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Primary teal button for main actions. Use the 70% brand color following our design strategy.",
+      },
+    },
   },
 };
 
 /**
  * ## Success Button
  *
- * Used for affirmative actions like save or confirm.
- * Uses the green color palette.
+ * Functional green button for positive confirmations and successful actions.
+ * Different from accent green - this is specifically for user feedback and completed states.
  */
 export const Success: Story = {
   args: {
     variant: "success",
-    children: "Success Button",
+    children: "Save Changes",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Functional success button for positive actions like saving, confirming, or completing tasks.",
+      },
+    },
+  },
+};
+
+/**
+ * ## Destructive Button
+ *
+ * Red button for dangerous or irreversible actions. Use sparingly and with confirmation patterns.
+ * Perfect for delete actions, cancellations, or destructive operations.
+ */
+export const Destructive: Story = {
+  args: {
+    variant: "destructive",
+    children: "Delete Item",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Destructive button for dangerous actions. Always consider confirmation dialogs for irreversible actions.",
+      },
+    },
   },
 };
 
 /**
  * ## Secondary Button
  *
- * Secondary action button with less visual emphasis.
+ * Lower emphasis button for secondary actions. Use when you need multiple actions but want
+ * to maintain clear hierarchy with the primary button.
  */
 export const Secondary: Story = {
   args: {
     variant: "secondary",
-    children: "Secondary Button",
+    children: "Secondary Action",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Secondary button with reduced visual weight for supporting actions.",
+      },
+    },
   },
 };
 
 /**
  * ## Outline Button
  *
- * Used for secondary actions that should be less visually dominant.
+ * Minimal emphasis button with border styling. Perfect for cancel actions or
+ * when you need a button that doesn't compete with primary actions.
  */
 export const Outline: Story = {
   args: {
     variant: "outline",
-    children: "Outline Button",
+    children: "Cancel",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Outline button for low-emphasis actions like cancel or secondary navigation.",
+      },
+    },
   },
 };
 
 /**
  * ## Ghost Button
  *
- * Minimal visual style for tertiary actions.
+ * Minimal visual style for tertiary actions. Use in navigation, toolbars,
+ * or when you need clickable text without button styling.
  */
 export const Ghost: Story = {
   args: {
     variant: "ghost",
-    children: "Ghost Button",
+    children: "Ghost Action",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: "Ghost button for subtle interactions and tertiary actions.",
+      },
+    },
   },
 };
 
 /**
- * ## Green Brand Button
+ * ## Link Button
  *
- * Using the new accent color (green).
+ * Text button styled as a link. Use when the action feels more like navigation
+ * than a traditional button interaction.
  */
-export const GreenBrand: Story = {
+export const Link: Story = {
   args: {
-    children: "Green Button",
+    variant: "link",
+    children: "Link Action",
   },
-  render: (args) => (
-    <Button {...args} className="bg-[#28E6B6] hover:bg-[#1FDAA8] text-gray-900">
-      {args.children}
-    </Button>
-  ),
+  parameters: {
+    docs: {
+      description: {
+        story: "Link-styled button for navigation-like actions.",
+      },
+    },
+  },
 };
 
 /**
  * ## Button Sizes
  *
- * Buttons in different sizes.
+ * Different button sizes for various use cases. Choose based on content hierarchy
+ * and available space. Icon buttons should use meaningful icons with proper alt text.
  */
 export const ButtonSizes: Story = {
   render: () => (
@@ -202,37 +294,111 @@ export const ButtonSizes: Story = {
       <Button size="lg">Large Button</Button>
       <Button size="default">Default Button</Button>
       <Button size="sm">Small Button</Button>
-      <Button size="icon">+</Button>
+      <Button size="icon">✓</Button>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Different button sizes for various contexts and content hierarchy.",
+      },
+    },
+  },
 };
 
 /**
  * ## Button States
  *
- * Buttons in different states.
+ * Interactive states for different button variants. Disabled buttons should include
+ * alternative ways to complete the action when the disability is temporary.
  */
 export const ButtonStates: Story = {
   render: () => (
-    <div className="space-y-8">
-      <div className="flex flex-wrap gap-4">
-        <Button>Enabled</Button>
-        <Button disabled>Disabled</Button>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">Primary States</h4>
+        <div className="flex flex-wrap gap-4">
+          <Button>Enabled</Button>
+          <Button disabled>Disabled</Button>
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <Button variant="destructive">Enabled</Button>
-        <Button variant="destructive" disabled>
-          Disabled
-        </Button>
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">Success States</h4>
+        <div className="flex flex-wrap gap-4">
+          <Button variant="success">Enabled</Button>
+          <Button variant="success" disabled>
+            Disabled
+          </Button>
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <Button variant="success">Enabled</Button>
-        <Button variant="success" disabled>
-          Disabled
-        </Button>
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">
+          Destructive States
+        </h4>
+        <div className="flex flex-wrap gap-4">
+          <Button variant="destructive">Enabled</Button>
+          <Button variant="destructive" disabled>
+            Disabled
+          </Button>
+        </div>
       </div>
     </div>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Interactive states showing enabled and disabled variations for each button type.",
+      },
+    },
+  },
+};
+
+/**
+ * ## Button Hierarchy Example
+ *
+ * Example of proper button hierarchy in a typical form or dialog.
+ * Primary action is most prominent, secondary actions are clearly de-emphasized.
+ */
+export const ButtonHierarchy: Story = {
+  render: () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">Form Actions</h4>
+        <div className="flex gap-3">
+          <Button>Save Changes</Button>
+          <Button variant="outline">Cancel</Button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">
+          Confirmation Dialog
+        </h4>
+        <div className="flex gap-3">
+          <Button variant="destructive">Delete Item</Button>
+          <Button variant="outline">Keep Item</Button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <h4 className="text-sm font-medium text-gray-700">Success Feedback</h4>
+        <div className="flex gap-3">
+          <Button variant="success">Continue</Button>
+          <Button variant="ghost">Go Back</Button>
+        </div>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Examples of proper button hierarchy in common interface patterns.",
+      },
+    },
+  },
 };
