@@ -61,7 +61,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button";
 
 const meta: Meta<typeof Button> = {
-  title: "Design System/Button",
+  title: "Design System/Components/Button",
   component: Button,
   parameters: {
     layout: "centered",

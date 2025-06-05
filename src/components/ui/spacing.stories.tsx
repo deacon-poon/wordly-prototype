@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { SpacingGrid, SpacingRow } from "./spacing";
 
 const meta: Meta<typeof SpacingGrid> = {
-  title: "Design System/Spacing",
+  title: "Design System/Foundation/Spacing",
   component: SpacingGrid,
   parameters: {
     layout: "padded",

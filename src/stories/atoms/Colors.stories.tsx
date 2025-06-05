@@ -64,7 +64,7 @@ const ColorSet = ({ title, description, colors }: ColorSetProps) => {
 const StoryComponent = () => null;
 
 const meta: Meta = {
-  title: "Design System/Colors",
+  title: "Design System/Foundation/Colors",
   component: StoryComponent,
   parameters: {
     layout: "padded",

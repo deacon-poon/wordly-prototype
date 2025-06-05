@@ -51,7 +51,7 @@ const Badge: React.FC<BadgeProps> = ({
 };
 
 const meta: Meta<typeof Badge> = {
-  title: "Design System/Badge",
+  title: "Design System/Components/Badge",
   component: Badge,
   parameters: {
     layout: "centered",

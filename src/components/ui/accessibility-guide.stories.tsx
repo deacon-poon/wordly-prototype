@@ -4,7 +4,7 @@ import { Button } from "./button";
 import { Typography } from "./typography";
 
 const meta: Meta<typeof AccessibilityGuide> = {
-  title: "Design System/Accessibility",
+  title: "Design System/Foundation/Accessibility",
   component: AccessibilityGuide,
   parameters: {
     layout: "padded",

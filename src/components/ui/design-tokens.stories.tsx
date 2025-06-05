@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { DesignTokens, TokenCategory, Token } from "./design-tokens";
 
 const meta: Meta<typeof DesignTokens> = {
-  title: "Design System/Design Tokens",
+  title: "Design System/Foundation/Design Tokens",
   component: DesignTokens,
   parameters: {
     layout: "padded",
