@@ -10,7 +10,7 @@ interface BadgeProps {
     | "success"
     | "outline"
     | "teal"
-    | "pink";
+    | "green";
   size?: "default" | "sm" | "lg";
   className?: string;
 }
@@ -30,7 +30,7 @@ const Badge: React.FC<BadgeProps> = ({
     success: "bg-[#0C9A4E] text-white border-transparent",
     outline: "bg-transparent border-gray-300 text-gray-800",
     teal: "bg-[#118197] text-white border-transparent",
-    pink: "bg-[#E0007B] text-white border-transparent",
+    green: "bg-[#28E6B6] text-gray-900 border-transparent",
   };
 
   // Define styles for different sizes
@@ -66,7 +66,7 @@ const meta: Meta<typeof Badge> = {
         "success",
         "outline",
         "teal",
-        "pink",
+        "green",
       ],
     },
     size: {
@@ -121,10 +121,10 @@ export const Teal: Story = {
   },
 };
 
-export const Pink: Story = {
+export const Green: Story = {
   args: {
-    children: "Pink",
-    variant: "pink",
+    children: "Green",
+    variant: "green",
   },
 };
 
@@ -151,7 +151,7 @@ export const AllVariants: Story = {
       <Badge variant="success">Success</Badge>
       <Badge variant="outline">Outline</Badge>
       <Badge variant="teal">Teal</Badge>
-      <Badge variant="pink">Pink</Badge>
+      <Badge variant="green">Green</Badge>
     </div>
   ),
 };

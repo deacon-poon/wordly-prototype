@@ -176,16 +176,16 @@ export const Ghost: Story = {
 };
 
 /**
- * ## Pink Brand Button
+ * ## Green Brand Button
  *
- * Using the secondary brand color (pink).
+ * Using the new accent color (green).
  */
-export const PinkBrand: Story = {
+export const GreenBrand: Story = {
   args: {
-    children: "Pink Button",
+    children: "Green Button",
   },
   render: (args) => (
-    <Button {...args} className="bg-[#E0007B] hover:bg-[#B30062] text-white">
+    <Button {...args} className="bg-[#28E6B6] hover:bg-[#1FDAA8] text-gray-900">
       {args.children}
     </Button>
   ),

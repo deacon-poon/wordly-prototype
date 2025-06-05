@@ -20,9 +20,9 @@ import {
 // Sample data - this would come from your API in a real app
 const data = [
   { name: "Spanish", value: 380, color: "#118197" }, // brand-teal
-  { name: "Chinese", value: 250, color: "#E0007B" }, // brand-pink
+  { name: "Chinese", value: 250, color: "#28E6B6" }, // brand-green
   { name: "Russian", value: 180, color: "#30A3B7" }, // lighter teal
-  { name: "Arabic", value: 150, color: "#F04CA7" }, // lighter pink
+  { name: "Arabic", value: 150, color: "#4DEBB7" }, // lighter green
   { name: "French", value: 120, color: "#0B5A6B" }, // darker teal
 ];
 

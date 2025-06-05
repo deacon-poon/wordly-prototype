@@ -160,7 +160,7 @@ export function SessionsBarChart() {
               <Bar
                 dataKey="Interpretation"
                 name="Interpretation"
-                fill="#E0007B" // brand-pink
+                fill="#28E6B6" // brand-green
                 radius={[4, 4, 0, 0]}
               />
               <Bar

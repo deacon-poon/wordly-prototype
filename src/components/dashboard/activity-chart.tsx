@@ -180,10 +180,10 @@ export function ActivityChart() {
                 name="Interpretation Sessions"
                 type="monotone"
                 dataKey="Interpretation Sessions"
-                stroke="#E0007B" // brand-pink
+                stroke="#28E6B6" // brand-green
                 strokeWidth={2}
-                dot={{ fill: "#E0007B", r: 4 }}
-                activeDot={{ r: 6, fill: "#E0007B", stroke: "#fff" }}
+                dot={{ fill: "#28E6B6", r: 4 }}
+                activeDot={{ r: 6, fill: "#28E6B6", stroke: "#fff" }}
               />
             </LineChart>
           </ResponsiveContainer>
