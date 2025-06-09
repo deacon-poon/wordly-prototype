@@ -93,7 +93,7 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
       : "Dashboard");
 
   return (
-    <header className="flex sticky top-0 h-14 shrink-0 items-center gap-2 px-6 z-20 shadow-sm bg-gradient-to-r from-primary-teal-50 via-primary-teal-200 to-primary-teal-600 w-full">
+    <header className="flex sticky top-0 h-14 shrink-0 items-center gap-2 px-6 z-20 shadow-sm bg-gradient-to-r from-primary-teal-200 via-primary-teal-400 to-secondary-navy-200 w-full">
       {/* Left Section */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
@@ -136,7 +136,7 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
             className="h-9 w-9 hover:bg-white/20"
           >
             <Bell className="h-5 w-5 text-white hover:text-white/90 transition-colors" />
-            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-accent-light-blue-400"></span>
+            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-accent-green-400"></span>
             <span className="sr-only">Notifications</span>
           </Button>
         </div>

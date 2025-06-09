@@ -48,7 +48,7 @@ export function AppSidebar() {
         <NavWorkspace pathname={pathname} />
       </SidebarNav>
       <SidebarFooter className="p-0 m-0 mt-2">
-        <div className="flex items-center gap-3 p-4 bg-primary-teal-25 hover:bg-primary-teal-50 rounded-lg transition-colors">
+        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary-teal-25 to-secondary-navy-25 hover:bg-gradient-to-r hover:from-primary-teal-50 hover:to-secondary-navy-50 rounded-lg transition-colors">
           <Avatar className="h-8 w-8">
             <AvatarImage src="/placeholder-user.jpg" alt={user?.displayName} />
             <AvatarFallback className="bg-primary-teal-100 text-secondary-navy-700">

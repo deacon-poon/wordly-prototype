@@ -257,17 +257,17 @@ function SidebarItem({
         "flex cursor-pointer items-center rounded-md px-3 py-3 transition-all duration-200 ease-in-out",
         // Base styling for inactive items
         !isActive && "text-secondary-navy-600",
-        // Hover state: Only apply light teal hover to inactive items
+        // Hover state: Only apply light teal hover to inactive items with subtle green accent
         !isActive &&
-          "hover:bg-primary-teal-50 hover:shadow-[0_2px_8px_rgba(18,129,151,0.2)] hover:scale-[1.01]",
+          "hover:bg-primary-teal-50 hover:shadow-[0_2px_8px_rgba(18,129,151,0.2)] hover:scale-[1.01] hover:border-l-2 hover:border-l-accent-green-400",
         // Active items get a subtle darker hover instead
         isActive &&
           "hover:brightness-110 transition-all duration-200 ease-in-out",
         // Active state: Different styling based on variant
         isActive
           ? variant === "organization"
-            ? "bg-primary-teal-500 text-white shadow-[0_2px_8px_rgba(18,129,151,0.4)] font-medium" // Strong primary teal background for organization section
-            : "bg-primary-teal-600 text-white font-medium" // Strong primary teal background
+            ? "bg-gradient-to-r from-primary-teal-500 to-accent-green-600 text-white shadow-[0_2px_8px_rgba(18,129,151,0.4)] font-medium" // Gradient with accent green for organization section
+            : "bg-primary-teal-600 text-white font-medium border-l-2 border-l-accent-green-400" // Strong primary teal background with green accent
           : "text-secondary-navy-600", // 20% rule for secondary text
         className
       )}

@@ -125,7 +125,7 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       <SidebarSection>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center justify-between p-3 mb-3 rounded-md border border-accent-light-blue-200 cursor-pointer hover:border-accent-light-blue-300 transition-all duration-200 shadow-sm">
+            <div className="flex items-center justify-between p-3 mb-3 rounded-md border border-accent-green-200 cursor-pointer hover:border-accent-green-300 transition-all duration-200 shadow-sm bg-gradient-to-r from-primary-teal-25 to-secondary-navy-25">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-primary-teal-600" />
                 {!isCollapsed && (
@@ -143,7 +143,7 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
             </div>
           </DropdownMenuTrigger>
           {!isCollapsed && (
-            <DropdownMenuContent className="w-56 border border-accent-light-blue-200">
+            <DropdownMenuContent className="w-56 border border-accent-green-200">
               <DropdownMenuLabel className="text-secondary-navy-600">
                 Switch workspace
               </DropdownMenuLabel>
@@ -151,7 +151,7 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
               {workspaces.map((workspace) => (
                 <DropdownMenuItem
                   key={workspace.id}
-                  className="flex items-center gap-2 hover:bg-primary-teal-50 focus:bg-primary-teal-50 border border-transparent hover:border-accent-light-blue-300 focus:border-accent-light-blue-300"
+                  className="flex items-center gap-2 hover:bg-primary-teal-50 focus:bg-primary-teal-50 border border-transparent hover:border-accent-green-300 focus:border-accent-green-300"
                   onClick={() => setActiveWorkspace(workspace.name)}
                 >
                   <div className="h-6 w-6 rounded bg-gradient-to-br from-primary-teal-400 to-primary-teal-600 flex items-center justify-center text-white text-xs font-medium">
@@ -209,7 +209,7 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
 
       {/* Organization Section with Enhanced Visual Distinction */}
       <SidebarSection title={isCollapsed ? "" : "Organization"}>
-        <div className="border border-primary-teal-200 rounded-lg space-y-1 p-1">
+        <div className="border border-primary-teal-200 hover:border-accent-green-300 rounded-lg space-y-1 p-1 bg-gradient-to-r from-primary-teal-25/50 to-accent-green-25 transition-colors">
           {organizationAdminItems.map((item) => (
             <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem

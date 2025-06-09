@@ -80,6 +80,19 @@ module.exports = {
           800: "#116177",
           900: "#0A3F52",
         },
+        // New Accent Green palette
+        "accent-green": {
+          50: "hsl(158 50% 97%)",
+          100: "hsl(158 60% 90%)",
+          200: "hsl(158 65% 82%)",
+          300: "hsl(158 70% 73%)",
+          400: "hsl(158 72% 63%)",
+          500: "hsl(158 74% 54%)", // Base accent green #28E6B6
+          600: "hsl(158 76% 45%)",
+          700: "hsl(158 78% 36%)",
+          800: "hsl(158 80% 27%)",
+          900: "hsl(158 82% 18%)",
+        },
         // Legacy Extended brand teal palette (deprecated)
         teal: {
           50: "#E6F4F7",
