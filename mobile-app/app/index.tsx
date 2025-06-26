@@ -1,383 +1,67 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { router } from "expo-router";
 
-// Language options from specification: English, Spanish, French, Japanese, Chinese (Simplified), German
-const SUPPORTED_LANGUAGES = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "ja", name: "日本語", flag: "🇯🇵" },
-  { code: "zh-CN", name: "中文", flag: "🇨🇳" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-];
+export default function SplashScreen() {
+  // Auto-navigate after a delay (optional)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // You can enable auto-navigation later
+      // router.replace("/attendee-join");
+    }, 3000);
 
-export default function HomeScreen() {
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [sessionId, setSessionId] = useState("");
-  const [passcode, setPasscode] = useState("");
-  const [joinMode, setJoinMode] = useState<"attendee" | "presenter">(
-    "attendee"
-  );
-  const [showPasscode, setShowPasscode] = useState(false);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleJoinSession = () => {
-    if (!sessionId.trim()) {
-      Alert.alert("Error", "Please enter a Session ID");
-      return;
-    }
-
-    if (showPasscode && !passcode.trim()) {
-      Alert.alert("Error", "Please enter the session passcode");
-      return;
-    }
-
-    // TODO: Implement actual session joining logic
-    Alert.alert(
-      "Joining Session",
-      `Mode: ${joinMode}\nSession ID: ${sessionId}\nLanguage: ${selectedLanguage}${
-        showPasscode ? `\nPasscode: ${passcode}` : ""
-      }`
-    );
-  };
-
-  const handleQRScan = () => {
-    // TODO: Implement QR scanner
-    Alert.alert("QR Scanner", "QR scanner will be implemented next");
+  const handleContinue = () => {
+    router.push("/attendee-demo"); // Or wherever you want to navigate
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 24 }}>
-        {/* Header */}
-        <View style={{ alignItems: "center", marginBottom: 32, marginTop: 16 }}>
-          <Text
-            style={{
-              fontSize: 32,
-              fontWeight: "bold",
-              color: "#1e293b",
-              marginBottom: 8,
-            }}
-          >
+      <View className="flex-1 px-6 justify-center items-center">
+        {/* Logo Container - Ready for Figma design */}
+        <View className="items-center mb-12">
+          {/* Placeholder for Figma logo - replace with actual logo component */}
+          <View className="w-24 h-24 bg-primary-teal-500 rounded-2xl items-center justify-center mb-6 shadow-lg">
+            <Text className="text-white text-2xl font-bold">W</Text>
+          </View>
+
+          <Text className="text-4xl font-bold text-secondary-navy-500 mb-2">
             Wordly
           </Text>
-          <Text
-            style={{
-              fontSize: 16,
-              color: "#64748b",
-              textAlign: "center",
-            }}
-          >
-            AI-POWERED INTERPRETATION
+
+          <Text className="text-gray-600 text-center text-lg font-medium">
+            AI-Powered Interpretation
           </Text>
         </View>
 
-        {/* Language Selection */}
-        <View style={{ marginBottom: 32 }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "600",
-              color: "#1e293b",
-              marginBottom: 16,
-            }}
-          >
-            Choose your language
+        {/* Tagline */}
+        <View className="items-center mb-16">
+          <Text className="text-gray-700 text-center text-base leading-6 max-w-sm">
+            Breaking language barriers with intelligent real-time translation
           </Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
-            {SUPPORTED_LANGUAGES.map((lang) => (
-              <TouchableOpacity
-                key={lang.code}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor:
-                    selectedLanguage === lang.code ? "#00B4D8" : "#ffffff",
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor:
-                    selectedLanguage === lang.code ? "#00B4D8" : "#e2e8f0",
-                  minWidth: 100,
-                }}
-                onPress={() => setSelectedLanguage(lang.code)}
-              >
-                <Text style={{ fontSize: 18, marginRight: 8 }}>
-                  {lang.flag}
-                </Text>
-                <Text
-                  style={{
-                    color:
-                      selectedLanguage === lang.code ? "#ffffff" : "#1e293b",
-                    fontWeight: selectedLanguage === lang.code ? "600" : "400",
-                    fontSize: 14,
-                  }}
-                >
-                  {lang.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
         </View>
 
-        {/* Join Mode Selection */}
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "600",
-              color: "#1e293b",
-              marginBottom: 16,
-            }}
-          >
-            Join as
-          </Text>
-
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor:
-                  joinMode === "attendee" ? "#00B4D8" : "#ffffff",
-                paddingVertical: 16,
-                paddingHorizontal: 20,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: joinMode === "attendee" ? "#00B4D8" : "#e2e8f0",
-                alignItems: "center",
-              }}
-              onPress={() => setJoinMode("attendee")}
-            >
-              <Text
-                style={{
-                  color: joinMode === "attendee" ? "#ffffff" : "#1e293b",
-                  fontWeight: "600",
-                  fontSize: 16,
-                }}
-              >
-                Attendee
-              </Text>
-              <Text
-                style={{
-                  color: joinMode === "attendee" ? "#ffffff" : "#64748b",
-                  fontSize: 12,
-                  marginTop: 4,
-                }}
-              >
-                Listen to interpretation
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor:
-                  joinMode === "presenter" ? "#00B4D8" : "#ffffff",
-                paddingVertical: 16,
-                paddingHorizontal: 20,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: joinMode === "presenter" ? "#00B4D8" : "#e2e8f0",
-                alignItems: "center",
-              }}
-              onPress={() => setJoinMode("presenter")}
-            >
-              <Text
-                style={{
-                  color: joinMode === "presenter" ? "#ffffff" : "#1e293b",
-                  fontWeight: "600",
-                  fontSize: 16,
-                }}
-              >
-                Presenter
-              </Text>
-              <Text
-                style={{
-                  color: joinMode === "presenter" ? "#ffffff" : "#64748b",
-                  fontSize: 12,
-                  marginTop: 4,
-                }}
-              >
-                Speak and present
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Session ID Input */}
-        <View style={{ marginBottom: 16 }}>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-              color: "#1e293b",
-              marginBottom: 8,
-            }}
-          >
-            Session ID
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: "#ffffff",
-              borderWidth: 1,
-              borderColor: "#e2e8f0",
-              borderRadius: 8,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              fontSize: 16,
-              color: "#1e293b",
-            }}
-            placeholder="Enter session ID"
-            value={sessionId}
-            onChangeText={setSessionId}
-            autoCapitalize="characters"
-            autoCorrect={false}
-          />
-        </View>
-
-        {/* Passcode Toggle */}
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: showPasscode ? 16 : 24,
-          }}
-          onPress={() => setShowPasscode(!showPasscode)}
+        {/* Call to Action */}
+        <Pressable
+          onPress={handleContinue}
+          className="bg-primary-teal-500 px-8 py-4 rounded-lg shadow-sm active:bg-primary-teal-600 min-h-[44px] items-center justify-center"
         >
-          <View
-            style={{
-              width: 20,
-              height: 20,
-              borderWidth: 2,
-              borderColor: "#00B4D8",
-              borderRadius: 4,
-              backgroundColor: showPasscode ? "#00B4D8" : "#ffffff",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 12,
-            }}
-          >
-            {showPasscode && (
-              <Text
-                style={{ color: "#ffffff", fontSize: 12, fontWeight: "bold" }}
-              >
-                ✓
-              </Text>
-            )}
-          </View>
-          <Text style={{ fontSize: 16, color: "#1e293b" }}>
-            This session requires a passcode
-          </Text>
-        </TouchableOpacity>
-
-        {/* Passcode Input */}
-        {showPasscode && (
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#1e293b",
-                marginBottom: 8,
-              }}
-            >
-              Passcode
-            </Text>
-            <TextInput
-              style={{
-                backgroundColor: "#ffffff",
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-                borderRadius: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                fontSize: 16,
-                color: "#1e293b",
-              }}
-              placeholder="Enter passcode"
-              value={passcode}
-              onChangeText={setPasscode}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-        )}
-
-        {/* Action Buttons */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: "#00B4D8",
-            paddingVertical: 16,
-            borderRadius: 8,
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-          onPress={handleJoinSession}
-        >
-          <Text
-            style={{
-              color: "#ffffff",
-              fontSize: 18,
-              fontWeight: "600",
-            }}
-          >
-            Join Session
-          </Text>
-        </TouchableOpacity>
-
-        {/* QR Scanner */}
-        <TouchableOpacity
-          style={{
-            backgroundColor: "#ffffff",
-            borderWidth: 1,
-            borderColor: "#00B4D8",
-            paddingVertical: 16,
-            borderRadius: 8,
-            alignItems: "center",
-            marginBottom: 32,
-          }}
-          onPress={handleQRScan}
-        >
-          <Text
-            style={{
-              color: "#00B4D8",
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            📱 Scan QR Code
-          </Text>
-        </TouchableOpacity>
+          <Text className="text-white font-semibold text-lg">Get Started</Text>
+        </Pressable>
 
         {/* Footer */}
-        <View style={{ alignItems: "center", paddingBottom: 32 }}>
-          <Text style={{ fontSize: 12, color: "#94a3b8", marginBottom: 8 }}>
-            Wordly AI Interpretation
-          </Text>
-          <Text style={{ fontSize: 10, color: "#cbd5e1" }}>
-            Version 3.5.0+dev.635
+        <View className="absolute bottom-8 items-center">
+          <Text className="text-gray-400 text-sm">
+            Powered by advanced AI technology
           </Text>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
