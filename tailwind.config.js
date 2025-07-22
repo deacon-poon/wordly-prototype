@@ -42,16 +42,16 @@ module.exports = {
         // New Primary Teal palette
         "primary-teal": {
           25: "#F0FCFC",
-          50: "#E0F8F8",
-          100: "#B3EFEF",
-          200: "#80E5E5",
-          300: "#4DD8D8",
-          400: "#26C7CC",
-          500: "#128197", // Base primary teal
-          600: "#0F7287",
-          700: "#0C6377",
-          800: "#095466",
-          900: "#064556",
+          50: "#E6F4F7",
+          100: "#C5E8EE",
+          200: "#84DEF0",
+          300: "#5CB9CA",
+          400: "#30A3B7",
+          500: "#118197", // Base primary teal
+          600: "#0C687A",
+          700: "#08505D",
+          800: "#063840",
+          900: "#021F24",
         },
         // New Secondary Navy palette
         "secondary-navy": {
@@ -97,7 +97,7 @@ module.exports = {
         teal: {
           50: "#E6F4F7",
           100: "#C5E8EE",
-          200: "#9ED2DC",
+          200: "#84DEF0",
           300: "#5CB9CA",
           400: "#30A3B7",
           500: "#118197", // Legacy base teal
@@ -144,6 +144,32 @@ module.exports = {
           700: "#8A1A13",
           800: "#5C110D",
           900: "#2E0906",
+        },
+        // Blue palette for informational purposes (links, info states)
+        blue: {
+          50: "hsl(var(--blue-50) / <alpha-value>)",
+          100: "hsl(var(--blue-100) / <alpha-value>)",
+          200: "hsl(var(--blue-200) / <alpha-value>)",
+          300: "hsl(var(--blue-300) / <alpha-value>)",
+          400: "hsl(var(--blue-400) / <alpha-value>)",
+          500: "hsl(var(--blue-500) / <alpha-value>)", // Base informational blue
+          600: "hsl(var(--blue-600) / <alpha-value>)",
+          700: "hsl(var(--blue-700) / <alpha-value>)",
+          800: "hsl(var(--blue-800) / <alpha-value>)",
+          900: "hsl(var(--blue-900) / <alpha-value>)",
+        },
+        // Orange palette for warnings
+        orange: {
+          50: "hsl(var(--orange-50) / <alpha-value>)",
+          100: "hsl(var(--orange-100) / <alpha-value>)",
+          200: "hsl(var(--orange-200) / <alpha-value>)",
+          300: "hsl(var(--orange-300) / <alpha-value>)",
+          400: "hsl(var(--orange-400) / <alpha-value>)",
+          500: "hsl(var(--orange-500) / <alpha-value>)", // Base warning orange
+          600: "hsl(var(--orange-600) / <alpha-value>)",
+          700: "hsl(var(--orange-700) / <alpha-value>)",
+          800: "hsl(var(--orange-800) / <alpha-value>)",
+          900: "hsl(var(--orange-900) / <alpha-value>)",
         },
         // Extended UI gray palette
         gray: {

@@ -43,16 +43,16 @@
 
     /* Primary Teal palette */
     --primary-teal-25: 180 100% 98%;
-    --primary-teal-50: 180 100% 95%;
-    --primary-teal-100: 180 100% 83%;
-    --primary-teal-200: 180 100% 71%;
-    --primary-teal-300: 180 100% 58%;
-    --primary-teal-400: 183 88% 47%;
-    --primary-teal-500: 194 74% 33%; /* Base primary teal #128197 */
-    --primary-teal-600: 194 78% 29%;
-    --primary-teal-700: 194 82% 25%;
-    --primary-teal-800: 194 86% 21%;
-    --primary-teal-900: 194 90% 20%;
+    --primary-teal-50: 187 60% 94%; /* #E6F4F7 */
+    --primary-teal-100: 187 65% 85%; /* #C5E8EE */
+    --primary-teal-200: 200 85% 73%; /* #84DEF0 */
+    --primary-teal-300: 187 65% 58%; /* #5CB9CA */
+    --primary-teal-400: 187 71% 45%; /* #30A3B7 */
+    --primary-teal-500: 194 74% 33%; /* Base primary teal #118197 */
+    --primary-teal-600: 194 78% 29%; /* #0C687A */
+    --primary-teal-700: 194 82% 25%; /* #08505D */
+    --primary-teal-800: 194 86% 21%; /* #063840 */
+    --primary-teal-900: 194 90% 20%; /* #021F24 */
 
     /* Secondary Navy palette */
     --secondary-navy-25: 220 50% 98%;
@@ -127,6 +127,30 @@
     --red-800: 5 100% 17%;
     --red-900: 5 100% 8%;
 
+    /* Blue palette for informational purposes */
+    --blue-50: 214 100% 97%;
+    --blue-100: 214 95% 93%;
+    --blue-200: 213 97% 87%;
+    --blue-300: 212 96% 78%;
+    --blue-400: 213 94% 68%;
+    --blue-500: 217 91% 60%; /* Base informational blue */
+    --blue-600: 221 83% 53%;
+    --blue-700: 224 76% 48%;
+    --blue-800: 226 71% 40%;
+    --blue-900: 224 64% 33%;
+
+    /* Orange palette for warnings */
+    --orange-50: 33 100% 96%;
+    --orange-100: 34 100% 92%;
+    --orange-200: 32 98% 83%;
+    --orange-300: 31 97% 72%;
+    --orange-400: 27 96% 61%;
+    --orange-500: 21 90% 48%; /* Base warning orange */
+    --orange-600: 20 91% 41%;
+    --orange-700: 17 88% 40%;
+    --orange-800: 15 79% 34%;
+    --orange-900: 15 75% 28%;
+
     /* Gray palette */
     --gray-50: 210 20% 98%;
     --gray-100: 210 17% 95%;
@@ -140,6 +164,22 @@
     --gray-900: 210 12% 8%;
 
     --header-height: 56px;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -173,6 +213,14 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -236,6 +284,68 @@
 
 .text-brand-pink {
   color: #e0007b;
+}
+
+/* Informational blue utilities */
+.text-info {
+  color: hsl(var(--blue-600));
+}
+
+.text-info-light {
+  color: hsl(var(--blue-500));
+}
+
+.text-info-dark {
+  color: hsl(var(--blue-700));
+}
+
+.bg-info {
+  background-color: hsl(var(--blue-50));
+}
+
+/* Warning orange utilities */
+.text-warning {
+  color: hsl(var(--orange-600));
+}
+
+.text-warning-light {
+  color: hsl(var(--orange-500));
+}
+
+.text-warning-dark {
+  color: hsl(var(--orange-700));
+}
+
+.bg-warning {
+  background-color: hsl(var(--orange-50));
+}
+
+/* Link styling using informational blue */
+.link {
+  color: hsl(var(--blue-600));
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--blue-300));
+  transition: all 0.2s ease;
+}
+
+.link:hover {
+  color: hsl(var(--blue-700));
+  text-decoration-color: hsl(var(--blue-600));
+}
+
+.link:visited {
+  color: hsl(var(--blue-800));
+}
+
+/* Link variants */
+.link-subtle {
+  color: hsl(var(--blue-500));
+  text-decoration: none;
+}
+
+.link-subtle:hover {
+  color: hsl(var(--blue-600));
+  text-decoration: underline;
 }
 
 /* Dashboard Theme Elements */
