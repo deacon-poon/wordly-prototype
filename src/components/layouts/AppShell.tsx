@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectSidebarCollapsed,
@@ -55,8 +55,6 @@ export function AppShell({
   const { width } = useViewportSize();
   const [isClient, setIsClient] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Check if screen is mobile/tablet (< 1028px)
   const isMobile = width < 1028;
@@ -65,36 +63,6 @@ export function AppShell({
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // Handle sidebar drag to collapse
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (isMobile) return;
-    setIsDragging(true);
-    e.preventDefault();
-  };
-
-  useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientX < 100) {
-        dispatch(setSidebarCollapsed(true));
-        setIsDragging(false);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging, dispatch]);
 
   // Close mobile panel on resize to desktop
   useEffect(() => {
@@ -107,14 +75,11 @@ export function AppShell({
     <div className="flex h-screen overflow-hidden bg-muted/40">
       {/* Sidebar */}
       <div
-        ref={sidebarRef}
         className={cn(
           "relative z-20 transition-all duration-300 ease-out overflow-hidden",
           isMobile ? "hidden" : "block",
           isCollapsed ? "w-0" : "w-[240px]"
         )}
-        onMouseDown={handleMouseDown}
-        style={{ cursor: isDragging ? "grabbing" : "grab" }}
       >
         <div className="w-[240px] h-full bg-muted/40">{sidebar}</div>
       </div>
