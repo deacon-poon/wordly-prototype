@@ -28,7 +28,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="bg-white border-r border-gray-200">
+    <Sidebar className="">
       <SidebarHeader className="flex items-center justify-start px-4">
         <div className="flex items-center">
           <Image

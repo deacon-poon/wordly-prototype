@@ -93,50 +93,44 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
       : "Dashboard");
 
   return (
-    <header className="flex sticky top-0 h-14 shrink-0 items-center gap-2 px-6 z-20 shadow-sm bg-gradient-to-r from-primary-teal-200 via-primary-teal-400 to-secondary-navy-200 w-full">
-      {/* Left Section */}
-      <div className="flex items-center gap-2">
+    <header className="border-b">
+      <div className="flex h-16 items-center px-4">
+        {/* Left Section */}
         <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-      </div>
+        <Separator orientation="vertical" className="mx-4 h-6" />
 
-      <Breadcrumb className="hidden md:flex">
-        <BreadcrumbList className="text-secondary-navy-700">
-          {breadcrumbItems.map((item, index) => (
-            <React.Fragment key={index}>
-              <BreadcrumbItem>
-                {item.active ? (
-                  <BreadcrumbPage className="font-medium text-secondary-navy-900">
-                    {item.label}
-                  </BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink
-                    href={item.href}
-                    className="text-secondary-navy-600 hover:text-secondary-navy-900 transition-colors duration-200"
-                  >
-                    {item.label}
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-              {index < breadcrumbItems.length - 1 && (
-                <BreadcrumbSeparator className="text-secondary-navy-500" />
-              )}
-            </React.Fragment>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
+        <Breadcrumb className="hidden md:flex">
+          <BreadcrumbList>
+            {breadcrumbItems.map((item, index) => (
+              <React.Fragment key={index}>
+                <BreadcrumbItem>
+                  {item.active ? (
+                    <BreadcrumbPage className="font-medium">
+                      {item.label}
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink
+                      href={item.href}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {item.label}
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+                {index < breadcrumbItems.length - 1 && <BreadcrumbSeparator />}
+              </React.Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-3 ml-auto">
-        {/* Notification Bell */}
-        <div className="relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 hover:bg-white/20"
-          >
-            <Bell className="h-5 w-5 text-white hover:text-white/90 transition-colors" />
-            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-accent-green-400"></span>
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Right Section */}
+        <div className="flex items-center gap-2">
+          {/* Notification Bell */}
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Bell className="h-4 w-4" />
             <span className="sr-only">Notifications</span>
           </Button>
         </div>

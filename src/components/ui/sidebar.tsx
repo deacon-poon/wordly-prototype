@@ -3,10 +3,11 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { PanelLeftIcon, Menu, ChevronLeft, ChevronRight } from "lucide-react";
+import { PanelLeft, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   toggleSidebar,
+  setSidebarCollapsed,
   selectSidebarCollapsed,
 } from "@/store/slices/sidebarSlice";
 
@@ -89,15 +90,25 @@ function SidebarTrigger({ className, ...props }: SidebarTriggerProps) {
   const dispatch = useDispatch();
   const isCollapsed = useSelector(selectSidebarCollapsed);
 
+  const handleClick = () => {
+    if (isCollapsed) {
+      // When collapsed, always expand
+      dispatch(setSidebarCollapsed(false));
+    } else {
+      // When expanded, toggle normally
+      dispatch(toggleSidebar());
+    }
+  };
+
   return (
     <Button
       variant="ghost"
       size="icon"
       className={cn("h-9 w-9 p-0 hover:bg-primary-teal-50", className)}
-      onClick={() => dispatch(toggleSidebar())}
+      onClick={handleClick}
       {...props}
     >
-      <Menu className="h-4 w-4 text-secondary-navy-600 hover:text-primary-teal-600 transition-colors" />
+      <PanelLeft className="h-4 w-4 text-secondary-navy-600 hover:text-primary-teal-600 transition-colors" />
       <span className="sr-only">Toggle sidebar</span>
     </Button>
   );
@@ -115,7 +126,7 @@ function SidebarInset({ children, className }: SidebarInsetProps) {
 }
 
 const sidebarVariants = cva(
-  "fixed inset-y-0 left-0 z-10 h-full flex-col border-r bg-white",
+  "fixed inset-y-0 left-0 z-10 h-full flex-col bg-muted/40",
   {
     variants: {
       collapsible: {
@@ -147,7 +158,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       <aside
         ref={ref}
         className={cn(
-          "flex flex-col h-screen text-gray-800 border-r shadow-md will-change-[width] bg-white",
+          "flex flex-col h-screen text-gray-800 will-change-[width] bg-muted/40",
           {
             "w-[70px] transition-[width] duration-300 ease-in-out": isCollapsed,
             "w-[240px] transition-[width] duration-300 ease-in-out":

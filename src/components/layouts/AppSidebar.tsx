@@ -44,7 +44,7 @@ export function AppSidebar() {
 
   // Desktop sidebar
   const DesktopSidebar = (
-    <Sidebar className="flex flex-col h-screen border-r shadow-sm z-30">
+    <Sidebar className="flex flex-col h-screen z-30">
       <SidebarHeader className="flex items-center justify-start px-4">
         <div className="flex items-center">
           <Image
@@ -75,7 +75,10 @@ export function AppSidebar() {
       open={!isCollapsed}
       onOpenChange={(open) => dispatch(setSidebarCollapsed(!open))}
     >
-      <SheetContent side="left" className="p-0 w-[280px] sm:max-w-none">
+      <SheetContent
+        side="left"
+        className="p-0 w-[280px] sm:max-w-none bg-muted/40 border-0"
+      >
         <SheetHeader className="px-4 py-2 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center">

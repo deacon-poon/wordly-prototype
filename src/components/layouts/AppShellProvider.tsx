@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AppShell } from "./AppShell";
 import { AppHeader } from "../app-header";
-import { AppSidebar } from "../app-sidebar";
+import { AppSidebar } from "./AppSidebar";
 
 interface RightPanelState {
   isOpen: boolean;
