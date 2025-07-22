@@ -72,7 +72,7 @@ export function AppShell({
   }, [width]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/40">
+    <div className="flex h-screen overflow-hidden bg-white">
       {/* Sidebar */}
       <div
         className={cn(
@@ -81,17 +81,17 @@ export function AppShell({
           isCollapsed ? "w-0" : "w-[240px]"
         )}
       >
-        <div className="w-[240px] h-full bg-muted/40">{sidebar}</div>
+        <div className="w-[240px] h-full bg-gray-50">{sidebar}</div>
       </div>
 
       {/* Main content area - unified elevated container */}
-      <div className="flex-1 flex flex-col overflow-hidden p-4">
-        <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="flex-1 flex flex-col p-4">
+        <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm border">
           {/* Header integrated into the elevated container */}
           <div className="border-b border-gray-200">{header}</div>
 
           {/* Content area with optional right panel */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-auto">
             {isClient && showRightPanel && rightPanel ? (
               !isMobile ? (
                 // Desktop: Use resizable panels
