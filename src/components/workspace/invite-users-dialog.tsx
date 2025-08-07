@@ -232,12 +232,74 @@ export function InviteUsersDialog({
     }
   };
 
+  // Helper function to find fuzzy matches for highlighting
+  const getFuzzyMatches = (text: string, query: string): number[] => {
+    if (!query || query.length < 2) return [];
+
+    const textLower = text.toLowerCase();
+    const queryLower = query.toLowerCase();
+    const queryChars = queryLower.split("");
+
+    let textIndex = 0;
+    let queryIndex = 0;
+    const matches: number[] = [];
+
+    while (textIndex < textLower.length && queryIndex < queryChars.length) {
+      if (textLower[textIndex] === queryChars[queryIndex]) {
+        matches.push(textIndex);
+        queryIndex++;
+      }
+      textIndex++;
+    }
+
+    return queryIndex === queryChars.length ? matches : [];
+  };
+
+  // Highlight matched characters
+  const highlightText = (text: string, query: string) => {
+    const matches = getFuzzyMatches(text, query);
+    if (matches.length === 0) return text;
+
+    const parts = [];
+    let lastIndex = 0;
+
+    matches.forEach((matchIndex) => {
+      if (matchIndex > lastIndex) {
+        parts.push(text.slice(lastIndex, matchIndex));
+      }
+      parts.push(
+        <mark
+          key={matchIndex}
+          className="bg-yellow-200 text-yellow-900 px-0.5 rounded"
+        >
+          {text[matchIndex]}
+        </mark>
+      );
+      lastIndex = matchIndex + 1;
+    });
+
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts;
+  };
+
+  // Original filtering with fuzzy search added
   const filteredUsers = existingUsers.filter((user) => {
+    // Show all users when no search query or less than 2 characters
+    if (searchQuery.length < 2) return true;
+
     const query = searchQuery.toLowerCase();
-    return (
+    const hasFuzzyNameMatch =
+      getFuzzyMatches(user.name, searchQuery).length > 0;
+    const hasFuzzyEmailMatch =
+      getFuzzyMatches(user.email, searchQuery).length > 0;
+    const hasBasicMatch =
       user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query)
-    );
+      user.email.toLowerCase().includes(query);
+
+    return hasFuzzyNameMatch || hasFuzzyEmailMatch || hasBasicMatch;
   });
 
   const isValidEmail = (email: string) => {
@@ -585,10 +647,10 @@ export function InviteUsersDialog({
                                   </div>
                                   <div className="flex flex-col">
                                     <span className="font-medium text-sm">
-                                      {user.name}
+                                      {highlightText(user.name, searchQuery)}
                                     </span>
                                     <span className="text-xs text-gray-500">
-                                      {user.email}
+                                      {highlightText(user.email, searchQuery)}
                                     </span>
                                   </div>
                                 </div>

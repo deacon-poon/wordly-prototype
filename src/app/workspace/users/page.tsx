@@ -240,10 +240,10 @@ export default function UsersPage() {
 
   // Define the actions for the CardHeaderLayout
   const actions = (
-    <div className="flex gap-2">
+    <div className="flex flex-col sm:flex-row gap-2">
       <Button
         variant="outline"
-        className="border-red-300 text-red-700 hover:bg-red-50"
+        className="border-red-300 text-red-700 hover:bg-red-50 w-full sm:w-auto"
         onClick={() => setIsDeleteDialogOpen(true)}
       >
         <Trash2 className="h-4 w-4 mr-2" />
@@ -251,7 +251,7 @@ export default function UsersPage() {
       </Button>
       <Button
         variant="default"
-        className="bg-brand-teal hover:bg-brand-teal/90 text-white"
+        className="bg-brand-teal hover:bg-brand-teal/90 text-white w-full sm:w-auto"
         onClick={() => setIsInviteDialogOpen(true)}
       >
         <UserPlus className="h-4 w-4 mr-2" />
@@ -268,7 +268,8 @@ export default function UsersPage() {
         actions={actions}
       >
         <div className="p-0 -m-6">
-          <Table>
+          {/* Desktop Table View */}
+          <Table className="hidden md:table">
             <TableHeader className="bg-gray-50">
               <TableRow>
                 <TableHead>
@@ -287,7 +288,9 @@ export default function UsersPage() {
                     Role
                   </Button>
                 </TableHead>
-                <TableHead></TableHead>
+                <TableHead className="w-[100px]">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -331,18 +334,18 @@ export default function UsersPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
+                          <Badge
                             variant="outline"
                             className={`${getRoleBadgeClass(
                               user.role
-                            )} font-normal h-auto px-2 py-1 cursor-pointer hover:bg-gray-100/70 transition-colors duration-150 border`}
+                            )} cursor-pointer hover:bg-opacity-80 border-opacity-50 hover:border-opacity-100 transition-all duration-200`}
                           >
                             <div className="flex items-center gap-1">
                               {getRoleIcon(user.role)}
                               <span>{user.role}</span>
-                              <ChevronDown className="h-3 w-3 ml-1 text-gray-500" />
+                              <ChevronDown className="h-3 w-3 ml-1" />
                             </div>
-                          </Button>
+                          </Badge>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
                           <DropdownMenuItem
@@ -395,6 +398,111 @@ export default function UsersPage() {
               )}
             </TableBody>
           </Table>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4 p-4">
+            {users.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No users found.
+              </div>
+            ) : (
+              users.map((user) => (
+                <div
+                  key={user.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+                >
+                  {/* User Info */}
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-gray-100 text-gray-600">
+                        {user.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center">
+                        <span className="text-gray-900 font-medium">
+                          {user.name}
+                        </span>
+                        {user.isCurrentUser && (
+                          <span className="text-gray-500 font-normal text-xs ml-1">
+                            (you)
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-gray-500 text-sm">
+                        {user.email}
+                      </span>
+                    </div>
+                    {!user.isCurrentUser && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveUser(user.id)}
+                        className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                      >
+                        <XCircle className="h-5 w-5" />
+                        <span className="sr-only">Remove user</span>
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Role Section */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <span className="text-sm text-gray-600 font-medium">
+                      Role
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Badge
+                          variant="outline"
+                          className={`${getRoleBadgeClass(
+                            user.role
+                          )} cursor-pointer hover:bg-opacity-80 border-opacity-50 hover:border-opacity-100 transition-all duration-200`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {getRoleIcon(user.role)}
+                            <span>{user.role}</span>
+                            <ChevronDown className="h-3 w-3 ml-1" />
+                          </div>
+                        </Badge>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleRoleChange(user.id, "Administrator")
+                          }
+                          className={
+                            user.role === "Administrator" ? "bg-gray-100" : ""
+                          }
+                        >
+                          <ShieldCheck className="h-4 w-4 mr-2" />
+                          Administrator
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRoleChange(user.id, "Editor")}
+                          className={
+                            user.role === "Editor" ? "bg-gray-100" : ""
+                          }
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Editor
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRoleChange(user.id, "Viewer")}
+                          className={
+                            user.role === "Viewer" ? "bg-gray-100" : ""
+                          }
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Viewer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </CardHeaderLayout>
 

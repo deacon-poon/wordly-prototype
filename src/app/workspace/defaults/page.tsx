@@ -31,13 +31,13 @@ export default function SessionDefaultsPage() {
     >
       <div className="space-y-6 relative pb-24">
         {/* Minutes Pool */}
-        <div className="grid grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="pt-2">
             <Label htmlFor="minutes-pool" className="font-medium">
               Pool of minutes:
             </Label>
           </div>
-          <div className="col-span-2 space-y-1">
+          <div className="col-span-1 md:col-span-2 space-y-1">
             <div className="relative">
               <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <span>{minutesPool}</span>
@@ -54,26 +54,28 @@ export default function SessionDefaultsPage() {
         <Separator />
 
         {/* Glossary */}
-        <div className="grid grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="pt-2">
             <Label htmlFor="glossary" className="font-medium">
               Glossary:
             </Label>
           </div>
-          <div className="col-span-2 space-y-1">
-            <div className="flex items-center space-x-2">
-              <div className="relative flex-1">
+          <div className="col-span-1 md:col-span-2 space-y-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:space-x-2 sm:gap-0">
+              <div className="relative flex-1 w-full">
                 <div className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                   <span>{glossary}</span>
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </div>
               </div>
-              <Button variant="outline" className="whitespace-nowrap">
-                edit glossary
-              </Button>
-              <Button variant="outline" className="whitespace-nowrap">
-                share glossary
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button variant="outline" className="whitespace-nowrap">
+                  edit glossary
+                </Button>
+                <Button variant="outline" className="whitespace-nowrap">
+                  share glossary
+                </Button>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground">
               A glossary allows you to tweak the transcription/translation for
@@ -85,11 +87,11 @@ export default function SessionDefaultsPage() {
         <Separator />
 
         {/* Save Transcript */}
-        <div className="grid grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="pt-2">
             <Label className="font-medium">Save transcript?*</Label>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1 md:col-span-2">
             <RadioGroup
               defaultValue={saveTranscript}
               onValueChange={(value) => setSaveTranscript(value)}
@@ -114,11 +116,11 @@ export default function SessionDefaultsPage() {
         <Separator />
 
         {/* Require Attendee Passcode */}
-        <div className="grid grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="pt-2">
             <Label className="font-medium">Require attendee Passcode?*</Label>
           </div>
-          <div className="col-span-2">
+          <div className="col-span-1 md:col-span-2">
             <RadioGroup
               defaultValue={requirePasscode ? "yes" : "no"}
               onValueChange={(value) => setRequirePasscode(value === "yes")}
@@ -139,11 +141,11 @@ export default function SessionDefaultsPage() {
         <Separator />
 
         {/* Voice Pack */}
-        <div className="grid grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="pt-2">
             <Label className="font-medium">Voice pack:*</Label>
           </div>
-          <div className="col-span-2 space-y-2">
+          <div className="col-span-1 md:col-span-2 space-y-2">
             <RadioGroup
               defaultValue={voicePack}
               onValueChange={(value) => setVoicePack(value)}
@@ -167,11 +169,11 @@ export default function SessionDefaultsPage() {
         <Separator />
 
         {/* Language Selection */}
-        <div className="grid grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="pt-2">
             <Label className="font-medium">Language selection</Label>
           </div>
-          <div className="col-span-2 space-y-4">
+          <div className="col-span-1 md:col-span-2 space-y-4">
             <p className="text-sm text-muted-foreground">
               Any supported languages can be manually selected by speakers
               during the event. These settings enable quick selection. (Add only
@@ -233,10 +235,10 @@ export default function SessionDefaultsPage() {
         </div>
 
         {/* Fixed position Save button at bottom */}
-        <div className="absolute bottom-0 right-0">
+        <div className="absolute bottom-0 right-0 md:relative md:bottom-auto md:right-auto md:flex md:justify-end">
           <Button
             variant="default"
-            className="bg-brand-teal hover:bg-brand-teal/90 text-white px-6"
+            className="bg-brand-teal hover:bg-brand-teal/90 text-white px-6 w-full md:w-auto"
           >
             Save Changes
           </Button>
