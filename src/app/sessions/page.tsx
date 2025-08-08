@@ -45,6 +45,7 @@ import {
   type TableColumn,
 } from "@/components/ui/data-table";
 import { useAppShell } from "@/components/layouts/AppShellProvider";
+import { SessionJoinModal } from "@/components/ui/session-join-modal";
 
 // Define the session type
 interface Session {
@@ -141,6 +142,8 @@ export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<Session | undefined>(
     undefined
   );
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [joinSessionId, setJoinSessionId] = useState<string>("");
   const { openRightPanel, closeRightPanel } = useAppShell();
 
   const handleSessionSelect = (session: Session) => {
@@ -149,17 +152,56 @@ export default function SessionsPage() {
     openRightPanel("Session Details", renderSessionDetails(session));
   };
 
+  const handleJoinSession = (sessionId?: string) => {
+    setJoinSessionId(sessionId || "");
+    setIsJoinModalOpen(true);
+  };
+
+  const handleJoinAsPresenter = (method: string) => {
+    console.log(
+      `Joining session ${joinSessionId} as presenter with method: ${method}`
+    );
+    // Here you would implement the actual join logic
+    // For example: router.push(`/present/${joinSessionId}?method=${method}`);
+    alert(
+      `Joining session ${joinSessionId} as presenter with method: ${method}`
+    );
+    setIsJoinModalOpen(false);
+  };
+
+  const handleJoinAsAttendee = (method: string) => {
+    console.log(
+      `Joining session ${joinSessionId} as attendee with method: ${method}`
+    );
+    // Here you would implement the actual join logic
+    // For example: router.push(`/attend/${joinSessionId}?method=${method}`);
+    alert(
+      `Joining session ${joinSessionId} as attendee with method: ${method}`
+    );
+    setIsJoinModalOpen(false);
+  };
+
   const renderSessionDetails = (session: Session) => {
     return (
       <div className="space-y-4">
         {/* Session summary */}
         <div>
           <h2 className="text-xl font-semibold mb-1">{session.title}</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-3">
             <Hash className="w-4 h-4 text-gray-400" />
             <p className="text-sm text-gray-500">{session.id}</p>
             <StatusBadge status={session.status} />
           </div>
+
+          {/* Join Session Button */}
+          <Button
+            onClick={() => handleJoinSession(session.id)}
+            className="w-full bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            size="sm"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Join Session
+          </Button>
         </div>
 
         {/* Session details in two columns */}
@@ -321,6 +363,26 @@ export default function SessionsPage() {
       ),
       className: "text-right",
     },
+    {
+      header: "",
+      accessorKey: "actions",
+      cell: (row) => (
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleJoinSession(row.id);
+            }}
+            className="h-8 w-8 p-0 hover:bg-primary-teal-50"
+          >
+            <Users className="h-4 w-4 text-primary-teal-600" />
+          </Button>
+        </div>
+      ),
+      className: "w-[50px]",
+    },
   ];
 
   return (
@@ -339,6 +401,17 @@ export default function SessionsPage() {
           <ListFilter className="h-4 w-4 mr-2" />
           <span>Details Panel</span>
         </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => handleJoinSession()}
+            className="h-9 bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            size="sm"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            <span>Join Session</span>
+          </Button>
+        </div>
 
         <div className="flex grow items-center justify-end gap-2">
           <div className="flex items-center w-full md:w-auto">
@@ -423,6 +496,15 @@ export default function SessionsPage() {
           </Card>
         </div>
       </div>
+
+      {/* Session Join Modal */}
+      <SessionJoinModal
+        open={isJoinModalOpen}
+        onOpenChange={setIsJoinModalOpen}
+        sessionId={joinSessionId}
+        onJoinAsPresenter={handleJoinAsPresenter}
+        onJoinAsAttendee={handleJoinAsAttendee}
+      />
     </div>
   );
 }
