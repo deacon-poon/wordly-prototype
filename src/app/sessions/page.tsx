@@ -46,6 +46,8 @@ import {
 } from "@/components/ui/data-table";
 import { useAppShell } from "@/components/layouts/AppShellProvider";
 import { SessionJoinModal } from "@/components/ui/session-join-modal";
+import { SessionJoinModalCompact } from "@/components/ui/session-join-modal-compact";
+import { BotRemoteControl } from "@/components/ui/bot-remote-control";
 
 // Define the session type
 interface Session {
@@ -65,6 +67,9 @@ interface Session {
   selections?: string[];
   voicePack?: string;
   autoSelect?: boolean;
+  sessionType?: "bot" | "present-app" | "rtmps" | "mixed";
+  sessionName?: string;
+  description?: string;
 }
 
 const mockSessions: Session[] = [
@@ -85,6 +90,9 @@ const mockSessions: Session[] = [
     selections: ["Arabic", "Chinese (Simplified)"],
     voicePack: "Voice Pack 1",
     autoSelect: true,
+    sessionType: "bot",
+    sessionName: "Teams Meeting Bot",
+    description: "Weekly sync via Teams with bot transcription",
   },
   {
     id: "SES-002",
@@ -97,6 +105,9 @@ const mockSessions: Session[] = [
     presenter: "Marketing Team",
     account: "Deacon Poon (2a49e)",
     language: "English (US)",
+    sessionType: "present-app",
+    sessionName: "Conference Room Microphone",
+    description: "In-person meeting with podium mic",
   },
   {
     id: "SES-003",
@@ -109,6 +120,9 @@ const mockSessions: Session[] = [
     presenter: "Executive Team",
     account: "Deacon Poon (2a49e)",
     language: "English (US)",
+    sessionType: "rtmps",
+    sessionName: "Livestream RTMPS Feed",
+    description: "Board meeting streamed via RTMPS",
   },
   {
     id: "SES-004",
@@ -121,6 +135,9 @@ const mockSessions: Session[] = [
     presenter: "Sales Lead",
     account: "Deacon Poon (2a49e)",
     language: "English (US)",
+    sessionType: "mixed",
+    sessionName: "Hybrid: Bot + Present App",
+    description: "Both in-person and remote attendees",
   },
   {
     id: "SES-005",
@@ -133,6 +150,9 @@ const mockSessions: Session[] = [
     presenter: "Customer Success",
     account: "Deacon Poon (2a49e)",
     language: "English (US)",
+    sessionType: "present-app",
+    sessionName: "Town Hall Public Comment",
+    description: "Public speakers at podium microphone",
   },
 ];
 
@@ -144,6 +164,11 @@ export default function SessionsPage() {
   );
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [joinSessionId, setJoinSessionId] = useState<string>("");
+  const [activeBotSession, setActiveBotSession] = useState<string | null>(null);
+  const [activeSessionData, setActiveSessionData] = useState<Session | null>(
+    null
+  );
+  const [useCompactModal, setUseCompactModal] = useState(true);
   const { openRightPanel, closeRightPanel } = useAppShell();
 
   const handleSessionSelect = (session: Session) => {
@@ -153,7 +178,11 @@ export default function SessionsPage() {
   };
 
   const handleJoinSession = (sessionId?: string) => {
+    const session = sessionId
+      ? mockSessions.find((s) => s.id === sessionId)
+      : null;
     setJoinSessionId(sessionId || "");
+    setActiveSessionData(session || null);
     setIsJoinModalOpen(true);
   };
 
@@ -161,11 +190,28 @@ export default function SessionsPage() {
     console.log(
       `Joining session ${joinSessionId} as presenter with method: ${method}`
     );
-    // Here you would implement the actual join logic
-    // For example: router.push(`/present/${joinSessionId}?method=${method}`);
-    alert(
-      `Joining session ${joinSessionId} as presenter with method: ${method}`
-    );
+
+    // If it's a bot invite, show the remote control
+    if (method === "invite-bot") {
+      // If no specific session ID, use a default one
+      const sessionId = joinSessionId || "SSOD-5071";
+      setActiveBotSession(sessionId);
+      alert(
+        `Bot invited to session ${sessionId}! Remote control is now active.`
+      );
+    } else {
+      // For direct joining, show the appropriate remote control
+      const sessionId = joinSessionId || "SSOD-5071";
+      setActiveBotSession(sessionId);
+
+      const sessionType = activeSessionData?.sessionType || "present-app";
+      const sessionName = activeSessionData?.sessionName || "Remote Session";
+
+      alert(
+        `Joined ${sessionName} as presenter! Remote control is now active.`
+      );
+    }
+
     setIsJoinModalOpen(false);
   };
 
@@ -411,6 +457,26 @@ export default function SessionsPage() {
             <Users className="h-4 w-4 mr-2" />
             <span>Join Session</span>
           </Button>
+
+          {/* Modal Version Toggle */}
+          <Button
+            onClick={() => setUseCompactModal(!useCompactModal)}
+            variant="outline"
+            size="sm"
+            className="h-9"
+            title={`Switch to ${
+              useCompactModal ? "detailed" : "compact"
+            } modal`}
+          >
+            <ToggleLeft
+              className={`h-4 w-4 mr-1 ${
+                useCompactModal ? "rotate-180" : ""
+              } transition-transform`}
+            />
+            <span className="text-xs">
+              {useCompactModal ? "Compact" : "Detailed"}
+            </span>
+          </Button>
         </div>
 
         <div className="flex grow items-center justify-end gap-2">
@@ -498,12 +564,47 @@ export default function SessionsPage() {
       </div>
 
       {/* Session Join Modal */}
-      <SessionJoinModal
-        open={isJoinModalOpen}
-        onOpenChange={setIsJoinModalOpen}
-        sessionId={joinSessionId}
-        onJoinAsPresenter={handleJoinAsPresenter}
-        onJoinAsAttendee={handleJoinAsAttendee}
+      {useCompactModal ? (
+        <SessionJoinModalCompact
+          open={isJoinModalOpen}
+          onOpenChange={setIsJoinModalOpen}
+          sessionId={joinSessionId}
+          onJoinAsPresenter={handleJoinAsPresenter}
+          onJoinAsAttendee={handleJoinAsAttendee}
+        />
+      ) : (
+        <SessionJoinModal
+          open={isJoinModalOpen}
+          onOpenChange={setIsJoinModalOpen}
+          sessionId={joinSessionId}
+          onJoinAsPresenter={handleJoinAsPresenter}
+          onJoinAsAttendee={handleJoinAsAttendee}
+        />
+      )}
+
+      {/* Bot Remote Control */}
+      <BotRemoteControl
+        sessionId={activeBotSession || ""}
+        sessionName={activeSessionData?.sessionName || "Remote Session"}
+        sessionType={activeSessionData?.sessionType || "present-app"}
+        isActive={!!activeBotSession}
+        onEndSession={() => {
+          setActiveBotSession(null);
+          setActiveSessionData(null);
+          alert("Session ended remotely");
+        }}
+        onClose={() => {
+          setActiveBotSession(null);
+          setActiveSessionData(null);
+        }}
+        onListenToAudio={() => {
+          const sessionName = activeSessionData?.sessionName || "session";
+          alert(`Now listening to ${sessionName} audio...`);
+        }}
+        onLanguageChange={(language) => {
+          const sessionName = activeSessionData?.sessionName || "session";
+          alert(`Language changed to ${language} for ${sessionName}`);
+        }}
       />
     </div>
   );

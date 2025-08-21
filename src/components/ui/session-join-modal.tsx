@@ -12,7 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import {
   Accordion,
   AccordionContent,
@@ -38,6 +47,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface SessionJoinModalProps {
   open: boolean;
@@ -45,6 +55,11 @@ interface SessionJoinModalProps {
   sessionId?: string;
   onJoinAsPresenter: (method: string) => void;
   onJoinAsAttendee: (method: string) => void;
+}
+
+interface BotInviteFormProps {
+  onSubmit: (data: { language: string; meetingLink: string }) => void;
+  onCancel: () => void;
 }
 
 interface JoinOptionProps {
@@ -146,6 +161,128 @@ function JoinOption({
   );
 }
 
+function BotInviteForm({ onSubmit, onCancel }: BotInviteFormProps) {
+  const [language, setLanguage] = useState("");
+  const [meetingLink, setMeetingLink] = useState("");
+  const [error, setError] = useState("");
+
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!language) {
+      setError("Please select a language");
+      return;
+    }
+
+    if (!meetingLink.trim()) {
+      setError("Please enter a meeting link");
+      return;
+    }
+
+    if (!isValidUrl(meetingLink.trim())) {
+      setError(
+        "Please enter a valid URL (e.g., https://teams.microsoft.com/...)"
+      );
+      return;
+    }
+
+    onSubmit({ language, meetingLink: meetingLink.trim() });
+  };
+
+  const languages = [
+    { value: "en-US", label: "English (US)" },
+    { value: "es", label: "Spanish" },
+    { value: "fr", label: "French" },
+    { value: "de", label: "German" },
+    { value: "it", label: "Italian" },
+    { value: "pt", label: "Portuguese" },
+    { value: "zh", label: "Chinese" },
+    { value: "ja", label: "Japanese" },
+    { value: "ko", label: "Korean" },
+    { value: "ar", label: "Arabic" },
+  ];
+
+  return (
+    <Card className="border-primary-teal-200 bg-primary-teal-50/50">
+      <CardHeader>
+        <CardTitle className="text-primary-teal-700 flex items-center gap-2">
+          <Video className="w-5 h-5" />
+          Invite Wordly to a Meeting
+        </CardTitle>
+        <p className="text-sm text-gray-600">
+          Enter a Microsoft Teams, Google Meet, or Zoom link and click Invite to
+          have Wordly attend your meeting.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="language">Language</Label>
+            <Select value={language} onValueChange={setLanguage} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a language" />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="meetingLink">Meeting link</Label>
+            <Input
+              id="meetingLink"
+              type="text"
+              value={meetingLink}
+              onChange={(e) => setMeetingLink(e.target.value)}
+              placeholder="https://teams.microsoft.com/l/meetup-join/..."
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">
+              {error}
+            </div>
+          )}
+
+          <p className="text-xs text-gray-500">
+            Please note that it may take up to 30 seconds for Wordly to join
+            your meeting.
+          </p>
+
+          <div className="flex gap-2 pt-2">
+            <Button
+              type="submit"
+              disabled={!language || !meetingLink.trim()}
+              className="bg-primary-teal-600 hover:bg-primary-teal-700"
+            >
+              Invite
+            </Button>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function SessionJoinModal({
   open,
   onOpenChange,
@@ -153,10 +290,26 @@ export function SessionJoinModal({
   onJoinAsPresenter,
   onJoinAsAttendee,
 }: SessionJoinModalProps) {
+  const [showBotInvite, setShowBotInvite] = useState(false);
+
   const handleCopySessionId = () => {
     if (sessionId) {
       navigator.clipboard.writeText(sessionId);
     }
+  };
+
+  const handleBotInviteSubmit = (data: {
+    language: string;
+    meetingLink: string;
+  }) => {
+    console.log("Bot invite data:", data);
+    // Here you would call the actual API to invite the bot
+    onJoinAsPresenter("invite-bot");
+    setShowBotInvite(false);
+  };
+
+  const handleBotInviteCancel = () => {
+    setShowBotInvite(false);
   };
 
   return (
@@ -186,39 +339,24 @@ export function SessionJoinModal({
           )}
         </DialogHeader>
 
-        <Tabs defaultValue="presenter" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger
-              value="presenter"
-              className="data-[state=active]:bg-primary-teal-100 data-[state=active]:text-primary-teal-700"
-            >
-              <Mic className="w-4 h-4 mr-2" />
-              Join as Presenter
-            </TabsTrigger>
-            <TabsTrigger
-              value="attendee"
-              className="data-[state=active]:bg-accent-green-100 data-[state=active]:text-accent-green-700"
-            >
-              <Smartphone className="w-4 h-4 mr-2" />
-              Join as Attendee
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Presenter Tab */}
-          <TabsContent value="presenter" className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-primary-teal-700 mb-2">
-                Send Audio to Wordly
-              </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Presenter Section */}
+          <div className="space-y-6">
+            <div className="text-center lg:text-left">
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                <div className="w-3 h-3 bg-primary-teal-500 rounded-full"></div>
+                <h3 className="text-xl font-semibold text-primary-teal-700">
+                  Join as Presenter
+                </h3>
+              </div>
               <p className="text-gray-600">
-                Choose how you'll present and send audio for real-time
-                interpretation
+                Send audio to Wordly for real-time interpretation
               </p>
               {sessionId && (
-                <div className="flex items-center justify-center gap-2 mt-3 p-3 bg-primary-teal-50 rounded-lg">
+                <div className="flex items-center justify-center lg:justify-start gap-2 mt-3 p-3 bg-primary-teal-50 rounded-lg">
                   <Key className="w-4 h-4 text-primary-teal-600" />
                   <span className="text-sm font-medium text-primary-teal-700">
-                    Session Passcode: {sessionId}
+                    Passcode: {sessionId}
                   </span>
                   <Button
                     variant="ghost"
@@ -232,7 +370,7 @@ export function SessionJoinModal({
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <JoinOption
                 title="In-Person Event"
                 description="Present live at an event with your microphone"
@@ -248,16 +386,24 @@ export function SessionJoinModal({
 
               <JoinOption
                 title="Video Meeting"
-                description="Join from Teams, WebEx, Google Meet, Zoom, etc."
+                description="Invite Wordly bot to Microsoft Teams, WebEx, Google Meet, etc."
                 illustration="/asset/illustration/video-meeting.png"
                 icon={<Video className="w-5 h-5" />}
-                onPrimaryAction={() => onJoinAsPresenter("video-meeting")}
-                onSecondaryAction={() => onJoinAsPresenter("zoom-integration")}
-                primaryLabel="Connect Video Platform"
-                secondaryLabel="Zoom Integration"
+                onPrimaryAction={() => setShowBotInvite(true)}
+                onSecondaryAction={() => onJoinAsPresenter("meeting-setup")}
+                primaryLabel="Invite the Wordly bot to your video meeting"
+                secondaryLabel="Advanced Setup"
                 variant="presenter"
               />
             </div>
+
+            {/* Bot Invite Form */}
+            {showBotInvite && (
+              <BotInviteForm
+                onSubmit={handleBotInviteSubmit}
+                onCancel={handleBotInviteCancel}
+              />
+            )}
 
             {/* Advanced Presenter Options */}
             <Accordion type="single" collapsible className="w-full">
@@ -267,7 +413,7 @@ export function SessionJoinModal({
                   Advanced Setup Options
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
                     <Card className="border-primary-teal-200">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -311,22 +457,25 @@ export function SessionJoinModal({
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </TabsContent>
+          </div>
 
-          {/* Attendee Tab */}
-          <TabsContent value="attendee" className="space-y-6">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-accent-green-700 mb-2">
-                Access Translations from Wordly
-              </h3>
+          {/* Attendee Section */}
+          <div className="space-y-6">
+            <div className="text-center lg:text-left">
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                <div className="w-3 h-3 bg-accent-green-500 rounded-full"></div>
+                <h3 className="text-xl font-semibold text-accent-green-700">
+                  Join as Attendee
+                </h3>
+              </div>
               <p className="text-gray-600">
-                Choose how you'd like to receive real-time translations
+                Access real-time translations from Wordly
               </p>
               {sessionId && (
-                <div className="flex items-center justify-center gap-2 mt-3 p-3 bg-accent-green-50 rounded-lg">
+                <div className="flex items-center justify-center lg:justify-start gap-2 mt-3 p-3 bg-accent-green-50 rounded-lg">
                   <Globe className="w-4 h-4 text-accent-green-600" />
                   <span className="text-sm font-medium text-accent-green-700">
-                    Attendee Link: https://attend.wordly.ai/join/{sessionId}
+                    Link: https://attend.wordly.ai/join/{sessionId}
                   </span>
                   <Button
                     variant="ghost"
@@ -344,7 +493,7 @@ export function SessionJoinModal({
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <JoinOption
                 title="Join on Your Device"
                 description="Use smartphone, tablet, or computer to access translations"
@@ -452,8 +601,8 @@ export function SessionJoinModal({
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
 
         {/* Zoom Integration Section */}
         <div className="border-t pt-6 mt-6">

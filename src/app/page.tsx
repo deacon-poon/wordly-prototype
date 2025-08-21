@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  // Redirect to sessions as the default page
-  redirect("/sessions");
+  // For logged-in users, redirect to sessions. For now, show the landing page.
+  // redirect("/sessions");
 
   return (
     <div className="flex min-h-screen flex-col">
