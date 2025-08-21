@@ -28,6 +28,9 @@ import {
   Pin,
   Volume2,
   Mic,
+  FileText,
+  Download,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,119 +43,113 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  DataTable,
   StatusBadge,
-  type TableColumn,
 } from "@/components/ui/data-table";
 import { useAppShell } from "@/components/layouts/AppShellProvider";
 import { SessionJoinModal } from "@/components/ui/session-join-modal";
 import { SessionJoinModalCompact } from "@/components/ui/session-join-modal-compact";
-import { BotRemoteControl } from "@/components/ui/bot-remote-control";
 
 // Define the session type
 interface Session {
   id: string;
   title: string;
-  date: string;
-  time: string;
-  duration: number;
-  attendees: number;
-  status: string;
-  presenter?: string;
-  account?: string;
-  passcode?: string;
-  language?: string;
-  access?: string;
-  pinned?: boolean;
-  selections?: string[];
-  voicePack?: string;
-  autoSelect?: boolean;
+  passcode: string;
+  dateTime: string; // Combined date and time
+  status: "RUNNING" | "SCHEDULED" | "COMPLETED";
   sessionType?: "bot" | "present-app" | "rtmps" | "mixed";
-  sessionName?: string;
-  description?: string;
+  // Remote control data for running sessions
+  inputs?: SessionInput[];
+  languages?: string[];
+  activeLanguages?: string[];
+  hasAutoSelect?: boolean;
+}
+
+interface SessionInput {
+  id: string;
+  name: string;
+  type: "rtmps" | "teams-bot" | "microphone";
+  status: "active" | "inactive";
 }
 
 const mockSessions: Session[] = [
+  // Currently running sessions
   {
-    id: "SES-001",
-    title: "Product Team Weekly",
-    date: "2023-04-12",
-    time: "10:00 AM",
-    duration: 60,
-    attendees: 8,
-    status: "COMPLETED",
-    presenter: "Deacon Poon",
-    account: "Deacon Poon (2a49e)",
-    passcode: "327269",
-    language: "English (US)",
-    access: "Open",
-    pinned: true,
-    selections: ["Arabic", "Chinese (Simplified)"],
-    voicePack: "Voice Pack 1",
-    autoSelect: true,
-    sessionType: "bot",
-    sessionName: "Teams Meeting Bot",
-    description: "Weekly sync via Teams with bot transcription",
-  },
-  {
-    id: "SES-002",
-    title: "Marketing Strategy",
-    date: "2023-04-13",
-    time: "2:30 PM",
-    duration: 45,
-    attendees: 5,
-    status: "IN-PROGRESS",
-    presenter: "Marketing Team",
-    account: "Deacon Poon (2a49e)",
-    language: "English (US)",
-    sessionType: "present-app",
-    sessionName: "Conference Room Microphone",
-    description: "In-person meeting with podium mic",
-  },
-  {
-    id: "SES-003",
-    title: "Executive Board Meeting",
-    date: "2023-04-14",
-    time: "9:00 AM",
-    duration: 90,
-    attendees: 10,
-    status: "SCHEDULED",
-    presenter: "Executive Team",
-    account: "Deacon Poon (2a49e)",
-    language: "English (US)",
-    sessionType: "rtmps",
-    sessionName: "Livestream RTMPS Feed",
-    description: "Board meeting streamed via RTMPS",
-  },
-  {
-    id: "SES-004",
-    title: "Sales Team Check-in",
-    date: "2023-04-15",
-    time: "11:00 AM",
-    duration: 30,
-    attendees: 6,
-    status: "COMPLETED",
-    presenter: "Sales Lead",
-    account: "Deacon Poon (2a49e)",
-    language: "English (US)",
+    id: "ZGSG-0712",
+    title: "March Council Meeting",
+    passcode: "590745",
+    dateTime: "Mar 10, 2025 7:00 PM",
+    status: "RUNNING",
     sessionType: "mixed",
-    sessionName: "Hybrid: Bot + Present App",
-    description: "Both in-person and remote attendees",
+    inputs: [
+      { id: "rtmps-1", name: "RTMPS stream", type: "rtmps", status: "active" },
+      { id: "teams-1", name: "Teams bot", type: "teams-bot", status: "active" },
+      { id: "mic-1", name: "Avery mic", type: "microphone", status: "active" },
+      { id: "mic-2", name: "Taylor mic", type: "microphone", status: "active" },
+    ],
+    languages: [
+      "English (US)",
+      "Welsh - Cymraeg",
+      "Spanish (LatAm) - Español (LatAm)",
+    ],
+    activeLanguages: [
+      "English (US)",
+      "Welsh - Cymraeg",
+      "Spanish (LatAm) - Español (LatAm)",
+    ],
+    hasAutoSelect: false,
   },
   {
-    id: "SES-005",
-    title: "Customer Feedback Review",
-    date: "2023-04-16",
-    time: "3:00 PM",
-    duration: 60,
-    attendees: 7,
-    status: "SCHEDULED",
-    presenter: "Customer Success",
-    account: "Deacon Poon (2a49e)",
-    language: "English (US)",
+    id: "ZGSG-0713",
+    title: "A meeting without RT...",
+    passcode: "590745",
+    dateTime: "Mar 10, 2025 7:00 PM",
+    status: "RUNNING",
     sessionType: "present-app",
-    sessionName: "Town Hall Public Comment",
-    description: "Public speakers at podium microphone",
+    inputs: [
+      { id: "mic-3", name: "Podium mic", type: "microphone", status: "active" },
+    ],
+    languages: ["English (US)"],
+    activeLanguages: ["English (US)"],
+    hasAutoSelect: false,
+  },
+  {
+    id: "ZGSG-0714",
+    title: "A meeting with bot co...",
+    passcode: "590745",
+    dateTime: "Mar 10, 2025 7:00 PM",
+    status: "RUNNING",
+    sessionType: "bot",
+    inputs: [
+      { id: "teams-2", name: "Teams bot", type: "teams-bot", status: "active" },
+    ],
+    languages: ["English (US)", "Spanish (LatAm) - Español (LatAm)"],
+    activeLanguages: ["English (US)", "Spanish (LatAm) - Español (LatAm)"],
+    hasAutoSelect: true,
+  },
+  // Scheduled/completed sessions
+  {
+    id: "JFNT-1823",
+    title: "Monthly Update on th...",
+    passcode: "458329",
+    dateTime: "multiple future sessions",
+    status: "SCHEDULED",
+    sessionType: "present-app",
+  },
+  {
+    id: "KTUA-9533",
+    title: "April Council Meeting",
+    passcode: "561819",
+    dateTime: "Apr 12, 2025 7:00 PM",
+    status: "SCHEDULED",
+    sessionType: "mixed",
+  },
+  {
+    id: "RUQH-5717",
+    title: "May Council Meeting",
+    passcode: "271910",
+    dateTime: "May 8, 2025 7:00 PM",
+    status: "SCHEDULED",
+    sessionType: "present-app",
   },
 ];
 
@@ -164,11 +161,18 @@ export default function SessionsPage() {
   );
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [joinSessionId, setJoinSessionId] = useState<string>("");
-  const [activeBotSession, setActiveBotSession] = useState<string | null>(null);
-  const [activeSessionData, setActiveSessionData] = useState<Session | null>(
-    null
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(
+    new Set()
   );
   const [useCompactModal, setUseCompactModal] = useState(true);
+
+  // Separate running and other sessions
+  const runningSessions = mockSessions.filter(
+    (session) => session.status === "RUNNING"
+  );
+  const otherSessions = mockSessions.filter(
+    (session) => session.status !== "RUNNING"
+  );
   const { openRightPanel, closeRightPanel } = useAppShell();
 
   const handleSessionSelect = (session: Session) => {
@@ -178,11 +182,7 @@ export default function SessionsPage() {
   };
 
   const handleJoinSession = (sessionId?: string) => {
-    const session = sessionId
-      ? mockSessions.find((s) => s.id === sessionId)
-      : null;
     setJoinSessionId(sessionId || "");
-    setActiveSessionData(session || null);
     setIsJoinModalOpen(true);
   };
 
@@ -191,27 +191,9 @@ export default function SessionsPage() {
       `Joining session ${joinSessionId} as presenter with method: ${method}`
     );
 
-    // If it's a bot invite, show the remote control
-    if (method === "invite-bot") {
-      // If no specific session ID, use a default one
-      const sessionId = joinSessionId || "SSOD-5071";
-      setActiveBotSession(sessionId);
-      alert(
-        `Bot invited to session ${sessionId}! Remote control is now active.`
-      );
-    } else {
-      // For direct joining, show the appropriate remote control
-      const sessionId = joinSessionId || "SSOD-5071";
-      setActiveBotSession(sessionId);
-
-      const sessionType = activeSessionData?.sessionType || "present-app";
-      const sessionName = activeSessionData?.sessionName || "Remote Session";
-
-      alert(
-        `Joined ${sessionName} as presenter! Remote control is now active.`
-      );
-    }
-
+    alert(
+      `Joined session ${joinSessionId} as presenter with method: ${method}`
+    );
     setIsJoinModalOpen(false);
   };
 
@@ -225,6 +207,33 @@ export default function SessionsPage() {
       `Joining session ${joinSessionId} as attendee with method: ${method}`
     );
     setIsJoinModalOpen(false);
+  };
+
+  const toggleSessionExpansion = (sessionId: string) => {
+    console.log(`Toggling expansion for session: ${sessionId}`);
+    console.log(`Current expanded sessions:`, Array.from(expandedSessions));
+
+    const newExpanded = new Set(expandedSessions);
+    if (newExpanded.has(sessionId)) {
+      console.log(`Collapsing session ${sessionId}`);
+      newExpanded.delete(sessionId);
+    } else {
+      console.log(`Expanding session ${sessionId}`);
+      newExpanded.add(sessionId);
+    }
+
+    console.log(`New expanded sessions:`, Array.from(newExpanded));
+    setExpandedSessions(newExpanded);
+  };
+
+  const handleLanguageToggle = (sessionId: string, language: string) => {
+    console.log(`Toggling language ${language} for session ${sessionId}`);
+    // Here you would update the session's active languages
+  };
+
+  const handleInputToggle = (sessionId: string, inputId: string) => {
+    console.log(`Toggling input ${inputId} for session ${sessionId}`);
+    // Here you would update the input status
   };
 
   const renderSessionDetails = (session: Session) => {
@@ -256,7 +265,7 @@ export default function SessionsPage() {
             <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Presenter:</p>
           </div>
-          <p className="text-sm font-medium">{session.presenter}</p>
+          <p className="text-sm font-medium">N/A</p>
 
           <div className="flex items-center">
             <Key className="w-4 h-4 mr-2 text-gray-400" />
@@ -268,27 +277,27 @@ export default function SessionsPage() {
             <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Start Date:</p>
           </div>
-          <p className="text-sm font-medium">
-            {session.date} {session.time}
-          </p>
+          <p className="text-sm font-medium">{session.dateTime}</p>
 
           <div className="flex items-center">
             <Users className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Account:</p>
           </div>
-          <p className="text-sm font-medium">{session.account}</p>
+          <p className="text-sm font-medium">N/A</p>
 
           <div className="flex items-center">
             <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Duration:</p>
           </div>
-          <p className="text-sm font-medium">{session.duration} mins</p>
+          <p className="text-sm font-medium">N/A</p>
 
           <div className="flex items-center">
             <Globe className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Language:</p>
           </div>
-          <p className="text-sm font-medium">{session.language}</p>
+          <p className="text-sm font-medium">
+            {session.languages?.join(", ") || "N/A"}
+          </p>
 
           <div className="flex items-center">
             <ToggleLeft className="w-4 h-4 mr-2 text-gray-400" />
@@ -297,7 +306,7 @@ export default function SessionsPage() {
           <div className="flex items-center">
             <Check className="w-4 h-4 mr-1 text-green-600" />
             <p className="text-sm font-medium">
-              {session.autoSelect ? "Yes" : "No"}
+              {session.hasAutoSelect ? "Yes" : "No"}
             </p>
           </div>
 
@@ -305,13 +314,13 @@ export default function SessionsPage() {
             <Users className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Selections:</p>
           </div>
-          <p className="text-sm font-medium">{session.selections}</p>
+          <p className="text-sm font-medium">N/A</p>
 
           <div className="flex items-center">
             <Lock className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Access:</p>
           </div>
-          <p className="text-sm font-medium">{session.access}</p>
+          <p className="text-sm font-medium">N/A</p>
 
           <div className="flex items-center">
             <Pin className="w-4 h-4 mr-2 text-gray-400" />
@@ -319,117 +328,20 @@ export default function SessionsPage() {
           </div>
           <div className="flex items-center">
             <Check className="w-4 h-4 mr-1 text-green-600" />
-            <p className="text-sm font-medium">
-              {session.pinned ? "Yes" : "No"}
-            </p>
+            <p className="text-sm font-medium">N/A</p>
           </div>
 
           <div className="flex items-center">
             <Volume2 className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Voice Pack:</p>
           </div>
-          <p className="text-sm font-medium">{session.voicePack}</p>
+          <p className="text-sm font-medium">N/A</p>
         </div>
       </div>
     );
   };
 
-  const columns: TableColumn<Session>[] = [
-    {
-      header: "ID",
-      accessorKey: "id",
-      cell: (row) => (
-        <div className="flex items-center">
-          <Hash className="w-3.5 h-3.5 mr-2 text-gray-400" />
-          <span className="font-medium text-gray-900">{row.id}</span>
-        </div>
-      ),
-      className: "w-[100px]",
-    },
-    {
-      header: "Title",
-      accessorKey: "title",
-      cell: (row) => (
-        <div className="flex items-center">
-          <span>{row.title}</span>
-        </div>
-      ),
-    },
-    {
-      header: "Date",
-      accessorKey: "date",
-      cell: (row) => (
-        <div className="flex items-center">
-          <Calendar className="w-3.5 h-3.5 mr-2 text-gray-400" />
-          <span>{row.date}</span>
-        </div>
-      ),
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Time",
-      accessorKey: "time",
-      cell: (row) => (
-        <div className="flex items-center">
-          <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
-          <span>{row.time}</span>
-        </div>
-      ),
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Duration",
-      accessorKey: "duration",
-      cell: (row) => (
-        <div className="flex items-center justify-center">
-          <Clock className="w-3.5 h-3.5 mr-2 text-gray-400" />
-          <span>{row.duration} mins</span>
-        </div>
-      ),
-      className: "text-center",
-    },
-    {
-      header: "Status",
-      accessorKey: "status",
-      cell: (row) => (
-        <div className="flex items-center justify-center">
-          <StatusBadge status={row.status} />
-        </div>
-      ),
-      className: "text-center",
-    },
-    {
-      header: "Attendees",
-      accessorKey: "attendees",
-      cell: (row) => (
-        <div className="flex items-center justify-end">
-          <User className="w-3.5 h-3.5 mr-2 text-gray-400" />
-          <span>{row.attendees}</span>
-        </div>
-      ),
-      className: "text-right",
-    },
-    {
-      header: "",
-      accessorKey: "actions",
-      cell: (row) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleJoinSession(row.id);
-            }}
-            className="h-8 w-8 p-0 hover:bg-primary-teal-50"
-          >
-            <Users className="h-4 w-4 text-primary-teal-600" />
-          </Button>
-        </div>
-      ),
-      className: "w-[50px]",
-    },
-  ];
+
 
   return (
     <div>
@@ -545,22 +457,313 @@ export default function SessionsPage() {
             </div>
           </div>
 
-          {/* Sessions card */}
+          {/* Currently Running Sessions */}
+          {runningSessions.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                Currently running
+              </h2>
           <Card>
-            <CardContent className="p-4">
-              {/* Session list using DataTable */}
-              <DataTable
-                data={mockSessions.filter((session) => {
-                  return !statusFilter || session.status === statusFilter;
-                })}
-                columns={columns}
-                onRowClick={handleSessionSelect}
-                selectedItem={selectedSession}
-                idField="id"
-              />
+                <CardContent className="p-0">
+                  {/* Custom expandable sessions table */}
+                  <div className="w-full">
+                    {/* Table header */}
+                    <div className="border-b bg-gray-50 px-4 py-3">
+                      <div className="grid grid-cols-12 gap-4 font-medium text-sm text-gray-900">
+                        <div className="col-span-4">Title</div>
+                        <div className="col-span-2">ID</div>
+                        <div className="col-span-2">Passcode</div>
+                        <div className="col-span-2">Date & Time</div>
+                        <div className="col-span-2"></div>
+                      </div>
+                    </div>
+
+                    {/* Session rows */}
+                    {runningSessions.map((session) => (
+                      <div key={session.id} className="border-b">
+                        {/* Main row */}
+                        <div
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                          onClick={() => toggleSessionExpansion(session.id)}
+                        >
+                          <div className="grid grid-cols-12 gap-4 items-center">
+                            <div className="col-span-4">
+                              <span className="font-medium">
+                                {session.title}
+                              </span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="font-mono text-sm">
+                                {session.id}
+                              </span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="font-mono text-sm">
+                                {session.passcode}
+                              </span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-sm">
+                                {session.dateTime}
+                              </span>
+                            </div>
+                            <div className="col-span-2 flex items-center justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSessionExpansion(session.id);
+                                }}
+                                className="text-xs"
+                              >
+                                {expandedSessions.has(session.id)
+                                  ? "hide"
+                                  : "show"}{" "}
+                                language controls
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="bg-teal-500 text-white hover:bg-teal-600"
+                              >
+                                Pause
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="bg-red-500 text-white hover:bg-red-600"
+                              >
+                                End
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Expandable content */}
+                        {(() => {
+                          const isExpanded = expandedSessions.has(session.id);
+                          const hasInputs = !!session.inputs;
+                          console.log(
+                            `Session ${
+                              session.id
+                            }: isExpanded=${isExpanded}, hasInputs=${hasInputs}, shouldRender=${
+                              isExpanded && hasInputs
+                            }`
+                          );
+                          return isExpanded && hasInputs;
+                        })() && (
+                          <div className="bg-gray-50 p-4 border-t">
+                            <div className="space-y-4">
+                              {/* Remote language controls */}
+                              <div className="grid grid-cols-3 gap-4">
+                                {/* Input Sources */}
+                                <div>
+                                  <h4 className="font-medium mb-2">
+                                    Remote language controls
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {session.inputs?.map((input) => (
+                                      <div key={input.id} className="text-sm">
+                                        <span className="font-medium">
+                                          {input.name}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Teams bot section */}
+                                <div>
+                                  <h4 className="font-medium mb-2">
+                                    Teams bot
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {session.languages?.map((language) => (
+                                      <div
+                                        key={language}
+                                        className="flex items-center"
+                                      >
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 border border-green-300">
+                                          {language}
+                                          <button className="ml-1 text-green-600 hover:text-green-800">
+                                            ×
+                                          </button>
+                                        </span>
+                                      </div>
+                                    ))}
+                                    <button className="text-sm text-blue-600 hover:text-blue-800">
+                                      +Add another language
+                                    </button>
+                                    {session.hasAutoSelect && (
+                                      <div className="flex items-center mt-2">
+                                        <input
+                                          type="checkbox"
+                                          checked
+                                          className="mr-2"
+                                        />
+                                        <span className="text-sm">
+                                          Auto-select input language
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Microphone inputs */}
+                                <div>
+                                  <div className="space-y-2">
+                                    {session.inputs
+                                      ?.filter(
+                                        (input) => input.type === "microphone"
+                                      )
+                                      .map((input) => (
+                                        <div
+                                          key={input.id}
+                                          className="text-sm font-medium"
+                                        >
+                                          {input.name}
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* All Other Sessions */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-gray-900">
+              All Other Sessions
+            </h2>
+
+            {/* Filter controls */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Filter:</span>
+                <select className="border border-gray-300 rounded px-3 py-1 text-sm">
+                  <option>since yesterday</option>
+                  <option>last week</option>
+                  <option>last month</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Creator:</span>
+                <select className="border border-gray-300 rounded px-3 py-1 text-sm">
+                  <option>All creators</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Search (ID, title, or tags)"
+                  className="w-full border border-gray-300 rounded px-3 py-1 text-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                Open Selected Transcripts
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Download Selected
+              </Button>
+              <Button variant="outline" size="sm">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Show usage for Selected
+              </Button>
+              <Button variant="outline" size="sm">
+                <Pin className="h-4 w-4 mr-2" />
+                Un-pin selected
+              </Button>
+            </div>
+
+            <Card>
+              <CardContent className="p-0">
+                {/* Custom table matching running sessions format */}
+                <div className="w-full">
+                  {/* Table header */}
+                  <div className="border-b bg-gray-50 px-4 py-3">
+                    <div className="grid grid-cols-12 gap-4 font-medium text-sm text-gray-900">
+                      <div className="col-span-4">Title</div>
+                      <div className="col-span-2">ID</div>
+                      <div className="col-span-2">Passcode</div>
+                      <div className="col-span-2">Date & Time</div>
+                      <div className="col-span-2"></div>
+                    </div>
+                  </div>
+
+                  {/* Session rows */}
+                  {otherSessions
+                    .filter((session) => {
+                      const matchesSearch =
+                        !searchQuery ||
+                        session.title
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()) ||
+                        session.id
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase());
+                      const matchesStatus =
+                        !statusFilter || session.status === statusFilter;
+                      return matchesSearch && matchesStatus;
+                    })
+                    .map((session) => (
+                      <div key={session.id} className="border-b">
+                        {/* Main row */}
+                        <div
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleSessionSelect(session)}
+                        >
+                          <div className="grid grid-cols-12 gap-4 items-center">
+                            <div className="col-span-4">
+                              <span className="font-medium">{session.title}</span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="font-mono text-sm">{session.id}</span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="font-mono text-sm">{session.passcode}</span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-sm">{session.dateTime}</span>
+                            </div>
+                            <div className="col-span-2 flex items-center justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleJoinSession(session.id);
+                                }}
+                                className="bg-blue-500 text-white hover:bg-blue-600"
+                              >
+                                Start
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
 
       {/* Session Join Modal */}
@@ -581,31 +784,6 @@ export default function SessionsPage() {
           onJoinAsAttendee={handleJoinAsAttendee}
         />
       )}
-
-      {/* Bot Remote Control */}
-      <BotRemoteControl
-        sessionId={activeBotSession || ""}
-        sessionName={activeSessionData?.sessionName || "Remote Session"}
-        sessionType={activeSessionData?.sessionType || "present-app"}
-        isActive={!!activeBotSession}
-        onEndSession={() => {
-          setActiveBotSession(null);
-          setActiveSessionData(null);
-          alert("Session ended remotely");
-        }}
-        onClose={() => {
-          setActiveBotSession(null);
-          setActiveSessionData(null);
-        }}
-        onListenToAudio={() => {
-          const sessionName = activeSessionData?.sessionName || "session";
-          alert(`Now listening to ${sessionName} audio...`);
-        }}
-        onLanguageChange={(language) => {
-          const sessionName = activeSessionData?.sessionName || "session";
-          alert(`Language changed to ${language} for ${sessionName}`);
-        }}
-      />
     </div>
   );
 }
