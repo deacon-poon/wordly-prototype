@@ -42,12 +42,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  StatusBadge,
-} from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/data-table";
 import { useAppShell } from "@/components/layouts/AppShellProvider";
 import { SessionJoinModal } from "@/components/ui/session-join-modal";
 import { SessionJoinModalCompact } from "@/components/ui/session-join-modal-compact";
+import { SessionJoinModalProgressive } from "@/components/ui/session-join-modal-progressive";
 
 // Define the session type
 interface Session {
@@ -164,7 +163,9 @@ export default function SessionsPage() {
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(
     new Set()
   );
-  const [useCompactModal, setUseCompactModal] = useState(true);
+  const [modalVariant, setModalVariant] = useState<
+    "detailed" | "compact" | "progressive"
+  >("progressive");
 
   // Separate running and other sessions
   const runningSessions = mockSessions.filter(
@@ -341,8 +342,6 @@ export default function SessionsPage() {
     );
   };
 
-
-
   return (
     <div>
       {/* Filter toolbar at top */}
@@ -371,24 +370,24 @@ export default function SessionsPage() {
           </Button>
 
           {/* Modal Version Toggle */}
-          <Button
-            onClick={() => setUseCompactModal(!useCompactModal)}
-            variant="outline"
-            size="sm"
-            className="h-9"
-            title={`Switch to ${
-              useCompactModal ? "detailed" : "compact"
-            } modal`}
-          >
-            <ToggleLeft
-              className={`h-4 w-4 mr-1 ${
-                useCompactModal ? "rotate-180" : ""
-              } transition-transform`}
-            />
-            <span className="text-xs">
-              {useCompactModal ? "Compact" : "Detailed"}
-            </span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => {
+                const variants: Array<"detailed" | "compact" | "progressive"> =
+                  ["progressive", "compact", "detailed"];
+                const currentIndex = variants.indexOf(modalVariant);
+                const nextIndex = (currentIndex + 1) % variants.length;
+                setModalVariant(variants[nextIndex]);
+              }}
+              variant="outline"
+              size="sm"
+              className="h-9"
+              title={`Current: ${modalVariant} - Click to cycle through variants`}
+            >
+              <ToggleLeft className="h-4 w-4 mr-1 transition-transform" />
+              <span className="text-xs capitalize">{modalVariant}</span>
+            </Button>
+          </div>
         </div>
 
         <div className="flex grow items-center justify-end gap-2">
@@ -463,7 +462,7 @@ export default function SessionsPage() {
               <h2 className="text-xl font-bold text-gray-900">
                 Currently running
               </h2>
-          <Card>
+              <Card>
                 <CardContent className="p-0">
                   {/* Custom expandable sessions table */}
                   <div className="w-full">
@@ -731,16 +730,24 @@ export default function SessionsPage() {
                         >
                           <div className="grid grid-cols-12 gap-4 items-center">
                             <div className="col-span-4">
-                              <span className="font-medium">{session.title}</span>
+                              <span className="font-medium">
+                                {session.title}
+                              </span>
                             </div>
                             <div className="col-span-2">
-                              <span className="font-mono text-sm">{session.id}</span>
+                              <span className="font-mono text-sm">
+                                {session.id}
+                              </span>
                             </div>
                             <div className="col-span-2">
-                              <span className="font-mono text-sm">{session.passcode}</span>
+                              <span className="font-mono text-sm">
+                                {session.passcode}
+                              </span>
                             </div>
                             <div className="col-span-2">
-                              <span className="text-sm">{session.dateTime}</span>
+                              <span className="text-sm">
+                                {session.dateTime}
+                              </span>
                             </div>
                             <div className="col-span-2 flex items-center justify-end">
                               <Button
@@ -760,14 +767,23 @@ export default function SessionsPage() {
                       </div>
                     ))}
                 </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Session Join Modal */}
-      {useCompactModal ? (
+      {modalVariant === "progressive" && (
+        <SessionJoinModalProgressive
+          open={isJoinModalOpen}
+          onOpenChange={setIsJoinModalOpen}
+          sessionId={joinSessionId}
+          onJoinAsPresenter={handleJoinAsPresenter}
+          onJoinAsAttendee={handleJoinAsAttendee}
+        />
+      )}
+      {modalVariant === "compact" && (
         <SessionJoinModalCompact
           open={isJoinModalOpen}
           onOpenChange={setIsJoinModalOpen}
@@ -775,7 +791,8 @@ export default function SessionsPage() {
           onJoinAsPresenter={handleJoinAsPresenter}
           onJoinAsAttendee={handleJoinAsAttendee}
         />
-      ) : (
+      )}
+      {modalVariant === "detailed" && (
         <SessionJoinModal
           open={isJoinModalOpen}
           onOpenChange={setIsJoinModalOpen}
