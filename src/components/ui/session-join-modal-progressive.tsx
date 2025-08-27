@@ -33,11 +33,8 @@ import {
   Monitor,
   Settings,
   QrCode,
-  Copy,
-  Key,
   Download,
   Printer,
-  Globe,
   MessageSquare,
   Radio,
   Users2,
@@ -59,7 +56,7 @@ interface BotInviteFormProps {
   onCancel: () => void;
 }
 
-interface ProgressiveMethodCardProps {
+interface ProgressiveMethodItemProps {
   title: string;
   description: string;
   illustration: string;
@@ -68,37 +65,38 @@ interface ProgressiveMethodCardProps {
   children: React.ReactNode;
 }
 
-function ProgressiveMethodCard({
+function ProgressiveMethodItem({
   title,
   description,
   illustration,
   icon,
   variant,
   children,
-}: ProgressiveMethodCardProps) {
+}: ProgressiveMethodItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <Card
+    <div
       className={cn(
-        "relative overflow-hidden transition-all duration-200 h-fit",
+        "relative transition-all duration-300 ease-in-out",
+        "border rounded-lg",
         variant === "presenter"
           ? "border-primary-teal-200 bg-primary-teal-50/30 hover:bg-primary-teal-50/50 hover:border-primary-teal-300"
           : "border-accent-green-200 bg-accent-green-50/30 hover:bg-accent-green-50/50 hover:border-accent-green-300",
-        isExpanded && "ring-2 ring-offset-1",
+        isExpanded && "ring-2 ring-offset-1 shadow-lg",
         variant === "presenter" && isExpanded && "ring-primary-teal-200",
         variant === "attendee" && isExpanded && "ring-accent-green-200"
       )}
     >
-      <CardContent className="p-4">
+      <div className="p-4">
         {/* Always-visible header section */}
-        <div className="flex items-center gap-3 min-h-[84px]">
-          <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
             <Image
               src={illustration}
               alt={title}
-              width={72}
-              height={72}
+              width={56}
+              height={56}
               className="object-contain"
             />
           </div>
@@ -155,8 +153,8 @@ function ProgressiveMethodCard({
             <div className="pt-3 mt-3 border-t border-gray-200">{children}</div>
           </CollapsibleContent>
         </Collapsible>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -294,29 +292,6 @@ export function SessionJoinModalProgressive({
 }: SessionJoinModalProgressiveProps) {
   const [showBotInvite, setShowBotInvite] = useState(false);
 
-  const handleCopySessionId = () => {
-    if (sessionId) {
-      navigator.clipboard.writeText(sessionId);
-      alert("Session ID copied to clipboard!");
-    }
-  };
-
-  const handleCopyLink = () => {
-    if (sessionId) {
-      navigator.clipboard.writeText(
-        `https://attend.wordly.ai/join/${sessionId}`
-      );
-      alert("Session link copied to clipboard!");
-    }
-  };
-
-  const handleCopyPasscode = () => {
-    if (sessionId) {
-      navigator.clipboard.writeText("327269");
-      alert("Passcode copied to clipboard!");
-    }
-  };
-
   const handleBotInviteSubmit = (data: {
     language: string;
     meetingLink: string;
@@ -332,20 +307,10 @@ export function SessionJoinModalProgressive({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[90vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             🎯 Start Session {sessionId && sessionId}
-            {sessionId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopySessionId}
-                className="h-6 w-6 p-0"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-            )}
           </DialogTitle>
           <DialogDescription>
             Choose how you'd like to participate in this Wordly session
@@ -353,48 +318,6 @@ export function SessionJoinModalProgressive({
         </DialogHeader>
 
         <div className="space-y-6 pb-4">
-          {/* Session Info */}
-          <Card className="bg-gray-50 border-gray-200">
-            <CardContent className="p-4">
-              <h4 className="font-semibold text-gray-900 mb-3">Session Info</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                <div className="flex items-center justify-between p-2 bg-white rounded border">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-accent-green-600" />
-                    <span className="text-sm font-mono text-gray-700">
-                      attend.wordly.ai/{sessionId || "ZGSG-0712"}
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyLink}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between p-2 bg-white rounded border">
-                  <div className="flex items-center gap-2">
-                    <Key className="w-4 h-4 text-primary-teal-600" />
-                    <span className="text-sm font-mono text-gray-700">
-                      Passcode: 327269
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCopyPasscode}
-                    className="h-6 w-6 p-0"
-                  >
-                    <Copy className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Primary Actions */}
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -410,9 +333,9 @@ export function SessionJoinModalProgressive({
                 </h4>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <div className="space-y-3">
                 {/* Present Audio */}
-                <ProgressiveMethodCard
+                <ProgressiveMethodItem
                   title="Present Audio"
                   description="Speak at event or meeting"
                   illustration="/asset/illustration/speak-in-person.png"
@@ -436,10 +359,10 @@ export function SessionJoinModalProgressive({
                       Copy Quick Link
                     </Button>
                   </div>
-                </ProgressiveMethodCard>
+                </ProgressiveMethodItem>
 
                 {/* Invite to Meeting */}
-                <ProgressiveMethodCard
+                <ProgressiveMethodItem
                   title="Invite to Meeting"
                   description="Add bot to video call"
                   illustration="/asset/illustration/video-meeting.png"
@@ -542,39 +465,109 @@ export function SessionJoinModalProgressive({
                     >
                       Advanced Setup
                     </Button>
+                  </div>
+                </ProgressiveMethodItem>
 
-                    {/* Advanced Presenter Options */}
-                    <div className="pt-3 border-t border-primary-teal-200">
-                      <h5 className="font-medium text-primary-teal-900 mb-2">
-                        Send Audio to RTMPS
-                      </h5>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
-                        onClick={() => onJoinAsPresenter("rtmps")}
-                      >
-                        <Radio className="w-4 h-4 mr-2" />
-                        Send Audio to RTMPS
-                      </Button>
+                {/* Send Audio to RTMPS - Progressive Item */}
+                <ProgressiveMethodItem
+                  title="Send Audio to RTMPS"
+                  description="Advanced audio streaming options"
+                  illustration="/asset/illustration/rtmps-settings.png"
+                  icon={<Radio className="w-4 h-4" />}
+                  variant="presenter"
+                >
+                  <div className="space-y-3">
+                    <Button
+                      onClick={() => onJoinAsPresenter("rtmps")}
+                      variant="outline"
+                      className="w-full border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                      size="sm"
+                    >
+                      Configure RTMPS
+                    </Button>
 
-                      <div className="space-y-2 mt-3">
-                        <div className="flex items-center gap-2">
-                          <input type="checkbox" className="rounded" />
-                          <span className="text-sm text-primary-teal-700">
+                    {/* FAQ-style accordion sections */}
+                    <div className="pt-3 border-t border-primary-teal-200 space-y-2">
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-teal-200 rounded hover:bg-primary-teal-50">
+                          <span className="text-sm text-primary-teal-700 font-medium">
                             Have multiple microphones in one room?
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input type="checkbox" className="rounded" />
-                          <span className="text-sm text-primary-teal-700">
+                          <ChevronDown className="w-4 h-4 text-primary-teal-600" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-3 bg-primary-teal-25 border border-primary-teal-200 border-t-0 rounded-b">
+                          <p className="text-xs text-primary-teal-600 mb-2">
+                            Configure how Wordly handles multiple audio sources
+                            in your setup.
+                          </p>
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="microphones"
+                                value="single"
+                                className="text-primary-teal-600"
+                              />
+                              <span className="text-sm text-primary-teal-700">
+                                Single microphone
+                              </span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="microphones"
+                                value="multiple"
+                                className="text-primary-teal-600"
+                              />
+                              <span className="text-sm text-primary-teal-700">
+                                Multiple microphones
+                              </span>
+                            </label>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-teal-200 rounded hover:bg-primary-teal-50">
+                          <span className="text-sm text-primary-teal-700 font-medium">
                             Have people speaking 2+ languages in 1 microphone?
                           </span>
-                        </div>
-                      </div>
+                          <ChevronDown className="w-4 h-4 text-primary-teal-600" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-3 bg-primary-teal-25 border border-primary-teal-200 border-t-0 rounded-b">
+                          <p className="text-xs text-primary-teal-600 mb-2">
+                            Set up language detection for mixed-language
+                            presentations.
+                          </p>
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="languages"
+                                value="single"
+                                className="text-primary-teal-600"
+                              />
+                              <span className="text-sm text-primary-teal-700">
+                                Single language
+                              </span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name="languages"
+                                value="multiple"
+                                className="text-primary-teal-600"
+                              />
+                              <span className="text-sm text-primary-teal-700">
+                                Multiple languages
+                              </span>
+                            </label>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </div>
                   </div>
-                </ProgressiveMethodCard>
+                </ProgressiveMethodItem>
               </div>
             </div>
 
@@ -587,9 +580,9 @@ export function SessionJoinModalProgressive({
                 </h4>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <div className="space-y-3">
                 {/* Listen/Translate */}
-                <ProgressiveMethodCard
+                <ProgressiveMethodItem
                   title="Listen/Translate"
                   description="Join on your device"
                   illustration="/asset/illustration/user-join-device-with-qr-code.png"
@@ -637,10 +630,10 @@ export function SessionJoinModalProgressive({
                       </div>
                     </div>
                   </div>
-                </ProgressiveMethodCard>
+                </ProgressiveMethodItem>
 
                 {/* Public Display */}
-                <ProgressiveMethodCard
+                <ProgressiveMethodItem
                   title="Public Display"
                   description="Show on big screen"
                   illustration="/asset/illustration/big-screen-display.png"
@@ -664,44 +657,68 @@ export function SessionJoinModalProgressive({
                     >
                       Monitor Setup
                     </Button>
+                  </div>
+                </ProgressiveMethodItem>
 
-                    {/* Video Options */}
-                    <div className="pt-3 border-t border-accent-green-200">
-                      <h5 className="font-medium text-accent-green-900 mb-2">
-                        Video Options
-                      </h5>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-sm text-accent-green-700 mb-1 block">
-                            iFrame (for captions with livestream)
+                {/* Video Options - Progressive Item */}
+                <ProgressiveMethodItem
+                  title="Video Options"
+                  description="Advanced video integration"
+                  illustration="/asset/illustration/video-options.png"
+                  icon={<Video className="w-4 h-4" />}
+                  variant="attendee"
+                >
+                  <div className="space-y-3">
+                    {/* FAQ-style accordion sections */}
+                    <div className="space-y-2">
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                          <span className="text-sm text-accent-green-700 font-medium">
+                            iFrame (for captions with a livestream)
                           </span>
+                          <ChevronDown className="w-4 h-4 text-accent-green-600" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
+                          <p className="text-xs text-accent-green-600 mb-3">
+                            Embed Wordly captions directly into your livestream
+                            or video platform.
+                          </p>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-start border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                            className="w-full justify-start border-accent-green-300 text-accent-green-700 hover:bg-accent-green-100 bg-white"
                             onClick={() => onJoinAsAttendee("iframe")}
                           >
                             Use an iFrame
                           </Button>
-                        </div>
+                        </CollapsibleContent>
+                      </Collapsible>
 
-                        <div>
-                          <span className="text-sm text-accent-green-700 mb-1 block">
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                          <span className="text-sm text-accent-green-700 font-medium">
                             Embedded Subtitling
                           </span>
+                          <ChevronDown className="w-4 h-4 text-accent-green-600" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
+                          <p className="text-xs text-accent-green-600 mb-3">
+                            Add live subtitles directly to your video content or
+                            streaming platform.
+                          </p>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-start border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                            className="w-full justify-start border-accent-green-300 text-accent-green-700 hover:bg-accent-green-100 bg-white"
                             onClick={() => onJoinAsAttendee("subtitles")}
                           >
                             Add Subtitles
                           </Button>
-                        </div>
-                      </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </div>
                   </div>
-                </ProgressiveMethodCard>
+                </ProgressiveMethodItem>
               </div>
             </div>
           </div>
