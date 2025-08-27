@@ -88,69 +88,61 @@ function ProgressiveMethodItem({
         variant === "attendee" && isExpanded && "ring-accent-green-200"
       )}
     >
-      <div className="p-4">
+      <div className="p-6">
         {/* Always-visible header section */}
-        <div className="flex items-center gap-3">
-          <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+        <div className="flex items-center gap-6">
+          <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
             <Image
               src={illustration}
               alt={title}
-              width={56}
-              height={56}
+              width={88}
+              height={88}
               className="object-contain"
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h5
-              className={cn(
-                "font-semibold flex items-center gap-2 mb-1",
-                variant === "presenter"
-                  ? "text-primary-teal-900"
-                  : "text-accent-green-900"
-              )}
-            >
-              {icon}
-              {title}
-            </h5>
-            <p
-              className={cn(
-                "text-sm",
-                variant === "presenter"
-                  ? "text-primary-teal-700"
-                  : "text-accent-green-700"
-              )}
-            >
-              {description}
-            </p>
-          </div>
-          <div className="flex items-center justify-center">
-            {/* Clean toggle button with just chevron */}
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className={cn(
-                "p-2 rounded-full transition-all duration-200 touch-manipulation",
-                "hover:bg-white/60 active:bg-white/80",
-                "focus:outline-none focus:ring-2 focus:ring-offset-1",
-                variant === "presenter"
-                  ? "text-primary-teal-600 hover:text-primary-teal-700 focus:ring-primary-teal-200"
-                  : "text-accent-green-600 hover:text-accent-green-700 focus:ring-accent-green-200"
-              )}
-              aria-label={isExpanded ? "Hide options" : "Show options"}
-            >
-              <ChevronDown
-                className={cn(
-                  "w-5 h-5 transition-transform duration-200",
-                  isExpanded && "rotate-180"
-                )}
-              />
-            </button>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h5 className="text-lg font-semibold flex items-center gap-2 mb-2 text-gray-900">
+                  {icon}
+                  {title}
+                </h5>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {description}
+                </p>
+              </div>
+              <div className="ml-4 flex items-center justify-center">
+                {/* Clean toggle button with just chevron */}
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className={cn(
+                    "p-3 rounded-full transition-all duration-200 touch-manipulation",
+                    "hover:bg-white/60 active:bg-white/80",
+                    "focus:outline-none focus:ring-2 focus:ring-offset-1",
+                    variant === "presenter"
+                      ? "text-primary-teal-600 hover:text-primary-teal-700 focus:ring-primary-teal-200"
+                      : "text-accent-green-600 hover:text-accent-green-700 focus:ring-accent-green-200"
+                  )}
+                  aria-label={isExpanded ? "Hide options" : "Show options"}
+                >
+                  <ChevronDown
+                    className={cn(
+                      "w-5 h-5 transition-transform duration-200",
+                      isExpanded && "rotate-180"
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Expandable options section */}
         <Collapsible open={isExpanded}>
           <CollapsibleContent className="space-y-2">
-            <div className="pt-3 mt-3 border-t border-gray-200">{children}</div>
+            <div className="pt-4 mt-4 border-t border-gray-200 ml-30">
+              {children}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </div>
@@ -310,10 +302,10 @@ export function SessionJoinModalProgressive({
       <DialogContent className="max-w-3xl w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            🎯 Start Session {sessionId && sessionId}
+            Join This Session
           </DialogTitle>
           <DialogDescription>
-            Choose how you'd like to participate in this Wordly session
+            Choose how you'd like to participate in this Wordly session.
           </DialogDescription>
         </DialogHeader>
 
@@ -328,9 +320,14 @@ export function SessionJoinModalProgressive({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-primary-teal-500 rounded-full"></div>
-                <h4 className="text-md font-semibold text-primary-teal-700">
-                  As Presenter
-                </h4>
+                <div>
+                  <h4 className="text-md font-semibold text-gray-900">
+                    Present
+                  </h4>
+                  <p className="text-sm text-gray-600 -mt-1">
+                    Share my audio with the audience
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -342,22 +339,29 @@ export function SessionJoinModalProgressive({
                   icon={<Mic className="w-4 h-4" />}
                   variant="presenter"
                 >
-                  <div className="space-y-2">
-                    <Button
-                      onClick={() => onJoinAsPresenter("in-person")}
-                      className="w-full bg-primary-teal-600 hover:bg-primary-teal-700"
-                      size="sm"
-                    >
-                      Present Now
-                    </Button>
-                    <Button
-                      onClick={() => onJoinAsPresenter("quick-link")}
-                      variant="outline"
-                      className="w-full border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
-                      size="sm"
-                    >
-                      Copy Quick Link
-                    </Button>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => onJoinAsPresenter("quick-link")}
+                        className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+                        size="sm"
+                      >
+                        Copy quick link
+                      </Button>
+                      <Button
+                        onClick={() => onJoinAsPresenter("secure-link")}
+                        variant="outline"
+                        className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                        size="sm"
+                      >
+                        Copy secure link (separate passcode)
+                      </Button>
+                    </div>
+                    <div className="pt-2 border-t border-primary-teal-200">
+                      <p className="text-xs text-gray-600 mb-2">
+                        Passcode: 393818
+                      </p>
+                    </div>
                   </div>
                 </ProgressiveMethodItem>
 
@@ -490,79 +494,46 @@ export function SessionJoinModalProgressive({
                     <div className="pt-3 border-t border-primary-teal-200 space-y-2">
                       <Collapsible>
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-teal-200 rounded hover:bg-primary-teal-50">
-                          <span className="text-sm text-primary-teal-700 font-medium">
+                          <span className="text-sm text-gray-900 font-medium">
                             Have multiple microphones in one room?
                           </span>
                           <ChevronDown className="w-4 h-4 text-primary-teal-600" />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="p-3 bg-primary-teal-25 border border-primary-teal-200 border-t-0 rounded-b">
-                          <p className="text-xs text-primary-teal-600 mb-2">
-                            Configure how Wordly handles multiple audio sources
-                            in your setup.
+                          <p className="text-sm text-gray-900 mb-3">
+                            Join using "push to talk". You will need to hold
+                            down the microphone button to speak. This helps
+                            avoid accidental audio interference.
                           </p>
-                          <div className="space-y-2">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="microphones"
-                                value="single"
-                                className="text-primary-teal-600"
-                              />
-                              <span className="text-sm text-primary-teal-700">
-                                Single microphone
-                              </span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="microphones"
-                                value="multiple"
-                                className="text-primary-teal-600"
-                              />
-                              <span className="text-sm text-primary-teal-700">
-                                Multiple microphones
-                              </span>
-                            </label>
-                          </div>
+                          <Button
+                            variant="link"
+                            className="text-primary-teal-600 hover:text-primary-teal-700 p-0 h-auto text-sm"
+                            onClick={() => window.open("#", "_blank")}
+                          >
+                            Learn about push to talk →
+                          </Button>
                         </CollapsibleContent>
                       </Collapsible>
 
                       <Collapsible>
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-teal-200 rounded hover:bg-primary-teal-50">
-                          <span className="text-sm text-primary-teal-700 font-medium">
+                          <span className="text-sm text-gray-900 font-medium">
                             Have people speaking 2+ languages in 1 microphone?
                           </span>
                           <ChevronDown className="w-4 h-4 text-primary-teal-600" />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="p-3 bg-primary-teal-25 border border-primary-teal-200 border-t-0 rounded-b">
-                          <p className="text-xs text-primary-teal-600 mb-2">
-                            Set up language detection for mixed-language
-                            presentations.
+                          <p className="text-sm text-gray-900 mb-3">
+                            Wordly can automatically select the input language
+                            from among the languages you've added to the
+                            language panel. This takes up to 15 seconds.
                           </p>
-                          <div className="space-y-2">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="languages"
-                                value="single"
-                                className="text-primary-teal-600"
-                              />
-                              <span className="text-sm text-primary-teal-700">
-                                Single language
-                              </span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="radio"
-                                name="languages"
-                                value="multiple"
-                                className="text-primary-teal-600"
-                              />
-                              <span className="text-sm text-primary-teal-700">
-                                Multiple languages
-                              </span>
-                            </label>
-                          </div>
+                          <p className="text-sm text-gray-600 mb-2">
+                            <strong>Tip:</strong> Fewer languages gives faster
+                            performance. For quicker changes, manually click the
+                            language in the language panel before each person
+                            speaks.
+                          </p>
                         </CollapsibleContent>
                       </Collapsible>
                     </div>
@@ -575,9 +546,14 @@ export function SessionJoinModalProgressive({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-accent-green-500 rounded-full"></div>
-                <h4 className="text-md font-semibold text-accent-green-700">
-                  As Attendee
-                </h4>
+                <div>
+                  <h4 className="text-md font-semibold text-gray-900">
+                    Listen
+                  </h4>
+                  <p className="text-sm text-gray-600 -mt-1">
+                    Receive translations and captions
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -590,44 +566,30 @@ export function SessionJoinModalProgressive({
                   variant="attendee"
                 >
                   <div className="space-y-3">
-                    <Button
-                      onClick={() => onJoinAsAttendee("device")}
-                      className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                      size="sm"
-                    >
-                      Join Session
-                    </Button>
-                    <Button
-                      onClick={() => onJoinAsAttendee("qr-options")}
-                      variant="outline"
-                      className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                      size="sm"
-                    >
-                      QR Code Options
-                    </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => onJoinAsAttendee("download-qr")}
+                        className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download QR code
+                      </Button>
+                      <Button
+                        onClick={() => onJoinAsAttendee("print-qr")}
+                        variant="outline"
+                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        size="sm"
+                      >
+                        <Printer className="w-4 h-4 mr-2" />
+                        Print QR code
+                      </Button>
+                    </div>
 
-                    {/* QR Code Options */}
                     <div className="pt-3 border-t border-accent-green-200">
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                          onClick={() => onJoinAsAttendee("download-qr")}
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download QR
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                          onClick={() => onJoinAsAttendee("print-qr")}
-                        >
-                          <Printer className="w-4 h-4 mr-2" />
-                          Print QR
-                        </Button>
-                      </div>
+                      <p className="text-xs text-gray-600 mb-2">
+                        Attendee link: https://attend.wordly.ai/join/ZGSG-0712
+                      </p>
                     </div>
                   </div>
                 </ProgressiveMethodItem>
@@ -673,13 +635,13 @@ export function SessionJoinModalProgressive({
                     <div className="space-y-2">
                       <Collapsible>
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
-                          <span className="text-sm text-accent-green-700 font-medium">
+                          <span className="text-sm text-gray-900 font-medium">
                             iFrame (for captions with a livestream)
                           </span>
                           <ChevronDown className="w-4 h-4 text-accent-green-600" />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
-                          <p className="text-xs text-accent-green-600 mb-3">
+                          <p className="text-sm text-gray-900 mb-3">
                             Embed Wordly captions directly into your livestream
                             or video platform.
                           </p>
@@ -696,13 +658,13 @@ export function SessionJoinModalProgressive({
 
                       <Collapsible>
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
-                          <span className="text-sm text-accent-green-700 font-medium">
+                          <span className="text-sm text-gray-900 font-medium">
                             Embedded Subtitling
                           </span>
                           <ChevronDown className="w-4 h-4 text-accent-green-600" />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
-                          <p className="text-xs text-accent-green-600 mb-3">
+                          <p className="text-sm text-gray-900 mb-3">
                             Add live subtitles directly to your video content or
                             streaming platform.
                           </p>
@@ -719,6 +681,36 @@ export function SessionJoinModalProgressive({
                     </div>
                   </div>
                 </ProgressiveMethodItem>
+              </div>
+            </div>
+
+            {/* Zoom Integration Section */}
+            <div className="border-t pt-6 mt-8">
+              <div className="flex items-start gap-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex-shrink-0">
+                  <img
+                    src="/logo/zoom-icon-only.svg"
+                    alt="Zoom"
+                    className="w-12 h-12"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Zoom (speakers and attendees)
+                  </h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Wordly has a direct integration with Zoom. You can launch a
+                    new Wordly session from inside Zoom without needing to
+                    configure anything inside this web portal first. Input audio
+                    and output text are both inside Zoom.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open("https://zoom.us", "_blank")}
+                  >
+                    Learn how to launch Wordly from inside Zoom
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
