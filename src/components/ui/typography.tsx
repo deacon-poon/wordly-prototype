@@ -2,8 +2,11 @@ import React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-// Add ColorVariant interface for use in colors.ts
-export interface ColorVariant {
+// Import ColorVariant interface from color-palette
+import { ColorVariant } from "./color-palette";
+
+// ColorVariant interface (imported from color-palette)
+interface ColorVariantLocal {
   name: string;
   value: string;
   contrast?: {
