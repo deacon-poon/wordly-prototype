@@ -55,18 +55,18 @@ const createVariant = (name: string, hex: string): ColorVariant => {
   };
 };
 
-// Brand Teal - 10 shades
+// Brand Teal - 10 shades (Figma Variables Source of Truth)
 export const tealPalette: ColorVariant[] = [
-  createVariant('Teal 50', '#E6F4F7'),
-  createVariant('Teal 100', '#C5E8EE'),
-  createVariant('Teal 200', '#84DEF0'),
-  createVariant('Teal 300', '#5CB9CA'),
-  createVariant('Teal 400', '#30A3B7'),
-  createVariant('Teal 500', '#118197'), // Base brand teal
-  createVariant('Teal 600', '#0C687A'),
-  createVariant('Teal 700', '#08505D'),
-  createVariant('Teal 800', '#063840'),
-  createVariant('Teal 900', '#021F24'),
+  createVariant('Teal 50', '#e8f9fc'), // primitives/color/primary-teal/teal-50 from Figma variables
+  createVariant('Teal 100', '#bbedf7'), // primitives/color/primary-teal/teal-100 from Figma variables
+  createVariant('Teal 200', '#84def0'), // primitives/color/primary-teal/teal-200 from Figma variables
+  createVariant('Teal 300', '#56d2eb'), // primitives/color/primary-teal/teal-300 from Figma variables
+  createVariant('Teal 400', '#1bc3e4'), // primitives/color/primary-teal/teal-400 from Figma variables
+  createVariant('Teal 500', '#128197'), // primitives/color/primary-teal/teal-500 from Figma variables
+  createVariant('Teal 600', '#0f6d80'), // primitives/color/primary-teal/teal-600 from Figma variables
+  createVariant('Teal 700', '#0d5d6d'), // primitives/color/primary-teal/teal-700 from Figma variables
+  createVariant('Teal 800', '#0a4652'), // primitives/color/primary-teal/teal-800 from Figma variables
+  createVariant('Teal 900', '#072f37'), // primitives/color/primary-teal/teal-900 from Figma variables
 ];
 
 // Brand Pink - 10 shades

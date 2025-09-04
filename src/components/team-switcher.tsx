@@ -20,7 +20,7 @@ export function TeamSwitcher() {
       >
         <div className="flex  items-center justify-center">
           <Image
-            src="/logo/wordly-logo.svg"
+            src="/logo/wordly-logo-primary-with-radius-border.png"
             alt="Wordly Logo"
             width={40}
             height={40}

@@ -32,67 +32,55 @@ module.exports = {
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         brand: {
-          "primary-teal": "#128197", // Base primary teal-500
-          "secondary-navy": "#0B1C3A", // Base secondary navy-500
-          "accent-light-blue": "#26C7E6", // Base accent light blue-500
+          "primary-teal": "#128197", // primitives/color/primary-teal/teal-500 - Figma variables
+          "secondary-navy": "#0b1c3a", // primitives/color/secondary-navy/navy-500 - Figma variables
+          "accent-green": "#28e6b6", // primitives/color/accent-green/green-500 - Figma variables
           // Legacy colors (deprecated)
           teal: "#118197",
           pink: "#E0007B",
         },
-        // New Primary Teal palette
+        // Primary Teal palette - Figma Variables Source of Truth
         "primary-teal": {
           25: "#F0FCFC",
-          50: "#E6F4F7",
-          100: "#C5E8EE",
-          200: "#84DEF0",
-          300: "#5CB9CA",
-          400: "#30A3B7",
-          500: "#118197", // Base primary teal
-          600: "#0C687A",
-          700: "#08505D",
-          800: "#063840",
-          900: "#021F24",
+          50: "#e8f9fc", // primitives/color/primary-teal/teal-50 from Figma variables
+          100: "#bbedf7", // primitives/color/primary-teal/teal-100 from Figma variables
+          200: "#84def0", // primitives/color/primary-teal/teal-200 from Figma variables
+          300: "#56d2eb", // primitives/color/primary-teal/teal-300 from Figma variables
+          400: "#1bc3e4", // primitives/color/primary-teal/teal-400 from Figma variables
+          500: "#128197", // primitives/color/primary-teal/teal-500 from Figma variables
+          600: "#0f6d80", // primitives/color/primary-teal/teal-600 from Figma variables
+          700: "#0d5d6d", // primitives/color/primary-teal/teal-700 from Figma variables
+          800: "#0a4652", // primitives/color/primary-teal/teal-800 from Figma variables
+          900: "#072f37", // primitives/color/primary-teal/teal-900 from Figma variables
         },
-        // New Secondary Navy palette
+        // Secondary Navy palette - Figma Variables Source of Truth
         "secondary-navy": {
           25: "#F4F6FA",
-          50: "#E8EDF5",
-          100: "#C5D3E8",
-          200: "#9BB4D9",
-          300: "#6688C4",
-          400: "#3A5FAF",
-          500: "#0B1C3A", // Base secondary navy
-          600: "#091731",
-          700: "#071228",
+          50: "#d4e1f7", // primitives/color/secondary-navy/navy-50 from Figma variables
+          100: "#94b3eb", // primitives/color/secondary-navy/navy-100 from Figma variables
+          200: "#5486de", // primitives/color/secondary-navy/navy-200 from Figma variables
+          300: "#255dc1", // primitives/color/secondary-navy/navy-300 from Figma variables
+          400: "#183e81", // primitives/color/secondary-navy/navy-400 from Figma variables
+          500: "#0b1c3a", // primitives/color/secondary-navy/navy-500 from Figma variables
+          600: "#0a1933", // primitives/color/secondary-navy/navy-600 from Figma variables
+          700: "#030811", // primitives/color/secondary-navy/navy-700 from Figma variables
           800: "#050E1F",
           900: "#030916",
         },
-        // New Accent Light Blue palette
-        "accent-light-blue": {
-          50: "#F0F9FB",
-          100: "#D6EDF3",
-          200: "#AFDAE6",
-          300: "#7BC2D3",
-          400: "#51C4DC",
-          500: "#26C7E6", // Base accent light blue
-          600: "#1FA5C1",
-          700: "#18839C",
-          800: "#116177",
-          900: "#0A3F52",
-        },
-        // New Accent Green palette
+                // Accent Green palette - Figma Variables Source of Truth  
         "accent-green": {
-          50: "hsl(158 50% 97%)",
-          100: "hsl(158 60% 90%)",
-          200: "hsl(158 65% 82%)",
-          300: "hsl(158 70% 73%)",
-          400: "hsl(158 72% 63%)",
-          500: "hsl(158 74% 54%)", // Base accent green #28E6B6
-          600: "hsl(158 76% 45%)",
-          700: "hsl(158 78% 36%)",
-          800: "hsl(158 80% 27%)",
-          900: "hsl(158 82% 18%)",
+          50: "#E8FCF7", // Calculated from base
+          100: "#C8F9EC", // Calculated from base
+          200: "#BAF7E8", // Calculated from base
+          300: "#8DF2D8", // Calculated from base
+          400: "#5FECC9", // Calculated from base
+          500: "#28e6b6", // primitives/color/accent-green/green-500 from Figma variables
+          600: "#15B78E", // Calculated from base
+          700: "#10896A", // Calculated from base
+          800: "#0B5B47", // Calculated from base
+          900: "#052E23", // Calculated from base
         },
+
         // Legacy Extended brand teal palette (deprecated)
         teal: {
           50: "#E6F4F7",
@@ -119,70 +107,70 @@ module.exports = {
           800: "#570031",
           900: "#290019",
         },
-        // Semantic green palette for affirmative actions
+        // Success Green palette - Figma Variables Source of Truth
         success: {
-          50: "#E6F6EC",
-          100: "#C5E8D2",
-          200: "#9CD7B0",
-          300: "#66C188",
-          400: "#34AD67",
-          500: "#0C9A4E", // Base green
-          600: "#0A7B3F",
-          700: "#085D2F",
-          800: "#053E20",
-          900: "#021F10",
+          50: "#e6f6ec", // color/grey/93 from Figma variables
+          100: "#c5e8d2", // color/spring green/84 from Figma variables
+          200: "#9cd7b0", // color/spring green/73 from Figma variables
+          300: "#66c188", // color/spring green/58 from Figma variables
+          400: "#34ad67", // color/spring green/44 from Figma variables
+          500: "#0c9a4e", // color/spring green/33 from Figma variables
+          600: "#0a7b3f", // color/spring green/26 from Figma variables
+          700: "#085d2f", // color/spring green/20 from Figma variables
+          800: "#053e20", // color/spring green/13 from Figma variables
+          900: "#021f10", // color/spring green/6 from Figma variables
         },
-        // Semantic red palette for destructive actions
+        // Error Red palette - Figma Variables Source of Truth
         error: {
-          50: "#FCEBEA",
-          100: "#F9CFCC",
-          200: "#F5A8A2",
-          300: "#F07870",
-          400: "#EA4F45",
-          500: "#E62D21", // Base red
-          600: "#B8221A",
-          700: "#8A1A13",
-          800: "#5C110D",
-          900: "#2E0906",
+          50: "#FCEBEA", // Calculated from base
+          100: "#F9CFCC", // Calculated from base
+          200: "#f5a8a2", // color/red/80 from Figma variables
+          300: "#f07870", // color/red/69 from Figma variables
+          400: "#ea4f45", // color/red/59 from Figma variables
+          500: "#e62d21", // color/red/52 from Figma variables
+          600: "#b8221a", // color/red/41 from Figma variables
+          700: "#8a1a13", // color/red/31 from Figma variables
+          800: "#5c110d", // color/red/21 from Figma variables
+          900: "#2e0906", // color/red/10 from Figma variables
         },
-        // Blue palette for informational purposes (links, info states)
+        // Informational Blue palette - Figma Variables Source of Truth
         blue: {
-          50: "hsl(var(--blue-50) / <alpha-value>)",
-          100: "hsl(var(--blue-100) / <alpha-value>)",
-          200: "hsl(var(--blue-200) / <alpha-value>)",
-          300: "hsl(var(--blue-300) / <alpha-value>)",
-          400: "hsl(var(--blue-400) / <alpha-value>)",
-          500: "hsl(var(--blue-500) / <alpha-value>)", // Base informational blue
-          600: "hsl(var(--blue-600) / <alpha-value>)",
-          700: "hsl(var(--blue-700) / <alpha-value>)",
-          800: "hsl(var(--blue-800) / <alpha-value>)",
-          900: "hsl(var(--blue-900) / <alpha-value>)",
+          50: "#EBF5FF", // Calculated from base
+          100: "#D1E7FF", // Calculated from base
+          200: "#B3D4FF", // Calculated from base
+          300: "#84c5ff", // color/azure/76 from Figma variables
+          400: "#53b1fd", // color/azure/66 from Figma variables
+          500: "#2463eb", // color/azure/53 from Figma variables
+          600: "#1d4fd7", // color/azure/48 from Figma variables
+          700: "#1e3fae", // color/blue/40 from Figma variables
+          800: "#1e3a8a", // color/azure/33 from Figma variables
+          900: "#1e2f60", // color/azure/25 from Figma variables
         },
-        // Orange palette for warnings
+        // Warning Orange palette - Figma Variables Source of Truth
         orange: {
-          50: "hsl(var(--orange-50) / <alpha-value>)",
-          100: "hsl(var(--orange-100) / <alpha-value>)",
-          200: "hsl(var(--orange-200) / <alpha-value>)",
-          300: "hsl(var(--orange-300) / <alpha-value>)",
-          400: "hsl(var(--orange-400) / <alpha-value>)",
-          500: "hsl(var(--orange-500) / <alpha-value>)", // Base warning orange
-          600: "hsl(var(--orange-600) / <alpha-value>)",
-          700: "hsl(var(--orange-700) / <alpha-value>)",
-          800: "hsl(var(--orange-800) / <alpha-value>)",
-          900: "hsl(var(--orange-900) / <alpha-value>)",
+          50: "#fff6eb", // color/grey/96 from Figma variables
+          100: "#ffedd5", // color/grey/92 from Figma variables
+          200: "#fed7aa", // color/orange/83 from Figma variables
+          300: "#fdba74", // color/orange/72 from Figma variables
+          400: "#fb923c", // color/orange/61 from Figma variables
+          500: "#f97316", // color/orange/53 from Figma variables
+          600: "#ea580c", // color/orange/48 from Figma variables
+          700: "#c2410c", // color/orange/40 from Figma variables
+          800: "#9a3412", // color/orange/34 from Figma variables
+          900: "#7c2d12", // color/orange/28 from Figma variables
         },
-        // Extended UI gray palette
+        // UI Gray palette - Figma Variables Source of Truth
         gray: {
-          50: "#F8F9FA",
-          100: "#EEF0F2",
-          200: "#E3E6E8",
-          300: "#CDD2D7",
-          400: "#9BA3AB",
-          500: "#646E78",
-          600: "#495057",
-          700: "#343A40",
-          800: "#212529",
-          900: "#121416",
+          50: "#f6f9fc", // color/grey/98 from Figma variables
+          100: "#eef0f2", // color/grey/94 from Figma variables
+          200: "#e3e6e8", // color/grey/90 from Figma variables
+          300: "#cdd2d7", // color/azure/82 from Figma variables
+          400: "#9ba3ab", // color/grey/64 from Figma variables
+          500: "#646e78", // color/grey/43 from Figma variables
+          600: "#495057", // color/grey/31 from Figma variables
+          700: "#343a40", // color/azure/23 from Figma variables
+          800: "#212529", // color/azure/15 from Figma variables
+          900: "#121416", // color/azure/8 from Figma variables
         },
         primary: {
           DEFAULT: "hsl(var(--primary) / <alpha-value>)",

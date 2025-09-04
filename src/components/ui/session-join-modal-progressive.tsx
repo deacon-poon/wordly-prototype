@@ -40,6 +40,7 @@ import {
   Users2,
   ChevronDown,
   ExternalLink,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -301,8 +302,17 @@ export function SessionJoinModalProgressive({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            Join This Session
+          <DialogTitle className="text-xl font-bold flex items-center justify-between">
+            <span>Join This Session</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.open("https://help.wordly.ai", "_blank")}
+              className="h-8 w-8 text-gray-500 hover:text-gray-700"
+              aria-label="Help Center"
+            >
+              <HelpCircle className="h-5 w-5" />
+            </Button>
           </DialogTitle>
           <DialogDescription>
             Choose how you'd like to participate in this Wordly session.
@@ -312,17 +322,13 @@ export function SessionJoinModalProgressive({
         <div className="space-y-6 pb-4">
           {/* Primary Actions */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">
-              I want to...
-            </h3>
-
             {/* As Presenter Section */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-primary-teal-500 rounded-full"></div>
                 <div>
                   <h4 className="text-md font-semibold text-gray-900">
-                    Present
+                    For Presenters
                   </h4>
                   <p className="text-sm text-gray-600 -mt-1">
                     Share my audio with the audience
@@ -333,25 +339,34 @@ export function SessionJoinModalProgressive({
               <div className="space-y-3">
                 {/* Present Audio */}
                 <ProgressiveMethodItem
-                  title="Present Audio"
-                  description="Speak at event or meeting"
+                  title="Speak at an in-person event"
+                  description="Share your voice with real-time translation for live audiences"
                   illustration="/asset/illustration/speak-in-person.png"
                   icon={<Mic className="w-4 h-4" />}
                   variant="presenter"
                 >
                   <div className="space-y-3">
+                    {/* Primary Present Now Button */}
+                    <Button
+                      onClick={() => onJoinAsPresenter("present-now")}
+                      className="w-full bg-primary-teal-600 hover:bg-primary-teal-700 text-white font-semibold"
+                      size="default"
+                    >
+                      Present Now
+                    </Button>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <Button
                         onClick={() => onJoinAsPresenter("quick-link")}
-                        className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+                        variant="outline"
+                        className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
                         size="sm"
                       >
                         Copy quick link
                       </Button>
                       <Button
                         onClick={() => onJoinAsPresenter("secure-link")}
-                        variant="outline"
-                        className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                        variant="secondary"
                         size="sm"
                       >
                         Copy secure link (separate passcode)
@@ -367,8 +382,8 @@ export function SessionJoinModalProgressive({
 
                 {/* Invite to Meeting */}
                 <ProgressiveMethodItem
-                  title="Invite to Meeting"
-                  description="Add bot to video call"
+                  title="Video Conference"
+                  description="Integrate with Teams, Zoom, WebEx, Google Meet, and more"
                   illustration="/asset/illustration/video-meeting.png"
                   icon={<Video className="w-4 h-4" />}
                   variant="presenter"
@@ -460,15 +475,6 @@ export function SessionJoinModalProgressive({
                         </div>
                       </div>
                     )}
-
-                    <Button
-                      onClick={() => onJoinAsPresenter("meeting-setup")}
-                      variant="outline"
-                      className="w-full border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
-                      size="sm"
-                    >
-                      Advanced Setup
-                    </Button>
                   </div>
                 </ProgressiveMethodItem>
 
@@ -489,54 +495,6 @@ export function SessionJoinModalProgressive({
                     >
                       Configure RTMPS
                     </Button>
-
-                    {/* FAQ-style accordion sections */}
-                    <div className="pt-3 border-t border-primary-teal-200 space-y-2">
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-teal-200 rounded hover:bg-primary-teal-50">
-                          <span className="text-sm text-gray-900 font-medium">
-                            Have multiple microphones in one room?
-                          </span>
-                          <ChevronDown className="w-4 h-4 text-primary-teal-600" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="p-3 bg-primary-teal-25 border border-primary-teal-200 border-t-0 rounded-b">
-                          <p className="text-sm text-gray-900 mb-3">
-                            Join using "push to talk". You will need to hold
-                            down the microphone button to speak. This helps
-                            avoid accidental audio interference.
-                          </p>
-                          <Button
-                            variant="link"
-                            className="text-primary-teal-600 hover:text-primary-teal-700 p-0 h-auto text-sm"
-                            onClick={() => window.open("#", "_blank")}
-                          >
-                            Learn about push to talk →
-                          </Button>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-teal-200 rounded hover:bg-primary-teal-50">
-                          <span className="text-sm text-gray-900 font-medium">
-                            Have people speaking 2+ languages in 1 microphone?
-                          </span>
-                          <ChevronDown className="w-4 h-4 text-primary-teal-600" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="p-3 bg-primary-teal-25 border border-primary-teal-200 border-t-0 rounded-b">
-                          <p className="text-sm text-gray-900 mb-3">
-                            Wordly can automatically select the input language
-                            from among the languages you've added to the
-                            language panel. This takes up to 15 seconds.
-                          </p>
-                          <p className="text-sm text-gray-600 mb-2">
-                            <strong>Tip:</strong> Fewer languages gives faster
-                            performance. For quicker changes, manually click the
-                            language in the language panel before each person
-                            speaks.
-                          </p>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </div>
                   </div>
                 </ProgressiveMethodItem>
               </div>
@@ -548,7 +506,7 @@ export function SessionJoinModalProgressive({
                 <div className="w-3 h-3 bg-accent-green-500 rounded-full"></div>
                 <div>
                   <h4 className="text-md font-semibold text-gray-900">
-                    Listen
+                    For Attendees
                   </h4>
                   <p className="text-sm text-gray-600 -mt-1">
                     Receive translations and captions
@@ -559,8 +517,8 @@ export function SessionJoinModalProgressive({
               <div className="space-y-3">
                 {/* Listen/Translate */}
                 <ProgressiveMethodItem
-                  title="Listen/Translate"
-                  description="Join on your device"
+                  title="Join on your device"
+                  description="Download QR code to access translations"
                   illustration="/asset/illustration/user-join-device-with-qr-code.png"
                   icon={<Smartphone className="w-4 h-4" />}
                   variant="attendee"
@@ -596,8 +554,8 @@ export function SessionJoinModalProgressive({
 
                 {/* Public Display */}
                 <ProgressiveMethodItem
-                  title="Public Display"
-                  description="Show on big screen"
+                  title="Large Display"
+                  description="Show translations and subtitles on big screen displays"
                   illustration="/asset/illustration/big-screen-display.png"
                   icon={<Monitor className="w-4 h-4" />}
                   variant="attendee"
@@ -611,14 +569,37 @@ export function SessionJoinModalProgressive({
                     >
                       Open Public Display
                     </Button>
-                    <Button
-                      onClick={() => onJoinAsAttendee("public-monitor")}
-                      variant="outline"
-                      className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                      size="sm"
-                    >
-                      Monitor Setup
-                    </Button>
+
+                    {/* Embedded Subtitling Settings - FAQ Style */}
+                    <div className="pt-2 border-t border-accent-green-200">
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                          <span className="text-sm text-gray-900 font-medium">
+                            Embedded Subtitling
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-accent-green-600" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
+                          <p className="text-sm text-gray-900 mb-3">
+                            Add live subtitles directly to your video content or
+                            streaming platform.
+                          </p>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="p-0 h-auto font-normal text-accent-green-700 hover:text-accent-green-800 underline"
+                            onClick={() =>
+                              window.open(
+                                "https://help.wordly.ai/subtitles",
+                                "_blank"
+                              )
+                            }
+                          >
+                            Learn how to add subtitles
+                          </Button>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </div>
                   </div>
                 </ProgressiveMethodItem>
 
@@ -652,29 +633,6 @@ export function SessionJoinModalProgressive({
                             onClick={() => onJoinAsAttendee("iframe")}
                           >
                             Use an iFrame
-                          </Button>
-                        </CollapsibleContent>
-                      </Collapsible>
-
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
-                          <span className="text-sm text-gray-900 font-medium">
-                            Embedded Subtitling
-                          </span>
-                          <ChevronDown className="w-4 h-4 text-accent-green-600" />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
-                          <p className="text-sm text-gray-900 mb-3">
-                            Add live subtitles directly to your video content or
-                            streaming platform.
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start border-accent-green-300 text-accent-green-700 hover:bg-accent-green-100 bg-white"
-                            onClick={() => onJoinAsAttendee("subtitles")}
-                          >
-                            Add Subtitles
                           </Button>
                         </CollapsibleContent>
                       </Collapsible>

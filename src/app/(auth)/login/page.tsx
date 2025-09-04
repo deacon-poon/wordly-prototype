@@ -64,7 +64,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center mb-8">
             <div className="mb-6">
               <Image
-                src="/asset/wordly-logo-teal-with-container.png"
+                src="/logo/wordly-logo-primary-with-radius-border.png"
                 alt="Wordly Logo"
                 width={96}
                 height={96}

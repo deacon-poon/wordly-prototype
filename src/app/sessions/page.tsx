@@ -23,7 +23,6 @@ import {
   User as UserIcon,
   Clock as ClockIcon,
   Globe,
-  ToggleLeft,
   Lock,
   Pin,
   Volume2,
@@ -44,8 +43,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/components/ui/data-table";
 import { useAppShell } from "@/components/layouts/AppShellProvider";
-import { SessionJoinModal } from "@/components/ui/session-join-modal";
-import { SessionJoinModalCompact } from "@/components/ui/session-join-modal-compact";
 import { SessionJoinModalProgressive } from "@/components/ui/session-join-modal-progressive";
 
 // Define the session type
@@ -163,9 +160,7 @@ export default function SessionsPage() {
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(
     new Set()
   );
-  const [modalVariant, setModalVariant] = useState<
-    "detailed" | "compact" | "progressive"
-  >("progressive");
+  // Progressive modal is now the default and only option
 
   // Separate running and other sessions
   const runningSessions = mockSessions.filter(
@@ -301,7 +296,7 @@ export default function SessionsPage() {
           </p>
 
           <div className="flex items-center">
-            <ToggleLeft className="w-4 h-4 mr-2 text-gray-400" />
+            <Check className="w-4 h-4 mr-2 text-gray-400" />
             <p className="text-sm font-medium text-gray-500">Auto Select:</p>
           </div>
           <div className="flex items-center">
@@ -368,26 +363,6 @@ export default function SessionsPage() {
             <Users className="h-4 w-4 mr-2" />
             <span>Join Session</span>
           </Button>
-
-          {/* Modal Version Toggle */}
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => {
-                const variants: Array<"detailed" | "compact" | "progressive"> =
-                  ["progressive", "compact", "detailed"];
-                const currentIndex = variants.indexOf(modalVariant);
-                const nextIndex = (currentIndex + 1) % variants.length;
-                setModalVariant(variants[nextIndex]);
-              }}
-              variant="outline"
-              size="sm"
-              className="h-9"
-              title={`Current: ${modalVariant} - Click to cycle through variants`}
-            >
-              <ToggleLeft className="h-4 w-4 mr-1 transition-transform" />
-              <span className="text-xs capitalize">{modalVariant}</span>
-            </Button>
-          </div>
         </div>
 
         <div className="flex grow items-center justify-end gap-2">
@@ -773,34 +748,14 @@ export default function SessionsPage() {
         </div>
       </div>
 
-      {/* Session Join Modal */}
-      {modalVariant === "progressive" && (
-        <SessionJoinModalProgressive
-          open={isJoinModalOpen}
-          onOpenChange={setIsJoinModalOpen}
-          sessionId={joinSessionId}
-          onJoinAsPresenter={handleJoinAsPresenter}
-          onJoinAsAttendee={handleJoinAsAttendee}
-        />
-      )}
-      {modalVariant === "compact" && (
-        <SessionJoinModalCompact
-          open={isJoinModalOpen}
-          onOpenChange={setIsJoinModalOpen}
-          sessionId={joinSessionId}
-          onJoinAsPresenter={handleJoinAsPresenter}
-          onJoinAsAttendee={handleJoinAsAttendee}
-        />
-      )}
-      {modalVariant === "detailed" && (
-        <SessionJoinModal
-          open={isJoinModalOpen}
-          onOpenChange={setIsJoinModalOpen}
-          sessionId={joinSessionId}
-          onJoinAsPresenter={handleJoinAsPresenter}
-          onJoinAsAttendee={handleJoinAsAttendee}
-        />
-      )}
+      {/* Session Join Modal - Progressive (Default and Only Option) */}
+      <SessionJoinModalProgressive
+        open={isJoinModalOpen}
+        onOpenChange={setIsJoinModalOpen}
+        sessionId={joinSessionId}
+        onJoinAsPresenter={handleJoinAsPresenter}
+        onJoinAsAttendee={handleJoinAsAttendee}
+      />
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function AppSidebar() {
       <SidebarHeader className="flex items-center justify-start px-4">
         <div className="flex items-center">
           <Image
-            src="/logo/wordly-logo.svg"
+            src="/logo/wordly-logo-primary-with-radius-border.png"
             alt="Wordly Logo"
             width={36}
             height={36}
