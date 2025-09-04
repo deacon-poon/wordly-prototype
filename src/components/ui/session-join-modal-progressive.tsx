@@ -40,7 +40,7 @@ import {
   Users2,
   ChevronDown,
   ExternalLink,
-  HelpCircle,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -302,20 +302,20 @@ export function SessionJoinModalProgressive({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-xl font-bold flex items-center justify-between">
-            <span>Join This Session</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => window.open("https://help.wordly.ai", "_blank")}
-              className="h-8 w-8 text-gray-500 hover:text-gray-700"
-              aria-label="Help Center"
-            >
-              <HelpCircle className="h-5 w-5" />
-            </Button>
+          <DialogTitle className="text-xl font-bold">
+            Join This Session
           </DialogTitle>
-          <DialogDescription>
-            Choose how you'd like to participate in this Wordly session.
+          <DialogDescription className="flex items-center gap-2 flex-wrap">
+            <span>
+              Choose how you'd like to participate in this Wordly session.
+            </span>
+            <button
+              onClick={() => window.open("https://help.wordly.ai", "_blank")}
+              className="inline-flex items-center gap-1 text-primary-teal-600 hover:text-primary-teal-700 underline font-medium text-sm"
+            >
+              <Info className="h-4 w-4" />
+              Learn about the options
+            </button>
           </DialogDescription>
         </DialogHeader>
 
@@ -524,14 +524,28 @@ export function SessionJoinModalProgressive({
                   variant="attendee"
                 >
                   <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <Button
-                        onClick={() => onJoinAsAttendee("download-qr")}
+                        onClick={() => {
+                          const url = `https://wordly.ai/join/${
+                            sessionId || "demo"
+                          }`;
+                          window.open(url, "_blank");
+                        }}
                         className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
                         size="sm"
                       >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Join Session
+                      </Button>
+                      <Button
+                        onClick={() => onJoinAsAttendee("download-qr")}
+                        variant="outline"
+                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        size="sm"
+                      >
                         <Download className="w-4 h-4 mr-2" />
-                        Download QR code
+                        Download QR
                       </Button>
                       <Button
                         onClick={() => onJoinAsAttendee("print-qr")}
@@ -540,14 +554,8 @@ export function SessionJoinModalProgressive({
                         size="sm"
                       >
                         <Printer className="w-4 h-4 mr-2" />
-                        Print QR code
+                        Print QR
                       </Button>
-                    </div>
-
-                    <div className="pt-3 border-t border-accent-green-200">
-                      <p className="text-xs text-gray-600 mb-2">
-                        Attendee link: https://attend.wordly.ai/join/ZGSG-0712
-                      </p>
                     </div>
                   </div>
                 </ProgressiveMethodItem>
@@ -561,21 +569,66 @@ export function SessionJoinModalProgressive({
                   variant="attendee"
                 >
                   <div className="space-y-3">
-                    <Button
-                      onClick={() => onJoinAsAttendee("big-screen")}
-                      variant="outline"
-                      className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                      size="sm"
-                    >
-                      Open Public Display
-                    </Button>
+                    {/* Main action buttons */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => onJoinAsAttendee("big-screen")}
+                        className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
+                        size="sm"
+                      >
+                        Open
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const url = `https://wordly.ai/join/${
+                            sessionId || "demo"
+                          }/display`;
+                          navigator.clipboard.writeText(url);
+                        }}
+                        variant="outline"
+                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        size="sm"
+                      >
+                        Copy link
+                      </Button>
+                    </div>
 
-                    {/* Embedded Subtitling Settings - FAQ Style */}
-                    <div className="pt-2 border-t border-accent-green-200">
+                    {/* FAQ-style help sections */}
+                    <div className="space-y-2">
+                      {/* Public Display Setup */}
                       <Collapsible>
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
                           <span className="text-sm text-gray-900 font-medium">
-                            Embedded Subtitling
+                            How to set up public display
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-accent-green-600" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
+                          <p className="text-sm text-gray-900 mb-3">
+                            Set up large screen displays for attendees to view
+                            translations and captions in real-time.
+                          </p>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="p-0 h-auto font-normal text-accent-green-700 hover:text-accent-green-800 underline"
+                            onClick={() =>
+                              window.open(
+                                "https://help.wordly.ai/public-display",
+                                "_blank"
+                              )
+                            }
+                          >
+                            View detailed setup guide
+                          </Button>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Subtitles Setup */}
+                      <Collapsible>
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                          <span className="text-sm text-gray-900 font-medium">
+                            How to set up subtitles
                           </span>
                           <ChevronDown className="w-4 h-4 text-accent-green-600" />
                         </CollapsibleTrigger>
@@ -595,7 +648,7 @@ export function SessionJoinModalProgressive({
                               )
                             }
                           >
-                            Learn how to add subtitles
+                            View setup instructions
                           </Button>
                         </CollapsibleContent>
                       </Collapsible>
