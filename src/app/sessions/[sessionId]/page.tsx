@@ -258,7 +258,7 @@ export default function SessionDetailPage({
                               size="sm"
                               className="flex-1"
                             >
-                              Copy secure link
+                              Copy secure link (with separate passcode)
                             </Button>
                             <div className="text-xs text-gray-600 text-right">
                               <span className="text-gray-500">Passcode: </span>

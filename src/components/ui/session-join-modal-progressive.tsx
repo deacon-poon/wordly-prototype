@@ -370,7 +370,7 @@ export function SessionJoinModalProgressive({
                         variant="secondary"
                         size="sm"
                       >
-                        Copy secure link (separate passcode)
+                        Copy secure link (with separate passcode)
                       </Button>
                     </div>
                     <div className="pt-2 border-t border-primary-teal-200">
