@@ -43,6 +43,7 @@ import {
   Users2,
   ChevronDown,
   ExternalLink,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -560,15 +561,36 @@ export function SessionJoinModalCompact({
                       Technical
                     </h5>
                     <div className="space-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => onJoinAsPresenter("rtmps")}
-                      >
-                        <Radio className="w-4 h-4 mr-2" />
-                        RTMPS Stream
-                      </Button>
+                      <div className="grid grid-cols-2 gap-1">
+                        <Button
+                          onClick={() =>
+                            window.open(
+                              "https://help.wordly.ai/develop/rtmp-streaming/",
+                              "_blank"
+                            )
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          <Copy className="w-3 h-3 mr-1" />
+                          Copy RTMPS Link
+                        </Button>
+                        <Button
+                          onClick={() =>
+                            window.open(
+                              "https://help.wordly.ai/develop/rtmp-streaming/",
+                              "_blank"
+                            )
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          <Copy className="w-3 h-3 mr-1" />
+                          Copy Stream Key
+                        </Button>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"

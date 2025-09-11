@@ -41,6 +41,7 @@ import {
   ChevronDown,
   ExternalLink,
   Info,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -487,14 +488,36 @@ export function SessionJoinModalProgressive({
                   variant="presenter"
                 >
                   <div className="space-y-3">
-                    <Button
-                      onClick={() => onJoinAsPresenter("rtmps")}
-                      variant="outline"
-                      className="w-full border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
-                      size="sm"
-                    >
-                      Configure RTMPS
-                    </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <Button
+                        onClick={() =>
+                          window.open(
+                            "https://help.wordly.ai/develop/rtmp-streaming/",
+                            "_blank"
+                          )
+                        }
+                        variant="outline"
+                        className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                        size="sm"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy RTMPS Link
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          window.open(
+                            "https://help.wordly.ai/develop/rtmp-streaming/",
+                            "_blank"
+                          )
+                        }
+                        variant="outline"
+                        className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                        size="sm"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Stream Key
+                      </Button>
+                    </div>
                   </div>
                 </ProgressiveMethodItem>
               </div>
@@ -524,19 +547,35 @@ export function SessionJoinModalProgressive({
                   variant="attendee"
                 >
                   <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                       <Button
                         onClick={() => {
                           const url = `https://wordly.ai/join/${
                             sessionId || "demo"
                           }`;
-                          window.open(url, "_blank");
+                          navigator.clipboard.writeText(url);
+                          // TODO: Show toast notification
                         }}
                         className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
                         size="sm"
                       >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Join Session
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Link
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const url = `https://wordly.ai/join/${
+                            sessionId || "demo"
+                          }?passcode=327269`;
+                          navigator.clipboard.writeText(url);
+                          // TODO: Show toast notification
+                        }}
+                        variant="outline"
+                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        size="sm"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy Link + Passcode
                       </Button>
                       <Button
                         onClick={() => onJoinAsAttendee("download-qr")}

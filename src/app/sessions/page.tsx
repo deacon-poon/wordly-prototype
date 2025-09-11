@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/components/ui/data-table";
 import { useAppShell } from "@/components/layouts/AppShellProvider";
-import { SessionJoinModalProgressive } from "@/components/ui/session-join-modal-progressive";
+import { useRouter } from "next/navigation";
 
 // Define the session type
 interface Session {
@@ -150,17 +150,15 @@ const mockSessions: Session[] = [
 ];
 
 export default function SessionsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<Session | undefined>(
     undefined
   );
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [joinSessionId, setJoinSessionId] = useState<string>("");
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(
     new Set()
   );
-  // Progressive modal is now the default and only option
 
   // Separate running and other sessions
   const runningSessions = mockSessions.filter(
@@ -178,31 +176,8 @@ export default function SessionsPage() {
   };
 
   const handleJoinSession = (sessionId?: string) => {
-    setJoinSessionId(sessionId || "");
-    setIsJoinModalOpen(true);
-  };
-
-  const handleJoinAsPresenter = (method: string) => {
-    console.log(
-      `Joining session ${joinSessionId} as presenter with method: ${method}`
-    );
-
-    alert(
-      `Joined session ${joinSessionId} as presenter with method: ${method}`
-    );
-    setIsJoinModalOpen(false);
-  };
-
-  const handleJoinAsAttendee = (method: string) => {
-    console.log(
-      `Joining session ${joinSessionId} as attendee with method: ${method}`
-    );
-    // Here you would implement the actual join logic
-    // For example: router.push(`/attend/${joinSessionId}?method=${method}`);
-    alert(
-      `Joining session ${joinSessionId} as attendee with method: ${method}`
-    );
-    setIsJoinModalOpen(false);
+    const id = sessionId || "demo-session";
+    router.push(`/sessions/${id}`);
   };
 
   const toggleSessionExpansion = (sessionId: string) => {
@@ -747,15 +722,6 @@ export default function SessionsPage() {
           </div>
         </div>
       </div>
-
-      {/* Session Join Modal - Progressive (Default and Only Option) */}
-      <SessionJoinModalProgressive
-        open={isJoinModalOpen}
-        onOpenChange={setIsJoinModalOpen}
-        sessionId={joinSessionId}
-        onJoinAsPresenter={handleJoinAsPresenter}
-        onJoinAsAttendee={handleJoinAsAttendee}
-      />
     </div>
   );
 }

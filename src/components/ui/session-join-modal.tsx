@@ -45,6 +45,7 @@ import {
   Radio,
   Users2,
   ChevronRight,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -423,14 +424,36 @@ export function SessionJoinModal({
                         <p className="text-sm text-gray-600 mb-3">
                           Send audio via RTMPS protocol
                         </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => onJoinAsPresenter("rtmps")}
-                        >
-                          Configure RTMPS
-                        </Button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <Button
+                            onClick={() =>
+                              window.open(
+                                "https://help.wordly.ai/develop/rtmp-streaming/",
+                                "_blank"
+                              )
+                            }
+                            variant="outline"
+                            className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                            size="sm"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy RTMPS Link
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              window.open(
+                                "https://help.wordly.ai/develop/rtmp-streaming/",
+                                "_blank"
+                              )
+                            }
+                            variant="outline"
+                            className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                            size="sm"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy Stream Key
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
 

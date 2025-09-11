@@ -8,7 +8,14 @@ import { cn } from "@/lib/utils";
 
 interface SessionJoinButtonProps {
   sessionId?: string;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success";
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | "success";
   size?: "sm" | "default" | "lg";
   className?: string;
   children?: React.ReactNode;
