@@ -58,8 +58,8 @@ function ProgressiveMethodItem({
         "relative transition-all duration-300 ease-in-out",
         "border rounded-lg",
         variant === "presenter"
-          ? "border-primary-teal-200 bg-primary-teal-50/30 hover:bg-primary-teal-50/50 hover:border-primary-teal-300"
-          : "border-accent-green-200 bg-accent-green-50/30 hover:bg-accent-green-50/50 hover:border-accent-green-300",
+          ? "border-primary-teal-500 bg-primary-teal-100/40 hover:bg-primary-teal-100/60 hover:border-primary-teal-600"
+          : "border-primary-teal-200 bg-white hover:bg-primary-teal-50/30 hover:border-primary-teal-300",
         isExpanded && "ring-2 ring-offset-1 shadow-lg",
         variant === "presenter" && isExpanded && "ring-primary-teal-200",
         variant === "attendee" && isExpanded && "ring-accent-green-200"
@@ -182,7 +182,7 @@ export default function SessionDetailPage({
             </Button>
 
             <h1 className="text-xl font-bold text-gray-900 flex-1 text-center">
-              Ways to Start this Session
+              Ways to Start This Session
             </h1>
 
             {/* Spacer to balance the layout */}
@@ -224,7 +224,7 @@ export default function SessionDetailPage({
                   {/* Present Audio */}
                   <ProgressiveMethodItem
                     title="Speak at an in-person event"
-                    description="Share your voice with real-time translation for live audiences"
+                    description="Share Your Voice with Real-Time Translation for Live Audiences"
                     illustration="/asset/illustration/speak-in-person.png"
                     icon={<Mic className="w-4 h-4" />}
                     variant="presenter"
@@ -246,7 +246,7 @@ export default function SessionDetailPage({
                           className="w-full border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
                           size="sm"
                         >
-                          Copy quick link
+                          Copy Quick Link
                         </Button>
 
                         {/* Secure link with passcode grouped together */}
@@ -258,7 +258,7 @@ export default function SessionDetailPage({
                               size="sm"
                               className="flex-1"
                             >
-                              Copy secure link (with separate passcode)
+                              Copy Secure Link (with Separate Passcode)
                             </Button>
                             <div className="text-xs text-gray-600 text-right">
                               <span className="text-gray-500">Passcode: </span>
@@ -275,7 +275,7 @@ export default function SessionDetailPage({
                   {/* Invite to Meeting */}
                   <ProgressiveMethodItem
                     title="Video Conference"
-                    description="Integrate with Teams, Zoom, WebEx, Google Meet, and more"
+                    description="Integrate with Teams, Zoom, WebEx, Google Meet, and More"
                     illustration="/asset/illustration/video-meeting.png"
                     icon={<Video className="w-4 h-4" />}
                     variant="presenter"
@@ -375,41 +375,112 @@ export default function SessionDetailPage({
                   {/* Send Audio to RTMPS - Progressive Item */}
                   <ProgressiveMethodItem
                     title="RTMPS"
-                    description="Stream audio to RTMPS"
+                    description="Stream Audio Using RTMPS"
                     illustration="/asset/illustration/rtmps-settings.png"
                     icon={<Radio className="w-4 h-4" />}
                     variant="presenter"
                   >
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <Button
-                          onClick={() =>
-                            window.open(
-                              "https://help.wordly.ai/develop/rtmp-streaming/",
-                              "_blank"
-                            )
-                          }
-                          variant="outline"
-                          className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
-                          size="sm"
-                        >
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy RTMPS Link
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            window.open(
-                              "https://help.wordly.ai/develop/rtmp-streaming/",
-                              "_blank"
-                            )
-                          }
-                          variant="outline"
-                          className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
-                          size="sm"
-                        >
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy Stream Key
-                        </Button>
+                    <div className="space-y-4">
+                      {/* Streaming Options */}
+                      <div className="space-y-3">
+                        <h5 className="text-sm font-medium text-gray-700">
+                          Streaming Options
+                        </h5>
+
+                        {/* Primary streaming buttons */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <Button
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                "rtmps://stream.wordly.ai/live/session-123"
+                              );
+                              // TODO: Show toast notification
+                            }}
+                            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+                            size="sm"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy RTMPS Link (Secure)
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                "rtmp://stream.wordly.ai/live/session-123"
+                              );
+                              // TODO: Show toast notification
+                            }}
+                            variant="outline"
+                            className="border-primary-teal-300 text-primary-teal-700 hover:bg-primary-teal-50"
+                            size="sm"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy RTMP Link
+                          </Button>
+                        </div>
+
+                        {/* Stream key in separate container */}
+                        <div className="bg-primary-teal-50/50 border border-primary-teal-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-600 mb-1">
+                                Stream Key:
+                              </p>
+                              <p className="text-sm font-mono text-gray-800 break-all">
+                                sk_live_abcd1234efgh5678
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  "sk_live_abcd1234efgh5678"
+                                );
+                                // TODO: Show toast notification
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="flex-shrink-0"
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copy
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Attend URL */}
+                      <div className="space-y-2">
+                        <h5 className="text-sm font-medium text-gray-700">
+                          Attend URL
+                        </h5>
+                        <div className="bg-primary-teal-50/50 border border-primary-teal-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-600 mb-1">
+                                Share this URL with attendees:
+                              </p>
+                              <p className="text-sm font-mono text-gray-800 break-all">
+                                https://attend.wordly.ai/join/
+                                {params.sessionId || "demo"}
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `https://attend.wordly.ai/join/${
+                                    params.sessionId || "demo"
+                                  }`
+                                );
+                                // TODO: Show toast notification
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="flex-shrink-0"
+                            >
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copy
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </ProgressiveMethodItem>
@@ -430,48 +501,54 @@ export default function SessionDetailPage({
                 <div className="space-y-3">
                   {/* Listen/Translate */}
                   <ProgressiveMethodItem
-                    title="Join on your device"
-                    description="Download QR code to access translations"
+                    title="Join on Your Device"
+                    description="Download QR Code to Access Translations"
                     illustration="/asset/illustration/user-join-device-with-qr-code.png"
                     icon={<Smartphone className="w-4 h-4" />}
                     variant="attendee"
                   >
                     <div className="space-y-3">
-                      {/* Primary Actions - Copy Links */}
-                      <div className="space-y-2">
-                        <h5 className="text-sm font-medium text-gray-700">
-                          Share Link
-                        </h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          <Button
-                            onClick={() => {
-                              const url = `https://wordly.ai/join/${
-                                params.sessionId || "demo"
-                              }`;
-                              navigator.clipboard.writeText(url);
-                              // TODO: Show toast notification
-                            }}
-                            className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
-                            size="sm"
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy Link
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              const url = `https://wordly.ai/join/${
-                                params.sessionId || "demo"
-                              }?passcode=327269`;
-                              navigator.clipboard.writeText(url);
-                              // TODO: Show toast notification
-                            }}
-                            variant="outline"
-                            className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                            size="sm"
-                          >
-                            <Copy className="w-4 h-4 mr-2" />
-                            Copy with Passcode
-                          </Button>
+                      {/* Unified UI matching presenter pattern */}
+                      <div className="space-y-3">
+                        <Button
+                          onClick={() => {
+                            const url = `https://wordly.ai/join/${
+                              params.sessionId || "demo"
+                            }`;
+                            navigator.clipboard.writeText(url);
+                            // TODO: Show toast notification
+                          }}
+                          variant="outline"
+                          className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                          size="sm"
+                        >
+                          Copy Quick Link
+                        </Button>
+
+                        {/* Secure link with passcode grouped together */}
+                        <div className="bg-accent-green-50/50 border border-accent-green-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <Button
+                              onClick={() => {
+                                const url = `https://wordly.ai/join/${
+                                  params.sessionId || "demo"
+                                }?passcode=327269`;
+                                navigator.clipboard.writeText(url);
+                                // TODO: Show toast notification
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                            >
+                              Copy Secure Link (with Separate Passcode)
+                            </Button>
+                            <div className="text-xs text-gray-600 text-right">
+                              <span className="text-gray-500">Passcode: </span>
+                              <span className="font-mono font-semibold text-gray-900">
+                                327269
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -488,7 +565,7 @@ export default function SessionDetailPage({
                             size="sm"
                           >
                             <Download className="w-4 h-4 mr-2" />
-                            Download QR
+                            Download QR Code
                           </Button>
                           <Button
                             onClick={() => onJoinAsAttendee("print-qr")}
@@ -497,7 +574,7 @@ export default function SessionDetailPage({
                             size="sm"
                           >
                             <Printer className="w-4 h-4 mr-2" />
-                            Print QR
+                            Print QR Code
                           </Button>
                         </div>
                       </div>
@@ -507,7 +584,7 @@ export default function SessionDetailPage({
                   {/* Public Display */}
                   <ProgressiveMethodItem
                     title="Display"
-                    description="Set up a big screen display QR add subtitles over a video."
+                    description="Set Up a Big Screen Display QR Add Subtitles Over a Video."
                     illustration="/asset/illustration/big-screen-display.png"
                     icon={<Monitor className="w-4 h-4" />}
                     variant="attendee"
@@ -533,7 +610,7 @@ export default function SessionDetailPage({
                           className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
                           size="sm"
                         >
-                          Copy link
+                          Copy Link
                         </Button>
                       </div>
 
@@ -603,31 +680,67 @@ export default function SessionDetailPage({
                   {/* iFrame Option - Progressive Item */}
                   <ProgressiveMethodItem
                     title="iFrame"
-                    description="iFrame transcriptions alongside your video"
+                    description="iFrame Transcriptions Alongside Your Video"
                     illustration="/asset/illustration/video-options.png"
                     icon={<Video className="w-4 h-4" />}
                     variant="attendee"
                   >
                     <div className="space-y-3">
-                      <div className="bg-accent-green-50 border border-accent-green-200 rounded p-3">
-                        <p className="text-sm text-gray-900 mb-3">
-                          <strong>
-                            iFrame (for captions with a livestream)
-                          </strong>
-                        </p>
-                        <p className="text-sm text-gray-700 mb-3">
-                          Embed Wordly captions directly into your livestream or
-                          video platform.
-                        </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
-                          onClick={() => onJoinAsAttendee("iframe")}
-                        >
-                          <Video className="w-4 h-4 mr-2" />
-                          Use iFrame
-                        </Button>
+                      {/* Main action button */}
+                      <Button
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            `https://attend.wordly.ai/frame/${
+                              params.sessionId || "demo"
+                            }`
+                          );
+                          // TODO: Show toast notification
+                        }}
+                        variant="outline"
+                        className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        size="sm"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy iFrame Attend URL
+                      </Button>
+
+                      {/* Help section */}
+                      <div className="space-y-2">
+                        <Collapsible>
+                          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                            <span className="text-sm text-gray-900 font-medium">
+                              How to set up iFrame captions
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-accent-green-600" />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="p-3 bg-accent-green-25 border border-accent-green-200 border-t-0 rounded-b">
+                            <p className="text-sm text-gray-900 mb-3">
+                              Embed Wordly captions directly into your
+                              livestream or video platform using an iFrame.
+                            </p>
+                            <p className="text-sm text-gray-700 mb-3">
+                              Example:{" "}
+                              <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">
+                                &lt;iframe src="https://attend.wordly.ai/frame/
+                                {params.sessionId || "demo"}
+                                ?lang=es&fgcolor=00FF00" width="100%" /&gt;
+                              </code>
+                            </p>
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 h-auto font-normal text-accent-green-700 hover:text-accent-green-800 underline"
+                              onClick={() =>
+                                window.open(
+                                  "https://help.wordly.ai/develop/rtmp-streaming/",
+                                  "_blank"
+                                )
+                              }
+                            >
+                              View detailed configuration guide
+                            </Button>
+                          </CollapsibleContent>
+                        </Collapsible>
                       </div>
                     </div>
                   </ProgressiveMethodItem>
