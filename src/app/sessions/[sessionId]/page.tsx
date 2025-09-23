@@ -501,7 +501,7 @@ export default function SessionDetailPage({
                 <div className="space-y-3">
                   {/* Listen/Translate */}
                   <ProgressiveMethodItem
-                    title="Join on Your Device"
+                    title="Join on Their Own Devices"
                     description="Download QR Code to Access Translations"
                     illustration="/asset/illustration/user-join-device-with-qr-code.png"
                     icon={<Smartphone className="w-4 h-4" />}
@@ -680,7 +680,7 @@ export default function SessionDetailPage({
                   {/* iFrame Option - Progressive Item */}
                   <ProgressiveMethodItem
                     title="iFrame"
-                    description="iFrame Transcriptions Alongside Your Video"
+                    description="iFrame Transcriptions Directly Into Your Video"
                     illustration="/asset/illustration/video-options.png"
                     icon={<Video className="w-4 h-4" />}
                     variant="attendee"
