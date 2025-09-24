@@ -182,7 +182,7 @@ export default function SessionDetailPage({
             </Button>
 
             <h1 className="text-xl font-bold text-gray-900 flex-1 text-center">
-              Ways to Start This Session
+              Ways to Join a Session
             </h1>
 
             {/* Spacer to balance the layout */}
