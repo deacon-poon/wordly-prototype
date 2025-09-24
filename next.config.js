@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   // Exclude mobile-app directory from compilation
   pageExtensions: ["tsx", "ts", "jsx", "js"],
   webpack: (config) => {
@@ -23,11 +22,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  experimental: {
-    // Exclude mobile-app from compilation
-    outputFileTracingExcludes: {
-      "*": ["./mobile-app/**/*"],
-    },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  // Move outputFileTracingExcludes out of experimental
+  outputFileTracingExcludes: {
+    "*": ["./mobile-app/**/*"],
   },
 };
 

@@ -130,8 +130,10 @@ function ProgressiveMethodItem({
 export default function SessionDetailPage({
   params,
 }: {
-  params: { sessionId: string };
+  params: Promise<{ sessionId: string }>;
 }) {
+  const resolvedParams = React.use(params);
+  const { sessionId } = resolvedParams;
   const router = useRouter();
   const [showBotInvite, setShowBotInvite] = useState(false);
 
@@ -140,28 +142,22 @@ export default function SessionDetailPage({
     meetingLink: string;
   }) => {
     console.log("Bot invite data:", data);
-    alert(
-      `Joined session ${params.sessionId} as presenter with method: invite-bot`
-    );
+    alert(`Joined session ${sessionId} as presenter with method: invite-bot`);
     setShowBotInvite(false);
   };
 
   const onJoinAsPresenter = (method: string) => {
     console.log(
-      `Joining session ${params.sessionId} as presenter with method: ${method}`
+      `Joining session ${sessionId} as presenter with method: ${method}`
     );
-    alert(
-      `Joined session ${params.sessionId} as presenter with method: ${method}`
-    );
+    alert(`Joined session ${sessionId} as presenter with method: ${method}`);
   };
 
   const onJoinAsAttendee = (method: string) => {
     console.log(
-      `Joining session ${params.sessionId} as attendee with method: ${method}`
+      `Joining session ${sessionId} as attendee with method: ${method}`
     );
-    alert(
-      `Joining session ${params.sessionId} as attendee with method: ${method}`
-    );
+    alert(`Joining session ${sessionId} as attendee with method: ${method}`);
   };
 
   return (
@@ -460,14 +456,14 @@ export default function SessionDetailPage({
                               </p>
                               <p className="text-sm font-mono text-gray-800 break-all">
                                 https://attend.wordly.ai/join/
-                                {params.sessionId || "demo"}
+                                {sessionId || "demo"}
                               </p>
                             </div>
                             <Button
                               onClick={() => {
                                 navigator.clipboard.writeText(
                                   `https://attend.wordly.ai/join/${
-                                    params.sessionId || "demo"
+                                    sessionId || "demo"
                                   }`
                                 );
                                 // TODO: Show toast notification
@@ -513,7 +509,7 @@ export default function SessionDetailPage({
                         <Button
                           onClick={() => {
                             const url = `https://wordly.ai/join/${
-                              params.sessionId || "demo"
+                              sessionId || "demo"
                             }`;
                             navigator.clipboard.writeText(url);
                             // TODO: Show toast notification
@@ -531,7 +527,7 @@ export default function SessionDetailPage({
                             <Button
                               onClick={() => {
                                 const url = `https://wordly.ai/join/${
-                                  params.sessionId || "demo"
+                                  sessionId || "demo"
                                 }?passcode=327269`;
                                 navigator.clipboard.writeText(url);
                                 // TODO: Show toast notification
@@ -602,7 +598,7 @@ export default function SessionDetailPage({
                         <Button
                           onClick={() => {
                             const url = `https://wordly.ai/join/${
-                              params.sessionId || "demo"
+                              sessionId || "demo"
                             }/display`;
                             navigator.clipboard.writeText(url);
                           }}
@@ -691,7 +687,7 @@ export default function SessionDetailPage({
                         onClick={() => {
                           navigator.clipboard.writeText(
                             `https://attend.wordly.ai/frame/${
-                              params.sessionId || "demo"
+                              sessionId || "demo"
                             }`
                           );
                           // TODO: Show toast notification
@@ -722,7 +718,7 @@ export default function SessionDetailPage({
                               Example:{" "}
                               <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">
                                 &lt;iframe src="https://attend.wordly.ai/frame/
-                                {params.sessionId || "demo"}
+                                {sessionId || "demo"}
                                 ?lang=es&fgcolor=00FF00" width="100%" /&gt;
                               </code>
                             </p>
