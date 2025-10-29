@@ -19,6 +19,7 @@ import {
   CreditCard,
   ListChecks,
   UserCog,
+  CalendarDays,
 } from "lucide-react";
 import { SidebarSection, SidebarItem } from "@/components/ui/sidebar";
 import {
@@ -54,6 +55,12 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       title: "Sessions",
       href: "/sessions",
       icon: Clock,
+    },
+    {
+      id: "events",
+      title: "Events",
+      href: "/events",
+      icon: CalendarDays,
     },
     {
       id: "glossaries",

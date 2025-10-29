@@ -9,7 +9,6 @@ import {
   Eye,
   Archive,
   ChevronDown,
-  XCircle,
   CheckSquare,
   Square,
   Plus,

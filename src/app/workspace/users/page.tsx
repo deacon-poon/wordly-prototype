@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
   UserPlus,
-  XCircle,
   ShieldCheck,
   Edit2,
   Eye,
@@ -138,8 +137,11 @@ export default function UsersPage() {
     },
   ]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
 
   // Get the appropriate icon for a role
   const getRoleIcon = (role: User["role"]) => {
@@ -178,10 +180,30 @@ export default function UsersPage() {
     );
   };
 
-  // Handler for user removal
+  // Handler for initiating user removal
   const handleRemoveUser = (userId: string) => {
-    if (confirm("Are you sure you want to remove this user?")) {
-      setUsers(users.filter((user) => user.id !== userId));
+    setUserToDelete(userId);
+    setIsDeleteUserDialogOpen(true);
+  };
+
+  // Handler for confirming user removal
+  const handleConfirmRemoveUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+      setIsDeletingUser(true);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Remove the user from the list
+      setUsers(users.filter((user) => user.id !== userToDelete));
+
+      // Reset state
+      setUserToDelete(null);
+    } catch (error) {
+      console.error("Error removing user:", error);
+    } finally {
+      setIsDeletingUser(false);
     }
   };
 
@@ -386,9 +408,9 @@ export default function UsersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveUser(user.id)}
-                          className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                          className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-gray-500 hover:text-red-600"
                         >
-                          <XCircle className="h-5 w-5" />
+                          <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Remove user</span>
                         </Button>
                       )}
@@ -438,9 +460,9 @@ export default function UsersPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveUser(user.id)}
-                        className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 text-gray-500"
+                        className="h-8 w-8 p-0 rounded-full hover:bg-red-50 text-gray-500 hover:text-red-600"
                       >
-                        <XCircle className="h-5 w-5" />
+                        <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Remove user</span>
                       </Button>
                     )}
@@ -520,6 +542,24 @@ export default function UsersPage() {
         icon={<AlertTriangle className="h-12 w-12" />}
         validationText={workspaceName}
         validationLabel={`To confirm, please type the workspace name "${workspaceName}"`}
+      />
+
+      {/* Delete User Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteUserDialogOpen}
+        onOpenChange={setIsDeleteUserDialogOpen}
+        title="Remove User from Workspace"
+        description={`Are you sure you want to remove ${
+          userToDelete
+            ? users.find((u) => u.id === userToDelete)?.name || "this user"
+            : "this user"
+        } from the workspace? They will lose access to all workspace resources.`}
+        onConfirm={handleConfirmRemoveUser}
+        confirmText="Remove User"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeletingUser}
+        icon={<Trash2 className="h-12 w-12" />}
       />
 
       {/* Invite Users Dialog */}

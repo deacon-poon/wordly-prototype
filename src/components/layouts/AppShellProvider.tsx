@@ -60,6 +60,8 @@ export function AppShellProvider({ children }: AppShellProviderProps) {
         return "Glossaries";
       case "sessions":
         return "Sessions";
+      case "events":
+        return "Events";
       case "history":
         return "History";
       case "organization":
