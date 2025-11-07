@@ -129,7 +129,7 @@ export function EventSettingsModal({
       alert("Please enter an event name");
       return;
     }
-    
+
     try {
       setIsSaving(true);
       await onSave({

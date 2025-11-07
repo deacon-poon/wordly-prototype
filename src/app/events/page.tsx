@@ -1836,7 +1836,6 @@ export default function EventsPage() {
             >
               Past ({statusCounts.past})
             </button>
-          </div>
         </div>
       </div>
 
