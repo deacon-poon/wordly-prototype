@@ -1796,46 +1796,46 @@ export default function EventsPage() {
 
         {/* Status filter tabs */}
         <div className="flex items-center gap-2">
-            <button
-              onClick={() => setStatusFilter("all")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                statusFilter === "all"
-                  ? "bg-primary-teal-600 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              All ({statusCounts.all})
-            </button>
-            <button
-              onClick={() => setStatusFilter("active")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                statusFilter === "active"
-                  ? "bg-accent-green-600 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Active ({statusCounts.active})
-            </button>
-            <button
-              onClick={() => setStatusFilter("upcoming")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                statusFilter === "upcoming"
-                  ? "bg-primary-teal-600 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Upcoming ({statusCounts.upcoming})
-            </button>
-            <button
-              onClick={() => setStatusFilter("past")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                statusFilter === "past"
-                  ? "bg-gray-600 text-white shadow-sm"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Past ({statusCounts.past})
-            </button>
+          <button
+            onClick={() => setStatusFilter("all")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "all"
+                ? "bg-primary-teal-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            All ({statusCounts.all})
+          </button>
+          <button
+            onClick={() => setStatusFilter("active")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "active"
+                ? "bg-accent-green-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Active ({statusCounts.active})
+          </button>
+          <button
+            onClick={() => setStatusFilter("upcoming")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "upcoming"
+                ? "bg-primary-teal-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Upcoming ({statusCounts.upcoming})
+          </button>
+          <button
+            onClick={() => setStatusFilter("past")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "past"
+                ? "bg-gray-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Past ({statusCounts.past})
+          </button>
         </div>
       </div>
 
