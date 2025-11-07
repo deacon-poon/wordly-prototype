@@ -21,6 +21,7 @@ import { WaysToJoinModal } from "@/components/WaysToJoinModal";
 import { Input } from "@/components/ui/input";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import { EventSettingsModal } from "@/components/events/EventSettingsModal";
+import { StageInstructionsModal } from "@/components/events/StageInstructionsModal";
 
 // Data interfaces
 interface Session {
@@ -32,11 +33,13 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Room {
+interface Stage {
   id: string;
   name: string;
   sessionCount: number;
-  roomSessionId: string;
+  stageSessionId: string;
+  passcode: string;
+  mobileId: string;
   sessions: Session[];
 }
 
@@ -48,11 +51,11 @@ interface Event {
   dateRange: string;
   startDate: Date;
   endDate: Date;
-  roomCount: number;
+  stageCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  rooms: Room[];
+  stages: Stage[];
 }
 
 // Helper function to calculate event status
@@ -121,17 +124,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
     startDate: getRelativeDate(0),
     endDate: getRelativeDate(1),
-    roomCount: 3,
+    stageCount: 3,
     sessionCount: 10,
     description:
       "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
     publicSummaryUrl: "/public/ai-ml-summit-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-001",
+        id: "stage-001",
         name: "Main Auditorium",
         sessionCount: 5,
-        roomSessionId: "MAIN-AUD-2024",
+        stageSessionId: "MAIN-AUD-2024",
+        passcode: "MA2024-8372-19",
+        mobileId: "83721901",
         sessions: [
           {
             id: "ses-001",
@@ -176,10 +181,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-002",
+        id: "stage-002",
         name: "Workshop Room A",
         sessionCount: 3,
-        roomSessionId: "WORKSHOP-A-2024",
+        stageSessionId: "WORKSHOP-A-2024",
+        passcode: "WA2024-4561-82",
+        mobileId: "45618201",
         sessions: [
           {
             id: "ses-006",
@@ -208,10 +215,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-003",
+        id: "stage-003",
         name: "Breakout Room B",
         sessionCount: 2,
-        roomSessionId: "BREAKOUT-B-2024",
+        stageSessionId: "BREAKOUT-B-2024",
+        passcode: "ST003-0411-08",
+        mobileId: "10037035",
         sessions: [
           {
             id: "ses-009",
@@ -240,17 +249,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(7), getRelativeDate(8)),
     startDate: getRelativeDate(7),
     endDate: getRelativeDate(8),
-    roomCount: 4,
+    stageCount: 4,
     sessionCount: 18,
     description:
       "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
     publicSummaryUrl: "/public/cloud-devops-summit-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-004",
+        id: "stage-004",
         name: "Cloud Theater",
         sessionCount: 5,
-        roomSessionId: "CLOUD-THEATER-2024",
+        stageSessionId: "CLOUD-THEATER-2024",
+        passcode: "ST004-0548-11",
+        mobileId: "10049380",
         sessions: [
           {
             id: "ses-011",
@@ -295,10 +306,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-005",
+        id: "stage-005",
         name: "DevOps Workshop",
         sessionCount: 6,
-        roomSessionId: "DEVOPS-WORKSHOP-2024",
+        stageSessionId: "DEVOPS-WORKSHOP-2024",
+        passcode: "ST005-0685-14",
+        mobileId: "10061725",
         sessions: [
           {
             id: "ses-016",
@@ -351,10 +364,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-006",
+        id: "stage-006",
         name: "Container Lab",
         sessionCount: 4,
-        roomSessionId: "CONTAINER-LAB-2024",
+        stageSessionId: "CONTAINER-LAB-2024",
+        passcode: "ST006-0822-17",
+        mobileId: "10074070",
         sessions: [
           {
             id: "ses-022",
@@ -391,10 +406,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-007",
+        id: "stage-007",
         name: "Automation Studio",
         sessionCount: 3,
-        roomSessionId: "AUTOMATION-STUDIO-2024",
+        stageSessionId: "AUTOMATION-STUDIO-2024",
+        passcode: "ST007-0959-20",
+        mobileId: "10086415",
         sessions: [
           {
             id: "ses-026",
@@ -430,17 +447,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(20), getRelativeDate(21)),
     startDate: getRelativeDate(20),
     endDate: getRelativeDate(21),
-    roomCount: 2,
+    stageCount: 2,
     sessionCount: 8,
     description:
       "Explore the latest in design systems, UX research, and product design methodologies",
     publicSummaryUrl: "/public/design-ux-conf-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-008",
+        id: "stage-008",
         name: "Design Theater",
         sessionCount: 5,
-        roomSessionId: "DESIGN-THEATER-2024",
+        stageSessionId: "DESIGN-THEATER-2024",
+        passcode: "ST008-1096-23",
+        mobileId: "10098760",
         sessions: [
           {
             id: "ses-029",
@@ -485,10 +504,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-009",
+        id: "stage-009",
         name: "UX Research Lab",
         sessionCount: 3,
-        roomSessionId: "UX-LAB-2024",
+        stageSessionId: "UX-LAB-2024",
+        passcode: "ST009-1233-26",
+        mobileId: "10111105",
         sessions: [
           {
             id: "ses-034",
@@ -524,17 +545,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(33), getRelativeDate(34)),
     startDate: getRelativeDate(33),
     endDate: getRelativeDate(34),
-    roomCount: 2,
+    stageCount: 2,
     sessionCount: 10,
     description:
       "Comprehensive summit on blockchain technology, smart contracts, and decentralized applications",
     publicSummaryUrl: "/public/web3-blockchain-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-010",
+        id: "stage-010",
         name: "Blockchain Hall",
         sessionCount: 6,
-        roomSessionId: "BLOCKCHAIN-HALL-2024",
+        stageSessionId: "BLOCKCHAIN-HALL-2024",
+        passcode: "ST010-1370-29",
+        mobileId: "10123450",
         sessions: [
           {
             id: "ses-037",
@@ -587,10 +610,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-011",
+        id: "stage-011",
         name: "DApp Workshop",
         sessionCount: 4,
-        roomSessionId: "DAPP-WORKSHOP-2024",
+        stageSessionId: "DAPP-WORKSHOP-2024",
+        passcode: "ST011-1507-32",
+        mobileId: "10135795",
         sessions: [
           {
             id: "ses-043",
@@ -634,17 +659,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(47), getRelativeDate(48)),
     startDate: getRelativeDate(47),
     endDate: getRelativeDate(48),
-    roomCount: 3,
+    stageCount: 3,
     sessionCount: 12,
     description:
       "Advanced forum on data science, machine learning operations, and business analytics",
     publicSummaryUrl: "/public/data-science-forum-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-012",
+        id: "stage-012",
         name: "Data Theater",
         sessionCount: 5,
-        roomSessionId: "DATA-THEATER-2024",
+        stageSessionId: "DATA-THEATER-2024",
+        passcode: "ST012-1644-34",
+        mobileId: "10148140",
         sessions: [
           {
             id: "ses-047",
@@ -689,10 +716,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-013",
+        id: "stage-013",
         name: "Analytics Lab",
         sessionCount: 4,
-        roomSessionId: "ANALYTICS-LAB-2024",
+        stageSessionId: "ANALYTICS-LAB-2024",
+        passcode: "ST013-1781-37",
+        mobileId: "10160485",
         sessions: [
           {
             id: "ses-052",
@@ -729,10 +758,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-014",
+        id: "stage-014",
         name: "ML Workshop",
         sessionCount: 3,
-        roomSessionId: "ML-WORKSHOP-2024",
+        stageSessionId: "ML-WORKSHOP-2024",
+        passcode: "ST014-1918-40",
+        mobileId: "10172830",
         sessions: [
           {
             id: "ses-056",
@@ -769,17 +800,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(-36), getRelativeDate(-35)),
     startDate: getRelativeDate(-36),
     endDate: getRelativeDate(-35),
-    roomCount: 2,
+    stageCount: 2,
     sessionCount: 6,
     description:
       "Annual spring technology conference featuring software development trends and innovations",
     publicSummaryUrl: "/public/tech-conf-spring-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-015",
+        id: "stage-015",
         name: "Main Stage",
         sessionCount: 4,
-        roomSessionId: "MAIN-STAGE-SEPT-2024",
+        stageSessionId: "MAIN-STAGE-SEPT-2024",
+        passcode: "ST015-2055-43",
+        mobileId: "10185175",
         sessions: [
           {
             id: "ses-059",
@@ -816,10 +849,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-016",
+        id: "stage-016",
         name: "Workshop Room",
         sessionCount: 2,
-        roomSessionId: "WORKSHOP-SEPT-2024",
+        stageSessionId: "WORKSHOP-SEPT-2024",
+        passcode: "ST016-2192-46",
+        mobileId: "10197520",
         sessions: [
           {
             id: "ses-063",
@@ -847,17 +882,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(-57), getRelativeDate(-56)),
     startDate: getRelativeDate(-57),
     endDate: getRelativeDate(-56),
-    roomCount: 3,
+    stageCount: 3,
     sessionCount: 12,
     description:
       "Summit focused on iOS, Android, and cross-platform mobile development",
     publicSummaryUrl: "/public/mobile-dev-summit-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-017",
+        id: "stage-017",
         name: "iOS Hall",
         sessionCount: 4,
-        roomSessionId: "IOS-HALL-AUG-2024",
+        stageSessionId: "IOS-HALL-AUG-2024",
+        passcode: "ST017-2329-49",
+        mobileId: "10209865",
         sessions: [
           {
             id: "ses-065",
@@ -894,10 +931,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-018",
+        id: "stage-018",
         name: "Android Studio",
         sessionCount: 5,
-        roomSessionId: "ANDROID-STUDIO-AUG-2024",
+        stageSessionId: "ANDROID-STUDIO-AUG-2024",
+        passcode: "ST018-2466-52",
+        mobileId: "10222210",
         sessions: [
           {
             id: "ses-069",
@@ -942,10 +981,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-019",
+        id: "stage-019",
         name: "Cross-Platform Lab",
         sessionCount: 3,
-        roomSessionId: "XPLAT-LAB-AUG-2024",
+        stageSessionId: "XPLAT-LAB-AUG-2024",
+        passcode: "ST019-2603-55",
+        mobileId: "10234555",
         sessions: [
           {
             id: "ses-074",
@@ -981,17 +1022,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(-93), getRelativeDate(-92)),
     startDate: getRelativeDate(-93),
     endDate: getRelativeDate(-92),
-    roomCount: 2,
+    stageCount: 2,
     sessionCount: 8,
     description:
       "Annual conference on cybersecurity, threat detection, and enterprise security",
     publicSummaryUrl: "/public/cybersecurity-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-020",
+        id: "stage-020",
         name: "Security Theater",
         sessionCount: 5,
-        roomSessionId: "SEC-THEATER-JUL-2024",
+        stageSessionId: "SEC-THEATER-JUL-2024",
+        passcode: "ST020-2740-58",
+        mobileId: "10246900",
         sessions: [
           {
             id: "ses-077",
@@ -1036,10 +1079,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-021",
+        id: "stage-021",
         name: "Penetration Testing Lab",
         sessionCount: 3,
-        roomSessionId: "PENTEST-LAB-JUL-2024",
+        stageSessionId: "PENTEST-LAB-JUL-2024",
+        passcode: "ST021-2877-61",
+        mobileId: "10259245",
         sessions: [
           {
             id: "ses-082",
@@ -1075,17 +1120,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(-128), getRelativeDate(-127)),
     startDate: getRelativeDate(-128),
     endDate: getRelativeDate(-127),
-    roomCount: 2,
+    stageCount: 2,
     sessionCount: 7,
     description:
       "Summit for product managers on strategy, roadmapping, and product-led growth",
     publicSummaryUrl: "/public/pm-summit-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-022",
+        id: "stage-022",
         name: "Product Theater",
         sessionCount: 4,
-        roomSessionId: "PRODUCT-THEATER-JUN-2024",
+        stageSessionId: "PRODUCT-THEATER-JUN-2024",
+        passcode: "ST022-3014-64",
+        mobileId: "10271590",
         sessions: [
           {
             id: "ses-085",
@@ -1122,10 +1169,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-023",
+        id: "stage-023",
         name: "Strategy Workshop",
         sessionCount: 3,
-        roomSessionId: "STRATEGY-WORKSHOP-JUN-2024",
+        stageSessionId: "STRATEGY-WORKSHOP-JUN-2024",
+        passcode: "ST023-3151-66",
+        mobileId: "10283935",
         sessions: [
           {
             id: "ses-089",
@@ -1161,17 +1210,19 @@ const mockEvents: Event[] = [
     dateRange: formatDateRange(getRelativeDate(-164), getRelativeDate(-163)),
     startDate: getRelativeDate(-164),
     endDate: getRelativeDate(-163),
-    roomCount: 3,
+    stageCount: 3,
     sessionCount: 11,
     description:
       "Conference dedicated to modern frontend development, frameworks, and tooling",
     publicSummaryUrl: "/public/frontend-conf-2024",
-    rooms: [
+    stages: [
       {
-        id: "room-024",
+        id: "stage-024",
         name: "JavaScript Hall",
         sessionCount: 5,
-        roomSessionId: "JS-HALL-MAY-2024",
+        stageSessionId: "JS-HALL-MAY-2024",
+        passcode: "ST024-3288-69",
+        mobileId: "10296280",
         sessions: [
           {
             id: "ses-092",
@@ -1216,10 +1267,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-025",
+        id: "stage-025",
         name: "CSS & Design Workshop",
         sessionCount: 3,
-        roomSessionId: "CSS-WORKSHOP-MAY-2024",
+        stageSessionId: "CSS-WORKSHOP-MAY-2024",
+        passcode: "ST025-3425-72",
+        mobileId: "10308625",
         sessions: [
           {
             id: "ses-097",
@@ -1248,10 +1301,12 @@ const mockEvents: Event[] = [
         ],
       },
       {
-        id: "room-026",
+        id: "stage-026",
         name: "Performance Lab",
         sessionCount: 3,
-        roomSessionId: "PERF-LAB-MAY-2024",
+        stageSessionId: "PERF-LAB-MAY-2024",
+        passcode: "ST026-3562-75",
+        mobileId: "10320970",
         sessions: [
           {
             id: "ses-100",
@@ -1284,59 +1339,30 @@ const mockEvents: Event[] = [
 ];
 
 export default function EventsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(
     new Set() // Start with all collapsed for better overview
   );
-  const [expandedRooms, setExpandedRooms] = useState<Set<string>>(new Set());
+  const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
   const [waysToJoinModal, setWaysToJoinModal] = useState<{
     isOpen: boolean;
-    room?: Room;
+    stage?: Stage;
     eventName?: string;
   }>({
     isOpen: false,
   });
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isStageInstructionsOpen, setIsStageInstructionsOpen] = useState(false);
+  const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
   const [uploadedFileData, setUploadedFileData] = useState<{
     file: File;
     timezone: string;
   } | null>(null);
 
-  // Filter and search events
+  // Filter events by status
   const filteredEvents = useMemo(() => {
     let filtered = mockEvents;
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter((event) => {
-        // Search in event name and description
-        if (
-          event.name.toLowerCase().includes(query) ||
-          event.description.toLowerCase().includes(query)
-        ) {
-          return true;
-        }
-
-        // Search in room names
-        if (
-          event.rooms.some((room) => room.name.toLowerCase().includes(query))
-        ) {
-          return true;
-        }
-
-        // Search in session titles and presenters
-        return event.rooms.some((room) =>
-          room.sessions.some(
-            (session) =>
-              session.title.toLowerCase().includes(query) ||
-              session.presenter.toLowerCase().includes(query)
-          )
-        );
-      });
-    }
 
     // Apply status filter
     if (statusFilter !== "all") {
@@ -1347,7 +1373,7 @@ export default function EventsPage() {
     }
 
     return filtered;
-  }, [searchQuery, statusFilter]);
+  }, [statusFilter]);
 
   // Group events by status
   const groupedEvents = useMemo(() => {
@@ -1388,47 +1414,6 @@ export default function EventsPage() {
     };
   }, []);
 
-  // Auto-expand events and rooms when searching to show context
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      const eventsToExpand = new Set<string>();
-      const roomsToExpand = new Set<string>();
-
-      filteredEvents.forEach((event) => {
-        // Check if search matches rooms or sessions (not just event name/description)
-        const matchesRoomOrSession = event.rooms.some(
-          (room) =>
-            room.name.toLowerCase().includes(query) ||
-            room.sessions.some(
-              (session) =>
-                session.title.toLowerCase().includes(query) ||
-                session.presenter.toLowerCase().includes(query)
-            )
-        );
-
-        if (matchesRoomOrSession) {
-          eventsToExpand.add(event.id);
-          // Also expand matching rooms
-          event.rooms.forEach((room) => {
-            if (
-              room.name.toLowerCase().includes(query) ||
-              room.sessions.some(
-                (session) =>
-                  session.title.toLowerCase().includes(query) ||
-                  session.presenter.toLowerCase().includes(query)
-              )
-            ) {
-              roomsToExpand.add(room.id);
-            }
-          });
-        }
-      });
-
-      setExpandedEvents(eventsToExpand);
-      setExpandedRooms(roomsToExpand);
-    }
-  }, [searchQuery, filteredEvents]);
 
   const toggleEventExpansion = (eventId: string) => {
     const newExpanded = new Set(expandedEvents);
@@ -1440,33 +1425,33 @@ export default function EventsPage() {
     setExpandedEvents(newExpanded);
   };
 
-  const toggleRoomExpansion = (roomId: string) => {
-    const newExpanded = new Set(expandedRooms);
-    if (newExpanded.has(roomId)) {
-      newExpanded.delete(roomId);
+  const toggleStageExpansion = (stageId: string) => {
+    const newExpanded = new Set(expandedStages);
+    if (newExpanded.has(stageId)) {
+      newExpanded.delete(stageId);
     } else {
-      newExpanded.add(roomId);
+      newExpanded.add(stageId);
     }
-    setExpandedRooms(newExpanded);
+    setExpandedStages(newExpanded);
   };
 
   const handleWaysToJoin = (
-    room: Room,
+    stage: Stage,
     eventName: string,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
     setWaysToJoinModal({
       isOpen: true,
-      room,
+      stage,
       eventName,
     });
   };
 
-  const handleStartRoom = (room: Room, e: React.MouseEvent) => {
+  const handleStartStage = (stage: Stage, e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Starting room:", room.name);
-    // TODO: Start the room session chain
+    setSelectedStage(stage);
+    setIsStageInstructionsOpen(true);
   };
 
   const handleEditSession = (session: Session, e: React.MouseEvent) => {
@@ -1578,36 +1563,36 @@ export default function EventsPage() {
             <Calendar className="h-4 w-4 text-primary-teal-600" />
             <span className="text-gray-700 font-medium">{event.dateRange}</span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{event.roomCount} rooms</span>
+            <span className="text-gray-600">{event.stageCount} stages</span>
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">{event.sessionCount} sessions</span>
           </div>
 
-          {/* Inline room badges - only when collapsed */}
+          {/* Inline stage badges - only when collapsed */}
           {!isExpanded && (
             <div className="flex items-start gap-2 mb-3">
               <MapPin className="h-4 w-4 text-primary-teal-600 mt-1 flex-shrink-0" />
               <div className="flex flex-wrap gap-2">
-                {event.rooms.map((room) => (
+                {event.stages.map((stage) => (
                   <button
-                    key={room.id}
+                    key={stage.id}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleEventExpansion(event.id);
-                      // Also expand this room
+                      // Also expand this stage
                       setTimeout(() => {
-                        const newExpanded = new Set(expandedRooms);
-                        newExpanded.add(room.id);
-                        setExpandedRooms(newExpanded);
+                        const newExpanded = new Set(expandedStages);
+                        newExpanded.add(stage.id);
+                        setExpandedStages(newExpanded);
                       }, 100);
                     }}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 rounded-md text-sm transition-all"
                   >
                     <span className="text-gray-700 font-medium">
-                      {room.name}
+                      {stage.name}
                     </span>
                     <span className="text-gray-500 text-xs font-medium">
-                      ({room.sessions.length})
+                      ({stage.sessions.length})
                     </span>
                   </button>
                 ))}
@@ -1632,53 +1617,53 @@ export default function EventsPage() {
           )}
         </div>
 
-        {/* Expandable rooms section */}
+        {/* Expandable stages section */}
         {isExpanded && (
           <div className="border-t">
             <div className="p-6 space-y-5">
-              {event.rooms.map((room) => {
-                const isRoomExpanded = expandedRooms.has(room.id);
+              {event.stages.map((stage) => {
+                const isStageExpanded = expandedStages.has(stage.id);
 
                 return (
                   <div
-                    key={room.id}
+                    key={stage.id}
                     className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-gray-300 transition-all"
                   >
-                    {/* Room header - matches Figma design */}
+                    {/* Stage header */}
                     <div className="p-6 bg-gray-50/50">
                       <div className="flex items-center justify-between gap-6">
-                        {/* Room info */}
+                        {/* Stage info */}
                         <div className="flex items-center gap-3">
                           <button
                             className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors flex-shrink-0"
                             onClick={(e) => {
                               e.stopPropagation();
-                              toggleRoomExpansion(room.id);
+                              toggleStageExpansion(stage.id);
                             }}
                           >
                             <ChevronDown
                               className={`h-4 w-4 text-gray-500 transition-transform ${
-                                isRoomExpanded ? "rotate-0" : "-rotate-90"
+                                isStageExpanded ? "rotate-0" : "-rotate-90"
                               }`}
                             />
                           </button>
                           <div>
                             <h3 className="font-semibold text-gray-900 text-base">
-                              {room.name}
+                              {stage.name}
                             </h3>
                             <p className="text-sm text-gray-600 mt-0.5">
-                              {room.sessions.length} sessions
+                              {stage.sessions.length} sessions
                             </p>
                           </div>
                         </div>
 
-                        {/* Room actions - matching Figma */}
+                        {/* Stage actions */}
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={(e) =>
-                              handleWaysToJoin(room, event.name, e)
+                              handleWaysToJoin(stage, event.name, e)
                             }
                             className="border-primary-teal-600 text-primary-teal-600 hover:bg-primary-teal-50 hover:border-primary-teal-700"
                           >
@@ -1687,24 +1672,24 @@ export default function EventsPage() {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={(e) => handleStartRoom(room, e)}
+                            onClick={(e) => handleStartStage(stage, e)}
                             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm"
                           >
                             <Play className="h-4 w-4 mr-2" />
-                            Start Room
+                            Start Stage
                           </Button>
                         </div>
                       </div>
                     </div>
 
                     {/* Expandable sessions list */}
-                    {isRoomExpanded && room.sessions.length > 0 && (
+                    {isStageExpanded && stage.sessions.length > 0 && (
                       <div className="border-t border-gray-200 bg-gray-50/30">
-                        {room.sessions.map((session, index) => (
+                        {stage.sessions.map((session, index) => (
                           <div
                             key={session.id}
                             className={`p-5 bg-white hover:bg-gray-50 transition-colors ${
-                              index !== room.sessions.length - 1
+                              index !== stage.sessions.length - 1
                                 ? "border-b border-gray-200"
                                 : ""
                             }`}
@@ -1754,7 +1739,7 @@ export default function EventsPage() {
                                   <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-primary-teal-600" />
                                     <span className="text-gray-700 font-medium">
-                                      Room: {room.name}
+                                      Stage: {stage.name}
                                     </span>
                                   </div>
 
@@ -1802,43 +1787,11 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Search and filter bar - Horizontal layout */}
+      {/* Filter bar */}
       <div className="border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Search input - Left side */}
-          <div className="relative flex-1 min-w-[300px]">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search events, rooms, or sessions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10 h-10"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                title="Clear search"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Status filter tabs - Right side */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Filter by Status</h2>
+          {/* Status filter tabs */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setStatusFilter("all")}
@@ -1886,32 +1839,8 @@ export default function EventsPage() {
 
       {/* Events list grouped by status */}
       <div className="p-6 space-y-8">
-        {/* Search results indicator */}
-        {searchQuery && (
-          <div className="bg-primary-teal-50 border border-primary-teal-200 rounded-lg p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-primary-teal-600" />
-                <span className="text-sm font-medium text-primary-teal-900">
-                  Found {filteredEvents.length}{" "}
-                  {filteredEvents.length === 1 ? "result" : "results"} for "
-                  {searchQuery}"
-                </span>
-              </div>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-              >
-                Clear search
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Active events section */}
-        {groupedEvents.active.length > 0 &&
-          statusFilter === "all" &&
-          !searchQuery && (
+        {groupedEvents.active.length > 0 && statusFilter === "all" && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
                 <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
@@ -1928,9 +1857,7 @@ export default function EventsPage() {
           )}
 
         {/* Upcoming events section */}
-        {groupedEvents.upcoming.length > 0 &&
-          statusFilter === "all" &&
-          !searchQuery && (
+        {groupedEvents.upcoming.length > 0 && statusFilter === "all" && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
                 <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
@@ -1947,9 +1874,7 @@ export default function EventsPage() {
           )}
 
         {/* Past events section */}
-        {groupedEvents.past.length > 0 &&
-          statusFilter === "all" &&
-          !searchQuery && (
+        {groupedEvents.past.length > 0 && statusFilter === "all" && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-300">
                 <span className="w-2 h-2 rounded-full bg-gray-400" />
@@ -1965,17 +1890,8 @@ export default function EventsPage() {
             </div>
           )}
 
-        {/* Search results view (when searching) */}
-        {searchQuery && (
-          <div className="space-y-4">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
-        )}
-
-        {/* Filtered view (when a specific status filter is active, but not searching) */}
-        {statusFilter !== "all" && !searchQuery && (
+        {/* Filtered view (when a specific status filter is active) */}
+        {statusFilter !== "all" && (
           <div className="space-y-4">
             {filteredEvents.map((event) => (
               <EventCard key={event.id} event={event} />
@@ -1986,36 +1902,26 @@ export default function EventsPage() {
         {/* Empty state */}
         {filteredEvents.length === 0 && (
           <div className="text-center py-12">
-            <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-900 font-semibold text-lg mb-2">
-              {searchQuery.trim() ? "No results found" : "No events found"}
+              No events found
             </p>
             <p className="text-gray-500 text-sm">
-              {searchQuery.trim()
-                ? `No events, rooms, or sessions match "${searchQuery}"`
-                : "There are no events in this category"}
+              There are no events in this category
             </p>
-            {searchQuery.trim() && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="mt-4 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-              >
-                Clear search and view all events
-              </button>
-            )}
           </div>
         )}
       </div>
 
       {/* Ways to Join Modal */}
-      {waysToJoinModal.room && (
+      {waysToJoinModal.stage && (
         <WaysToJoinModal
           open={waysToJoinModal.isOpen}
           onOpenChange={(isOpen) =>
             setWaysToJoinModal({ ...waysToJoinModal, isOpen })
           }
-          roomName={waysToJoinModal.room.name}
-          roomSessionId={waysToJoinModal.room.roomSessionId}
+          roomName={waysToJoinModal.stage.name}
+          roomSessionId={waysToJoinModal.stage.stageSessionId}
           eventName={waysToJoinModal.eventName || ""}
         />
       )}
@@ -2033,6 +1939,18 @@ export default function EventsPage() {
         onOpenChange={setIsSettingsModalOpen}
         onSave={handleSaveEventSettings}
       />
+
+      {/* Stage Instructions Modal */}
+      {selectedStage && (
+        <StageInstructionsModal
+          open={isStageInstructionsOpen}
+          onOpenChange={setIsStageInstructionsOpen}
+          stageName={selectedStage.name}
+          stageSessionId={selectedStage.stageSessionId}
+          passcode={selectedStage.passcode}
+          mobileId={selectedStage.mobileId}
+        />
+      )}
     </div>
   );
 }
