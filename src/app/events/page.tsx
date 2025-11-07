@@ -21,7 +21,6 @@ import { WaysToJoinModal } from "@/components/WaysToJoinModal";
 import { Input } from "@/components/ui/input";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import { EventSettingsModal } from "@/components/events/EventSettingsModal";
-import { StageInstructionsModal } from "@/components/events/StageInstructionsModal";
 
 // Data interfaces
 interface Session {
@@ -1348,13 +1347,12 @@ export default function EventsPage() {
     isOpen: boolean;
     stage?: Stage;
     eventName?: string;
+    type?: "session" | "stage";
   }>({
     isOpen: false,
   });
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isStageInstructionsOpen, setIsStageInstructionsOpen] = useState(false);
-  const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
   const [uploadedFileData, setUploadedFileData] = useState<{
     file: File;
     timezone: string;
@@ -1414,7 +1412,6 @@ export default function EventsPage() {
     };
   }, []);
 
-
   const toggleEventExpansion = (eventId: string) => {
     const newExpanded = new Set(expandedEvents);
     if (newExpanded.has(eventId)) {
@@ -1445,13 +1442,22 @@ export default function EventsPage() {
       isOpen: true,
       stage,
       eventName,
+      type: "session",
     });
   };
 
-  const handleStartStage = (stage: Stage, e: React.MouseEvent) => {
+  const handleStartStage = (
+    stage: Stage,
+    eventName: string,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
-    setSelectedStage(stage);
-    setIsStageInstructionsOpen(true);
+    setWaysToJoinModal({
+      isOpen: true,
+      stage,
+      eventName,
+      type: "stage",
+    });
   };
 
   const handleEditSession = (session: Session, e: React.MouseEvent) => {
@@ -1672,7 +1678,7 @@ export default function EventsPage() {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={(e) => handleStartStage(stage, e)}
+                            onClick={(e) => handleStartStage(stage, event.name, e)}
                             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm"
                           >
                             <Play className="h-4 w-4 mr-2" />
@@ -1790,7 +1796,9 @@ export default function EventsPage() {
       {/* Filter bar */}
       <div className="border-b bg-white px-6 py-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Filter by Status</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Filter by Status
+          </h2>
           {/* Status filter tabs */}
           <div className="flex items-center gap-2">
             <button
@@ -1841,54 +1849,54 @@ export default function EventsPage() {
       <div className="p-6 space-y-8">
         {/* Active events section */}
         {groupedEvents.active.length > 0 && statusFilter === "all" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
-                <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                  Active Now ({groupedEvents.active.length})
-                </h3>
-              </div>
-              <div className="space-y-4">
-                {groupedEvents.active.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
+              <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                Active Now ({groupedEvents.active.length})
+              </h3>
             </div>
-          )}
+            <div className="space-y-4">
+              {groupedEvents.active.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Upcoming events section */}
         {groupedEvents.upcoming.length > 0 && statusFilter === "all" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
-                <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                  Upcoming ({groupedEvents.upcoming.length})
-                </h3>
-              </div>
-              <div className="space-y-4">
-                {groupedEvents.upcoming.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
+              <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                Upcoming ({groupedEvents.upcoming.length})
+              </h3>
             </div>
-          )}
+            <div className="space-y-4">
+              {groupedEvents.upcoming.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Past events section */}
         {groupedEvents.past.length > 0 && statusFilter === "all" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-300">
-                <span className="w-2 h-2 rounded-full bg-gray-400" />
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                  Past ({groupedEvents.past.length})
-                </h3>
-              </div>
-              <div className="space-y-4">
-                {groupedEvents.past.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-300">
+              <span className="w-2 h-2 rounded-full bg-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                Past ({groupedEvents.past.length})
+              </h3>
             </div>
-          )}
+            <div className="space-y-4">
+              {groupedEvents.past.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Filtered view (when a specific status filter is active) */}
         {statusFilter !== "all" && (
@@ -1913,19 +1921,6 @@ export default function EventsPage() {
         )}
       </div>
 
-      {/* Ways to Join Modal */}
-      {waysToJoinModal.stage && (
-        <WaysToJoinModal
-          open={waysToJoinModal.isOpen}
-          onOpenChange={(isOpen) =>
-            setWaysToJoinModal({ ...waysToJoinModal, isOpen })
-          }
-          roomName={waysToJoinModal.stage.name}
-          roomSessionId={waysToJoinModal.stage.stageSessionId}
-          eventName={waysToJoinModal.eventName || ""}
-        />
-      )}
-
       {/* Upload Schedule Modal */}
       <UploadScheduleModal
         open={isUploadModalOpen}
@@ -1940,15 +1935,19 @@ export default function EventsPage() {
         onSave={handleSaveEventSettings}
       />
 
-      {/* Stage Instructions Modal */}
-      {selectedStage && (
-        <StageInstructionsModal
-          open={isStageInstructionsOpen}
-          onOpenChange={setIsStageInstructionsOpen}
-          stageName={selectedStage.name}
-          stageSessionId={selectedStage.stageSessionId}
-          passcode={selectedStage.passcode}
-          mobileId={selectedStage.mobileId}
+      {/* Ways to Join Modal (handles both sessions and stages) */}
+      {waysToJoinModal.stage && waysToJoinModal.eventName && (
+        <WaysToJoinModal
+          open={waysToJoinModal.isOpen}
+          onOpenChange={(open) =>
+            setWaysToJoinModal({ ...waysToJoinModal, isOpen: open })
+          }
+          roomName={waysToJoinModal.stage.name}
+          roomSessionId={waysToJoinModal.stage.stageSessionId}
+          eventName={waysToJoinModal.eventName}
+          type={waysToJoinModal.type}
+          sessionCount={waysToJoinModal.stage.sessionCount}
+          sessions={waysToJoinModal.stage.sessions}
         />
       )}
     </div>

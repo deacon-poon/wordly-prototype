@@ -28,6 +28,9 @@ interface WaysToJoinModalProps {
   roomName: string;
   roomSessionId: string;
   eventName: string;
+  type?: "session" | "stage";
+  sessionCount?: number;
+  sessions?: Array<{ title: string; scheduledStart: string; endTime: string }>;
 }
 
 interface MethodItemProps {
@@ -111,6 +114,9 @@ export function WaysToJoinModal({
   roomName,
   roomSessionId,
   eventName,
+  type = "session",
+  sessionCount,
+  sessions = [],
 }: WaysToJoinModalProps) {
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
 
@@ -125,20 +131,28 @@ export function WaysToJoinModal({
     webUrl
   )}`;
 
+  const isStage = type === "stage";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">
-            Ways to Join this Session
+            {isStage ? "Ways to Join this Stage" : "Ways to Join this Session"}
           </DialogTitle>
           <div className="mt-2 space-y-1">
             <p className="text-sm text-gray-600">
-              <span className="font-medium">Room:</span> {roomName}
+              <span className="font-medium">{isStage ? "Stage" : "Room"}:</span>{" "}
+              {roomName}
             </p>
             <p className="text-sm text-gray-600">
               <span className="font-medium">Event:</span> {eventName}
             </p>
+            {isStage && sessionCount && (
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Sessions:</span> {sessionCount} sessions in this stage
+              </p>
+            )}
             <p className="text-sm text-gray-600">
               <span className="font-medium">Session ID:</span>{" "}
               <span className="font-mono font-semibold text-primary-teal-600">
@@ -146,6 +160,30 @@ export function WaysToJoinModal({
               </span>
             </p>
           </div>
+          
+          {isStage && sessions.length > 0 && (
+            <div className="mt-4 p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                Sessions in this Stage
+              </h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {sessions.map((session, index) => (
+                  <div
+                    key={index}
+                    className="text-xs text-gray-700 flex items-center justify-between gap-2"
+                  >
+                    <span className="font-medium truncate">{session.title}</span>
+                    <span className="text-gray-500 whitespace-nowrap">
+                      {session.scheduledStart} - {session.endTime}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-600 mt-2 italic">
+                This single session ID provides access to all sessions in this stage
+              </p>
+            </div>
+          )}
         </DialogHeader>
 
         <div className="mt-6 space-y-4">
