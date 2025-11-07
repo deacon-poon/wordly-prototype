@@ -150,7 +150,8 @@ export function WaysToJoinModal({
             </p>
             {isStage && sessionCount && (
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Sessions:</span> {sessionCount} sessions in this stage
+                <span className="font-medium">Sessions:</span> {sessionCount}{" "}
+                sessions in this stage
               </p>
             )}
             <p className="text-sm text-gray-600">
@@ -160,7 +161,7 @@ export function WaysToJoinModal({
               </span>
             </p>
           </div>
-          
+
           {isStage && sessions.length > 0 && (
             <div className="mt-4 p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">
@@ -172,7 +173,9 @@ export function WaysToJoinModal({
                     key={index}
                     className="text-xs text-gray-700 flex items-center justify-between gap-2"
                   >
-                    <span className="font-medium truncate">{session.title}</span>
+                    <span className="font-medium truncate">
+                      {session.title}
+                    </span>
                     <span className="text-gray-500 whitespace-nowrap">
                       {session.scheduledStart} - {session.endTime}
                     </span>
@@ -180,7 +183,8 @@ export function WaysToJoinModal({
                 ))}
               </div>
               <p className="text-xs text-gray-600 mt-2 italic">
-                This single session ID provides access to all sessions in this stage
+                This single session ID provides access to all sessions in this
+                stage
               </p>
             </div>
           )}

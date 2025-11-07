@@ -52,6 +52,7 @@ const LANGUAGES = [
 ];
 
 interface EventSettings {
+  eventName: string;
   glossaryId: string;
   accountId: string;
   publishSummaryPublicly: boolean;
@@ -85,6 +86,7 @@ export function EventSettingsModal({
   ],
   customFields = [{ name: "Custom Field Name", defaultValue: "default value" }],
 }: EventSettingsModalProps) {
+  const [eventName, setEventName] = useState("");
   const [glossaryId, setGlossaryId] = useState(
     availableGlossaries[0]?.id || ""
   );
@@ -123,9 +125,15 @@ export function EventSettingsModal({
   );
 
   const handleSave = async () => {
+    if (!eventName.trim()) {
+      alert("Please enter an event name");
+      return;
+    }
+    
     try {
       setIsSaving(true);
       await onSave({
+        eventName: eventName.trim(),
         glossaryId,
         accountId,
         publishSummaryPublicly: publishSummaryPublicly === "yes",
@@ -156,6 +164,23 @@ export function EventSettingsModal({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Event Name */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="event-name"
+              className="text-sm font-semibold text-gray-900"
+            >
+              Event Name *
+            </Label>
+            <Input
+              id="event-name"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              placeholder="Enter event name"
+              className="w-full"
+            />
+          </div>
+
           {/* Glossary */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">

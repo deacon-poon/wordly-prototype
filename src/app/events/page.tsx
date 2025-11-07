@@ -1678,7 +1678,9 @@ export default function EventsPage() {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={(e) => handleStartStage(stage, event.name, e)}
+                            onClick={(e) =>
+                              handleStartStage(stage, event.name, e)
+                            }
                             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm"
                           >
                             <Play className="h-4 w-4 mr-2" />
@@ -1776,11 +1778,11 @@ export default function EventsPage() {
     <div className="h-full overflow-y-auto">
       {/* Page header */}
       <div className="border-b bg-white px-6 py-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
             <p className="text-sm text-gray-600 mt-1">
-              Manage and organize your events, rooms, and sessions
+              Manage and organize your events, stages, and sessions
             </p>
           </div>
           <Button
@@ -1791,16 +1793,9 @@ export default function EventsPage() {
             Add Event
           </Button>
         </div>
-      </div>
 
-      {/* Filter bar */}
-      <div className="border-b bg-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Filter by Status
-          </h2>
-          {/* Status filter tabs */}
-          <div className="flex items-center gap-2">
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-2">
             <button
               onClick={() => setStatusFilter("all")}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
