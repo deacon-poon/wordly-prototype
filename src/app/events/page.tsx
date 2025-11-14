@@ -24,6 +24,7 @@ import { WaysToJoinModal } from "@/components/WaysToJoinModal";
 import { Input } from "@/components/ui/input";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import { EventSettingsModal } from "@/components/events/EventSettingsModal";
+import { SessionEditDrawer } from "@/components/events/SessionEditDrawer";
 
 // Data interfaces
 interface Session {
@@ -1461,6 +1462,12 @@ export default function EventsPage() {
     bufferBefore: number;
     bufferAfter: number;
   } | null>(null);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [sessionToEdit, setSessionToEdit] = useState<{
+    session: Session;
+    eventName: string;
+    stageName: string;
+  } | null>(null);
 
   // Filter events by status
   const filteredEvents = useMemo(() => {
@@ -1564,10 +1571,23 @@ export default function EventsPage() {
     });
   };
 
-  const handleEditSession = (session: Session, e: React.MouseEvent) => {
+  const handleEditSession = (
+    session: Session,
+    eventName: string,
+    stageName: string,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
-    console.log("Edit session:", session.id);
-    // TODO: Open session edit modal
+    setSessionToEdit({ session, eventName, stageName });
+    setIsEditDrawerOpen(true);
+  };
+
+  const handleSaveSession = (updatedSession: Session) => {
+    // TODO: Update session in the data
+    console.log("Saving updated session:", updatedSession);
+    // Here you would update the session in your state/database
+    setIsEditDrawerOpen(false);
+    setSessionToEdit(null);
   };
 
   const handleAddEvent = () => {
@@ -1862,13 +1882,13 @@ export default function EventsPage() {
                         {groupSessionsByDate(stage.sessions).map(([date, sessionsForDate], dateIndex) => (
                           <div key={date}>
                             {/* Date Header */}
-                            <div className="sticky top-0 z-10 bg-gradient-to-r from-primary-teal-600 to-primary-teal-700 px-6 py-3 border-b border-primary-teal-800">
+                            <div className="sticky top-0 z-10 bg-gray-50 px-6 py-3 border-b border-gray-200">
                               <div className="flex items-center gap-2">
-                                <Calendar className="h-5 w-5 text-white" />
-                                <h4 className="font-bold text-white text-base">
+                                <Calendar className="h-5 w-5 text-primary-teal-600" />
+                                <h4 className="font-bold text-gray-900 text-base">
                                   {formatSessionDate(date)}
                                 </h4>
-                                <span className="ml-2 text-primary-teal-100 text-sm">
+                                <span className="ml-2 text-gray-600 text-sm">
                                   ({sessionsForDate.length} {sessionsForDate.length === 1 ? 'session' : 'sessions'})
                                 </span>
                               </div>
@@ -1894,11 +1914,12 @@ export default function EventsPage() {
                                     </span>
                                     <button
                                       onClick={(e) =>
-                                        !isPastEvent && handleEditSession(session, e)
+                                        !isPastEvent &&
+                                        handleEditSession(session, event.name, stage.name, e)
                                       }
                                       disabled={isPastEvent}
                                       className="p-2 border border-gray-200 rounded-lg hover:bg-white hover:border-gray-300 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-                                      title={isPastEvent ? "This event has ended and cannot be edited" : "Edit session"}
+                                      title={isPastEvent ? "This event has ended and cannot be edited" : "Edit presentation"}
                                     >
                                       <Edit className="h-4 w-4 text-gray-600" />
                                     </button>
@@ -2123,6 +2144,16 @@ export default function EventsPage() {
           sessions={waysToJoinModal.stage.sessions}
         />
       )}
+
+      {/* Session Edit Drawer */}
+      <SessionEditDrawer
+        open={isEditDrawerOpen}
+        onOpenChange={setIsEditDrawerOpen}
+        session={sessionToEdit?.session || null}
+        eventName={sessionToEdit?.eventName || ""}
+        stageName={sessionToEdit?.stageName || ""}
+        onSave={handleSaveSession}
+      />
     </div>
   );
 }
