@@ -433,8 +433,6 @@ export function SessionEditDrawer({
                 onCheckedChange={(checked) => setFormData({ ...formData, pinned: checked })}
               />
             </div>
-          </div>
-
       </div>
 
       {/* Footer */}
