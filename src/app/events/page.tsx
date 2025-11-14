@@ -14,6 +14,9 @@ import {
   User,
   Edit,
   Search,
+  Copy,
+  Check,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,8 +29,9 @@ import { EventSettingsModal } from "@/components/events/EventSettingsModal";
 interface Session {
   id: string;
   title: string;
-  presenter: string;
+  presenters: string[]; // Support multiple presenters
   scheduledStart: string;
+  scheduledDate?: string; // Full date (e.g., "2024-11-15")
   endTime: string;
   status: "pending" | "active" | "completed" | "skipped";
 }
@@ -114,6 +118,14 @@ const formatDateRange = (startDate: Date, endDate: Date): string => {
   return `${start}-${endDate.getDate()}, ${endDate.getFullYear()}`;
 };
 
+const formatEventDate = (date: Date): string => {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 // Mock data with active, upcoming, and past events
 const mockEvents: Event[] = [
   // ACTIVE EVENT (happening now)
@@ -140,7 +152,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-001",
             title: "The Future of AI in Enterprise",
-            presenter: "Dr. Sarah Chen",
+            presenters: ["Dr. Sarah Chen"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -148,7 +160,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-002",
             title: "Scalable Cloud Architecture Patterns",
-            presenter: "Mike Rodriguez",
+            presenters: ["Mike Rodriguez"],
             scheduledStart: "11:00",
             endTime: "12:00",
             status: "pending",
@@ -156,7 +168,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-003",
             title: "Cybersecurity Trends and Threats",
-            presenter: "Alex Thompson",
+            presenters: ["Alex Thompson"],
             scheduledStart: "13:30",
             endTime: "14:30",
             status: "pending",
@@ -164,7 +176,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-004",
             title: "Building a DevOps Culture",
-            presenter: "Jennifer Wu",
+            presenters: ["Jennifer Wu"],
             scheduledStart: "15:00",
             endTime: "16:00",
             status: "pending",
@@ -172,7 +184,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-005",
             title: "Machine Learning in Production",
-            presenter: "Robert Kim",
+            presenters: ["Robert Kim"],
             scheduledStart: "16:30",
             endTime: "17:30",
             status: "pending",
@@ -190,7 +202,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-006",
             title: "Hands-on Kubernetes Workshop",
-            presenter: "Lisa Park",
+            presenters: ["Lisa Park"],
             scheduledStart: "09:00",
             endTime: "11:00",
             status: "pending",
@@ -198,7 +210,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-007",
             title: "Advanced React Patterns",
-            presenter: "David Martinez",
+            presenters: ["David Martinez"],
             scheduledStart: "11:30",
             endTime: "13:00",
             status: "pending",
@@ -206,7 +218,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-008",
             title: "Microservices Architecture",
-            presenter: "Emily Zhang",
+            presenters: ["Emily Zhang"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -224,7 +236,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-009",
             title: "API Design Best Practices",
-            presenter: "Tom Anderson",
+            presenters: ["Tom Anderson"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -232,7 +244,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-010",
             title: "Performance Optimization Techniques",
-            presenter: "Rachel Green",
+            presenters: ["Rachel Green"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "pending",
@@ -265,7 +277,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-011",
             title: "Kubernetes at Scale",
-            presenter: "Maya Patel",
+            presenters: ["Maya Patel"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -273,7 +285,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-012",
             title: "Multi-Cloud Strategies",
-            presenter: "James Wilson",
+            presenters: ["James Wilson"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "pending",
@@ -281,7 +293,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-013",
             title: "Serverless Architecture Patterns",
-            presenter: "Sofia Garcia",
+            presenters: ["Sofia Garcia"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "pending",
@@ -289,7 +301,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-014",
             title: "Infrastructure as Code Best Practices",
-            presenter: "Chen Wei",
+            presenters: ["Chen Wei"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "pending",
@@ -297,7 +309,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-015",
             title: "Cloud Cost Optimization",
-            presenter: "Amanda Lee",
+            presenters: ["Amanda Lee"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "pending",
@@ -315,7 +327,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-016",
             title: "CI/CD Pipeline Automation",
-            presenter: "Marcus Johnson",
+            presenters: ["Marcus Johnson"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -323,7 +335,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-017",
             title: "GitOps with ArgoCD",
-            presenter: "Yuki Tanaka",
+            presenters: ["Yuki Tanaka"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "pending",
@@ -331,7 +343,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-018",
             title: "Observability & Monitoring",
-            presenter: "Carlos Rivera",
+            presenters: ["Carlos Rivera"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "pending",
@@ -339,7 +351,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-019",
             title: "Security in DevOps",
-            presenter: "Priya Sharma",
+            presenters: ["Priya Sharma"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "pending",
@@ -347,7 +359,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-020",
             title: "Platform Engineering",
-            presenter: "Oliver Brown",
+            presenters: ["Oliver Brown"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "pending",
@@ -355,7 +367,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-021",
             title: "Developer Experience Tools",
-            presenter: "Emma Davis",
+            presenters: ["Emma Davis"],
             scheduledStart: "19:00",
             endTime: "20:00",
             status: "pending",
@@ -373,7 +385,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-022",
             title: "Docker Deep Dive",
-            presenter: "Hassan Ali",
+            presenters: ["Hassan Ali"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -381,7 +393,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-023",
             title: "Service Mesh Patterns",
-            presenter: "Nina Kowalski",
+            presenters: ["Nina Kowalski"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "pending",
@@ -389,7 +401,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-024",
             title: "Container Security",
-            presenter: "Ahmed Hassan",
+            presenters: ["Ahmed Hassan"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -397,7 +409,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-025",
             title: "Microservices Best Practices",
-            presenter: "Laura Martinez",
+            presenters: ["Laura Martinez"],
             scheduledStart: "16:00",
             endTime: "17:30",
             status: "pending",
@@ -415,7 +427,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-026",
             title: "Terraform at Enterprise Scale",
-            presenter: "Kevin O'Brien",
+            presenters: ["Kevin O'Brien"],
             scheduledStart: "09:30",
             endTime: "11:00",
             status: "pending",
@@ -423,7 +435,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-027",
             title: "Ansible for Cloud Automation",
-            presenter: "Isabella Romano",
+            presenters: ["Isabella Romano"],
             scheduledStart: "11:30",
             endTime: "13:00",
             status: "pending",
@@ -431,7 +443,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-028",
             title: "Policy as Code",
-            presenter: "Daniel Kim",
+            presenters: ["Daniel Kim"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -463,7 +475,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-029",
             title: "Building Scalable Design Systems",
-            presenter: "Emma Thompson",
+            presenters: ["Emma Thompson"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -471,7 +483,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-030",
             title: "Design Tokens in Practice",
-            presenter: "Lucas Chen",
+            presenters: ["Lucas Chen"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "pending",
@@ -479,7 +491,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-031",
             title: "Accessibility-First Design",
-            presenter: "Aisha Ndiaye",
+            presenters: ["Aisha Ndiaye"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "pending",
@@ -487,7 +499,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-032",
             title: "Component API Design",
-            presenter: "Ryan Mitchell",
+            presenters: ["Ryan Mitchell"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "pending",
@@ -495,7 +507,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-033",
             title: "Design System Governance",
-            presenter: "Sophia Berg",
+            presenters: ["Sophia Berg"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "pending",
@@ -513,7 +525,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-034",
             title: "User Research at Scale",
-            presenter: "Maria Santos",
+            presenters: ["Maria Santos"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -521,7 +533,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-035",
             title: "Rapid Prototyping Techniques",
-            presenter: "Jacob Miller",
+            presenters: ["Jacob Miller"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "pending",
@@ -529,7 +541,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-036",
             title: "Data-Driven Design Decisions",
-            presenter: "Olivia Wang",
+            presenters: ["Olivia Wang"],
             scheduledStart: "14:30",
             endTime: "16:00",
             status: "pending",
@@ -561,7 +573,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-037",
             title: "Smart Contract Security",
-            presenter: "Alex Turner",
+            presenters: ["Alex Turner"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -569,7 +581,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-038",
             title: "DeFi Architecture Patterns",
-            presenter: "Raj Kapoor",
+            presenters: ["Raj Kapoor"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "pending",
@@ -577,7 +589,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-039",
             title: "NFT Marketplace Development",
-            presenter: "Sophie Laurent",
+            presenters: ["Sophie Laurent"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "pending",
@@ -585,7 +597,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-040",
             title: "Layer 2 Scaling Solutions",
-            presenter: "Mohammed Farah",
+            presenters: ["Mohammed Farah"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "pending",
@@ -593,7 +605,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-041",
             title: "Blockchain Interoperability",
-            presenter: "Anna Kowalczyk",
+            presenters: ["Anna Kowalczyk"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "pending",
@@ -601,7 +613,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-042",
             title: "Web3 Gaming",
-            presenter: "Tyler Jackson",
+            presenters: ["Tyler Jackson"],
             scheduledStart: "19:00",
             endTime: "20:00",
             status: "pending",
@@ -619,7 +631,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-043",
             title: "Building with Ethereum",
-            presenter: "Yuki Nakamura",
+            presenters: ["Yuki Nakamura"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -627,7 +639,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-044",
             title: "Solidity Best Practices",
-            presenter: "Carlos Mendez",
+            presenters: ["Carlos Mendez"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "pending",
@@ -635,7 +647,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-045",
             title: "Web3 Frontend Integration",
-            presenter: "Lisa Anderson",
+            presenters: ["Lisa Anderson"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -643,7 +655,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-046",
             title: "DAO Governance Models",
-            presenter: "Ibrahim Youssef",
+            presenters: ["Ibrahim Youssef"],
             scheduledStart: "16:00",
             endTime: "17:30",
             status: "pending",
@@ -675,7 +687,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-047",
             title: "MLOps Best Practices",
-            presenter: "Grace Liu",
+            presenters: ["Grace Liu"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -683,7 +695,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-048",
             title: "Feature Engineering at Scale",
-            presenter: "Marcus Williams",
+            presenters: ["Marcus Williams"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "pending",
@@ -691,7 +703,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-049",
             title: "Model Monitoring & Drift Detection",
-            presenter: "Elena Popov",
+            presenters: ["Elena Popov"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "pending",
@@ -699,7 +711,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-050",
             title: "Real-Time Analytics Pipelines",
-            presenter: "Hassan Ibrahim",
+            presenters: ["Hassan Ibrahim"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "pending",
@@ -707,7 +719,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-051",
             title: "Ethical AI & Bias Mitigation",
-            presenter: "Amara Jones",
+            presenters: ["Amara Jones"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "pending",
@@ -725,7 +737,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-052",
             title: "Modern Data Stack",
-            presenter: "Kevin Park",
+            presenters: ["Kevin Park"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -733,7 +745,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-053",
             title: "Data Visualization Best Practices",
-            presenter: "Natalie Schmidt",
+            presenters: ["Natalie Schmidt"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "pending",
@@ -741,7 +753,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-054",
             title: "Business Intelligence Strategies",
-            presenter: "Raj Patel",
+            presenters: ["Raj Patel"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -749,7 +761,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-055",
             title: "Data Governance & Quality",
-            presenter: "Sarah Cohen",
+            presenters: ["Sarah Cohen"],
             scheduledStart: "16:00",
             endTime: "17:30",
             status: "pending",
@@ -767,7 +779,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-056",
             title: "Deep Learning Architectures",
-            presenter: "Zhang Wei",
+            presenters: ["Zhang Wei"],
             scheduledStart: "09:30",
             endTime: "11:00",
             status: "pending",
@@ -775,7 +787,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-057",
             title: "Natural Language Processing",
-            presenter: "Isabella Costa",
+            presenters: ["Isabella Costa"],
             scheduledStart: "11:30",
             endTime: "13:00",
             status: "pending",
@@ -783,7 +795,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-058",
             title: "Computer Vision Applications",
-            presenter: "Omar Farooq",
+            presenters: ["Omar Farooq"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -816,7 +828,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-059",
             title: "State of Software Development 2024",
-            presenter: "John Peterson",
+            presenters: ["John Peterson"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "completed",
@@ -824,7 +836,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-060",
             title: "Modern JavaScript Frameworks",
-            presenter: "Anna Kowalski",
+            presenters: ["Anna Kowalski"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "completed",
@@ -832,7 +844,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-061",
             title: "API Design Principles",
-            presenter: "Miguel Torres",
+            presenters: ["Miguel Torres"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "completed",
@@ -840,7 +852,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-062",
             title: "Testing Strategies",
-            presenter: "Rachel Green",
+            presenters: ["Rachel Green"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "completed",
@@ -858,7 +870,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-063",
             title: "GraphQL Workshop",
-            presenter: "David Chen",
+            presenters: ["David Chen"],
             scheduledStart: "10:00",
             endTime: "12:00",
             status: "completed",
@@ -866,7 +878,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-064",
             title: "Performance Optimization",
-            presenter: "Emma Wilson",
+            presenters: ["Emma Wilson"],
             scheduledStart: "13:00",
             endTime: "15:00",
             status: "completed",
@@ -898,7 +910,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-065",
             title: "SwiftUI Advanced Patterns",
-            presenter: "Sarah Johnson",
+            presenters: ["Sarah Johnson"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "completed",
@@ -906,7 +918,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-066",
             title: "iOS App Architecture",
-            presenter: "Michael Chen",
+            presenters: ["Michael Chen"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "completed",
@@ -914,7 +926,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-067",
             title: "Core Data Best Practices",
-            presenter: "Elena Rodriguez",
+            presenters: ["Elena Rodriguez"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "completed",
@@ -922,7 +934,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-068",
             title: "App Store Optimization",
-            presenter: "James Taylor",
+            presenters: ["James Taylor"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "completed",
@@ -940,7 +952,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-069",
             title: "Jetpack Compose",
-            presenter: "Priya Sharma",
+            presenters: ["Priya Sharma"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "completed",
@@ -948,7 +960,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-070",
             title: "Kotlin Coroutines",
-            presenter: "David Kim",
+            presenters: ["David Kim"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "completed",
@@ -956,7 +968,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-071",
             title: "Material Design 3",
-            presenter: "Lisa Wang",
+            presenters: ["Lisa Wang"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "completed",
@@ -964,7 +976,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-072",
             title: "Android Testing Strategies",
-            presenter: "Omar Hassan",
+            presenters: ["Omar Hassan"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "completed",
@@ -972,7 +984,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-073",
             title: "Performance Optimization",
-            presenter: "Anna Kowalski",
+            presenters: ["Anna Kowalski"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "completed",
@@ -990,7 +1002,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-074",
             title: "React Native Advanced",
-            presenter: "Carlos Rivera",
+            presenters: ["Carlos Rivera"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "completed",
@@ -998,7 +1010,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-075",
             title: "Flutter Development",
-            presenter: "Yuki Tanaka",
+            presenters: ["Yuki Tanaka"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "completed",
@@ -1006,7 +1018,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-076",
             title: "Mobile CI/CD",
-            presenter: "Marcus Brown",
+            presenters: ["Marcus Brown"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "completed",
@@ -1038,7 +1050,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-077",
             title: "Zero Trust Architecture",
-            presenter: "Robert Fischer",
+            presenters: ["Robert Fischer"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "completed",
@@ -1046,7 +1058,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-078",
             title: "Cloud Security Best Practices",
-            presenter: "Mei Lin",
+            presenters: ["Mei Lin"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "completed",
@@ -1054,7 +1066,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-079",
             title: "Threat Intelligence",
-            presenter: "Ahmed Ali",
+            presenters: ["Ahmed Ali"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "completed",
@@ -1062,7 +1074,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-080",
             title: "Incident Response",
-            presenter: "Julia Martinez",
+            presenters: ["Julia Martinez"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "completed",
@@ -1070,7 +1082,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-081",
             title: "Security Automation",
-            presenter: "Kevin O'Neill",
+            presenters: ["Kevin O'Neill"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "completed",
@@ -1088,7 +1100,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-082",
             title: "Ethical Hacking Techniques",
-            presenter: "Nathan Wright",
+            presenters: ["Nathan Wright"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "completed",
@@ -1096,7 +1108,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-083",
             title: "Web Application Security",
-            presenter: "Sophia Berg",
+            presenters: ["Sophia Berg"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "completed",
@@ -1104,7 +1116,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-084",
             title: "Network Security",
-            presenter: "Daniel Park",
+            presenters: ["Daniel Park"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "completed",
@@ -1136,7 +1148,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-085",
             title: "Product Strategy Frameworks",
-            presenter: "Rachel Green",
+            presenters: ["Rachel Green"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "completed",
@@ -1144,7 +1156,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-086",
             title: "User Story Mapping",
-            presenter: "Tom Anderson",
+            presenters: ["Tom Anderson"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "completed",
@@ -1152,7 +1164,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-087",
             title: "Product Analytics",
-            presenter: "Emma Davis",
+            presenters: ["Emma Davis"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "completed",
@@ -1160,7 +1172,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-088",
             title: "Pricing Strategies",
-            presenter: "Oliver Smith",
+            presenters: ["Oliver Smith"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "completed",
@@ -1178,7 +1190,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-089",
             title: "OKRs for Product Teams",
-            presenter: "Nina Patel",
+            presenters: ["Nina Patel"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "completed",
@@ -1186,7 +1198,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-090",
             title: "Roadmap Planning",
-            presenter: "Lucas Chen",
+            presenters: ["Lucas Chen"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "completed",
@@ -1194,7 +1206,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-091",
             title: "Stakeholder Management",
-            presenter: "Isabella Romano",
+            presenters: ["Isabella Romano"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "completed",
@@ -1226,7 +1238,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-092",
             title: "React Server Components",
-            presenter: "Alex Turner",
+            presenters: ["Alex Turner"],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "completed",
@@ -1234,7 +1246,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-093",
             title: "Vue 3 Composition API",
-            presenter: "Sophie Laurent",
+            presenters: ["Sophie Laurent"],
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "completed",
@@ -1242,7 +1254,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-094",
             title: "Svelte & SvelteKit",
-            presenter: "Hassan Ibrahim",
+            presenters: ["Hassan Ibrahim"],
             scheduledStart: "13:30",
             endTime: "15:00",
             status: "completed",
@@ -1250,7 +1262,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-095",
             title: "TypeScript Advanced Types",
-            presenter: "Maria Santos",
+            presenters: ["Maria Santos"],
             scheduledStart: "15:30",
             endTime: "17:00",
             status: "completed",
@@ -1258,7 +1270,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-096",
             title: "Build Tools & Vite",
-            presenter: "Ryan Mitchell",
+            presenters: ["Ryan Mitchell"],
             scheduledStart: "17:30",
             endTime: "18:30",
             status: "completed",
@@ -1276,7 +1288,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-097",
             title: "Modern CSS Layouts",
-            presenter: "Olivia Wang",
+            presenters: ["Olivia Wang"],
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "completed",
@@ -1284,7 +1296,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-098",
             title: "Tailwind CSS Best Practices",
-            presenter: "Jacob Miller",
+            presenters: ["Jacob Miller"],
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "completed",
@@ -1292,7 +1304,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-099",
             title: "CSS Animation Performance",
-            presenter: "Aisha Ndiaye",
+            presenters: ["Aisha Ndiaye"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "completed",
@@ -1310,7 +1322,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-100",
             title: "Web Performance Metrics",
-            presenter: "Tyler Jackson",
+            presenters: ["Tyler Jackson"],
             scheduledStart: "09:30",
             endTime: "11:00",
             status: "completed",
@@ -1318,7 +1330,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-101",
             title: "Optimizing Core Web Vitals",
-            presenter: "Grace Liu",
+            presenters: ["Grace Liu"],
             scheduledStart: "11:30",
             endTime: "13:00",
             status: "completed",
@@ -1326,7 +1338,7 @@ const mockEvents: Event[] = [
           {
             id: "ses-102",
             title: "Progressive Web Apps",
-            presenter: "Carlos Mendez",
+            presenters: ["Carlos Mendez"],
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "completed",
@@ -1336,6 +1348,64 @@ const mockEvents: Event[] = [
     ],
   },
 ];
+
+// Component for copy button with feedback
+const CopyButton = ({ text, label }: { text: string; label: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1.5 text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+      title={`Copy ${label}`}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" />
+      )}
+    </button>
+  );
+};
+
+// Component for displaying stage credentials
+const StageCredentials = ({ stage }: { stage: Stage }) => {
+  return (
+    <div className="flex items-center gap-6 text-sm">
+      <div className="flex items-center gap-2">
+        <span className="text-gray-600 font-medium">Session ID:</span>
+        <code className="px-2 py-0.5 bg-white border border-gray-200 rounded text-gray-900 font-mono text-xs">
+          {stage.stageSessionId}
+        </code>
+        <CopyButton text={stage.stageSessionId} label="Session ID" />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-600 font-medium">Passcode:</span>
+        <code className="px-2 py-0.5 bg-white border border-gray-200 rounded text-gray-900 font-mono text-xs">
+          {stage.passcode}
+        </code>
+        <CopyButton text={stage.passcode} label="Passcode" />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-600 font-medium">Mobile ID:</span>
+        <code className="px-2 py-0.5 bg-white border border-gray-200 rounded text-gray-900 font-mono text-xs">
+          {stage.mobileId}
+        </code>
+        <CopyButton text={stage.mobileId} label="Mobile ID" />
+      </div>
+    </div>
+  );
+};
 
 export default function EventsPage() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
@@ -1356,6 +1426,8 @@ export default function EventsPage() {
   const [uploadedFileData, setUploadedFileData] = useState<{
     file: File;
     timezone: string;
+    bufferBefore: number;
+    bufferAfter: number;
   } | null>(null);
 
   // Filter events by status
@@ -1470,9 +1542,9 @@ export default function EventsPage() {
     setIsUploadModalOpen(true);
   };
 
-  const handleUpload = async (file: File, timezone: string) => {
+  const handleUpload = async (file: File, timezone: string, bufferBefore: number, bufferAfter: number) => {
     // Store the file data temporarily
-    setUploadedFileData({ file, timezone });
+    setUploadedFileData({ file, timezone, bufferBefore, bufferAfter });
 
     // Close upload modal and open settings modal
     setIsUploadModalOpen(false);
@@ -1485,6 +1557,7 @@ export default function EventsPage() {
     try {
       console.log("Creating event with file:", uploadedFileData.file.name);
       console.log("Timezone:", uploadedFileData.timezone);
+      console.log("Buffer periods:", uploadedFileData.bufferBefore, uploadedFileData.bufferAfter);
       console.log("Settings:", settings);
 
       // Simulate API call
@@ -1493,8 +1566,9 @@ export default function EventsPage() {
       // Here you would:
       // 1. Upload the file to your server
       // 2. Parse the CSV/Excel file with the timezone
-      // 3. Create events, rooms, and sessions with the settings
-      // 4. Refresh the events list
+      // 3. Apply buffer periods to session times
+      // 4. Create events, rooms, and sessions with the settings
+      // 5. Refresh the events list
 
       console.log("Event created successfully");
 
@@ -1504,6 +1578,48 @@ export default function EventsPage() {
       console.error("Error creating event:", error);
       throw error;
     }
+  };
+
+  const handleDownloadForAV = (event: Event) => {
+    // Generate CSV content with event details for AV crew
+    const csvRows = [];
+    
+    // Header
+    csvRows.push("Event,Stage,Session ID,Passcode,Mobile ID,Session Title,Presenters,Date,Start Time,End Time,Present URL");
+    
+    // Data rows for each stage and session
+    event.stages.forEach((stage) => {
+      // Stage header row
+      const presentUrl = `https://present.wordly.ai/${stage.stageSessionId}`;
+      
+      stage.sessions.forEach((session) => {
+        const row = [
+          `"${event.name}"`,
+          `"${stage.name}"`,
+          stage.stageSessionId,
+          stage.passcode,
+          stage.mobileId,
+          `"${session.title}"`,
+          `"${session.presenters.join(", ")}"`,
+          formatEventDate(event.startDate),
+          session.scheduledStart,
+          session.endTime,
+          presentUrl,
+        ];
+        csvRows.push(row.join(","));
+      });
+    });
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${event.name.replace(/\s+/g, "-")}-AV-Details.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   // Component for rendering status badge
@@ -1539,6 +1655,8 @@ export default function EventsPage() {
   // Component for rendering an event card
   const EventCard = ({ event }: { event: Event }) => {
     const isExpanded = expandedEvents.has(event.id);
+    const eventStatus = getEventStatus(event.startDate, event.endDate);
+    const isPastEvent = eventStatus === "past";
 
     return (
       <Card className="overflow-hidden">
@@ -1611,16 +1729,27 @@ export default function EventsPage() {
             <p className="text-sm text-gray-700 mb-3">{event.description}</p>
           )}
 
-          {/* Public summary link - shown in both states */}
-          {event.publicSummaryUrl && (
-            <a
-              href={event.publicSummaryUrl}
-              className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>Public Summaries Page</span>
-            </a>
-          )}
+          {/* Action links - shown in both states */}
+          <div className="flex items-center gap-4">
+            {event.publicSummaryUrl && (
+              <a
+                href={event.publicSummaryUrl}
+                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Public Summaries Page</span>
+              </a>
+            )}
+            {isExpanded && (
+              <button
+                onClick={() => handleDownloadForAV(event)}
+                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+              >
+                <Download className="h-4 w-4" />
+                <span>Download for AV</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Expandable stages section */}
@@ -1636,7 +1765,7 @@ export default function EventsPage() {
                     className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-gray-300 transition-all"
                   >
                     {/* Stage header */}
-                    <div className="p-6 bg-gray-50/50">
+                    <div className="p-6 bg-gray-50/50 space-y-4">
                       <div className="flex items-center justify-between gap-6">
                         {/* Stage info */}
                         <div className="flex items-center gap-3">
@@ -1679,15 +1808,20 @@ export default function EventsPage() {
                           <Button
                             size="sm"
                             onClick={(e) =>
-                              handleStartStage(stage, event.name, e)
+                              !isPastEvent && handleStartStage(stage, event.name, e)
                             }
-                            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm"
+                            disabled={isPastEvent}
+                            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={isPastEvent ? "This event has ended and cannot be started" : "Start Stage"}
                           >
                             <Play className="h-4 w-4 mr-2" />
                             Start Stage
                           </Button>
                         </div>
                       </div>
+
+                      {/* Stage Credentials */}
+                      <StageCredentials stage={stage} />
                     </div>
 
                     {/* Expandable sessions list */}
@@ -1712,15 +1846,15 @@ export default function EventsPage() {
                                   {/* Time badge - non-clickable display */}
                                   <div className="flex items-center gap-2">
                                     <span className="inline-flex items-center px-3 py-1.5 rounded-md border-2 border-primary-teal-600 bg-primary-teal-50 text-primary-teal-700 text-sm font-semibold whitespace-nowrap">
-                                      {session.scheduledStart} -{" "}
-                                      {session.endTime}
+                                      {formatEventDate(event.startDate)} {session.scheduledStart} - {session.endTime}
                                     </span>
                                     <button
                                       onClick={(e) =>
-                                        handleEditSession(session, e)
+                                        !isPastEvent && handleEditSession(session, e)
                                       }
-                                      className="p-2 border border-gray-200 rounded-lg hover:bg-white hover:border-gray-300 transition-colors flex-shrink-0"
-                                      title="Edit session"
+                                      disabled={isPastEvent}
+                                      className="p-2 border border-gray-200 rounded-lg hover:bg-white hover:border-gray-300 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                      title={isPastEvent ? "This event has ended and cannot be edited" : "Edit session"}
                                     >
                                       <Edit className="h-4 w-4 text-gray-600" />
                                     </button>
@@ -1732,15 +1866,14 @@ export default function EventsPage() {
                                   <div className="flex items-center gap-2">
                                     <User className="h-4 w-4 text-primary-teal-600" />
                                     <span className="text-gray-700 font-medium">
-                                      {session.presenter}
+                                      {session.presenters.join(", ")}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-primary-teal-600" />
                                     <span className="text-gray-700 font-medium">
-                                      Time: {session.scheduledStart} -{" "}
-                                      {session.endTime}
+                                      {formatEventDate(event.startDate)} {session.scheduledStart} - {session.endTime}
                                     </span>
                                   </div>
 

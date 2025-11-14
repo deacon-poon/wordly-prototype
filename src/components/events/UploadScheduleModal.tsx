@@ -46,7 +46,7 @@ const TIMEZONES = [
 interface UploadScheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpload: (file: File, timezone: string) => Promise<void>;
+  onUpload: (file: File, timezone: string, bufferBefore: number, bufferAfter: number) => Promise<void>;
 }
 
 export function UploadScheduleModal({
@@ -56,6 +56,8 @@ export function UploadScheduleModal({
 }: UploadScheduleModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [timezone, setTimezone] = useState("America/Los_Angeles");
+  const [bufferBefore, setBufferBefore] = useState(5);
+  const [bufferAfter, setBufferAfter] = useState(5);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,11 +90,13 @@ export function UploadScheduleModal({
 
     try {
       setIsUploading(true);
-      await onUpload(selectedFile, timezone);
+      await onUpload(selectedFile, timezone, bufferBefore, bufferAfter);
 
       // Reset form on success
       setSelectedFile(null);
       setTimezone("America/Los_Angeles");
+      setBufferBefore(5);
+      setBufferAfter(5);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -107,10 +111,10 @@ export function UploadScheduleModal({
 
   const handleDownloadTemplate = () => {
     // Create a sample CSV template
-    const csvContent = `Event Name,Room Name,Session Title,Presenter,Start Date,Start Time,End Time
-"Tech Conference 2024","Main Auditorium","Opening Keynote","John Doe","2024-11-15","09:00","10:30"
+    const csvContent = `Event Name,Room Name,Session Title,Presenters,Start Date,Start Time,End Time
+"Tech Conference 2024","Main Auditorium","Opening Keynote","John Doe, Jane Smith","2024-11-15","09:00","10:30"
 "Tech Conference 2024","Main Auditorium","Product Showcase","Jane Smith","2024-11-15","11:00","12:00"
-"Tech Conference 2024","Workshop Room A","Hands-on Workshop","Bob Johnson","2024-11-15","13:00","15:00"`;
+"Tech Conference 2024","Workshop Room A","Hands-on Workshop","Bob Johnson, Alice Lee","2024-11-15","13:00","15:00"`;
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -223,6 +227,49 @@ export function UploadScheduleModal({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Buffer Periods */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-bold text-gray-900">
+                Session Buffer Periods
+              </Label>
+              <Info className="h-[13.33px] w-[13.33px] text-gray-500" />
+            </div>
+            <p className="text-sm text-gray-600">
+              Add buffer time before and after each session for setup and teardown
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="buffer-before" className="text-sm text-gray-700">
+                  Buffer Before (minutes)
+                </Label>
+                <Input
+                  id="buffer-before"
+                  type="number"
+                  min="0"
+                  max="60"
+                  value={bufferBefore}
+                  onChange={(e) => setBufferBefore(Number(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="buffer-after" className="text-sm text-gray-700">
+                  Buffer After (minutes)
+                </Label>
+                <Input
+                  id="buffer-after"
+                  type="number"
+                  min="0"
+                  max="60"
+                  value={bufferAfter}
+                  onChange={(e) => setBufferAfter(Number(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Actions */}
