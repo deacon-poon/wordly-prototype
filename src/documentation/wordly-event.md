@@ -41,7 +41,7 @@ interface Event {
 
   // Session buffer periods (in minutes)
   bufferBefore: number; // Default: 5 minutes
-  bufferAfter: number;  // Default: 5 minutes
+  bufferAfter: number; // Default: 5 minutes
 
   // Session defaults for all sessions in event
   defaults: {
@@ -71,8 +71,8 @@ interface Room {
 
   // Public-facing credentials for the stage
   roomSessionId: string; // Stage Session ID (e.g., "MAIN-AUD-2024")
-  passcode: string;      // Stage passcode (e.g., "MA2024-8372-19")
-  mobileId: string;      // Mobile ID for mobile app access (e.g., "83721901")
+  passcode: string; // Stage passcode (e.g., "MA2024-8372-19")
+  mobileId: string; // Mobile ID for mobile app access (e.g., "83721901")
 
   sessions: Session[];
   createdAt: Date;
@@ -155,6 +155,7 @@ Conference 2025, Breakout A, Workshop 1, "Bob Johnson, Sarah Lee", 2025-06-15, 0
 ```
 
 **Key Changes:**
+
 - **Presenters column** now supports multiple presenters (comma-separated, quoted if multiple)
 - **Start Date** is now separate from Start Time for better date handling
 - Buffer periods are applied at upload time (configured globally, not per-session)
@@ -924,6 +925,7 @@ Based on customer feedback sessions, the following requirements have been identi
 **Finding:** Most users enter session details manually on presenter/attendee devices rather than using QR codes exclusively.
 
 **Implementation:**
+
 - **Display stage credentials prominently** in the Events UI:
   - **Stage Session ID** (e.g., "MAIN-AUD-2024")
   - **Passcode** (e.g., "MA2024-8372-19")
@@ -941,6 +943,7 @@ Based on customer feedback sessions, the following requirements have been identi
 **Finding:** Users provide PDFs or spreadsheets to AV staff with session information and launch links.
 
 **Implementation:**
+
 - **Download for AV** button on each event card
 - Generate comprehensive PDF/spreadsheet containing:
   - Event overview (name, dates, timezone)
@@ -960,18 +963,20 @@ Based on customer feedback sessions, the following requirements have been identi
 **Finding:** Users need a buffer period before/after each session for setup and teardown (typically 5 minutes).
 
 **Implementation:**
+
 - Add **Buffer Period** configuration in Upload Schedule modal
 - Two separate fields:
   - **Buffer Before** (minutes) - Default: 5
   - **Buffer After** (minutes) - Default: 5
 - User-editable defaults that apply to entire event
 - Buffers extend the actual session times but don't affect the displayed schedule
-- Example: 
+- Example:
   - Scheduled: 09:00 - 10:00
   - Actual with buffers: 08:55 - 10:05
   - Display: Still shows 09:00 - 10:00 to attendees
 
-**Rationale:** 
+**Rationale:**
+
 - Allows presenters to connect early and test equipment
 - Prevents abrupt cutoffs at end of session
 - Improves presenter experience without confusing attendees
@@ -985,6 +990,7 @@ Based on customer feedback sessions, the following requirements have been identi
 **Finding:** Many sessions have multiple presenters (panels, co-presenters, interviewers, etc.).
 
 **Implementation:**
+
 - Update Session data model: `presenters: string[]` (array instead of single string)
 - CSV format: Support comma-separated presenters in quotes
   - Example: `"John Smith, Jane Doe, Bob Johnson"`
@@ -1000,6 +1006,7 @@ Based on customer feedback sessions, the following requirements have been identi
 **Finding:** Multi-day events need clear date context, not just times.
 
 **Implementation:**
+
 - **Option A (Inline):** Show full date-time for each session
   - Example: "Nov 15, 2024 09:00 - 10:30"
 - **Option B (Hierarchical):** Group sessions by date with date headers
@@ -1025,6 +1032,7 @@ Based on customer feedback sessions, the following requirements have been identi
 **Finding:** Completed events should not be editable or runnable.
 
 **Implementation:**
+
 - Disable "Start Stage" button for past events
 - Disable "Edit" buttons for sessions in past events
 - Add tooltip: "This event has ended and cannot be modified"
@@ -1040,20 +1048,24 @@ Based on customer feedback sessions, the following requirements have been identi
 The following items require additional product/design decisions and are deferred to a later release:
 
 #### 1. ALS Field in Settings
+
 - **Status:** ❓ Pending clarification on meaning and requirements
 - **Priority:** Medium
 
 #### 2. Manual Pause/Restart Controls
+
 - **Requirement:** Ability to manually pause and restart presenter connections during active sessions
 - **Status:** 🔜 Fast-follow (v1.2)
 - **Priority:** Medium
 
 #### 3. Split Transcript Feature for Events
+
 - **Question:** Should "Split Transcript" button be removed/hidden for events?
 - **Status:** ❓ Pending product decision
 - **Priority:** Low
 
 #### 4. Language Override Behavior
+
 - **Question:** When a new session starts with a different language than the previous one, should it:
   - Reset to event default languages?
   - Preserve previous session's language selection?
@@ -1160,6 +1172,7 @@ Annual Conference 2025,Breakout Room A,Security Best Practices,"Mike Chen, Alex 
 ```
 
 **Format Notes:**
+
 - **Presenters:** Multiple presenters separated by commas, wrapped in quotes
 - **Start Date:** Separate date column (YYYY-MM-DD format)
 - **Start Time / End Time:** Time only (HH:MM format in 24-hour)

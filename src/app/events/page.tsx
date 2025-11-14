@@ -30,8 +30,8 @@ interface Session {
   id: string;
   title: string;
   presenters: string[]; // Support multiple presenters
+  scheduledDate: string; // Full date (e.g., "2024-11-15")
   scheduledStart: string;
-  scheduledDate?: string; // Full date (e.g., "2024-11-15")
   endTime: string;
   status: "pending" | "active" | "completed" | "skipped";
 }
@@ -126,6 +126,33 @@ const formatEventDate = (date: Date): string => {
   });
 };
 
+const formatSessionDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// Helper to group sessions by date
+const groupSessionsByDate = (sessions: Session[]) => {
+  const grouped = new Map<string, Session[]>();
+  
+  sessions.forEach((session) => {
+    if (!grouped.has(session.scheduledDate)) {
+      grouped.set(session.scheduledDate, []);
+    }
+    grouped.get(session.scheduledDate)!.push(session);
+  });
+  
+  // Sort by date
+  return Array.from(grouped.entries()).sort(([dateA], [dateB]) => 
+    dateA.localeCompare(dateB)
+  );
+};
+
 // Mock data with active, upcoming, and past events
 const mockEvents: Event[] = [
   // ACTIVE EVENT (happening now)
@@ -153,6 +180,7 @@ const mockEvents: Event[] = [
             id: "ses-001",
             title: "The Future of AI in Enterprise",
             presenters: ["Dr. Sarah Chen"],
+            scheduledDate: new Date(getRelativeDate(0).setHours(9, 0, 0, 0)).toISOString().split('T')[0],
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -161,6 +189,7 @@ const mockEvents: Event[] = [
             id: "ses-002",
             title: "Scalable Cloud Architecture Patterns",
             presenters: ["Mike Rodriguez"],
+            scheduledDate: new Date(getRelativeDate(0).setHours(11, 0, 0, 0)).toISOString().split('T')[0],
             scheduledStart: "11:00",
             endTime: "12:00",
             status: "pending",
@@ -169,6 +198,7 @@ const mockEvents: Event[] = [
             id: "ses-003",
             title: "Cybersecurity Trends and Threats",
             presenters: ["Alex Thompson"],
+            scheduledDate: new Date(getRelativeDate(0).setHours(13, 30, 0, 0)).toISOString().split('T')[0],
             scheduledStart: "13:30",
             endTime: "14:30",
             status: "pending",
@@ -177,16 +207,18 @@ const mockEvents: Event[] = [
             id: "ses-004",
             title: "Building a DevOps Culture",
             presenters: ["Jennifer Wu"],
-            scheduledStart: "15:00",
-            endTime: "16:00",
+            scheduledDate: new Date(getRelativeDate(1).setHours(9, 0, 0, 0)).toISOString().split('T')[0],
+            scheduledStart: "09:00",
+            endTime: "10:30",
             status: "pending",
           },
           {
             id: "ses-005",
             title: "Machine Learning in Production",
-            presenters: ["Robert Kim"],
-            scheduledStart: "16:30",
-            endTime: "17:30",
+            presenters: ["Robert Kim", "Dr. Lisa Wang"],
+            scheduledDate: new Date(getRelativeDate(1).setHours(11, 0, 0, 0)).toISOString().split('T')[0],
+            scheduledStart: "11:00",
+            endTime: "12:30",
             status: "pending",
           },
         ],
@@ -1601,7 +1633,7 @@ export default function EventsPage() {
           stage.mobileId,
           `"${session.title}"`,
           `"${session.presenters.join(", ")}"`,
-          formatEventDate(event.startDate),
+          session.scheduledDate,
           session.scheduledStart,
           session.endTime,
           presentUrl,
@@ -1827,15 +1859,27 @@ export default function EventsPage() {
                     {/* Expandable sessions list */}
                     {isStageExpanded && stage.sessions.length > 0 && (
                       <div className="border-t border-gray-200 bg-gray-50/30">
-                        {stage.sessions.map((session, index) => (
-                          <div
-                            key={session.id}
-                            className={`p-5 bg-white hover:bg-gray-50 transition-colors ${
-                              index !== stage.sessions.length - 1
-                                ? "border-b border-gray-200"
-                                : ""
-                            }`}
-                          >
+                        {groupSessionsByDate(stage.sessions).map(([date, sessionsForDate], dateIndex) => (
+                          <div key={date}>
+                            {/* Date Header */}
+                            <div className="sticky top-0 z-10 bg-gradient-to-r from-primary-teal-600 to-primary-teal-700 px-6 py-3 border-b border-primary-teal-800">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-white" />
+                                <h4 className="font-bold text-white text-base">
+                                  {formatSessionDate(date)}
+                                </h4>
+                                <span className="ml-2 text-primary-teal-100 text-sm">
+                                  ({sessionsForDate.length} {sessionsForDate.length === 1 ? 'session' : 'sessions'})
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Sessions for this date */}
+                            {sessionsForDate.map((session, sessionIndex) => (
+                              <div
+                                key={session.id}
+                                className="p-5 bg-white hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0"
+                              >
                             <div className="flex items-start justify-between gap-4">
                               {/* Session info */}
                               <div className="flex-1 space-y-2">
@@ -1846,7 +1890,7 @@ export default function EventsPage() {
                                   {/* Time badge - non-clickable display */}
                                   <div className="flex items-center gap-2">
                                     <span className="inline-flex items-center px-3 py-1.5 rounded-md border-2 border-primary-teal-600 bg-primary-teal-50 text-primary-teal-700 text-sm font-semibold whitespace-nowrap">
-                                      {formatEventDate(event.startDate)} {session.scheduledStart} - {session.endTime}
+                                      {session.scheduledStart} - {session.endTime}
                                     </span>
                                     <button
                                       onClick={(e) =>
@@ -1873,7 +1917,7 @@ export default function EventsPage() {
                                   <div className="flex items-center gap-2">
                                     <Clock className="h-4 w-4 text-primary-teal-600" />
                                     <span className="text-gray-700 font-medium">
-                                      {formatEventDate(event.startDate)} {session.scheduledStart} - {session.endTime}
+                                      {session.scheduledStart} - {session.endTime}
                                     </span>
                                   </div>
 
@@ -1893,6 +1937,8 @@ export default function EventsPage() {
                                 </div>
                               </div>
                             </div>
+                              </div>
+                            ))}
                           </div>
                         ))}
                       </div>
