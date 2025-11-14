@@ -17,9 +17,15 @@ import {
   Copy,
   Check,
   Download,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import { WaysToJoinModal } from "@/components/WaysToJoinModal";
 import { Input } from "@/components/ui/input";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
@@ -1975,9 +1981,13 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto">
-      {/* Page header */}
-      <div className="border-b bg-white px-6 py-6">
+    <div className="h-full">
+      {isEditDrawerOpen ? (
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          <ResizablePanel defaultSize={60} minSize={45}>
+            <div className="h-full overflow-y-auto">
+              {/* Page header */}
+              <div className="border-b bg-white px-6 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
@@ -2113,7 +2123,196 @@ export default function EventsPage() {
             </p>
           </div>
         )}
-      </div>
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={40} minSize={30} maxSize={50}>
+            <div className="h-full overflow-auto bg-white border-l flex flex-col">
+              <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-lg">Presentation</h2>
+                  <p className="text-sm text-gray-600">
+                    {sessionToEdit?.eventName} • {sessionToEdit?.stageName}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    setIsEditDrawerOpen(false);
+                    setSessionToEdit(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </div>
+              
+              {sessionToEdit && (
+                <SessionEditDrawer
+                  open={true}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setIsEditDrawerOpen(false);
+                      setSessionToEdit(null);
+                    }
+                  }}
+                  session={sessionToEdit.session}
+                  eventName={sessionToEdit.eventName}
+                  stageName={sessionToEdit.stageName}
+                  onSave={handleSaveSession}
+                  inline={true}
+                />
+              )}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      ) : (
+        <div className="h-full overflow-y-auto">
+          {/* Page header */}
+          <div className="border-b bg-white px-6 py-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Manage and organize your events, stages, and sessions
+                </p>
+              </div>
+              <Button
+                onClick={handleAddEvent}
+                className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Event
+              </Button>
+            </div>
+
+            {/* Status filter tabs */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "all"
+                    ? "bg-primary-teal-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                All ({statusCounts.all})
+              </button>
+              <button
+                onClick={() => setStatusFilter("active")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "active"
+                    ? "bg-accent-green-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Active ({statusCounts.active})
+              </button>
+              <button
+                onClick={() => setStatusFilter("upcoming")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "upcoming"
+                    ? "bg-primary-teal-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Upcoming ({statusCounts.upcoming})
+              </button>
+              <button
+                onClick={() => setStatusFilter("past")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "past"
+                    ? "bg-gray-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Past ({statusCounts.past})
+              </button>
+            </div>
+          </div>
+
+          {/* Events list grouped by status */}
+          <div className="p-6 space-y-8">
+            {/* Active events section */}
+            {groupedEvents.active.length > 0 && statusFilter === "all" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
+                  <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
+                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                    Active Now ({groupedEvents.active.length})
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {groupedEvents.active.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Upcoming events section */}
+            {groupedEvents.upcoming.length > 0 && statusFilter === "all" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
+                  <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
+                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                    Upcoming ({groupedEvents.upcoming.length})
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {groupedEvents.upcoming.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Past events section */}
+            {groupedEvents.past.length > 0 && statusFilter === "all" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-300">
+                  <span className="w-2 h-2 rounded-full bg-gray-400" />
+                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                    Past ({groupedEvents.past.length})
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {groupedEvents.past.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Filtered view (when a specific status filter is active) */}
+            {statusFilter !== "all" && (
+              <div className="space-y-4">
+                {filteredEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {filteredEvents.length === 0 && (
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-900 font-semibold text-lg mb-2">
+                  No events found
+                </p>
+                <p className="text-gray-500 text-sm">
+                  There are no events in this category
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Upload Schedule Modal */}
       <UploadScheduleModal
@@ -2144,16 +2343,6 @@ export default function EventsPage() {
           sessions={waysToJoinModal.stage.sessions}
         />
       )}
-
-      {/* Session Edit Drawer */}
-      <SessionEditDrawer
-        open={isEditDrawerOpen}
-        onOpenChange={setIsEditDrawerOpen}
-        session={sessionToEdit?.session || null}
-        eventName={sessionToEdit?.eventName || ""}
-        stageName={sessionToEdit?.stageName || ""}
-        onSave={handleSaveSession}
-      />
     </div>
   );
 }

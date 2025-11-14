@@ -39,6 +39,7 @@ interface SessionEditDrawerProps {
   eventName: string;
   stageName: string;
   onSave: (updatedSession: Session) => void;
+  inline?: boolean; // If true, renders content without Sheet wrapper
 }
 
 // Language options
@@ -60,6 +61,7 @@ export function SessionEditDrawer({
   eventName,
   stageName,
   onSave,
+  inline = false,
 }: SessionEditDrawerProps) {
   const [formData, setFormData] = useState<any>({
     title: "",
@@ -145,20 +147,10 @@ export function SessionEditDrawer({
 
   if (!session) return null;
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[500px] sm:max-w-[500px] overflow-y-auto p-0">
-        <div className="h-full flex flex-col">
-          {/* Header */}
-          <SheetHeader className="px-6 py-4 border-b sticky top-0 bg-white z-10">
-            <SheetTitle className="text-lg font-semibold">Presentation</SheetTitle>
-            <SheetDescription className="text-sm text-gray-600">
-              {eventName} • {stageName}
-            </SheetDescription>
-          </SheetHeader>
-
-          {/* Form Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+  const formContent = (
+    <>
+      {/* Form Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-medium">
@@ -443,18 +435,40 @@ export function SessionEditDrawer({
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="border-t px-6 py-4 bg-gray-50 flex justify-end gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
-            >
-              Save Changes
-            </Button>
-          </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t px-6 py-4 bg-gray-50 flex justify-end gap-3">
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+        >
+          Save Changes
+        </Button>
+      </div>
+    </>
+  );
+
+  if (inline) {
+    return formContent;
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-[500px] sm:max-w-[500px] overflow-y-auto p-0">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <SheetHeader className="px-6 py-4 border-b sticky top-0 bg-white z-10">
+            <SheetTitle className="text-lg font-semibold">Presentation</SheetTitle>
+            <SheetDescription className="text-sm text-gray-600">
+              {eventName} • {stageName}
+            </SheetDescription>
+          </SheetHeader>
+
+          {formContent}
         </div>
       </SheetContent>
     </Sheet>
