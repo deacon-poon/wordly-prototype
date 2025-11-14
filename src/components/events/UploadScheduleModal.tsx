@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { X, Info, Upload as UploadIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 // Common timezones
 const TIMEZONES = [
