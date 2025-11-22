@@ -1184,3 +1184,701 @@ Annual Conference 2025,Breakout Room A,Security Best Practices,"Mike Chen, Alex 
 **Last Updated:** November 14, 2024  
 **Authors:** Product Team, Engineering Team  
 **Status:** In Development - v1.1 Updates
+
+---Feedback Nov 19, 2025---
+
+# Wordly Events - Design Specification for Implementation
+
+**Version:** 1.2  
+**Date:** November 19, 2025  
+**Target:** Q1 2025 Development  
+**Team:** Features Team  
+**Status:** Ready for Implementation
+
+---
+
+## Implementation Notes & Clarifications
+
+### Reconciling v1.1 and v1.2 Changes
+
+**Presenters Field:**
+
+- **Keep:** Multiple presenters support from v1.1 (user research finding)
+- **Data model:** `presenters: string[]`
+- **CSV:** Support comma-separated presenters in quotes
+- **UI:** Display multiple presenters with appropriate formatting
+
+**Buffer Periods:**
+
+- **Keep:** Buffer period configuration from v1.1 (user research finding)
+- **Location:** Upload Schedule modal (global event setting)
+- **Fields:** Buffer Before and Buffer After (minutes)
+
+**Date Grouping:**
+
+- **Keep:** Hierarchical date grouping from v1.1 for better UX
+- **Apply:** Within each room, group presentations by date
+- **Benefit:** Better scanability for multi-day events
+
+**Terminology:**
+
+- **Use "Presentation"** in Events context for individual items
+- **Use "Session"** for legacy standalone sessions
+- **Use "Stage"** for rooms in events (maintains consistency with existing implementation)
+- **Session ID** refers to the access code (room-level)
+
+---
+
+## Overview
+
+The Wordly Events feature enables enterprise users to manage multi-session conferences with stages (rooms), schedules, and automated session management. This document provides technical specifications for design and implementation.
+
+---
+
+## 1. Information Architecture & Navigation
+
+### Event Hierarchy (SIMPLIFIED)
+
+**OLD (Removed):**
+
+```
+Events Page
+  └─ Event (accordion)
+      └─ Room (accordion)
+          └─ Date (accordion)
+              └─ Presentations
+```
+
+**NEW (CORRECTED):**
+
+```
+Events List Page
+  └─ [Click Event] → Event Detail Page
+      └─ Dates (expandable sections)
+          └─ Stages/Rooms (grouped by date)
+              └─ Presentations (for that stage on that date)
+```
+
+### Key Changes
+
+- Remove top-level event accordion
+- Each event gets its own dedicated page
+- **Dates are the primary grouping** (not rooms)
+- Within each date, show all stages/rooms
+- Provides intuitive day-by-day schedule view
+- Presentations shown in compact cards with time, title, and presenters
+
+---
+
+## 2. Event Detail Page Layout
+
+### Page Structure (UPDATED - Date-First Hierarchy)
+
+```
+┌──────────────────────────────────────────────────┐
+│ [< Back to Events]    Event: TechConf 2025       │
+├──────────────────────────────────────────────────┤
+│ Tabs: [Active] [Upcoming] [Past] [All]           │
+├──────────────────────────────────────────────────┤
+│                                                   │
+│ ▼ Thursday, November 14, 2024                    │
+│   (8 presentations across 3 stages)              │
+│                                                   │
+│   📍 Main Auditorium                              │
+│   Session ID: A1234 │ [Links] [Start Stage]     │
+│   ├─ 09:00-10:30 │ Opening Keynote               │
+│   ├─ 11:00-12:00 │ Technical Deep Dive           │
+│   └─ 13:30-15:00 │ Panel Discussion              │
+│                                                   │
+│   📍 Workshop Room A                              │
+│   Session ID: B5678 │ [Links] [Start Stage]     │
+│   ├─ 09:00-11:00 │ Hands-on Workshop             │
+│   └─ 11:30-13:00 │ Interactive Coding            │
+│                                                   │
+│ ▼ Friday, November 15, 2024                      │
+│   (5 presentations across 2 stages)              │
+│   [Collapsed by default]                         │
+│                                                   │
+└──────────────────────────────────────────────────┘
+```
+
+### Hierarchy
+
+**Implemented Structure: Event → Date → Stages → Presentations**
+
+**Rationale:**
+This hierarchy matches how people naturally think about conference schedules:
+
+- Primary question: "What's happening today/tomorrow?"
+- Secondary: "What are the different tracks/rooms?"
+- Tertiary: "What specific presentations can I attend?"
+
+**Benefits:**
+
+1. See the full day's schedule at a glance
+2. View all tracks/stages for a given date
+3. Easily compare what's happening simultaneously across rooms
+4. Natural day-by-day navigation for multi-day events
+5. Intuitive for both attendees and organizers
+
+### Display Rules
+
+**Active Tab (Default):**
+
+- Show only events/rooms with sessions today
+- Auto-expand rooms with current/upcoming sessions today
+
+**Date-Aware Display:**
+
+- **Upcoming sessions:** Full display, can edit (if not started)
+- **Active sessions:** Highlighted, full display
+- **Past sessions:** Collapsed/hidden by default
+- Show count as "X upcoming sessions" not total
+
+**Session Row Format:**
+
+```
+[Date, Time Range] | [Title] | Session ID: [ID] | [Links to join button]
+```
+
+---
+
+## 3. Session IDs & Access
+
+### Format Standards
+
+| Field      | Format           | Example                 |
+| ---------- | ---------------- | ----------------------- |
+| Session ID | A-D + 1-4 digits | `A1234`, `BC42`, `D987` |
+| Passcode   | 6-digit numeric  | `123456`, `789012`      |
+| Mobile ID  | **REMOVED**      | N/A                     |
+
+### Important Notes
+
+- **Room-level IDs:** One Session ID per room for entire day
+- Same ID used across all presentations in that room
+- Automatic transition between presentations
+- Update all prototypes, CSV templates, PDF exports
+
+### Join Button
+
+- **Label:** "Links to join" or "Get links to join"
+- **Action:** Open existing "Ways to join a session" page
+- Pass room-level Session ID
+- No changes to existing join page for v1
+
+---
+
+## 4. Presentation Details UI
+
+### New Component (Not Legacy)
+
+**Requirements:**
+
+- Build new component from scratch (don't reuse old "Session Details")
+- Implement as resizable side panel
+- Optimized for events workflow
+
+**Form Fields:**
+
+```
+┌─────────────────────────────────┐
+│ Presentation Details            │
+├─────────────────────────────────┤
+│ Title: [________________]       │
+│ Room: [Main Auditorium ▼]      │
+│ Date: [Nov 18, 2025]            │
+│ Start Time: [09:00 AM]          │
+│ End Time: [10:00 AM]            │
+│ Speaker: [________________]     │
+│ Languages: [☑ EN ☑ ES ☐ FR]    │
+│ Session ID: A1234 (read-only)   │
+│ Passcode: [______] (6 digits)   │
+│                                  │
+│ [Cancel] [Save]                 │
+└─────────────────────────────────┘
+```
+
+**States:**
+
+- Enabled: For future (not started) sessions
+- Read-only: For active sessions
+- Disabled: For past sessions
+
+---
+
+## 5. CSV Upload & Validation
+
+### CSV Template Format
+
+```csv
+event_name,room_name,presentation_title,start_time,end_time,languages,speaker
+TechConf 2025,Main Auditorium,Opening Keynote,2025-11-18 09:00,2025-11-18 10:00,"en,es,fr",John Doe
+TechConf 2025,Main Auditorium,Panel Discussion,2025-11-18 10:15,2025-11-18 11:15,"en,es",Panel
+TechConf 2025,Breakout A,AI Workshop,2025-11-19 09:00,2025-11-19 10:30,"en,zh",Jane Smith
+```
+
+### Validation Rules
+
+**Must Check:**
+
+- ✅ Schedule conflicts (overlapping times in same room)
+- ✅ Required fields present
+- ✅ Date/time format valid
+- ✅ Session ID format (A-D + digits)
+- ✅ Passcode format (6 numeric digits)
+- ✅ Room names consistent
+
+**Conflict Example:**
+
+```
+ERROR: Schedule conflict in "Main Auditorium"
+- Session A ends at 9:05 AM
+- Session B starts at 9:00 AM
+Action: Fix times in CSV and re-upload
+```
+
+### Error Display
+
+**Use existing bulk upload error UI:**
+
+- Clear, actionable error messages
+- Specific line numbers where applicable
+- Instructions on how to fix
+- Allow CSV fix and re-upload
+
+---
+
+## 6. Audio Capture & Transcript Logic
+
+### Core Principle
+
+**Capture more content rather than miss intended material**
+
+### Transcript Cutting Rules
+
+#### Between Back-to-Back Sessions (No Gap)
+
+```
+Session A: 9:00-10:00 AM
+Session B: 10:00-11:00 AM
+Speaker continues past 10:00 AM
+
+RULE: Cut at Session B start time
+Result:
+- Session A transcript: 9:00-10:00 AM (hard cut)
+- Session B transcript: 10:00 AM onwards
+```
+
+#### Session Extends Beyond End Time
+
+```
+Session: 9:00-10:00 AM (scheduled)
+Speaker continues until 10:08 AM
+Then 30 seconds silence
+
+RULE: Continue until 30 seconds of silence after scheduled end
+Result:
+- Transcript ends at ~10:08:30 AM
+```
+
+#### With Break Between Sessions
+
+```
+Session A: 9:00-10:00 AM
+Break: 10:00-10:15 AM
+Session B: 10:15-11:00 AM
+Speaker finishes at 10:05, then silence
+
+RULE: 30-second silence gap applies
+Result:
+- Session A: 9:00-10:05:30 AM
+- Session B: 10:15 AM onwards (as scheduled)
+```
+
+### Silence Gap Threshold
+
+- **Default:** 30 seconds of silence after scheduled end time
+- Applied when there's a gap to next session
+- Not applied for back-to-back sessions (hard cut at next start)
+
+---
+
+## 7. Language Management
+
+### Configuration Hierarchy
+
+**Event Level → Presentation Level:**
+
+1. Languages configured during event creation
+2. Settings permeate to each presentation
+3. Each presentation has predefined language list
+
+### Automatic Language Selection (ALS)
+
+- **Default:** ON for all event sessions
+- Supports up to 8 languages for automatic detection
+- Helps handle unexpected languages
+
+### Present App Override Rule
+
+**CRITICAL:** Session's predefined languages OVERRIDE present app manual changes
+
+**Example:**
+
+```
+Session A (10:00-11:00): EN, ES, FR configured
+└─ Presenter manually adds DE in present app ✓
+
+Session B (11:00-12:00): EN, ES configured (no FR, no DE)
+└─ At 11:00 transition: DE removed, FR removed ✗
+└─ Only EN, ES available ✓
+```
+
+**Why:**
+
+- Maintains expected behavior per session
+- Respects 8-language limit
+- Prevents configuration drift
+- Each session = fresh start
+
+---
+
+## 8. Present App Behavior
+
+### Reconnection Logic
+
+**Rule:** Present app resumes based on current time and active session
+
+**Scenario:**
+
+```
+Room: Sessions 9:00 AM - 5:00 PM
+Presenter stops at 10:30 AM
+Presenter restarts at 2:15 PM (same link)
+
+Expected:
+1. App checks current time (2:15 PM)
+2. Identifies active session at 2:15 PM
+3. Loads that session's configuration
+4. Resumes with correct languages
+5. Behaves as if app never stopped
+```
+
+### Requirements
+
+- Present app must be schedule-aware
+- Query current session based on timestamp
+- Load appropriate session metadata
+- Apply correct language settings for active session
+
+**Note:** Detailed present app specification in separate document (action item)
+
+---
+
+## 9. Session Editing Rules
+
+### Time Constraints
+
+**CRITICAL:** Event sessions only work on scheduled day
+
+### Edit Permissions
+
+| Session State            | Can Edit Schedule | Can Edit Metadata |
+| ------------------------ | ----------------- | ----------------- |
+| Not started, future date | ✅ Yes            | ✅ Yes            |
+| Started                  | ❌ No             | ❌ No             |
+| Past                     | ❌ No             | ❌ No             |
+
+### Rationale
+
+- Times crucial for automatic decision-making
+- Enables intelligent audio capture
+- Prevents confusion with time-based automation
+
+---
+
+## 10. Technical Implementation Notes
+
+### Session Chaining Architecture
+
+**Structure:**
+
+```json
+{
+  "event_id": "evt_123",
+  "room_id": "room_456",
+  "room_session_id": "A1234",
+  "session_chain": [
+    {
+      "presentation_id": "pres_1",
+      "start_time": "2025-11-18T09:00:00Z",
+      "end_time": "2025-11-18T10:00:00Z",
+      "languages": ["en", "es", "fr"],
+      "title": "Opening Keynote"
+    },
+    {
+      "presentation_id": "pres_2",
+      "start_time": "2025-11-18T10:15:00Z",
+      "end_time": "2025-11-18T11:15:00Z",
+      "languages": ["en", "es"],
+      "title": "Panel Discussion"
+    }
+  ]
+}
+```
+
+### Audio Capture Pseudo-Logic
+
+```python
+def handle_session_end(current_session, next_session):
+    if next_session and next_session.start_time == current_session.end_time:
+        # Back-to-back: Hard cut at next start time
+        cut_transcript_at(next_session.start_time)
+        start_new_session(next_session)
+
+    elif next_session:
+        # Gap exists: Use silence detection
+        continue_capturing_until(silence_gap=30_seconds)
+
+        # When next session time arrives
+        if current_time >= next_session.start_time:
+            start_new_session(next_session)
+
+    else:
+        # Last session of day
+        continue_capturing_until(silence_gap=30_seconds)
+        finalize_transcript()
+```
+
+---
+
+## 11. Design Changes Checklist
+
+### Prototype Updates Required
+
+**Navigation:**
+
+- [ ] Remove top-level event accordion from Events page
+- [ ] Create dedicated Event Detail page template
+- [ ] Implement room expandable sections
+- [ ] Create linear presentation list layout
+
+**Session Display:**
+
+- [ ] Update session row format (date, time inline)
+- [ ] Implement "X upcoming sessions" counter
+- [ ] Add date-aware show/hide logic
+- [ ] Create Active/Upcoming/Past/All tabs
+- [ ] Default to Active tab
+
+**Session IDs:**
+
+- [ ] Update all Session ID displays to new format (A-D + digits)
+- [ ] Update passcode fields to 6-digit numeric
+- [ ] Remove Mobile ID references
+- [ ] Update CSV template
+- [ ] Update PDF export templates
+
+**Buttons & Labels:**
+
+- [ ] Change to "Links to join" or "Get links to join"
+- [ ] Ensure consistency across all instances
+
+**Presentation Details:**
+
+- [ ] Design new presentation details component
+- [ ] Implement as resizable side panel
+- [ ] Add all required fields (see Section 4)
+- [ ] Create enabled/disabled/read-only states
+
+**CSV Upload:**
+
+- [ ] Update CSV template with new format
+- [ ] Design error display using existing bulk upload UI
+- [ ] Create example error messages
+
+---
+
+## 12. Out of Scope for V1
+
+**DO NOT IMPLEMENT:**
+
+- ❌ Automated buffer time configuration
+- ❌ Event settings editing page (post-creation)
+- ❌ Room-level language persistence
+- ❌ Manual pause/restart during presentations
+- ❌ Event/room fields on standalone session form
+- ❌ "Apply to all sessions" functionality
+- ❌ In-app CSV error correction (requires engineering feasibility study)
+
+---
+
+## 13. Design Patterns & Principles
+
+### Layout Density
+
+- **Tight, table-like layout** for presentation lists
+- One row per presentation
+- Minimize vertical space
+- Easy scanning of schedule
+
+### Progressive Disclosure
+
+- Collapse past content by default
+- Expand active/upcoming automatically
+- Allow manual expand for review
+
+### Consistent Terminology
+
+- "Presentation" for individual sessions within event
+- "Room" for physical/virtual space
+- "Event" for overall conference
+- "Session ID" for room-level access code
+
+### State Communication
+
+- Clear visual distinction between Upcoming/Active/Past
+- Disabled state for non-editable fields
+- Loading states during transitions
+- Error states with actionable messages
+
+---
+
+## 14. Edge Cases to Handle
+
+### Schedule Conflicts
+
+```
+Scenario: Upload CSV with overlapping times
+Action: Display error with specific conflict details
+User Flow: Fix CSV → Re-upload
+```
+
+### Early Session Start
+
+```
+Scenario: Next session starts before previous ends
+Behavior: Hard cut at new session start time
+UI: Show both sessions as active briefly during overlap
+```
+
+### Extended Silence
+
+```
+Scenario: Speaker finishes early, long silence
+Behavior: Auto-end after 30 seconds of silence
+UI: Session shows as completed
+```
+
+### Present App Disconnect
+
+```
+Scenario: Network interruption during event
+Behavior: Reconnect to current session based on time
+UI: Show reconnection status
+```
+
+### No Upcoming Sessions
+
+```
+Scenario: All sessions in room completed
+Display: "No upcoming sessions" message
+Option: View past sessions in All/Past tab
+```
+
+---
+
+## 15. Testing Scenarios
+
+### Critical Paths
+
+1. Create event via CSV upload
+2. View event detail page
+3. Navigate between Active/Upcoming/Past tabs
+4. Edit future presentation details
+5. Get links to join room
+6. Monitor active presentation
+7. Verify session transitions
+8. Handle schedule conflicts
+9. Test present app reconnection
+10. Validate language override behavior
+
+### Edge Cases
+
+1. Overlapping sessions error handling
+2. Early session completion (silence)
+3. Extended session (speaker runs over)
+4. Back-to-back sessions (no gap)
+5. Same-day room editing
+6. Past event viewing
+7. Multiple concurrent events
+8. Large CSV uploads (100+ sessions)
+
+---
+
+## 16. Documentation Updates
+
+### Required Updates
+
+- [ ] CSV template file with examples
+- [ ] Session ID format documentation
+- [ ] Event creation wizard guide
+- [ ] Audio capture behavior explanation
+- [ ] Language configuration guide
+- [ ] Present app reconnection behavior
+
+---
+
+## 17. Quick Reference Tables
+
+### Session States
+
+| State    | Visual        | Edit Schedule | Edit Metadata | Join |
+| -------- | ------------- | ------------- | ------------- | ---- |
+| Upcoming | Normal        | ✅            | ✅            | ✅   |
+| Active   | Highlighted   | ❌            | ❌            | ✅   |
+| Past     | Dimmed/Hidden | ❌            | ❌            | ❌   |
+
+### ID Formats
+
+| Type       | Format       | Length    | Example     |
+| ---------- | ------------ | --------- | ----------- |
+| Session ID | A-D + digits | 5-6 chars | A1234, BC42 |
+| Passcode   | Numeric      | 6 digits  | 123456      |
+
+### Tab Behavior
+
+| Tab      | Shows                 | Default |
+| -------- | --------------------- | ------- |
+| Active   | Today's sessions only | ✅ Yes  |
+| Upcoming | Future sessions       | No      |
+| Past     | Completed sessions    | No      |
+| All      | Everything            | No      |
+
+---
+
+## Implementation Priority
+
+### Phase 1 (Core UI)
+
+1. Event detail page layout
+2. Linear presentation list
+3. Date-aware display logic
+4. Tab navigation
+
+### Phase 2 (Details)
+
+5. Presentation details component
+6. Session ID updates
+7. Button label updates
+8. CSV template updates
+
+### Phase 3 (Polish)
+
+9. State management (active/past/upcoming)
+10. Error display improvements
+11. Responsive layout refinements
+12. Documentation updates
+
+---

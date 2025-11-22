@@ -1,26 +1,43 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Calendar,
+  ChevronDown,
+  ChevronUp,
   ExternalLink,
+  Play,
+  QrCode,
   Plus,
+  Clock,
   MapPin,
-  ChevronRight,
+  User,
+  Edit,
+  Search,
+  Copy,
+  Check,
+  Download,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import { WaysToJoinModal } from "@/components/WaysToJoinModal";
+import { Input } from "@/components/ui/input";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import { EventSettingsModal } from "@/components/events/EventSettingsModal";
+import { SessionEditDrawer } from "@/components/events/SessionEditDrawer";
 
 // Data interfaces
 interface Session {
   id: string;
   title: string;
-  presenters: string[];
-  scheduledDate: string;
+  presenters: string[]; // Support multiple presenters
+  scheduledDate: string; // Full date (e.g., "2024-11-15")
   scheduledStart: string;
   endTime: string;
   status: "pending" | "active" | "completed" | "skipped";
@@ -50,7 +67,7 @@ interface Event {
   stages: Stage[];
 }
 
-// Helper functions
+// Helper function to calculate event status
 function getEventStatus(startDate: Date, endDate: Date): EventStatus {
   const now = new Date();
   if (now >= startDate && now <= endDate) {
@@ -62,6 +79,7 @@ function getEventStatus(startDate: Date, endDate: Date): EventStatus {
   }
 }
 
+// Helper function to get relative time string
 function getRelativeTimeString(startDate: Date, endDate: Date): string {
   const now = new Date();
   const status = getEventStatus(startDate, endDate);
@@ -79,11 +97,13 @@ function getRelativeTimeString(startDate: Date, endDate: Date): string {
     return `Starting in ${diffDays} days`;
   }
 
+  // Past
   if (diffDays === 0) return "Ended today";
   if (diffDays === 1) return "Ended yesterday";
   return `Ended ${diffDays} days ago`;
 }
 
+// Helper to get date relative to today
 const getRelativeDate = (daysFromNow: number): Date => {
   const date = new Date();
   date.setDate(date.getDate() + daysFromNow);
@@ -104,18 +124,43 @@ const formatDateRange = (startDate: Date, endDate: Date): string => {
   return `${start}-${endDate.getDate()}, ${endDate.getFullYear()}`;
 };
 
-export default function EventsPage() {
-  const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("active");
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [uploadedFileData, setUploadedFileData] = useState<{
-    fileName: string;
-    timezone: string;
-  } | null>(null);
+const formatEventDate = (date: Date): string => {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
-  // Mock data
-  const mockEvents: Event[] = [
+const formatSessionDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// Helper to group sessions by date
+const groupSessionsByDate = (sessions: Session[]) => {
+  const grouped = new Map<string, Session[]>();
+  
+  sessions.forEach((session) => {
+    if (!grouped.has(session.scheduledDate)) {
+      grouped.set(session.scheduledDate, []);
+    }
+    grouped.get(session.scheduledDate)!.push(session);
+  });
+  
+  // Sort by date
+  return Array.from(grouped.entries()).sort(([dateA], [dateB]) => 
+    dateA.localeCompare(dateB)
+  );
+};
+
+// Mock data with active, upcoming, and past events
+const mockEvents: Event[] = [
   // ACTIVE EVENT (happening now)
   {
     id: "evt-001",
@@ -133,7 +178,7 @@ export default function EventsPage() {
         id: "stage-001",
         name: "Main Auditorium",
         sessionCount: 5,
-        stageSessionId: "MAIN-1234",
+        stageSessionId: "A1234",
         passcode: "123456",
         sessions: [
           {
@@ -187,7 +232,7 @@ export default function EventsPage() {
         id: "stage-002",
         name: "Workshop Room A",
         sessionCount: 3,
-        stageSessionId: "HALL-5678",
+        stageSessionId: "A5678",
         passcode: "234567",
         sessions: [
           {
@@ -223,7 +268,7 @@ export default function EventsPage() {
         id: "stage-003",
         name: "Breakout Room B",
         sessionCount: 2,
-        stageSessionId: "WORK-1234",
+        stageSessionId: "B1234",
         passcode: "345678",
         sessions: [
           {
@@ -265,7 +310,7 @@ export default function EventsPage() {
         id: "stage-004",
         name: "Cloud Theater",
         sessionCount: 5,
-        stageSessionId: "BREK-5678",
+        stageSessionId: "B5678",
         passcode: "456789",
         sessions: [
           {
@@ -319,7 +364,7 @@ export default function EventsPage() {
         id: "stage-005",
         name: "DevOps Workshop",
         sessionCount: 6,
-        stageSessionId: "EXPO-1234",
+        stageSessionId: "C1234",
         passcode: "567890",
         sessions: [
           {
@@ -382,7 +427,7 @@ export default function EventsPage() {
         id: "stage-006",
         name: "Container Lab",
         sessionCount: 4,
-        stageSessionId: "TECH-5678",
+        stageSessionId: "C5678",
         passcode: "678901",
         sessions: [
           {
@@ -427,7 +472,7 @@ export default function EventsPage() {
         id: "stage-007",
         name: "Automation Studio",
         sessionCount: 3,
-        stageSessionId: "BIZZ-1234",
+        stageSessionId: "D1234",
         passcode: "789012",
         sessions: [
           {
@@ -477,7 +522,7 @@ export default function EventsPage() {
         id: "stage-008",
         name: "Design Theater",
         sessionCount: 5,
-        stageSessionId: "LEAD-5678",
+        stageSessionId: "D5678",
         passcode: "890123",
         sessions: [
           {
@@ -531,7 +576,7 @@ export default function EventsPage() {
         id: "stage-009",
         name: "UX Research Lab",
         sessionCount: 3,
-        stageSessionId: "AMPH-9012",
+        stageSessionId: "A9012",
         passcode: "901234",
         sessions: [
           {
@@ -581,7 +626,7 @@ export default function EventsPage() {
         id: "stage-010",
         name: "Blockchain Hall",
         sessionCount: 6,
-        stageSessionId: "STGE-9012",
+        stageSessionId: "B9012",
         passcode: "112233",
         sessions: [
           {
@@ -644,7 +689,7 @@ export default function EventsPage() {
         id: "stage-011",
         name: "DApp Workshop",
         sessionCount: 4,
-        stageSessionId: "AUDI-9012",
+        stageSessionId: "C9012",
         passcode: "223344",
         sessions: [
           {
@@ -703,7 +748,7 @@ export default function EventsPage() {
         id: "stage-012",
         name: "Data Theater",
         sessionCount: 5,
-        stageSessionId: "ROOM-9012",
+        stageSessionId: "D9012",
         passcode: "334455",
         sessions: [
           {
@@ -757,7 +802,7 @@ export default function EventsPage() {
         id: "stage-013",
         name: "Analytics Lab",
         sessionCount: 4,
-        stageSessionId: "CONF-1230",
+        stageSessionId: "AB123",
         passcode: "445566",
         sessions: [
           {
@@ -802,7 +847,7 @@ export default function EventsPage() {
         id: "stage-014",
         name: "ML Workshop",
         sessionCount: 3,
-        stageSessionId: "MEET-4560",
+        stageSessionId: "BC456",
         passcode: "556677",
         sessions: [
           {
@@ -853,7 +898,7 @@ export default function EventsPage() {
         id: "stage-015",
         name: "Main Stage",
         sessionCount: 4,
-        stageSessionId: "BALL-7890",
+        stageSessionId: "CD789",
         passcode: "667788",
         sessions: [
           {
@@ -898,7 +943,7 @@ export default function EventsPage() {
         id: "stage-016",
         name: "Workshop Room",
         sessionCount: 2,
-        stageSessionId: "CENT-0120",
+        stageSessionId: "DA012",
         passcode: "778899",
         sessions: [
           {
@@ -939,7 +984,7 @@ export default function EventsPage() {
         id: "stage-017",
         name: "iOS Hall",
         sessionCount: 4,
-        stageSessionId: "EXEC-1110",
+        stageSessionId: "A111",
         passcode: "889900",
         sessions: [
           {
@@ -984,7 +1029,7 @@ export default function EventsPage() {
         id: "stage-018",
         name: "Android Studio",
         sessionCount: 5,
-        stageSessionId: "PRES-2220",
+        stageSessionId: "B222",
         passcode: "990011",
         sessions: [
           {
@@ -1038,7 +1083,7 @@ export default function EventsPage() {
         id: "stage-019",
         name: "Cross-Platform Lab",
         sessionCount: 3,
-        stageSessionId: "VENT-3330",
+        stageSessionId: "C333",
         passcode: "101112",
         sessions: [
           {
@@ -1088,7 +1133,7 @@ export default function EventsPage() {
         id: "stage-020",
         name: "Security Theater",
         sessionCount: 5,
-        stageSessionId: "THEA-4440",
+        stageSessionId: "D444",
         passcode: "131415",
         sessions: [
           {
@@ -1142,7 +1187,7 @@ export default function EventsPage() {
         id: "stage-021",
         name: "Penetration Testing Lab",
         sessionCount: 3,
-        stageSessionId: "GATH-5500",
+        stageSessionId: "AB55",
         passcode: "161718",
         sessions: [
           {
@@ -1192,7 +1237,7 @@ export default function EventsPage() {
         id: "stage-022",
         name: "Product Theater",
         sessionCount: 4,
-        stageSessionId: "SPAC-6600",
+        stageSessionId: "BC66",
         passcode: "192021",
         sessions: [
           {
@@ -1237,7 +1282,7 @@ export default function EventsPage() {
         id: "stage-023",
         name: "Strategy Workshop",
         sessionCount: 3,
-        stageSessionId: "LOBY-7700",
+        stageSessionId: "CD77",
         passcode: "222324",
         sessions: [
           {
@@ -1287,7 +1332,7 @@ export default function EventsPage() {
         id: "stage-024",
         name: "JavaScript Hall",
         sessionCount: 5,
-        stageSessionId: "AREA-8800",
+        stageSessionId: "DA88",
         passcode: "252627",
         sessions: [
           {
@@ -1341,7 +1386,7 @@ export default function EventsPage() {
         id: "stage-025",
         name: "CSS & Design Workshop",
         sessionCount: 3,
-        stageSessionId: "ZOON-9900",
+        stageSessionId: "A99",
         passcode: "282930",
         sessions: [
           {
@@ -1377,7 +1422,7 @@ export default function EventsPage() {
         id: "stage-026",
         name: "Performance Lab",
         sessionCount: 3,
-        stageSessionId: "WEBR-1100",
+        stageSessionId: "B11",
         passcode: "313233",
         sessions: [
           {
@@ -1413,178 +1458,663 @@ export default function EventsPage() {
   },
 ];
 
-  const filteredEvents = useMemo(() => {
-    if (statusFilter === "all") return mockEvents;
-    return mockEvents.filter(
-      (event) => getEventStatus(event.startDate, event.endDate) === statusFilter
-    );
-  }, [mockEvents, statusFilter]);
+// Component for copy button with feedback
+const CopyButton = ({ text, label }: { text: string; label: string }) => {
+  const [copied, setCopied] = useState(false);
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1.5 text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+      title={`Copy ${label}`}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" />
+      )}
+    </button>
+  );
+};
+
+// Component for displaying stage credentials
+const StageCredentials = ({ stage }: { stage: Stage }) => {
+  return (
+    <div className="flex items-center gap-6 text-sm">
+      <div className="flex items-center gap-2">
+        <span className="text-gray-600 font-medium">Session ID:</span>
+        <code className="px-2 py-0.5 bg-white border border-gray-200 rounded text-gray-900 font-mono text-xs">
+          {stage.stageSessionId}
+        </code>
+        <CopyButton text={stage.stageSessionId} label="Session ID" />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-600 font-medium">Passcode:</span>
+        <code className="px-2 py-0.5 bg-white border border-gray-200 rounded text-gray-900 font-mono text-xs">
+          {stage.passcode}
+        </code>
+        <CopyButton text={stage.passcode} label="Passcode" />
+      </div>
+    </div>
+  );
+};
+
+export default function EventsPage() {
+  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("all");
+  const [expandedEvents, setExpandedEvents] = useState<Set<string>>(
+    new Set() // Start with all collapsed for better overview
+  );
+  const [expandedStages, setExpandedStages] = useState<Set<string>>(new Set());
+  const [waysToJoinModal, setWaysToJoinModal] = useState<{
+    isOpen: boolean;
+    stage?: Stage;
+    eventName?: string;
+    type?: "session" | "stage";
+  }>({
+    isOpen: false,
+  });
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [uploadedFileData, setUploadedFileData] = useState<{
+    file: File;
+    timezone: string;
+    bufferBefore: number;
+    bufferAfter: number;
+  } | null>(null);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [sessionToEdit, setSessionToEdit] = useState<{
+    session: Session;
+    eventName: string;
+    stageName: string;
+  } | null>(null);
+
+  // Filter events by status
+  const filteredEvents = useMemo(() => {
+    let filtered = mockEvents;
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(
+        (event) =>
+          getEventStatus(event.startDate, event.endDate) === statusFilter
+      );
+    }
+
+    return filtered;
+  }, [statusFilter]);
+
+  // Group events by status
   const groupedEvents = useMemo(() => {
+    const groups: Record<EventStatus, Event[]> = {
+      active: [],
+      upcoming: [],
+      past: [],
+    };
+
+    filteredEvents.forEach((event) => {
+      const status = getEventStatus(event.startDate, event.endDate);
+      groups[status].push(event);
+    });
+
+    // Sort within each group
+    groups.active.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+    groups.upcoming.sort(
+      (a, b) => a.startDate.getTime() - b.startDate.getTime()
+    );
+    groups.past.sort((a, b) => b.endDate.getTime() - a.endDate.getTime());
+
+    return groups;
+  }, [filteredEvents]);
+
+  // Calculate counts for each status
+  const statusCounts = useMemo(() => {
     return {
       active: mockEvents.filter(
         (e) => getEventStatus(e.startDate, e.endDate) === "active"
-      ),
+      ).length,
       upcoming: mockEvents.filter(
         (e) => getEventStatus(e.startDate, e.endDate) === "upcoming"
-      ),
+      ).length,
       past: mockEvents.filter(
         (e) => getEventStatus(e.startDate, e.endDate) === "past"
-      ),
-      all: mockEvents,
+      ).length,
+      all: mockEvents.length,
     };
-  }, [mockEvents]);
+  }, []);
 
-  const statusCounts = {
-    active: groupedEvents.active.length,
-    upcoming: groupedEvents.upcoming.length,
-    past: groupedEvents.past.length,
-    all: mockEvents.length,
+  const toggleEventExpansion = (eventId: string) => {
+    const newExpanded = new Set(expandedEvents);
+    if (newExpanded.has(eventId)) {
+      newExpanded.delete(eventId);
+    } else {
+      newExpanded.add(eventId);
+    }
+    setExpandedEvents(newExpanded);
+  };
+
+  const toggleStageExpansion = (stageId: string) => {
+    const newExpanded = new Set(expandedStages);
+    if (newExpanded.has(stageId)) {
+      newExpanded.delete(stageId);
+    } else {
+      newExpanded.add(stageId);
+    }
+    setExpandedStages(newExpanded);
+  };
+
+  const handleWaysToJoin = (
+    stage: Stage,
+    eventName: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    setWaysToJoinModal({
+      isOpen: true,
+      stage,
+      eventName,
+      type: "session",
+    });
+  };
+
+  const handleStartStage = (
+    stage: Stage,
+    eventName: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    setWaysToJoinModal({
+      isOpen: true,
+      stage,
+      eventName,
+      type: "stage",
+    });
+  };
+
+  const handleEditSession = (
+    session: Session,
+    eventName: string,
+    stageName: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    setSessionToEdit({ session, eventName, stageName });
+    setIsEditDrawerOpen(true);
+  };
+
+  const handleSaveSession = (updatedSession: Session) => {
+    // TODO: Update session in the data
+    console.log("Saving updated session:", updatedSession);
+    // Here you would update the session in your state/database
+    setIsEditDrawerOpen(false);
+    setSessionToEdit(null);
   };
 
   const handleAddEvent = () => {
     setIsUploadModalOpen(true);
   };
 
-  const handleUpload = (
-    fileName: string,
-    timezone: string
-  ) => {
-    setUploadedFileData({ fileName, timezone });
+  const handleUpload = async (file: File, timezone: string, bufferBefore: number, bufferAfter: number) => {
+    // Store the file data temporarily
+    setUploadedFileData({ file, timezone, bufferBefore, bufferAfter });
+
+    // Close upload modal and open settings modal
     setIsUploadModalOpen(false);
     setIsSettingsModalOpen(true);
   };
 
-  const handleSaveEventSettings = (settings: any) => {
-    console.log("Event settings:", settings);
-    console.log("Uploaded file data:", uploadedFileData);
-    setIsSettingsModalOpen(false);
-    setUploadedFileData(null);
+  const handleSaveEventSettings = async (settings: any) => {
+    if (!uploadedFileData) return;
+
+    try {
+      console.log("Creating event with file:", uploadedFileData.file.name);
+      console.log("Timezone:", uploadedFileData.timezone);
+      console.log("Buffer periods:", uploadedFileData.bufferBefore, uploadedFileData.bufferAfter);
+      console.log("Settings:", settings);
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Here you would:
+      // 1. Upload the file to your server
+      // 2. Parse the CSV/Excel file with the timezone
+      // 3. Apply buffer periods to session times
+      // 4. Create events, rooms, and sessions with the settings
+      // 5. Refresh the events list
+
+      console.log("Event created successfully");
+
+      // Reset state
+      setUploadedFileData(null);
+    } catch (error) {
+      console.error("Error creating event:", error);
+      throw error;
+    }
   };
 
+  const handleDownloadForAV = (event: Event) => {
+    // Generate CSV content with event details for AV crew
+    const csvRows = [];
+    
+    // Header
+    csvRows.push("Event,Stage,Session ID,Passcode,Presentation Title,Presenters,Date,Start Time,End Time,Present URL");
+    
+    // Data rows for each stage and presentation
+    event.stages.forEach((stage) => {
+      // Stage header row
+      const presentUrl = `https://present.wordly.ai/${stage.stageSessionId}`;
+      
+      stage.sessions.forEach((session) => {
+        const row = [
+          `"${event.name}"`,
+          `"${stage.name}"`,
+          stage.stageSessionId,
+          stage.passcode,
+          `"${session.title}"`,
+          `"${session.presenters.join(", ")}"`,
+          session.scheduledDate,
+          session.scheduledStart,
+          session.endTime,
+          presentUrl,
+        ];
+        csvRows.push(row.join(","));
+      });
+    });
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${event.name.replace(/\s+/g, "-")}-AV-Details.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Component for rendering status badge
   const StatusBadge = ({ event }: { event: Event }) => {
     const status = getEventStatus(event.startDate, event.endDate);
-    const timeString = getRelativeTimeString(event.startDate, event.endDate);
+    const relativeTime = getRelativeTimeString(event.startDate, event.endDate);
 
-    const statusStyles = {
+    const badgeStyles = {
       active:
-        "bg-accent-green-50 text-accent-green-700 border-accent-green-200",
-      upcoming: "bg-primary-teal-50 text-primary-teal-700 border-primary-teal-200",
-      past: "bg-gray-100 text-gray-600 border-gray-300",
+        "bg-accent-green-500/10 text-accent-green-600 border-accent-green-500/20",
+      upcoming:
+        "bg-primary-teal-500/10 text-primary-teal-600 border-primary-teal-500/20",
+      past: "bg-gray-100 text-gray-600 border-gray-200",
     };
 
     return (
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${statusStyles[status]}`}>
-        {status === "active" && (
-          <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
-        )}
-        <span>{timeString}</span>
+      <div className="flex items-center gap-2">
+        <div
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeStyles[status]}`}
+        >
+          {status === "active" && (
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-green-500 animate-pulse" />
+          )}
+          <span className="capitalize">{status}</span>
+        </div>
+        <span className="text-xs text-gray-600 font-medium">
+          {relativeTime}
+        </span>
       </div>
     );
   };
 
+  // Component for rendering an event card
   const EventCard = ({ event }: { event: Event }) => {
+    const isExpanded = expandedEvents.has(event.id);
     const eventStatus = getEventStatus(event.startDate, event.endDate);
+    const isPastEvent = eventStatus === "past";
 
     return (
-      <Card 
-        className="overflow-hidden hover:border-primary-teal-300 hover:shadow-lg transition-all cursor-pointer shadow-sm border-2"
-        onClick={() => router.push(`/events/${event.id}`)}
-      >
+      <Card className="overflow-hidden">
+        {/* Event header - always visible */}
         <div className="p-6">
+          {/* Title row with status badge and expand button */}
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold text-gray-900">{event.name}</h2>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
-              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
+                {event.name}
+              </h2>
               <StatusBadge event={event} />
             </div>
+            <button
+              onClick={() => toggleEventExpansion(event.id)}
+              className="text-gray-400 hover:text-gray-600 transition-colors mt-1 flex-shrink-0"
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </button>
           </div>
 
+          {/* Compact metadata line */}
           <div className="flex items-center gap-2 text-sm mb-3">
             <Calendar className="h-4 w-4 text-primary-teal-600" />
             <span className="text-gray-700 font-medium">{event.dateRange}</span>
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">{event.stageCount} stages</span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{event.sessionCount} presentations</span>
+            <span className="text-gray-600">{event.sessionCount} sessions</span>
           </div>
 
-          <div className="flex items-start gap-2 mb-3">
-            <MapPin className="h-4 w-4 text-primary-teal-600 mt-1 flex-shrink-0" />
-            <div className="flex flex-wrap gap-2">
-              {event.stages.slice(0, 3).map((stage) => (
-                <span
-                  key={stage.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm"
-                >
-                  <span className="text-gray-700 font-medium">{stage.name}</span>
-                  <span className="text-gray-500 text-xs font-medium">
-                    ({stage.sessions.length})
-                  </span>
-                </span>
-              ))}
-              {event.stages.length > 3 && (
-                <span className="inline-flex items-center px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600">
-                  +{event.stages.length - 3} more
-                </span>
-              )}
+          {/* Inline stage badges - only when collapsed */}
+          {!isExpanded && (
+            <div className="flex items-start gap-2 mb-3">
+              <MapPin className="h-4 w-4 text-primary-teal-600 mt-1 flex-shrink-0" />
+              <div className="flex flex-wrap gap-2">
+                {event.stages.map((stage) => (
+                  <button
+                    key={stage.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEventExpansion(event.id);
+                      // Also expand this stage
+                      setTimeout(() => {
+                        const newExpanded = new Set(expandedStages);
+                        newExpanded.add(stage.id);
+                        setExpandedStages(newExpanded);
+                      }, 100);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 rounded-md text-sm transition-all"
+                  >
+                    <span className="text-gray-700 font-medium">
+                      {stage.name}
+                    </span>
+                    <span className="text-gray-500 text-xs font-medium">
+                      ({stage.sessions.length})
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Description - only when expanded */}
+          {isExpanded && (
+            <p className="text-sm text-gray-700 mb-3">{event.description}</p>
+          )}
+
+          {/* Action links - shown in both states */}
+          <div className="flex items-center gap-4">
+            {event.publicSummaryUrl && (
+              <a
+                href={event.publicSummaryUrl}
+                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Public Summaries Page</span>
+              </a>
+            )}
+            {isExpanded && (
+              <button
+                onClick={() => handleDownloadForAV(event)}
+                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+              >
+                <Download className="h-4 w-4" />
+                <span>Download for AV</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Expandable stages section */}
+        {isExpanded && (
+          <div className="border-t">
+            <div className="p-6 space-y-5">
+              {event.stages.map((stage) => {
+                const isStageExpanded = expandedStages.has(stage.id);
+
+                return (
+                  <div
+                    key={stage.id}
+                    className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:border-gray-300 transition-all"
+                  >
+                    {/* Stage header */}
+                    <div className="p-6 bg-gray-50/50 space-y-4">
+                      <div className="flex items-center justify-between gap-6">
+                        {/* Stage info */}
+                        <div className="flex items-center gap-3">
+                          <button
+                            className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleStageExpansion(stage.id);
+                            }}
+                          >
+                            <ChevronDown
+                              className={`h-4 w-4 text-gray-500 transition-transform ${
+                                isStageExpanded ? "rotate-0" : "-rotate-90"
+                              }`}
+                            />
+                          </button>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-base">
+                              {stage.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-0.5">
+                              {stage.sessions.length} sessions
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Stage actions */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) =>
+                              handleWaysToJoin(stage, event.name, e)
+                            }
+                            className="border-primary-teal-600 text-primary-teal-600 hover:bg-primary-teal-50 hover:border-primary-teal-700"
+                          >
+                            <QrCode className="h-4 w-4 mr-2" />
+                            Ways to Join this Session
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={(e) =>
+                              !isPastEvent && handleStartStage(stage, event.name, e)
+                            }
+                            disabled={isPastEvent}
+                            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={isPastEvent ? "This event has ended and cannot be started" : "Start Stage"}
+                          >
+                            <Play className="h-4 w-4 mr-2" />
+                            Start Stage
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Stage Credentials */}
+                      <StageCredentials stage={stage} />
+                    </div>
+
+                    {/* Expandable sessions list */}
+                    {isStageExpanded && stage.sessions.length > 0 && (
+                      <div className="border-t border-gray-200 bg-gray-50/30">
+                        {groupSessionsByDate(stage.sessions).map(([date, sessionsForDate], dateIndex) => (
+                          <div key={date}>
+                            {/* Date Header */}
+                            <div className="sticky top-0 z-10 bg-gray-50 px-6 py-3 border-b border-gray-200">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-primary-teal-600" />
+                                <h4 className="font-bold text-gray-900 text-base">
+                                  {formatSessionDate(date)}
+                                </h4>
+                                <span className="ml-2 text-gray-600 text-sm">
+                                  ({sessionsForDate.length} {sessionsForDate.length === 1 ? 'session' : 'sessions'})
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Sessions for this date */}
+                            {sessionsForDate.map((session, sessionIndex) => (
+                              <div
+                                key={session.id}
+                                className="p-5 bg-white hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0"
+                              >
+                            <div className="flex items-start justify-between gap-4">
+                              {/* Session info */}
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-start justify-between gap-4">
+                                  <h4 className="font-bold text-gray-900 text-base leading-snug flex-1">
+                                    {session.title}
+                                  </h4>
+                                  {/* Time badge - non-clickable display */}
+                                  <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center px-3 py-1.5 rounded-md border-2 border-primary-teal-600 bg-primary-teal-50 text-primary-teal-700 text-sm font-semibold whitespace-nowrap">
+                                      {session.scheduledStart} - {session.endTime}
+                                    </span>
+                                    <button
+                                      onClick={(e) =>
+                                        !isPastEvent &&
+                                        handleEditSession(session, event.name, stage.name, e)
+                                      }
+                                      disabled={isPastEvent}
+                                      className="p-2 border border-gray-200 rounded-lg hover:bg-white hover:border-gray-300 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                      title={isPastEvent ? "This event has ended and cannot be edited" : "Edit presentation"}
+                                    >
+                                      <Edit className="h-4 w-4 text-gray-600" />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Session metadata - standardized with colored icons */}
+                                <div className="flex items-center gap-6 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <User className="h-4 w-4 text-primary-teal-600" />
+                                    <span className="text-gray-700 font-medium">
+                                      {session.presenters.join(", ")}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-primary-teal-600" />
+                                    <span className="text-gray-700 font-medium">
+                                      {session.scheduledStart} - {session.endTime}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-primary-teal-600" />
+                                    <span className="text-gray-700 font-medium">
+                                      Stage: {stage.name}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-primary-teal-600" />
+                                    <span className="text-gray-700 font-medium">
+                                      Event: {event.name}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-
-          <p className="text-sm text-gray-700 mb-3">{event.description}</p>
-
-          {event.publicSummaryUrl && (
-            <a
-              href={event.publicSummaryUrl}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>Public Summaries Page</span>
-            </a>
-          )}
-        </div>
+        )}
       </Card>
     );
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-white">
-      {/* Page header */}
-      <div className="border-b">
-        <div className="px-6 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Manage and organize your events, stages, and presentations
-              </p>
-            </div>
-            <Button
-              onClick={handleAddEvent}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Event
-            </Button>
+    <div className="h-full">
+      {isEditDrawerOpen ? (
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          <ResizablePanel defaultSize={60} minSize={45}>
+            <div className="h-full overflow-y-auto">
+              {/* Page header */}
+              <div className="border-b bg-white px-6 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Manage and organize your events, stages, and sessions
+            </p>
           </div>
+          <Button
+            onClick={handleAddEvent}
+            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Event
+          </Button>
+        </div>
 
-          {/* Tab navigation */}
-          <Tabs value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-            <TabsList>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              <TabsTrigger value="past">Past</TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setStatusFilter("all")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "all"
+                ? "bg-primary-teal-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            All ({statusCounts.all})
+          </button>
+          <button
+            onClick={() => setStatusFilter("active")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "active"
+                ? "bg-accent-green-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Active ({statusCounts.active})
+          </button>
+          <button
+            onClick={() => setStatusFilter("upcoming")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "upcoming"
+                ? "bg-primary-teal-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Upcoming ({statusCounts.upcoming})
+          </button>
+          <button
+            onClick={() => setStatusFilter("past")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              statusFilter === "past"
+                ? "bg-gray-600 text-white shadow-sm"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Past ({statusCounts.past})
+          </button>
         </div>
       </div>
 
+      {/* Events list grouped by status */}
       <div className="p-6 space-y-8">
-        {statusFilter === "all" && groupedEvents.active.length > 0 && (
+        {/* Active events section */}
+        {groupedEvents.active.length > 0 && statusFilter === "all" && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
               <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
@@ -1600,7 +2130,8 @@ export default function EventsPage() {
           </div>
         )}
 
-        {statusFilter === "all" && groupedEvents.upcoming.length > 0 && (
+        {/* Upcoming events section */}
+        {groupedEvents.upcoming.length > 0 && statusFilter === "all" && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
               <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
@@ -1616,9 +2147,10 @@ export default function EventsPage() {
           </div>
         )}
 
-        {statusFilter === "all" && groupedEvents.past.length > 0 && (
+        {/* Past events section */}
+        {groupedEvents.past.length > 0 && statusFilter === "all" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-400">
+            <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-300">
               <span className="w-2 h-2 rounded-full bg-gray-400" />
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
                 Past ({groupedEvents.past.length})
@@ -1632,7 +2164,8 @@ export default function EventsPage() {
           </div>
         )}
 
-        {statusFilter !== "all" && filteredEvents.length > 0 && (
+        {/* Filtered view (when a specific status filter is active) */}
+        {statusFilter !== "all" && (
           <div className="space-y-4">
             {filteredEvents.map((event) => (
               <EventCard key={event.id} event={event} />
@@ -1640,41 +2173,236 @@ export default function EventsPage() {
           </div>
         )}
 
+        {/* Empty state */}
         {filteredEvents.length === 0 && (
-          <Card className="p-12 text-center">
-            <p className="text-gray-600 text-lg">
-              {statusFilter === "active" && "No active events"}
-              {statusFilter === "upcoming" && "No upcoming events"}
-              {statusFilter === "past" && "No past events"}
-              {statusFilter === "all" && "No events found"}
+          <div className="text-center py-12">
+            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-900 font-semibold text-lg mb-2">
+              No events found
             </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Click "Add Event" to create your first event
+            <p className="text-gray-500 text-sm">
+              There are no events in this category
             </p>
-          </Card>
+          </div>
         )}
-      </div>
+              </div>
+            </div>
+          </ResizablePanel>
 
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={40} minSize={30} maxSize={50}>
+            <div className="h-full overflow-auto bg-white border-l flex flex-col">
+              <div className="p-4 border-b sticky top-0 bg-white z-10 flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-lg">Presentation</h2>
+                  <p className="text-sm text-gray-600">
+                    {sessionToEdit?.eventName} • {sessionToEdit?.stageName}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    setIsEditDrawerOpen(false);
+                    setSessionToEdit(null);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </div>
+              
+              {sessionToEdit && (
+                <SessionEditDrawer
+                  open={true}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setIsEditDrawerOpen(false);
+                      setSessionToEdit(null);
+                    }
+                  }}
+                  session={sessionToEdit.session}
+                  eventName={sessionToEdit.eventName}
+                  stageName={sessionToEdit.stageName}
+                  onSave={handleSaveSession}
+                  inline={true}
+                />
+              )}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      ) : (
+        <div className="h-full overflow-y-auto">
+          {/* Page header */}
+          <div className="border-b bg-white px-6 py-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Manage and organize your events, stages, and sessions
+                </p>
+              </div>
+              <Button
+                onClick={handleAddEvent}
+                className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Event
+              </Button>
+            </div>
+
+            {/* Status filter tabs */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "all"
+                    ? "bg-primary-teal-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                All ({statusCounts.all})
+              </button>
+              <button
+                onClick={() => setStatusFilter("active")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "active"
+                    ? "bg-accent-green-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Active ({statusCounts.active})
+              </button>
+              <button
+                onClick={() => setStatusFilter("upcoming")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "upcoming"
+                    ? "bg-primary-teal-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Upcoming ({statusCounts.upcoming})
+              </button>
+              <button
+                onClick={() => setStatusFilter("past")}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === "past"
+                    ? "bg-gray-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                Past ({statusCounts.past})
+              </button>
+            </div>
+          </div>
+
+          {/* Events list grouped by status */}
+          <div className="p-6 space-y-8">
+            {/* Active events section */}
+            {groupedEvents.active.length > 0 && statusFilter === "all" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
+                  <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
+                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                    Active Now ({groupedEvents.active.length})
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {groupedEvents.active.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Upcoming events section */}
+            {groupedEvents.upcoming.length > 0 && statusFilter === "all" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
+                  <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
+                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                    Upcoming ({groupedEvents.upcoming.length})
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {groupedEvents.upcoming.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Past events section */}
+            {groupedEvents.past.length > 0 && statusFilter === "all" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-300">
+                  <span className="w-2 h-2 rounded-full bg-gray-400" />
+                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                    Past ({groupedEvents.past.length})
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {groupedEvents.past.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Filtered view (when a specific status filter is active) */}
+            {statusFilter !== "all" && (
+              <div className="space-y-4">
+                {filteredEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {filteredEvents.length === 0 && (
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-900 font-semibold text-lg mb-2">
+                  No events found
+                </p>
+                <p className="text-gray-500 text-sm">
+                  There are no events in this category
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Upload Schedule Modal */}
       <UploadScheduleModal
         open={isUploadModalOpen}
         onOpenChange={setIsUploadModalOpen}
-        onUpload={async (file, timezone) => {
-          handleUpload(file.name, timezone);
-        }}
+        onUpload={handleUpload}
       />
 
-      {isSettingsModalOpen && uploadedFileData && (
-        <EventSettingsModal
-          open={isSettingsModalOpen}
-          onOpenChange={(open) => {
-            setIsSettingsModalOpen(open);
-            if (!open) {
-              setUploadedFileData(null);
-            }
-          }}
-          onSave={async (settings) => {
-            handleSaveEventSettings(settings);
-          }}
+      {/* Event Settings Modal */}
+      <EventSettingsModal
+        open={isSettingsModalOpen}
+        onOpenChange={setIsSettingsModalOpen}
+        onSave={handleSaveEventSettings}
+      />
+
+      {/* Ways to Join Modal (handles both sessions and stages) */}
+      {waysToJoinModal.stage && waysToJoinModal.eventName && (
+        <WaysToJoinModal
+          open={waysToJoinModal.isOpen}
+          onOpenChange={(open) =>
+            setWaysToJoinModal({ ...waysToJoinModal, isOpen: open })
+          }
+          roomName={waysToJoinModal.stage.name}
+          roomSessionId={waysToJoinModal.stage.stageSessionId}
+          eventName={waysToJoinModal.eventName}
+          type={waysToJoinModal.type}
+          sessionCount={waysToJoinModal.stage.sessionCount}
+          sessions={waysToJoinModal.stage.sessions}
         />
       )}
     </div>
