@@ -642,13 +642,17 @@ export default function EventDetailPage({
       </div>
 
       {/* Ways to Join Modal */}
-      {waysToJoinModal.stage && (
+      {waysToJoinModal.stage && waysToJoinModal.eventName && (
         <WaysToJoinModal
-          isOpen={!!waysToJoinModal.stage}
-          onClose={() => setWaysToJoinModal({ stage: null, eventName: null })}
-          sessionId={waysToJoinModal.stage.stageSessionId}
-          passcode={waysToJoinModal.stage.passcode}
+          open={!!waysToJoinModal.stage}
+          onOpenChange={(open) => {
+            if (!open) {
+              setWaysToJoinModal({ stage: null, eventName: null });
+            }
+          }}
+          roomSessionId={waysToJoinModal.stage.stageSessionId}
           roomName={waysToJoinModal.stage.name}
+          eventName={waysToJoinModal.eventName}
           type="stage"
           sessionCount={waysToJoinModal.stage.sessions.length}
           sessions={waysToJoinModal.stage.sessions.map((s) => ({
