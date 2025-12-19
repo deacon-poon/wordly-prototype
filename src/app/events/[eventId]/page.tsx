@@ -525,60 +525,30 @@ export default function EventDetailPage({
       {/* Page header */}
       <div className="border-b">
         <div className="px-6 py-6">
-          {/* Back button and title */}
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => router.push("/events")}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ChevronLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-semibold text-gray-900">
-                Event: {event.name}
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">{event.description}</p>
-            </div>
-          </div>
-
-          {/* Event metadata */}
-          <div className="flex items-center gap-2 text-sm mb-3">
-            <Calendar className="h-4 w-4 text-primary-teal-600" />
-            <span className="text-gray-700 font-medium">{event.dateRange}</span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
-              {event.locationCount} locations
-            </span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
-              {event.sessionCount} presentations
-            </span>
-          </div>
-
-          {/* Action links */}
-          <div className="flex items-center gap-4 mb-6">
-            {event.publicSummaryUrl && (
-              <a
-                href={event.publicSummaryUrl}
-                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+          {/* Row 1: Back button, Title, and Add Location button */}
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <div className="flex items-start gap-4">
+              <button
+                onClick={() => router.push("/events")}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mt-0.5"
               >
-                <ExternalLink className="h-4 w-4" />
-                <span>Public Summaries Page</span>
-              </a>
-            )}
-            <button
-              onClick={handleDownloadForAV}
-              className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-            >
-              <Download className="h-4 w-4" />
-              <span>Bulk download links</span>
-            </button>
+                <ChevronLeft className="h-5 w-5 text-gray-600" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                  {event.name}
+                </h1>
+                <p className="text-sm text-gray-600 mt-1 max-w-2xl">
+                  {event.description}
+                </p>
+              </div>
+            </div>
             <Button
               onClick={() => setIsAddLocationModalOpen(true)}
               variant="outline"
               size="sm"
               disabled={isPastEvent}
-              className="border-primary-teal-600 text-primary-teal-600 hover:bg-primary-teal-50"
+              className="border-primary-teal-600 text-primary-teal-600 hover:bg-primary-teal-50 flex-shrink-0"
               title={
                 isPastEvent
                   ? "Cannot add locations to past events"
@@ -590,18 +560,59 @@ export default function EventDetailPage({
             </Button>
           </div>
 
-          {/* Tab navigation */}
-          <Tabs
-            value={selectedTab}
-            onValueChange={(value: any) => setSelectedTab(value)}
-          >
-            <TabsList>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              <TabsTrigger value="past">Past</TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {/* Row 2: Metadata (left) and Action Links (right) */}
+          <div className="flex items-center justify-between mb-4 ml-12">
+            {/* Left: Date and counts */}
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4 text-primary-teal-600" />
+              <span className="text-gray-700 font-medium">
+                {event.dateRange}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-600">
+                {event.locationCount} locations
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-600">
+                {event.sessionCount} presentations
+              </span>
+            </div>
+
+            {/* Right: Action links */}
+            <div className="flex items-center gap-4">
+              {event.publicSummaryUrl && (
+                <a
+                  href={event.publicSummaryUrl}
+                  className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Public Summaries</span>
+                </a>
+              )}
+              <button
+                onClick={handleDownloadForAV}
+                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+              >
+                <Download className="h-4 w-4" />
+                <span>Download for AV</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Row 3: Tab navigation */}
+          <div className="ml-12">
+            <Tabs
+              value={selectedTab}
+              onValueChange={(value: any) => setSelectedTab(value)}
+            >
+              <TabsList>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+                <TabsTrigger value="past">Past</TabsTrigger>
+                <TabsTrigger value="all">All</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </div>
 
