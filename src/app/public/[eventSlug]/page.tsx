@@ -10,6 +10,7 @@ import {
   Search,
   ChevronDown,
   User,
+  Users,
   FileText,
   Globe,
   Lightbulb,
@@ -541,7 +542,7 @@ function ShareButton({ session }: { session: SessionSummary }) {
   );
 }
 
-// Compact Card Component for compact view
+// Compact Card Component for compact view - matches workspace session row design
 function CompactCard({
   session,
   eventSlug,
@@ -554,63 +555,86 @@ function CompactCard({
   onTagClick?: (tag: string) => void;
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-primary-teal-300 hover:shadow-md transition-all">
-      <div className="flex items-start gap-4">
-        {/* Left: Session info */}
+    <div className="bg-white border border-gray-200 rounded-lg hover:border-primary-teal-300 hover:shadow-sm transition-all">
+      <Link
+        href={`/public/${eventSlug}/session/${session.id}`}
+        className="flex items-center px-4 py-3 group"
+      >
+        {/* Left: Icon column (fixed width for alignment) */}
+        <div className="w-8 flex-shrink-0 flex items-center justify-center">
+          <FileText className="h-5 w-5 text-primary-teal-600" />
+        </div>
+
+        {/* Center: Title and Presenters (grows) */}
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-0.5">
             <span
               className={cn(
-                "inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border",
+                "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border",
                 sessionTypeStyles[session.sessionType]
               )}
             >
               {session.sessionType}
             </span>
-            <span className="text-xs text-gray-500">
-              {session.scheduledStart} - {session.endTime}
-            </span>
           </div>
-
-          <Link
-            href={`/public/${eventSlug}/session/${session.id}`}
-            className="block group"
-          >
-            <h4 className="font-semibold text-gray-900 mb-1 group-hover:text-primary-teal-600 transition-colors line-clamp-1">
-              <HighlightText text={session.title} searchQuery={searchQuery} />
-            </h4>
-          </Link>
-
-          <p className="text-sm text-gray-600 mb-2">
+          <h5 className="font-medium text-gray-900 truncate group-hover:text-primary-teal-700 transition-colors">
+            <HighlightText text={session.title} searchQuery={searchQuery} />
+          </h5>
+          <p className="text-xs text-gray-600 truncate mt-0.5 flex items-center gap-1">
+            {session.presenters.length > 1 ? (
+              <Users className="h-3 w-3 text-gray-400" />
+            ) : (
+              <User className="h-3 w-3 text-gray-400" />
+            )}
             <HighlightText
               text={session.presenters.join(", ")}
               searchQuery={searchQuery}
             />
           </p>
+        </div>
 
-          <p className="text-sm text-gray-700 line-clamp-2">
+        {/* Right: Time badge + Arrow */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center px-3 py-1.5 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
+            <span className="text-sm font-bold text-primary-teal-700 whitespace-nowrap">
+              {session.scheduledStart} - {session.endTime}
+            </span>
+          </div>
+          <div className="w-8 flex items-center justify-center">
+            <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-primary-teal-600 transition-colors" />
+          </div>
+        </div>
+      </Link>
+
+      {/* TL;DR preview - subtle bottom section */}
+      <div className="px-4 pb-3 flex items-start">
+        <div className="w-8 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-gray-500 line-clamp-1">
+            <Sparkles className="h-3 w-3 inline mr-1 text-primary-teal-500" />
             <HighlightText text={session.tldr} searchQuery={searchQuery} />
           </p>
-
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {session.tags.slice(0, 3).map((tag) => (
-              <TopicTag key={tag} tag={tag} onClick={() => onTagClick?.(tag)} />
+          <div className="flex flex-wrap gap-1 mt-2">
+            {session.tags.slice(0, 4).map((tag) => (
+              <button
+                key={tag}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onTagClick?.(tag);
+                }}
+                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 hover:bg-primary-teal-50 hover:text-primary-teal-700 transition-colors"
+              >
+                {tag}
+              </button>
             ))}
-            {session.tags.length > 3 && (
-              <span className="text-xs text-gray-400">
-                +{session.tags.length - 3}
+            {session.tags.length > 4 && (
+              <span className="text-[10px] text-gray-400">
+                +{session.tags.length - 4}
               </span>
             )}
           </div>
         </div>
-
-        {/* Right: View details button */}
-        <Link
-          href={`/public/${eventSlug}/session/${session.id}`}
-          className="flex-shrink-0 p-2 rounded-lg bg-primary-teal-50 text-primary-teal-600 hover:bg-primary-teal-100 transition-colors"
-        >
-          <ArrowRight className="h-5 w-5" />
-        </Link>
       </div>
     </div>
   );
@@ -665,7 +689,11 @@ function SummaryCard({
             {/* Presenter and time */}
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
               <div className="flex items-center gap-1.5">
-                <User className="h-4 w-4 text-primary-teal-600" />
+                {session.presenters.length > 1 ? (
+                  <Users className="h-4 w-4 text-primary-teal-600" />
+                ) : (
+                  <User className="h-4 w-4 text-primary-teal-600" />
+                )}
                 <span className="font-medium">
                   <HighlightText
                     text={session.presenters.join(", ")}
@@ -673,10 +701,12 @@ function SummaryCard({
                   />
                 </span>
               </div>
-              <span className="text-gray-300">•</span>
-              <span>
-                {session.scheduledStart} - {session.endTime}
-              </span>
+              <div className="flex items-center px-2.5 py-1 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
+                <Clock className="h-3.5 w-3.5 text-primary-teal-600 mr-1.5" />
+                <span className="text-sm font-semibold text-primary-teal-700">
+                  {session.scheduledStart} - {session.endTime}
+                </span>
+              </div>
             </div>
           </div>
 

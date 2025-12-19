@@ -473,7 +473,11 @@ export default function SessionDetailPage({
           {/* Meta info */}
           <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4">
             <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary-teal-600" />
+              {session.presenters.length > 1 ? (
+                <Users className="h-5 w-5 text-primary-teal-600" />
+              ) : (
+                <User className="h-5 w-5 text-primary-teal-600" />
+              )}
               <span className="font-medium">
                 {session.presenters.join(", ")}
               </span>
@@ -483,10 +487,12 @@ export default function SessionDetailPage({
               <Calendar className="h-5 w-5 text-primary-teal-600" />
               <span>{formatSessionDate(session.scheduledDate)}</span>
             </div>
-            <span className="text-gray-300">•</span>
-            <span>
-              {session.scheduledStart} - {session.endTime}
-            </span>
+            <div className="flex items-center px-3 py-1.5 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
+              <Clock className="h-4 w-4 text-primary-teal-600 mr-1.5" />
+              <span className="text-sm font-bold text-primary-teal-700">
+                {session.scheduledStart} - {session.endTime}
+              </span>
+            </div>
           </div>
 
           {/* Tags */}

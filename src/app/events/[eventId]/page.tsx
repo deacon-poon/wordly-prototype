@@ -364,7 +364,10 @@ export default function EventDetailPage({
 
   // Generate mock event data based on the event ID
   // In production, this would be fetched from an API
-  const event: Event = getMockEventData(resolvedParams.eventId);
+  // Using state so we can update it when adding locations/sessions
+  const [event, setEvent] = useState<Event>(() =>
+    getMockEventData(resolvedParams.eventId)
+  );
 
   const eventStatus = getEventStatus(event.startDate, event.endDate);
   const isPastEvent = eventStatus === "past";
@@ -444,10 +447,9 @@ export default function EventDetailPage({
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    setWaysToJoinModal({
-      location,
-      eventName,
-    });
+    // Open Present web app directly
+    const presentUrl = `https://present.wordly.ai/${location.locationSessionId}`;
+    window.open(presentUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleWaysToJoin = (
@@ -772,9 +774,27 @@ export default function EventDetailPage({
         open={isAddLocationModalOpen}
         onOpenChange={setIsAddLocationModalOpen}
         eventName={event.name}
-        onSave={async (location: LocationFormData) => {
-          console.log("Add location:", location);
-          // In production, this would call the API to add the location
+        onSave={async (locationData: LocationFormData) => {
+          // Create a new location with generated IDs
+          const newLocation: Location = {
+            id: `loc-${Date.now()}`,
+            name: locationData.name,
+            sessionCount: 0,
+            locationSessionId:
+              locationData.locationSessionId ||
+              `LOC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+            passcode:
+              locationData.passcode || Math.random().toString().substring(2, 8),
+            sessions: [],
+          };
+
+          // Update event state with new location
+          setEvent((prev) => ({
+            ...prev,
+            locations: [...prev.locations, newLocation],
+            locationCount: prev.locationCount + 1,
+          }));
+
           setIsAddLocationModalOpen(false);
         }}
       />
@@ -790,9 +810,17 @@ export default function EventDetailPage({
             name: editLocationContext.location.name,
             description: "",
           }}
-          onSave={async (location: LocationFormData) => {
-            console.log("Update location:", location);
-            // In production, this would call the API to update the location
+          onSave={async (locationData: LocationFormData) => {
+            // Update the location in state
+            setEvent((prev) => ({
+              ...prev,
+              locations: prev.locations.map((loc) =>
+                loc.id === editLocationContext.location.id
+                  ? { ...loc, name: locationData.name }
+                  : loc
+              ),
+            }));
+
             setIsEditLocationModalOpen(false);
             setEditLocationContext(null);
           }}
@@ -814,9 +842,47 @@ export default function EventDetailPage({
           locationPasscode={addSessionContext.locationPasscode}
           eventName={event.name}
           defaultDate={event.startDate.toISOString().split("T")[0]}
-          onSave={async (session: SessionFormData) => {
-            console.log("Add session:", session);
-            // In production, this would call the API to add the session
+          onSave={async (sessionData: SessionFormData) => {
+            // Find the location to add the session to
+            const locationId = event.locations.find(
+              (loc) =>
+                loc.locationSessionId === addSessionContext.locationSessionId
+            )?.id;
+
+            if (!locationId) {
+              console.error("Location not found");
+              return;
+            }
+
+            // Create a new session
+            const newSession: Session = {
+              id: `ses-${Date.now()}`,
+              title: sessionData.title,
+              presenters: sessionData.presenters
+                .split(",")
+                .map((p) => p.trim())
+                .filter(Boolean),
+              scheduledDate: sessionData.scheduledDate,
+              scheduledStart: sessionData.scheduledStart,
+              endTime: sessionData.endTime,
+              status: "pending",
+            };
+
+            // Update event state with new session
+            setEvent((prev) => ({
+              ...prev,
+              sessionCount: prev.sessionCount + 1,
+              locations: prev.locations.map((loc) =>
+                loc.id === locationId
+                  ? {
+                      ...loc,
+                      sessions: [...loc.sessions, newSession],
+                      sessionCount: loc.sessionCount + 1,
+                    }
+                  : loc
+              ),
+            }));
+
             setIsAddSessionModalOpen(false);
             setAddSessionContext(null);
           }}
