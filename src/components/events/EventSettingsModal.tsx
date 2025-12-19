@@ -55,6 +55,7 @@ interface EventSettings {
   eventName: string;
   glossaryId: string;
   accountId: string;
+  accessType: "open" | "passcode";
   publishSummaryPublicly: boolean;
   startingPresenterLanguage: string;
   otherPresenterLanguages: string[];
@@ -91,6 +92,7 @@ export function EventSettingsModal({
     availableGlossaries[0]?.id || ""
   );
   const [accountId, setAccountId] = useState(availableAccounts[0]?.id || "");
+  const [accessType, setAccessType] = useState<"open" | "passcode">("open");
   const [publishSummaryPublicly, setPublishSummaryPublicly] = useState("yes");
   const [startingLanguage, setStartingLanguage] = useState("en-US");
   const [otherLanguages, setOtherLanguages] = useState<string[]>(["en-US"]);
@@ -136,6 +138,7 @@ export function EventSettingsModal({
         eventName: eventName.trim(),
         glossaryId,
         accountId,
+        accessType,
         publishSummaryPublicly: publishSummaryPublicly === "yes",
         startingPresenterLanguage: startingLanguage,
         otherPresenterLanguages: otherLanguages,
@@ -250,6 +253,49 @@ export function EventSettingsModal({
                     {account.name}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Access Type */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="access-type"
+                className="text-sm font-semibold text-gray-900"
+              >
+                Access
+              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs text-xs">
+                      Open allows anyone to join. Passcode requires attendees to
+                      enter a passcode.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Select
+              value={accessType}
+              onValueChange={(value: "open" | "passcode") =>
+                setAccessType(value)
+              }
+            >
+              <SelectTrigger id="access-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">
+                  Open (no passcode required)
+                </SelectItem>
+                <SelectItem value="passcode">
+                  Require attendee passcode
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

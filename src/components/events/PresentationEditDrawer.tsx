@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Session {
   id: string;
@@ -23,9 +30,9 @@ interface PresentationEditDrawerProps {
   onClose: () => void;
   onSave: (updatedSession: Session) => void;
   inline?: boolean;
-  stageName?: string;
-  stageSessionId?: string;
-  stagePasscode?: string;
+  locationName?: string;
+  locationSessionId?: string;
+  locationPasscode?: string;
 }
 
 // Language options (ALS supports up to 8)
@@ -40,15 +47,31 @@ const LANGUAGES = [
   { code: "pt", name: "Portuguese" },
 ];
 
+// Common timezones
+const TIMEZONES = [
+  { value: "America/New_York", label: "America/New_York (EST/EDT)" },
+  { value: "America/Chicago", label: "America/Chicago (CST/CDT)" },
+  { value: "America/Denver", label: "America/Denver (MST/MDT)" },
+  { value: "America/Los_Angeles", label: "America/Los_Angeles (PST/PDT)" },
+  { value: "Europe/London", label: "Europe/London (GMT/BST)" },
+  { value: "Europe/Paris", label: "Europe/Paris (CET/CEST)" },
+  { value: "Europe/Berlin", label: "Europe/Berlin (CET/CEST)" },
+  { value: "Asia/Tokyo", label: "Asia/Tokyo (JST)" },
+  { value: "Asia/Shanghai", label: "Asia/Shanghai (CST)" },
+  { value: "Asia/Singapore", label: "Asia/Singapore (SGT)" },
+  { value: "Australia/Sydney", label: "Australia/Sydney (AEDT/AEST)" },
+  { value: "UTC", label: "UTC (Coordinated Universal Time)" },
+];
+
 export function PresentationEditDrawer({
   session,
   isOpen,
   onClose,
   onSave,
   inline = false,
-  stageName,
-  stageSessionId,
-  stagePasscode,
+  locationName,
+  locationSessionId,
+  locationPasscode,
 }: PresentationEditDrawerProps) {
   const [formData, setFormData] = useState({
     title: session.title,
@@ -56,6 +79,7 @@ export function PresentationEditDrawer({
     scheduledDate: session.scheduledDate,
     scheduledStart: session.scheduledStart,
     endTime: session.endTime,
+    timezone: "America/Los_Angeles", // Default timezone
     selectedLanguages: ["en", "es", "fr"], // Default languages
   });
 
@@ -64,7 +88,9 @@ export function PresentationEditDrawer({
   // Check if session has started (read-only if yes)
   const hasStarted = () => {
     const now = new Date();
-    const sessionDateTime = new Date(`${session.scheduledDate}T${session.scheduledStart}`);
+    const sessionDateTime = new Date(
+      `${session.scheduledDate}T${session.scheduledStart}`
+    );
     return now >= sessionDateTime;
   };
 
@@ -78,6 +104,7 @@ export function PresentationEditDrawer({
         scheduledDate: session.scheduledDate,
         scheduledStart: session.scheduledStart,
         endTime: session.endTime,
+        timezone: "America/Los_Angeles", // Default timezone
         selectedLanguages: ["en", "es", "fr"],
       });
     }
@@ -85,7 +112,7 @@ export function PresentationEditDrawer({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isReadOnly) {
       return;
     }
@@ -121,7 +148,7 @@ export function PresentationEditDrawer({
       const selected = prev.selectedLanguages.includes(code)
         ? prev.selectedLanguages.filter((l) => l !== code)
         : [...prev.selectedLanguages, code];
-      
+
       // Limit to 8 languages (ALS limit)
       return {
         ...prev,
@@ -134,7 +161,8 @@ export function PresentationEditDrawer({
     <form onSubmit={handleSubmit} className="space-y-6 p-6">
       {isReadOnly && (
         <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700">
-          <strong>Read-only:</strong> This presentation has already started and cannot be edited.
+          <strong>Read-only:</strong> This presentation has already started and
+          cannot be edited.
         </div>
       )}
 
@@ -144,20 +172,18 @@ export function PresentationEditDrawer({
         <Input
           id="title"
           value={formData.title}
-          onChange={(e) =>
-            setFormData({ ...formData, title: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           disabled={isReadOnly}
           required
         />
       </div>
 
-      {/* Stage (Read-only in event context) */}
-      {stageName && (
+      {/* Location (Read-only in event context) */}
+      {locationName && (
         <div className="space-y-2">
-          <Label>Stage</Label>
+          <Label>Location</Label>
           <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700">
-            {stageName}
+            {locationName}
           </div>
         </div>
       )}
@@ -225,28 +251,51 @@ export function PresentationEditDrawer({
         </div>
       </div>
 
-      {/* Session ID (Read-only, room-level) */}
-      {stageSessionId && (
+      {/* Timezone */}
+      <div className="space-y-2">
+        <Label htmlFor="timezone">Timezone</Label>
+        <Select
+          value={formData.timezone}
+          onValueChange={(value) =>
+            setFormData({ ...formData, timezone: value })
+          }
+          disabled={isReadOnly}
+        >
+          <SelectTrigger id="timezone">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TIMEZONES.map((tz) => (
+              <SelectItem key={tz.value} value={tz.value}>
+                {tz.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Session ID (Read-only, location-level) */}
+      {locationSessionId && (
         <div className="space-y-2">
-          <Label>Session ID (Room-level)</Label>
+          <Label>Session ID (Location-level)</Label>
           <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md font-mono text-sm text-gray-900">
-            {stageSessionId}
+            {locationSessionId}
           </div>
           <p className="text-xs text-gray-500">
-            Shared across all presentations in this stage
+            Shared across all presentations in this location
           </p>
         </div>
       )}
 
       {/* Passcode (Read-only in this context) */}
-      {stagePasscode && (
+      {locationPasscode && (
         <div className="space-y-2">
-          <Label>Passcode (Room-level)</Label>
+          <Label>Passcode (Location-level)</Label>
           <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md font-mono text-sm text-gray-900">
-            {stagePasscode}
+            {locationPasscode}
           </div>
           <p className="text-xs text-gray-500">
-            Shared across all presentations in this stage
+            Shared across all presentations in this location
           </p>
         </div>
       )}
@@ -261,7 +310,11 @@ export function PresentationEditDrawer({
                 id={`lang-${lang.code}`}
                 checked={formData.selectedLanguages.includes(lang.code)}
                 onCheckedChange={() => handleLanguageToggle(lang.code)}
-                disabled={isReadOnly || (formData.selectedLanguages.length >= 8 && !formData.selectedLanguages.includes(lang.code))}
+                disabled={
+                  isReadOnly ||
+                  (formData.selectedLanguages.length >= 8 &&
+                    !formData.selectedLanguages.includes(lang.code))
+                }
               />
               <label
                 htmlFor={`lang-${lang.code}`}
@@ -273,7 +326,8 @@ export function PresentationEditDrawer({
           ))}
         </div>
         <p className="text-xs text-gray-500">
-          Selected: {formData.selectedLanguages.length}/8 (ALS automatically detects languages)
+          Selected: {formData.selectedLanguages.length}/8 (ALS automatically
+          detects languages)
         </p>
       </div>
 
@@ -299,4 +353,3 @@ export function PresentationEditDrawer({
 
   return null; // Sheet wrapper would go here if needed
 }
-

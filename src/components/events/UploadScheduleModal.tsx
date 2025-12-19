@@ -107,11 +107,11 @@ export function UploadScheduleModal({
   };
 
   const handleDownloadTemplate = () => {
-    // Create a sample CSV template
-    const csvContent = `Event Name,Room Name,Session Title,Presenters,Start Date,Start Time,End Time
-"Tech Conference 2024","Main Auditorium","Opening Keynote","John Doe, Jane Smith","2024-11-15","09:00","10:30"
-"Tech Conference 2024","Main Auditorium","Product Showcase","Jane Smith","2024-11-15","11:00","12:00"
-"Tech Conference 2024","Workshop Room A","Hands-on Workshop","Bob Johnson, Alice Lee","2024-11-15","13:00","15:00"`;
+    // Create a sample CSV template per spec
+    const csvContent = `Location,Title,Presenter,Date,Start Time,End Time,Timezone
+"Main Auditorium","Opening Keynote","John Doe, Jane Smith","2024-11-15","09:00","10:30","America/Los_Angeles"
+"Main Auditorium","Product Showcase","Jane Smith","2024-11-15","11:00","12:00","America/Los_Angeles"
+"Workshop Room A","Hands-on Workshop","Bob Johnson, Alice Lee","2024-11-15","13:00","15:00","America/Los_Angeles"`;
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -205,7 +205,7 @@ export function UploadScheduleModal({
                 htmlFor="timezone-select"
                 className="text-sm font-bold text-gray-900"
               >
-                Timezone
+                Default Timezone
               </Label>
               <Info className="h-[13.33px] w-[13.33px] text-gray-500" />
             </div>
@@ -224,17 +224,22 @@ export function UploadScheduleModal({
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">
+              Used when the Timezone column is omitted from your spreadsheet
+            </p>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-2 pt-2">
-            <Button
-              onClick={handleUploadClick}
-              disabled={isUploading}
-              className="bg-[#128197] hover:bg-[#0f6b7a] text-white h-9 px-4"
-            >
-              {selectedFile ? "Change File" : "Select File"}
-            </Button>
+            {!selectedFile && (
+              <Button
+                onClick={handleUploadClick}
+                disabled={isUploading}
+                className="bg-[#128197] hover:bg-[#0f6b7a] text-white h-9 px-4"
+              >
+                Select File
+              </Button>
+            )}
             <Button
               onClick={handleSubmit}
               disabled={isUploading || !selectedFile}

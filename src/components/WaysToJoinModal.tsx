@@ -28,7 +28,7 @@ interface WaysToJoinModalProps {
   roomName: string;
   roomSessionId: string;
   eventName: string;
-  type?: "session" | "stage";
+  type?: "session" | "location";
   sessionCount?: number;
   sessions?: Array<{ title: string; scheduledStart: string; endTime: string }>;
 }
@@ -131,27 +131,31 @@ export function WaysToJoinModal({
     webUrl
   )}`;
 
-  const isStage = type === "stage";
+  const isLocation = type === "location";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">
-            {isStage ? "Ways to Join this Stage" : "Ways to Join this Session"}
+            {isLocation
+              ? "Ways to Join this Location"
+              : "Ways to Join this Session"}
           </DialogTitle>
           <div className="mt-2 space-y-1">
             <p className="text-sm text-gray-600">
-              <span className="font-medium">{isStage ? "Stage" : "Room"}:</span>{" "}
+              <span className="font-medium">
+                {isLocation ? "Location" : "Room"}:
+              </span>{" "}
               {roomName}
             </p>
             <p className="text-sm text-gray-600">
               <span className="font-medium">Event:</span> {eventName}
             </p>
-            {isStage && sessionCount && (
+            {isLocation && sessionCount && (
               <p className="text-sm text-gray-600">
                 <span className="font-medium">Sessions:</span> {sessionCount}{" "}
-                sessions in this stage
+                sessions in this location
               </p>
             )}
             <p className="text-sm text-gray-600">
@@ -162,10 +166,10 @@ export function WaysToJoinModal({
             </p>
           </div>
 
-          {isStage && sessions.length > 0 && (
+          {isLocation && sessions.length > 0 && (
             <div className="mt-4 p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                Sessions in this Stage
+                Sessions in this Location
               </h4>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {sessions.map((session, index) => (
@@ -184,7 +188,7 @@ export function WaysToJoinModal({
               </div>
               <p className="text-xs text-gray-600 mt-2 italic">
                 This single session ID provides access to all sessions in this
-                stage
+                location
               </p>
             </div>
           )}

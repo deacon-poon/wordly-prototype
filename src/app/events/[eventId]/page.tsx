@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   Download,
   ExternalLink,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,7 +20,16 @@ import {
 } from "@/components/ui/resizable";
 import { WaysToJoinModal } from "@/components/WaysToJoinModal";
 import { PresentationEditDrawer } from "@/components/events/PresentationEditDrawer";
-import { StageAccordion } from "@/components/events/StageAccordion";
+import { LocationAccordion } from "@/components/events/LocationAccordion";
+import {
+  AddLocationModal,
+  EditLocationModal,
+} from "@/components/events/AddLocationModal";
+import { AddSessionModal } from "@/components/events/AddSessionModal";
+import type {
+  LocationFormData,
+  SessionFormData,
+} from "@/components/events/forms";
 
 // Data interfaces (will be imported from shared types in production)
 interface Session {
@@ -32,11 +42,11 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Stage {
+interface Location {
   id: string;
   name: string;
   sessionCount: number;
-  stageSessionId: string;
+  locationSessionId: string;
   passcode: string;
   sessions: Session[];
 }
@@ -49,11 +59,11 @@ interface Event {
   dateRange: string;
   startDate: Date;
   endDate: Date;
-  stageCount: number;
+  locationCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  stages: Stage[];
+  locations: Location[];
 }
 
 // Helper functions
@@ -99,8 +109,10 @@ function isSessionToday(sessionDate: string): boolean {
   return sessionDate === today;
 }
 
-function hasSessionsToday(stage: Stage): boolean {
-  return stage.sessions.some((session) => isSessionToday(session.scheduledDate));
+function hasSessionsToday(location: Location): boolean {
+  return location.sessions.some((session) =>
+    isSessionToday(session.scheduledDate)
+  );
 }
 
 // Helper to get relative dates
@@ -131,21 +143,24 @@ function getMockEventData(eventId: string): Event {
       name: "AI & Machine Learning Summit 2024",
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
-      description: "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
+      description:
+        "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
       publicSummaryUrl: "/public/ai-ml-summit-2024",
     },
     "evt-002": {
       name: "Cloud Infrastructure & DevOps Summit",
       startDate: getRelativeDate(7),
       endDate: getRelativeDate(8),
-      description: "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
+      description:
+        "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
       publicSummaryUrl: "/public/cloud-devops-summit-2024",
     },
     "evt-003": {
       name: "Frontend Development Conference 2024",
       startDate: getRelativeDate(14),
       endDate: getRelativeDate(15),
-      description: "Explore the latest in frontend technologies, React, Vue, and modern web development",
+      description:
+        "Explore the latest in frontend technologies, React, Vue, and modern web development",
     },
   };
 
@@ -156,19 +171,24 @@ function getMockEventData(eventId: string): Event {
   return {
     id: eventId,
     name: eventData.name || "Sample Event",
-    dateRange: formatDateRange(eventData.startDate || getRelativeDate(0), eventData.endDate || getRelativeDate(1)),
+    dateRange: formatDateRange(
+      eventData.startDate || getRelativeDate(0),
+      eventData.endDate || getRelativeDate(1)
+    ),
     startDate: eventData.startDate || getRelativeDate(0),
     endDate: eventData.endDate || getRelativeDate(1),
-    stageCount: 3,
+    locationCount: 3,
     sessionCount: 12,
-    description: eventData.description || "A comprehensive conference featuring industry experts",
+    description:
+      eventData.description ||
+      "A comprehensive conference featuring industry experts",
     publicSummaryUrl: eventData.publicSummaryUrl,
-    stages: [
+    locations: [
       {
-        id: "stage-001",
+        id: "loc-001",
         name: "Main Auditorium",
         sessionCount: 5,
-        stageSessionId: "MAIN-1234",
+        locationSessionId: "MAIN-1234",
         passcode: "123456",
         sessions: [
           {
@@ -219,10 +239,10 @@ function getMockEventData(eventId: string): Event {
         ],
       },
       {
-        id: "stage-002",
+        id: "loc-002",
         name: "Workshop Room A",
         sessionCount: 4,
-        stageSessionId: "WORK-5678",
+        locationSessionId: "WORK-5678",
         passcode: "234567",
         sessions: [
           {
@@ -264,10 +284,10 @@ function getMockEventData(eventId: string): Event {
         ],
       },
       {
-        id: "stage-003",
+        id: "loc-003",
         name: "Breakout Room B",
         sessionCount: 3,
-        stageSessionId: "BREK-1234",
+        locationSessionId: "BREK-1234",
         passcode: "345678",
         sessions: [
           {
@@ -311,20 +331,35 @@ export default function EventDetailPage({
 }) {
   const router = useRouter();
   const resolvedParams = use(params);
-  const [selectedTab, setSelectedTab] = useState<"active" | "upcoming" | "past" | "all">("active");
+  const [selectedTab, setSelectedTab] = useState<
+    "active" | "upcoming" | "past" | "all"
+  >("active");
   const [waysToJoinModal, setWaysToJoinModal] = useState<{
-    stage: Stage | null;
+    location: Location | null;
     eventName: string | null;
-  }>({ stage: null, eventName: null });
+  }>({ location: null, eventName: null });
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [editingSession, setEditingSession] = useState<{
     session: Session;
     eventName: string;
-    stageName: string;
-    stageSessionId: string;
-    stagePasscode: string;
+    locationName: string;
+    locationSessionId: string;
+    locationPasscode: string;
   } | null>(null);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+
+  // Add Location/Session modals
+  const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
+  const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false);
+  const [addSessionContext, setAddSessionContext] = useState<{
+    locationName: string;
+    locationSessionId: string;
+    locationPasscode: string;
+  } | null>(null);
+  const [editLocationContext, setEditLocationContext] = useState<{
+    location: Location;
+  } | null>(null);
+  const [isEditLocationModalOpen, setIsEditLocationModalOpen] = useState(false);
 
   // Generate mock event data based on the event ID
   // In production, this would be fetched from an API
@@ -333,28 +368,31 @@ export default function EventDetailPage({
   const eventStatus = getEventStatus(event.startDate, event.endDate);
   const isPastEvent = eventStatus === "past";
 
-  // Group all sessions by date across all stages
+  // Group all sessions by date across all locations
   const sessionsByDate = useMemo(() => {
-    const grouped: Record<string, Array<{ stage: Stage; session: Session }>> = {};
-    
-    event.stages.forEach((stage) => {
-      stage.sessions.forEach((session) => {
+    const grouped: Record<
+      string,
+      Array<{ location: Location; session: Session }>
+    > = {};
+
+    event.locations.forEach((location) => {
+      location.sessions.forEach((session) => {
         if (!grouped[session.scheduledDate]) {
           grouped[session.scheduledDate] = [];
         }
-        grouped[session.scheduledDate].push({ stage, session });
+        grouped[session.scheduledDate].push({ location, session });
       });
     });
 
     // Sort sessions within each date by time
     Object.keys(grouped).forEach((date) => {
-      grouped[date].sort((a, b) => 
+      grouped[date].sort((a, b) =>
         a.session.scheduledStart.localeCompare(b.session.scheduledStart)
       );
     });
 
     return grouped;
-  }, [event.stages]);
+  }, [event.locations]);
 
   // Filter dates based on selected tab
   const filteredDates = useMemo(() => {
@@ -399,26 +437,26 @@ export default function EventDetailPage({
     setExpandedDates(newExpanded);
   };
 
-  const handleStartStage = (
-    stage: Stage,
+  const handleStartLocation = (
+    location: Location,
     eventName: string,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
     setWaysToJoinModal({
-      stage,
+      location,
       eventName,
     });
   };
 
   const handleWaysToJoin = (
-    stage: Stage,
+    location: Location,
     eventName: string,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
     setWaysToJoinModal({
-      stage,
+      location,
       eventName,
     });
   };
@@ -426,16 +464,16 @@ export default function EventDetailPage({
   const handleEditSession = (
     session: Session,
     eventName: string,
-    stage: Stage,
+    location: Location,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
     setEditingSession({
       session,
       eventName,
-      stageName: stage.name,
-      stageSessionId: stage.stageSessionId,
-      stagePasscode: stage.passcode,
+      locationName: location.name,
+      locationSessionId: location.locationSessionId,
+      locationPasscode: location.passcode,
     });
     setIsEditDrawerOpen(true);
   };
@@ -446,19 +484,19 @@ export default function EventDetailPage({
 
     // Header
     csvRows.push(
-      "Event,Stage,Session ID,Passcode,Presentation Title,Presenters,Date,Start Time,End Time,Present URL"
+      "Event,Location,Session ID,Passcode,Presentation Title,Presenters,Date,Start Time,End Time,Present URL"
     );
 
-    // Data rows for each stage and presentation
-    event.stages.forEach((stage) => {
-      const presentUrl = `https://present.wordly.ai/${stage.stageSessionId}`;
+    // Data rows for each location and presentation
+    event.locations.forEach((location) => {
+      const presentUrl = `https://present.wordly.ai/${location.locationSessionId}`;
 
-      stage.sessions.forEach((session) => {
+      location.sessions.forEach((session) => {
         const row = [
           `"${event.name}"`,
-          `"${stage.name}"`,
-          stage.stageSessionId,
-          stage.passcode,
+          `"${location.name}"`,
+          location.locationSessionId,
+          location.passcode,
           `"${session.title}"`,
           `"${session.presenters.join(", ")}"`,
           session.scheduledDate,
@@ -508,9 +546,13 @@ export default function EventDetailPage({
             <Calendar className="h-4 w-4 text-primary-teal-600" />
             <span className="text-gray-700 font-medium">{event.dateRange}</span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{event.stageCount} stages</span>
+            <span className="text-gray-600">
+              {event.locationCount} locations
+            </span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{event.sessionCount} presentations</span>
+            <span className="text-gray-600">
+              {event.sessionCount} presentations
+            </span>
           </div>
 
           {/* Action links */}
@@ -529,12 +571,30 @@ export default function EventDetailPage({
               className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
             >
               <Download className="h-4 w-4" />
-              <span>Download for AV</span>
+              <span>Bulk download links</span>
             </button>
+            <Button
+              onClick={() => setIsAddLocationModalOpen(true)}
+              variant="outline"
+              size="sm"
+              disabled={isPastEvent}
+              className="border-primary-teal-600 text-primary-teal-600 hover:bg-primary-teal-50"
+              title={
+                isPastEvent
+                  ? "Cannot add locations to past events"
+                  : "Add a new location"
+              }
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Location
+            </Button>
           </div>
 
           {/* Tab navigation */}
-          <Tabs value={selectedTab} onValueChange={(value: any) => setSelectedTab(value)}>
+          <Tabs
+            value={selectedTab}
+            onValueChange={(value: any) => setSelectedTab(value)}
+          >
             <TabsList>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -556,23 +616,26 @@ export default function EventDetailPage({
             </p>
           </Card>
         ) : (
-          // Display dates first, then stages within each date
+          // Display dates first, then locations within each date
           filteredDates.map((date) => {
             const sessionsForDate = sessionsByDate[date];
-            
-            // Group sessions by stage for this date
-            const stageSessionsMap = sessionsForDate.reduce((acc, { stage, session }) => {
-              if (!acc[stage.id]) {
-                acc[stage.id] = {
-                  stage,
-                  sessions: [],
-                };
-              }
-              acc[stage.id].sessions.push(session);
-              return acc;
-            }, {} as Record<string, { stage: Stage; sessions: Session[] }>);
 
-            const stagesList = Object.values(stageSessionsMap);
+            // Group sessions by location for this date
+            const locationSessionsMap = sessionsForDate.reduce(
+              (acc, { location, session }) => {
+                if (!acc[location.id]) {
+                  acc[location.id] = {
+                    location,
+                    sessions: [],
+                  };
+                }
+                acc[location.id].sessions.push(session);
+                return acc;
+              },
+              {} as Record<string, { location: Location; sessions: Session[] }>
+            );
+
+            const locationsList = Object.values(locationSessionsMap);
 
             const isDateExpanded = expandedDates.has(date);
 
@@ -580,8 +643,8 @@ export default function EventDetailPage({
               <div
                 key={date}
                 className={`relative transition-all duration-200 border rounded-lg ${
-                  isDateExpanded 
-                    ? "border-gray-300 bg-gray-50/30 shadow-sm" 
+                  isDateExpanded
+                    ? "border-gray-300 bg-gray-50/30 shadow-sm"
                     : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
@@ -602,32 +665,63 @@ export default function EventDetailPage({
                         {formatSessionDate(date)}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        {sessionsForDate.length} {sessionsForDate.length === 1 ? "presentation" : "presentations"} across {stagesList.length} {stagesList.length === 1 ? "stage" : "stages"}
+                        {sessionsForDate.length}{" "}
+                        {sessionsForDate.length === 1
+                          ? "presentation"
+                          : "presentations"}{" "}
+                        across {locationsList.length}{" "}
+                        {locationsList.length === 1 ? "location" : "locations"}
                       </p>
                     </div>
                   </div>
                 </button>
 
-                {/* Stages for this date */}
+                {/* Locations for this date */}
                 {isDateExpanded && (
                   <div className="px-6 pb-6 pt-2 space-y-3">
-                    {stagesList.map(({ stage, sessions }) => {
-                      // Create a modified stage object with only sessions for this date
-                      const stageWithDateSessions = {
-                        ...stage,
+                    {locationsList.map(({ location, sessions }) => {
+                      // Create a modified location object with only sessions for this date
+                      const locationWithDateSessions = {
+                        ...location,
                         sessions: sessions,
                       };
 
                       return (
-                        <StageAccordion
-                          key={stage.id}
-                          stage={stageWithDateSessions}
+                        <LocationAccordion
+                          key={location.id}
+                          location={locationWithDateSessions}
                           defaultExpanded={true}
-                          onStartStage={(stage, e) => handleStartStage(stage, event.name, e)}
-                          onLinksToJoin={(stage, e) => handleWaysToJoin(stage, event.name, e)}
-                          onEditSession={(session, stage, e) =>
-                            handleEditSession(session, event.name, stage, e)
+                          onStartLocation={(location, e) =>
+                            handleStartLocation(location, event.name, e)
                           }
+                          onLinksToJoin={(location, e) =>
+                            handleWaysToJoin(location, event.name, e)
+                          }
+                          onEditSession={(session, location, e) =>
+                            handleEditSession(session, event.name, location, e)
+                          }
+                          onRenameLocation={(location) => {
+                            setEditLocationContext({ location });
+                            setIsEditLocationModalOpen(true);
+                          }}
+                          onDeleteLocation={(location) => {
+                            // In production, show confirmation dialog then call API
+                            if (
+                              confirm(
+                                `Delete location "${location.name}"? This will also delete all sessions in this location.`
+                              )
+                            ) {
+                              console.log("Delete location:", location.id);
+                            }
+                          }}
+                          onAddSession={(location) => {
+                            setAddSessionContext({
+                              locationName: location.name,
+                              locationSessionId: location.locationSessionId,
+                              locationPasscode: location.passcode,
+                            });
+                            setIsAddSessionModalOpen(true);
+                          }}
                           isPastEvent={isPastEvent}
                           showCredentials={true}
                         />
@@ -642,24 +736,80 @@ export default function EventDetailPage({
       </div>
 
       {/* Ways to Join Modal */}
-      {waysToJoinModal.stage && waysToJoinModal.eventName && (
+      {waysToJoinModal.location && waysToJoinModal.eventName && (
         <WaysToJoinModal
-          open={!!waysToJoinModal.stage}
+          open={!!waysToJoinModal.location}
           onOpenChange={(open) => {
             if (!open) {
-              setWaysToJoinModal({ stage: null, eventName: null });
+              setWaysToJoinModal({ location: null, eventName: null });
             }
           }}
-          roomSessionId={waysToJoinModal.stage.stageSessionId}
-          roomName={waysToJoinModal.stage.name}
+          roomSessionId={waysToJoinModal.location.locationSessionId}
+          roomName={waysToJoinModal.location.name}
           eventName={waysToJoinModal.eventName}
-          type="stage"
-          sessionCount={waysToJoinModal.stage.sessions.length}
-          sessions={waysToJoinModal.stage.sessions.map((s) => ({
+          type="location"
+          sessionCount={waysToJoinModal.location.sessions.length}
+          sessions={waysToJoinModal.location.sessions.map((s) => ({
             title: s.title,
             scheduledStart: s.scheduledStart,
             endTime: s.endTime,
           }))}
+        />
+      )}
+
+      {/* Add Location Modal */}
+      <AddLocationModal
+        open={isAddLocationModalOpen}
+        onOpenChange={setIsAddLocationModalOpen}
+        eventName={event.name}
+        onSave={async (location: LocationFormData) => {
+          console.log("Add location:", location);
+          // In production, this would call the API to add the location
+          setIsAddLocationModalOpen(false);
+        }}
+      />
+
+      {/* Edit Location Modal */}
+      {editLocationContext && (
+        <EditLocationModal
+          open={isEditLocationModalOpen}
+          onOpenChange={setIsEditLocationModalOpen}
+          eventName={event.name}
+          initialData={{
+            id: editLocationContext.location.id,
+            name: editLocationContext.location.name,
+            description: "",
+          }}
+          onSave={async (location: LocationFormData) => {
+            console.log("Update location:", location);
+            // In production, this would call the API to update the location
+            setIsEditLocationModalOpen(false);
+            setEditLocationContext(null);
+          }}
+        />
+      )}
+
+      {/* Add Session Modal */}
+      {addSessionContext && (
+        <AddSessionModal
+          open={isAddSessionModalOpen}
+          onOpenChange={(open) => {
+            setIsAddSessionModalOpen(open);
+            if (!open) {
+              setAddSessionContext(null);
+            }
+          }}
+          locationName={addSessionContext.locationName}
+          locationSessionId={addSessionContext.locationSessionId}
+          locationPasscode={addSessionContext.locationPasscode}
+          eventName={event.name}
+          defaultDate={event.startDate.toISOString().split("T")[0]}
+          onSave={async (session: SessionFormData) => {
+            console.log("Add session:", session);
+            // In production, this would call the API to add the session
+            setIsAddSessionModalOpen(false);
+            setAddSessionContext(null);
+          }}
         />
       )}
     </div>
@@ -682,7 +832,7 @@ export default function EventDetailPage({
                     Presentation
                   </h2>
                   <p className="text-sm text-gray-600 mt-0.5">
-                    {editingSession.eventName} · {editingSession.stageName}
+                    {editingSession.eventName} · {editingSession.locationName}
                   </p>
                 </div>
                 <button
@@ -711,9 +861,9 @@ export default function EventDetailPage({
                     setEditingSession(null);
                   }}
                   inline={true}
-                  stageName={editingSession.stageName}
-                  stageSessionId={editingSession.stageSessionId}
-                  stagePasscode={editingSession.stagePasscode}
+                  locationName={editingSession.locationName}
+                  locationSessionId={editingSession.locationSessionId}
+                  locationPasscode={editingSession.locationPasscode}
                 />
               </div>
             </div>
@@ -725,4 +875,3 @@ export default function EventDetailPage({
     </div>
   );
 }
-

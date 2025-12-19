@@ -38,7 +38,7 @@ interface SessionSummary {
   transcriptUrl?: string;
 }
 
-interface Stage {
+interface Location {
   id: string;
   name: string;
   sessions: SessionSummary[];
@@ -50,9 +50,9 @@ interface PublicEvent {
   name: string;
   dateRange: string;
   description: string;
-  stageCount: number;
+  locationCount: number;
   sessionCount: number;
-  stages: Stage[];
+  locations: Location[];
 }
 
 // Helper functions
@@ -67,14 +67,14 @@ function formatSessionDate(dateString: string): string {
   return date.toLocaleDateString("en-US", options);
 }
 
-function getUniqueStages(stages: Stage[]): string[] {
-  return stages.map((s) => s.name);
+function getUniqueLocations(locations: Location[]): string[] {
+  return locations.map((s) => s.name);
 }
 
-function getUniqueDates(stages: Stage[]): string[] {
+function getUniqueDates(locations: Location[]): string[] {
   const dates = new Set<string>();
-  stages.forEach((stage) => {
-    stage.sessions.forEach((session) => {
+  locations.forEach((location) => {
+    location.sessions.forEach((session) => {
       dates.add(session.scheduledDate);
     });
   });
@@ -116,20 +116,23 @@ function getMockEventData(eventSlug: string): PublicEvent {
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" "),
-    description: "A comprehensive conference featuring industry experts and thought leaders.",
+    description:
+      "A comprehensive conference featuring industry experts and thought leaders.",
   };
 
   return {
     id: `evt-${eventSlug}`,
     slug: eventSlug,
     name: baseEvent.name!,
-    dateRange: `${formatSessionDate(todayStr).split(",")[1].trim()} - ${formatSessionDate(dayAfterStr).split(",")[1].trim()}`,
+    dateRange: `${formatSessionDate(todayStr)
+      .split(",")[1]
+      .trim()} - ${formatSessionDate(dayAfterStr).split(",")[1].trim()}`,
     description: baseEvent.description!,
-    stageCount: 3,
+    locationCount: 3,
     sessionCount: 9,
-    stages: [
+    locations: [
       {
-        id: "stage-001",
+        id: "loc-001",
         name: "Main Hall",
         sessions: [
           {
@@ -168,7 +171,7 @@ function getMockEventData(eventSlug: string): PublicEvent {
         ],
       },
       {
-        id: "stage-002",
+        id: "loc-002",
         name: "Workshop Room A",
         sessions: [
           {
@@ -201,13 +204,13 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledStart: "9:00 AM",
             endTime: "10:30 AM",
             summary:
-              "A comprehensive overview of modern data engineering practices. The session covered data pipeline architecture, quality assurance, and observability. Robert presented a maturity model for data platforms and provided concrete steps for teams at different stages. The discussion on data contracts and schema evolution was particularly relevant for teams managing complex data ecosystems.",
+              "A comprehensive overview of modern data engineering practices. The session covered data pipeline architecture, quality assurance, and observability. Robert presented a maturity model for data platforms and provided concrete steps for teams at different levels. The discussion on data contracts and schema evolution was particularly relevant for teams managing complex data ecosystems.",
             transcriptUrl: "#",
           },
         ],
       },
       {
-        id: "stage-003",
+        id: "loc-003",
         name: "Breakout Room B",
         sessions: [
           {
@@ -250,19 +253,31 @@ function getMockEventData(eventSlug: string): PublicEvent {
 }
 
 // Highlight text component for search results
-function HighlightText({ text, searchQuery }: { text: string; searchQuery: string }) {
+function HighlightText({
+  text,
+  searchQuery,
+}: {
+  text: string;
+  searchQuery: string;
+}) {
   if (!searchQuery || searchQuery.trim() === "") {
     return <>{text}</>;
   }
 
-  const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const regex = new RegExp(
+    `(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+    "gi"
+  );
   const parts = text.split(regex);
 
   return (
     <>
-      {parts.map((part, index) => 
+      {parts.map((part, index) =>
         regex.test(part) ? (
-          <mark key={index} className="bg-yellow-200 text-gray-900 rounded px-0.5">
+          <mark
+            key={index}
+            className="bg-yellow-200 text-gray-900 rounded px-0.5"
+          >
             {part}
           </mark>
         ) : (
@@ -274,12 +289,12 @@ function HighlightText({ text, searchQuery }: { text: string; searchQuery: strin
 }
 
 // Components
-function SummaryCard({ 
-  session, 
-  eventSlug, 
-  searchQuery = "" 
-}: { 
-  session: SessionSummary; 
+function SummaryCard({
+  session,
+  eventSlug,
+  searchQuery = "",
+}: {
+  session: SessionSummary;
   eventSlug: string;
   searchQuery?: string;
 }) {
@@ -297,7 +312,10 @@ function SummaryCard({
           <div className="flex items-center gap-1.5">
             <User className="h-4 w-4 text-primary-teal-600" />
             <span>
-              <HighlightText text={session.presenters.join(", ")} searchQuery={searchQuery} />
+              <HighlightText
+                text={session.presenters.join(", ")}
+                searchQuery={searchQuery}
+              />
             </span>
           </div>
           <span className="text-gray-300">•</span>
@@ -318,9 +336,13 @@ function SummaryCard({
           </span>
         </div>
         <p className="text-gray-700 leading-relaxed">
-          <HighlightText 
-            text={isExpanded ? session.summary : summaryPreview + (hasMore && !isExpanded ? "..." : "")} 
-            searchQuery={searchQuery} 
+          <HighlightText
+            text={
+              isExpanded
+                ? session.summary
+                : summaryPreview + (hasMore && !isExpanded ? "..." : "")
+            }
+            searchQuery={searchQuery}
           />
         </p>
         {hasMore && (
@@ -330,7 +352,9 @@ function SummaryCard({
           >
             {isExpanded ? "Show less" : "Read more"}
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              className={`h-4 w-4 transition-transform ${
+                isExpanded ? "rotate-180" : ""
+              }`}
             />
           </button>
         )}
@@ -349,13 +373,13 @@ function SummaryCard({
   );
 }
 
-function StageSection({
-  stage,
+function LocationSection({
+  location,
   sessions,
   eventSlug,
   searchQuery = "",
 }: {
-  stage: Stage;
+  location: Location;
   sessions: SessionSummary[];
   eventSlug: string;
   searchQuery?: string;
@@ -370,20 +394,29 @@ function StageSection({
       >
         <div className="flex items-center gap-3">
           <MapPin className="h-5 w-5 text-primary-teal-600" />
-          <h3 className="text-lg font-semibold text-gray-900">{stage.name}</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {location.name}
+          </h3>
           <span className="text-sm text-gray-500">
             ({sessions.length} {sessions.length === 1 ? "session" : "sessions"})
           </span>
         </div>
         <ChevronDown
-          className={`h-5 w-5 text-gray-500 transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+          className={`h-5 w-5 text-gray-500 transition-transform ${
+            isExpanded ? "" : "-rotate-90"
+          }`}
         />
       </button>
 
       {isExpanded && (
         <div className="p-6 pt-2 space-y-4">
           {sessions.map((session) => (
-            <SummaryCard key={session.id} session={session} eventSlug={eventSlug} searchQuery={searchQuery} />
+            <SummaryCard
+              key={session.id}
+              session={session}
+              eventSlug={eventSlug}
+              searchQuery={searchQuery}
+            />
           ))}
         </div>
       )}
@@ -393,22 +426,22 @@ function StageSection({
 
 function DateSection({
   date,
-  filteredStages,
+  filteredLocations,
   eventSlug,
   searchQuery = "",
 }: {
   date: string;
-  filteredStages: Stage[];
+  filteredLocations: Location[];
   eventSlug: string;
   searchQuery?: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Get sessions for this date from already filtered stages
-  const stagesWithSessions = filteredStages
-    .map((stage) => ({
-      stage,
-      sessions: stage.sessions.filter((s) => s.scheduledDate === date),
+  // Get sessions for this date from already filtered locations
+  const locationsWithSessions = filteredLocations
+    .map((location) => ({
+      location,
+      sessions: location.sessions.filter((s) => s.scheduledDate === date),
     }))
     .filter((s) => s.sessions.length > 0);
 
@@ -419,7 +452,9 @@ function DateSection({
         className="w-full flex items-center gap-3 py-3 px-4 bg-primary-teal-50 rounded-lg hover:bg-primary-teal-100 transition-colors"
       >
         <ChevronDown
-          className={`h-5 w-5 text-primary-teal-600 transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+          className={`h-5 w-5 text-primary-teal-600 transition-transform ${
+            isExpanded ? "" : "-rotate-90"
+          }`}
         />
         <Calendar className="h-5 w-5 text-primary-teal-600" />
         <h2 className="text-lg font-bold text-gray-900">
@@ -429,8 +464,14 @@ function DateSection({
 
       {isExpanded && (
         <div className="space-y-4 pl-4">
-          {stagesWithSessions.map(({ stage, sessions }) => (
-            <StageSection key={stage.id} stage={stage} sessions={sessions} eventSlug={eventSlug} searchQuery={searchQuery} />
+          {locationsWithSessions.map(({ location, sessions }) => (
+            <LocationSection
+              key={location.id}
+              location={location}
+              sessions={sessions}
+              eventSlug={eventSlug}
+              searchQuery={searchQuery}
+            />
           ))}
         </div>
       )}
@@ -445,23 +486,26 @@ export default function PublicSummaryPage({
 }) {
   const resolvedParams = use(params);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStage, setSelectedStage] = useState<string>("all");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("all");
 
   // Get mock event data
   const event = getMockEventData(resolvedParams.eventSlug);
 
-  // Get unique stages and dates for filters
-  const uniqueStages = getUniqueStages(event.stages);
-  const uniqueDates = getUniqueDates(event.stages);
+  // Get unique locations and dates for filters
+  const uniqueLocations = getUniqueLocations(event.locations);
+  const uniqueDates = getUniqueDates(event.locations);
 
   // Filter sessions based on search and filters
-  const filteredStages = useMemo(() => {
-    return event.stages
-      .filter((stage) => selectedStage === "all" || stage.name === selectedStage)
-      .map((stage) => ({
-        ...stage,
-        sessions: stage.sessions.filter((session) => {
+  const filteredLocations = useMemo(() => {
+    return event.locations
+      .filter(
+        (location) =>
+          selectedLocation === "all" || location.name === selectedLocation
+      )
+      .map((location) => ({
+        ...location,
+        sessions: location.sessions.filter((session) => {
           const matchesDate =
             selectedDate === "all" || session.scheduledDate === selectedDate;
           const matchesSearch =
@@ -474,22 +518,22 @@ export default function PublicSummaryPage({
           return matchesDate && matchesSearch;
         }),
       }))
-      .filter((stage) => stage.sessions.length > 0);
-  }, [event.stages, selectedStage, selectedDate, searchQuery]);
+      .filter((location) => location.sessions.length > 0);
+  }, [event.locations, selectedLocation, selectedDate, searchQuery]);
 
   // Get filtered dates
   const filteredDates = useMemo(() => {
     const dates = new Set<string>();
-    filteredStages.forEach((stage) => {
-      stage.sessions.forEach((session) => {
+    filteredLocations.forEach((location) => {
+      location.sessions.forEach((session) => {
         dates.add(session.scheduledDate);
       });
     });
     return Array.from(dates).sort();
-  }, [filteredStages]);
+  }, [filteredLocations]);
 
-  const totalFilteredSessions = filteredStages.reduce(
-    (acc, stage) => acc + stage.sessions.length,
+  const totalFilteredSessions = filteredLocations.reduce(
+    (acc, location) => acc + location.sessions.length,
     0
   );
 
@@ -531,12 +575,10 @@ export default function PublicSummaryPage({
             <span className="text-gray-300">•</span>
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary-teal-600" />
-              <span>{event.stageCount} Stages</span>
+              <span>{event.locationCount} Locations</span>
             </div>
           </div>
-          <p className="text-gray-600 max-w-3xl">
-            {event.description}
-          </p>
+          <p className="text-gray-600 max-w-3xl">{event.description}</p>
         </div>
       </div>
 
@@ -553,15 +595,18 @@ export default function PublicSummaryPage({
                 className="pl-10 h-9 border-gray-200"
               />
             </div>
-            <Select value={selectedStage} onValueChange={setSelectedStage}>
+            <Select
+              value={selectedLocation}
+              onValueChange={setSelectedLocation}
+            >
               <SelectTrigger className="w-[160px] h-9 border-gray-200">
-                <SelectValue placeholder="All Stages" />
+                <SelectValue placeholder="All Locations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
-                {uniqueStages.map((stage) => (
-                  <SelectItem key={stage} value={stage}>
-                    {stage}
+                <SelectItem value="all">All Locations</SelectItem>
+                {uniqueLocations.map((location) => (
+                  <SelectItem key={location} value={location}>
+                    {location}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -580,7 +625,8 @@ export default function PublicSummaryPage({
               </SelectContent>
             </Select>
             <span className="text-sm text-gray-400">
-              {totalFilteredSessions} {totalFilteredSessions === 1 ? "result" : "results"}
+              {totalFilteredSessions}{" "}
+              {totalFilteredSessions === 1 ? "result" : "results"}
             </span>
           </div>
         </div>
@@ -604,7 +650,7 @@ export default function PublicSummaryPage({
               <DateSection
                 key={date}
                 date={date}
-                filteredStages={filteredStages}
+                filteredLocations={filteredLocations}
                 eventSlug={resolvedParams.eventSlug}
                 searchQuery={searchQuery}
               />
@@ -625,7 +671,9 @@ export default function PublicSummaryPage({
                 height={26}
                 className="h-6 w-auto"
               />
-              <span className="text-sm text-gray-500">Powered by Wordly AI</span>
+              <span className="text-sm text-gray-500">
+                Powered by Wordly AI
+              </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <a href="#" className="hover:text-gray-900 transition-colors">

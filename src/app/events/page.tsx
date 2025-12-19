@@ -2,18 +2,19 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Calendar,
-  ExternalLink,
-  Plus,
-  MapPin,
-  ChevronRight,
-} from "lucide-react";
+import { Calendar, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import { EventSettingsModal } from "@/components/events/EventSettingsModal";
+import { EventCreationChoiceModal } from "@/components/events/EventCreationChoiceModal";
+import { ManualEventWizard } from "@/components/events/ManualEventWizard";
+import type {
+  EventDetailsFormData,
+  LocationFormData,
+  SessionFormData,
+} from "@/components/events/forms";
 
 // Data interfaces
 interface Session {
@@ -26,11 +27,11 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Stage {
+interface Location {
   id: string;
   name: string;
   sessionCount: number;
-  stageSessionId: string;
+  locationSessionId: string;
   passcode: string;
   sessions: Session[];
 }
@@ -43,11 +44,11 @@ interface Event {
   dateRange: string;
   startDate: Date;
   endDate: Date;
-  stageCount: number;
+  locationCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  stages: Stage[];
+  locations: Location[];
 }
 
 // Helper functions
@@ -106,9 +107,14 @@ const formatDateRange = (startDate: Date, endDate: Date): string => {
 
 export default function EventsPage() {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">("active");
+  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">(
+    "active"
+  );
+  // Event creation flow modals
+  const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isManualWizardOpen, setIsManualWizardOpen] = useState(false);
   const [uploadedFileData, setUploadedFileData] = useState<{
     fileName: string;
     timezone: string;
@@ -116,1302 +122,1312 @@ export default function EventsPage() {
 
   // Mock data
   const mockEvents: Event[] = [
-  // ACTIVE EVENT (happening now)
-  {
-    id: "evt-001",
-    name: "AI & Machine Learning Summit 2024",
-    dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
-    startDate: getRelativeDate(0),
-    endDate: getRelativeDate(1),
-    stageCount: 3,
-    sessionCount: 10,
-    description:
-      "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
-    publicSummaryUrl: "/public/ai-ml-summit-2024",
-    stages: [
-      {
-        id: "stage-001",
-        name: "Main Auditorium",
-        sessionCount: 5,
-        stageSessionId: "MAIN-1234",
-        passcode: "123456",
-        sessions: [
-          {
-            id: "ses-001",
-            title: "The Future of AI in Enterprise",
-            presenters: ["Dr. Sarah Chen"],
-            scheduledDate: new Date(getRelativeDate(0).setHours(9, 0, 0, 0)).toISOString().split('T')[0],
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-002",
-            title: "Scalable Cloud Architecture Patterns",
-            presenters: ["Mike Rodriguez"],
-            scheduledDate: new Date(getRelativeDate(0).setHours(11, 0, 0, 0)).toISOString().split('T')[0],
-            scheduledStart: "11:00",
-            endTime: "12:00",
-            status: "pending",
-          },
-          {
-            id: "ses-003",
-            title: "Cybersecurity Trends and Threats",
-            presenters: ["Alex Thompson"],
-            scheduledDate: new Date(getRelativeDate(0).setHours(13, 30, 0, 0)).toISOString().split('T')[0],
-            scheduledStart: "13:30",
-            endTime: "14:30",
-            status: "pending",
-          },
-          {
-            id: "ses-004",
-            title: "Building a DevOps Culture",
-            presenters: ["Jennifer Wu"],
-            scheduledDate: new Date(getRelativeDate(1).setHours(9, 0, 0, 0)).toISOString().split('T')[0],
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-005",
-            title: "Machine Learning in Production",
-            presenters: ["Robert Kim", "Dr. Lisa Wang"],
-            scheduledDate: new Date(getRelativeDate(1).setHours(11, 0, 0, 0)).toISOString().split('T')[0],
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-002",
-        name: "Workshop Room A",
-        sessionCount: 3,
-        stageSessionId: "HALL-5678",
-        passcode: "234567",
-        sessions: [
-          {
-            id: "ses-006",
-            title: "Hands-on Kubernetes Workshop",
-            presenters: ["Lisa Park"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "11:00",
-            status: "pending",
-          },
-          {
-            id: "ses-007",
-            title: "Advanced React Patterns",
-            presenters: ["David Martinez"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:30",
-            endTime: "13:00",
-            status: "pending",
-          },
-          {
-            id: "ses-008",
-            title: "Microservices Architecture",
-            presenters: ["Emily Zhang"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-003",
-        name: "Breakout Room B",
-        sessionCount: 2,
-        stageSessionId: "WORK-1234",
-        passcode: "345678",
-        sessions: [
-          {
-            id: "ses-009",
-            title: "API Design Best Practices",
-            presenters: ["Tom Anderson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "pending",
-          },
-          {
-            id: "ses-010",
-            title: "Performance Optimization Techniques",
-            presenters: ["Rachel Green"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "pending",
-          },
-        ],
-      },
-    ],
-  },
-  // UPCOMING EVENTS
-  {
-    id: "evt-002",
-    name: "Cloud Infrastructure & DevOps Summit",
-    dateRange: formatDateRange(getRelativeDate(7), getRelativeDate(8)),
-    startDate: getRelativeDate(7),
-    endDate: getRelativeDate(8),
-    stageCount: 4,
-    sessionCount: 18,
-    description:
-      "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
-    publicSummaryUrl: "/public/cloud-devops-summit-2024",
-    stages: [
-      {
-        id: "stage-004",
-        name: "Cloud Theater",
-        sessionCount: 5,
-        stageSessionId: "BREK-5678",
-        passcode: "456789",
-        sessions: [
-          {
-            id: "ses-011",
-            title: "Kubernetes at Scale",
-            presenters: ["Maya Patel"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-012",
-            title: "Multi-Cloud Strategies",
-            presenters: ["James Wilson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "pending",
-          },
-          {
-            id: "ses-013",
-            title: "Serverless Architecture Patterns",
-            presenters: ["Sofia Garcia"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "pending",
-          },
-          {
-            id: "ses-014",
-            title: "Infrastructure as Code Best Practices",
-            presenters: ["Chen Wei"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "pending",
-          },
-          {
-            id: "ses-015",
-            title: "Cloud Cost Optimization",
-            presenters: ["Amanda Lee"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-005",
-        name: "DevOps Workshop",
-        sessionCount: 6,
-        stageSessionId: "EXPO-1234",
-        passcode: "567890",
-        sessions: [
-          {
-            id: "ses-016",
-            title: "CI/CD Pipeline Automation",
-            presenters: ["Marcus Johnson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-017",
-            title: "GitOps with ArgoCD",
-            presenters: ["Yuki Tanaka"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "pending",
-          },
-          {
-            id: "ses-018",
-            title: "Observability & Monitoring",
-            presenters: ["Carlos Rivera"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "pending",
-          },
-          {
-            id: "ses-019",
-            title: "Security in DevOps",
-            presenters: ["Priya Sharma"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "pending",
-          },
-          {
-            id: "ses-020",
-            title: "Platform Engineering",
-            presenters: ["Oliver Brown"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "pending",
-          },
-          {
-            id: "ses-021",
-            title: "Developer Experience Tools",
-            presenters: ["Emma Davis"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "19:00",
-            endTime: "20:00",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-006",
-        name: "Container Lab",
-        sessionCount: 4,
-        stageSessionId: "TECH-5678",
-        passcode: "678901",
-        sessions: [
-          {
-            id: "ses-022",
-            title: "Docker Deep Dive",
-            presenters: ["Hassan Ali"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "pending",
-          },
-          {
-            id: "ses-023",
-            title: "Service Mesh Patterns",
-            presenters: ["Nina Kowalski"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "pending",
-          },
-          {
-            id: "ses-024",
-            title: "Container Security",
-            presenters: ["Ahmed Hassan"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "pending",
-          },
-          {
-            id: "ses-025",
-            title: "Microservices Best Practices",
-            presenters: ["Laura Martinez"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "16:00",
-            endTime: "17:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-007",
-        name: "Automation Studio",
-        sessionCount: 3,
-        stageSessionId: "BIZZ-1234",
-        passcode: "789012",
-        sessions: [
-          {
-            id: "ses-026",
-            title: "Terraform at Enterprise Scale",
-            presenters: ["Kevin O'Brien"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:30",
-            endTime: "11:00",
-            status: "pending",
-          },
-          {
-            id: "ses-027",
-            title: "Ansible for Cloud Automation",
-            presenters: ["Isabella Romano"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:30",
-            endTime: "13:00",
-            status: "pending",
-          },
-          {
-            id: "ses-028",
-            title: "Policy as Code",
-            presenters: ["Daniel Kim"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "pending",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-003",
-    name: "Design Systems & UX Conference",
-    dateRange: formatDateRange(getRelativeDate(20), getRelativeDate(21)),
-    startDate: getRelativeDate(20),
-    endDate: getRelativeDate(21),
-    stageCount: 2,
-    sessionCount: 8,
-    description:
-      "Explore the latest in design systems, UX research, and product design methodologies",
-    publicSummaryUrl: "/public/design-ux-conf-2024",
-    stages: [
-      {
-        id: "stage-008",
-        name: "Design Theater",
-        sessionCount: 5,
-        stageSessionId: "LEAD-5678",
-        passcode: "890123",
-        sessions: [
-          {
-            id: "ses-029",
-            title: "Building Scalable Design Systems",
-            presenters: ["Emma Thompson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-030",
-            title: "Design Tokens in Practice",
-            presenters: ["Lucas Chen"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "pending",
-          },
-          {
-            id: "ses-031",
-            title: "Accessibility-First Design",
-            presenters: ["Aisha Ndiaye"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "pending",
-          },
-          {
-            id: "ses-032",
-            title: "Component API Design",
-            presenters: ["Ryan Mitchell"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "pending",
-          },
-          {
-            id: "ses-033",
-            title: "Design System Governance",
-            presenters: ["Sophia Berg"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-009",
-        name: "UX Research Lab",
-        sessionCount: 3,
-        stageSessionId: "AMPH-9012",
-        passcode: "901234",
-        sessions: [
-          {
-            id: "ses-034",
-            title: "User Research at Scale",
-            presenters: ["Maria Santos"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "pending",
-          },
-          {
-            id: "ses-035",
-            title: "Rapid Prototyping Techniques",
-            presenters: ["Jacob Miller"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "pending",
-          },
-          {
-            id: "ses-036",
-            title: "Data-Driven Design Decisions",
-            presenters: ["Olivia Wang"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:30",
-            endTime: "16:00",
-            status: "pending",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-004",
-    name: "Web3 & Blockchain Summit",
-    dateRange: formatDateRange(getRelativeDate(33), getRelativeDate(34)),
-    startDate: getRelativeDate(33),
-    endDate: getRelativeDate(34),
-    stageCount: 2,
-    sessionCount: 10,
-    description:
-      "Comprehensive summit on blockchain technology, smart contracts, and decentralized applications",
-    publicSummaryUrl: "/public/web3-blockchain-2024",
-    stages: [
-      {
-        id: "stage-010",
-        name: "Blockchain Hall",
-        sessionCount: 6,
-        stageSessionId: "STGE-9012",
-        passcode: "112233",
-        sessions: [
-          {
-            id: "ses-037",
-            title: "Smart Contract Security",
-            presenters: ["Alex Turner"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-038",
-            title: "DeFi Architecture Patterns",
-            presenters: ["Raj Kapoor"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "pending",
-          },
-          {
-            id: "ses-039",
-            title: "NFT Marketplace Development",
-            presenters: ["Sophie Laurent"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "pending",
-          },
-          {
-            id: "ses-040",
-            title: "Layer 2 Scaling Solutions",
-            presenters: ["Mohammed Farah"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "pending",
-          },
-          {
-            id: "ses-041",
-            title: "Blockchain Interoperability",
-            presenters: ["Anna Kowalczyk"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "pending",
-          },
-          {
-            id: "ses-042",
-            title: "Web3 Gaming",
-            presenters: ["Tyler Jackson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "19:00",
-            endTime: "20:00",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-011",
-        name: "DApp Workshop",
-        sessionCount: 4,
-        stageSessionId: "AUDI-9012",
-        passcode: "223344",
-        sessions: [
-          {
-            id: "ses-043",
-            title: "Building with Ethereum",
-            presenters: ["Yuki Nakamura"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "pending",
-          },
-          {
-            id: "ses-044",
-            title: "Solidity Best Practices",
-            presenters: ["Carlos Mendez"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "pending",
-          },
-          {
-            id: "ses-045",
-            title: "Web3 Frontend Integration",
-            presenters: ["Lisa Anderson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "pending",
-          },
-          {
-            id: "ses-046",
-            title: "DAO Governance Models",
-            presenters: ["Ibrahim Youssef"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "16:00",
-            endTime: "17:30",
-            status: "pending",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-005",
-    name: "Data Science & Analytics Forum",
-    dateRange: formatDateRange(getRelativeDate(47), getRelativeDate(48)),
-    startDate: getRelativeDate(47),
-    endDate: getRelativeDate(48),
-    stageCount: 3,
-    sessionCount: 12,
-    description:
-      "Advanced forum on data science, machine learning operations, and business analytics",
-    publicSummaryUrl: "/public/data-science-forum-2024",
-    stages: [
-      {
-        id: "stage-012",
-        name: "Data Theater",
-        sessionCount: 5,
-        stageSessionId: "ROOM-9012",
-        passcode: "334455",
-        sessions: [
-          {
-            id: "ses-047",
-            title: "MLOps Best Practices",
-            presenters: ["Grace Liu"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "pending",
-          },
-          {
-            id: "ses-048",
-            title: "Feature Engineering at Scale",
-            presenters: ["Marcus Williams"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "pending",
-          },
-          {
-            id: "ses-049",
-            title: "Model Monitoring & Drift Detection",
-            presenters: ["Elena Popov"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "pending",
-          },
-          {
-            id: "ses-050",
-            title: "Real-Time Analytics Pipelines",
-            presenters: ["Hassan Ibrahim"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "pending",
-          },
-          {
-            id: "ses-051",
-            title: "Ethical AI & Bias Mitigation",
-            presenters: ["Amara Jones"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-013",
-        name: "Analytics Lab",
-        sessionCount: 4,
-        stageSessionId: "CONF-1230",
-        passcode: "445566",
-        sessions: [
-          {
-            id: "ses-052",
-            title: "Modern Data Stack",
-            presenters: ["Kevin Park"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "pending",
-          },
-          {
-            id: "ses-053",
-            title: "Data Visualization Best Practices",
-            presenters: ["Natalie Schmidt"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "pending",
-          },
-          {
-            id: "ses-054",
-            title: "Business Intelligence Strategies",
-            presenters: ["Raj Patel"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "pending",
-          },
-          {
-            id: "ses-055",
-            title: "Data Governance & Quality",
-            presenters: ["Sarah Cohen"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "16:00",
-            endTime: "17:30",
-            status: "pending",
-          },
-        ],
-      },
-      {
-        id: "stage-014",
-        name: "ML Workshop",
-        sessionCount: 3,
-        stageSessionId: "MEET-4560",
-        passcode: "556677",
-        sessions: [
-          {
-            id: "ses-056",
-            title: "Deep Learning Architectures",
-            presenters: ["Zhang Wei"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:30",
-            endTime: "11:00",
-            status: "pending",
-          },
-          {
-            id: "ses-057",
-            title: "Natural Language Processing",
-            presenters: ["Isabella Costa"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:30",
-            endTime: "13:00",
-            status: "pending",
-          },
-          {
-            id: "ses-058",
-            title: "Computer Vision Applications",
-            presenters: ["Omar Farooq"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "pending",
-          },
-        ],
-      },
-    ],
-  },
-  // PAST EVENTS
-  {
-    id: "evt-006",
-    name: "Tech Conference 2024 Spring Edition",
-    dateRange: formatDateRange(getRelativeDate(-36), getRelativeDate(-35)),
-    startDate: getRelativeDate(-36),
-    endDate: getRelativeDate(-35),
-    stageCount: 2,
-    sessionCount: 6,
-    description:
-      "Annual spring technology conference featuring software development trends and innovations",
-    publicSummaryUrl: "/public/tech-conf-spring-2024",
-    stages: [
-      {
-        id: "stage-015",
-        name: "Main Stage",
-        sessionCount: 4,
-        stageSessionId: "BALL-7890",
-        passcode: "667788",
-        sessions: [
-          {
-            id: "ses-059",
-            title: "State of Software Development 2024",
-            presenters: ["John Peterson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "completed",
-          },
-          {
-            id: "ses-060",
-            title: "Modern JavaScript Frameworks",
-            presenters: ["Anna Kowalski"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "completed",
-          },
-          {
-            id: "ses-061",
-            title: "API Design Principles",
-            presenters: ["Miguel Torres"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "completed",
-          },
-          {
-            id: "ses-062",
-            title: "Testing Strategies",
-            presenters: ["Rachel Green"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-016",
-        name: "Workshop Room",
-        sessionCount: 2,
-        stageSessionId: "CENT-0120",
-        passcode: "778899",
-        sessions: [
-          {
-            id: "ses-063",
-            title: "GraphQL Workshop",
-            presenters: ["David Chen"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "12:00",
-            status: "completed",
-          },
-          {
-            id: "ses-064",
-            title: "Performance Optimization",
-            presenters: ["Emma Wilson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:00",
-            endTime: "15:00",
-            status: "completed",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-007",
-    name: "Mobile Development Summit 2024",
-    dateRange: formatDateRange(getRelativeDate(-57), getRelativeDate(-56)),
-    startDate: getRelativeDate(-57),
-    endDate: getRelativeDate(-56),
-    stageCount: 3,
-    sessionCount: 12,
-    description:
-      "Summit focused on iOS, Android, and cross-platform mobile development",
-    publicSummaryUrl: "/public/mobile-dev-summit-2024",
-    stages: [
-      {
-        id: "stage-017",
-        name: "iOS Hall",
-        sessionCount: 4,
-        stageSessionId: "EXEC-1110",
-        passcode: "889900",
-        sessions: [
-          {
-            id: "ses-065",
-            title: "SwiftUI Advanced Patterns",
-            presenters: ["Sarah Johnson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "completed",
-          },
-          {
-            id: "ses-066",
-            title: "iOS App Architecture",
-            presenters: ["Michael Chen"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "completed",
-          },
-          {
-            id: "ses-067",
-            title: "Core Data Best Practices",
-            presenters: ["Elena Rodriguez"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "completed",
-          },
-          {
-            id: "ses-068",
-            title: "App Store Optimization",
-            presenters: ["James Taylor"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-018",
-        name: "Android Studio",
-        sessionCount: 5,
-        stageSessionId: "PRES-2220",
-        passcode: "990011",
-        sessions: [
-          {
-            id: "ses-069",
-            title: "Jetpack Compose",
-            presenters: ["Priya Sharma"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "completed",
-          },
-          {
-            id: "ses-070",
-            title: "Kotlin Coroutines",
-            presenters: ["David Kim"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "completed",
-          },
-          {
-            id: "ses-071",
-            title: "Material Design 3",
-            presenters: ["Lisa Wang"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "completed",
-          },
-          {
-            id: "ses-072",
-            title: "Android Testing Strategies",
-            presenters: ["Omar Hassan"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "completed",
-          },
-          {
-            id: "ses-073",
-            title: "Performance Optimization",
-            presenters: ["Anna Kowalski"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-019",
-        name: "Cross-Platform Lab",
-        sessionCount: 3,
-        stageSessionId: "VENT-3330",
-        passcode: "101112",
-        sessions: [
-          {
-            id: "ses-074",
-            title: "React Native Advanced",
-            presenters: ["Carlos Rivera"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "completed",
-          },
-          {
-            id: "ses-075",
-            title: "Flutter Development",
-            presenters: ["Yuki Tanaka"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "completed",
-          },
-          {
-            id: "ses-076",
-            title: "Mobile CI/CD",
-            presenters: ["Marcus Brown"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "completed",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-008",
-    name: "Cybersecurity Conference 2024",
-    dateRange: formatDateRange(getRelativeDate(-93), getRelativeDate(-92)),
-    startDate: getRelativeDate(-93),
-    endDate: getRelativeDate(-92),
-    stageCount: 2,
-    sessionCount: 8,
-    description:
-      "Annual conference on cybersecurity, threat detection, and enterprise security",
-    publicSummaryUrl: "/public/cybersecurity-2024",
-    stages: [
-      {
-        id: "stage-020",
-        name: "Security Theater",
-        sessionCount: 5,
-        stageSessionId: "THEA-4440",
-        passcode: "131415",
-        sessions: [
-          {
-            id: "ses-077",
-            title: "Zero Trust Architecture",
-            presenters: ["Robert Fischer"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "completed",
-          },
-          {
-            id: "ses-078",
-            title: "Cloud Security Best Practices",
-            presenters: ["Mei Lin"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "completed",
-          },
-          {
-            id: "ses-079",
-            title: "Threat Intelligence",
-            presenters: ["Ahmed Ali"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "completed",
-          },
-          {
-            id: "ses-080",
-            title: "Incident Response",
-            presenters: ["Julia Martinez"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "completed",
-          },
-          {
-            id: "ses-081",
-            title: "Security Automation",
-            presenters: ["Kevin O'Neill"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-021",
-        name: "Penetration Testing Lab",
-        sessionCount: 3,
-        stageSessionId: "GATH-5500",
-        passcode: "161718",
-        sessions: [
-          {
-            id: "ses-082",
-            title: "Ethical Hacking Techniques",
-            presenters: ["Nathan Wright"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "completed",
-          },
-          {
-            id: "ses-083",
-            title: "Web Application Security",
-            presenters: ["Sophia Berg"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "completed",
-          },
-          {
-            id: "ses-084",
-            title: "Network Security",
-            presenters: ["Daniel Park"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "completed",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-009",
-    name: "Product Management Summit 2024",
-    dateRange: formatDateRange(getRelativeDate(-128), getRelativeDate(-127)),
-    startDate: getRelativeDate(-128),
-    endDate: getRelativeDate(-127),
-    stageCount: 2,
-    sessionCount: 7,
-    description:
-      "Summit for product managers on strategy, roadmapping, and product-led growth",
-    publicSummaryUrl: "/public/pm-summit-2024",
-    stages: [
-      {
-        id: "stage-022",
-        name: "Product Theater",
-        sessionCount: 4,
-        stageSessionId: "SPAC-6600",
-        passcode: "192021",
-        sessions: [
-          {
-            id: "ses-085",
-            title: "Product Strategy Frameworks",
-            presenters: ["Rachel Green"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "completed",
-          },
-          {
-            id: "ses-086",
-            title: "User Story Mapping",
-            presenters: ["Tom Anderson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "completed",
-          },
-          {
-            id: "ses-087",
-            title: "Product Analytics",
-            presenters: ["Emma Davis"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "completed",
-          },
-          {
-            id: "ses-088",
-            title: "Pricing Strategies",
-            presenters: ["Oliver Smith"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-023",
-        name: "Strategy Workshop",
-        sessionCount: 3,
-        stageSessionId: "LOBY-7700",
-        passcode: "222324",
-        sessions: [
-          {
-            id: "ses-089",
-            title: "OKRs for Product Teams",
-            presenters: ["Nina Patel"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "completed",
-          },
-          {
-            id: "ses-090",
-            title: "Roadmap Planning",
-            presenters: ["Lucas Chen"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "completed",
-          },
-          {
-            id: "ses-091",
-            title: "Stakeholder Management",
-            presenters: ["Isabella Romano"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "completed",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "evt-010",
-    name: "Frontend Development Conference",
-    dateRange: formatDateRange(getRelativeDate(-164), getRelativeDate(-163)),
-    startDate: getRelativeDate(-164),
-    endDate: getRelativeDate(-163),
-    stageCount: 3,
-    sessionCount: 11,
-    description:
-      "Conference dedicated to modern frontend development, frameworks, and tooling",
-    publicSummaryUrl: "/public/frontend-conf-2024",
-    stages: [
-      {
-        id: "stage-024",
-        name: "JavaScript Hall",
-        sessionCount: 5,
-        stageSessionId: "AREA-8800",
-        passcode: "252627",
-        sessions: [
-          {
-            id: "ses-092",
-            title: "React Server Components",
-            presenters: ["Alex Turner"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:00",
-            endTime: "10:30",
-            status: "completed",
-          },
-          {
-            id: "ses-093",
-            title: "Vue 3 Composition API",
-            presenters: ["Sophie Laurent"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:00",
-            endTime: "12:30",
-            status: "completed",
-          },
-          {
-            id: "ses-094",
-            title: "Svelte & SvelteKit",
-            presenters: ["Hassan Ibrahim"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "13:30",
-            endTime: "15:00",
-            status: "completed",
-          },
-          {
-            id: "ses-095",
-            title: "TypeScript Advanced Types",
-            presenters: ["Maria Santos"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "15:30",
-            endTime: "17:00",
-            status: "completed",
-          },
-          {
-            id: "ses-096",
-            title: "Build Tools & Vite",
-            presenters: ["Ryan Mitchell"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "17:30",
-            endTime: "18:30",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-025",
-        name: "CSS & Design Workshop",
-        sessionCount: 3,
-        stageSessionId: "ZOON-9900",
-        passcode: "282930",
-        sessions: [
-          {
-            id: "ses-097",
-            title: "Modern CSS Layouts",
-            presenters: ["Olivia Wang"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "10:00",
-            endTime: "11:30",
-            status: "completed",
-          },
-          {
-            id: "ses-098",
-            title: "Tailwind CSS Best Practices",
-            presenters: ["Jacob Miller"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "12:00",
-            endTime: "13:30",
-            status: "completed",
-          },
-          {
-            id: "ses-099",
-            title: "CSS Animation Performance",
-            presenters: ["Aisha Ndiaye"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "completed",
-          },
-        ],
-      },
-      {
-        id: "stage-026",
-        name: "Performance Lab",
-        sessionCount: 3,
-        stageSessionId: "WEBR-1100",
-        passcode: "313233",
-        sessions: [
-          {
-            id: "ses-100",
-            title: "Web Performance Metrics",
-            presenters: ["Tyler Jackson"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "09:30",
-            endTime: "11:00",
-            status: "completed",
-          },
-          {
-            id: "ses-101",
-            title: "Optimizing Core Web Vitals",
-            presenters: ["Grace Liu"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "11:30",
-            endTime: "13:00",
-            status: "completed",
-          },
-          {
-            id: "ses-102",
-            title: "Progressive Web Apps",
-            presenters: ["Carlos Mendez"],
-            scheduledDate: '2025-11-17',
-            scheduledStart: "14:00",
-            endTime: "15:30",
-            status: "completed",
-          },
-        ],
-      },
-    ],
-  },
-];
+    // ACTIVE EVENT (happening now)
+    {
+      id: "evt-001",
+      name: "AI & Machine Learning Summit 2024",
+      dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
+      startDate: getRelativeDate(0),
+      endDate: getRelativeDate(1),
+      locationCount: 3,
+      sessionCount: 10,
+      description:
+        "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
+      publicSummaryUrl: "/public/ai-ml-summit-2024",
+      locations: [
+        {
+          id: "loc-001",
+          name: "Main Auditorium",
+          sessionCount: 5,
+          locationSessionId: "MAIN-1234",
+          passcode: "123456",
+          sessions: [
+            {
+              id: "ses-001",
+              title: "The Future of AI in Enterprise",
+              presenters: ["Dr. Sarah Chen"],
+              scheduledDate: new Date(getRelativeDate(0).setHours(9, 0, 0, 0))
+                .toISOString()
+                .split("T")[0],
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-002",
+              title: "Scalable Cloud Architecture Patterns",
+              presenters: ["Mike Rodriguez"],
+              scheduledDate: new Date(getRelativeDate(0).setHours(11, 0, 0, 0))
+                .toISOString()
+                .split("T")[0],
+              scheduledStart: "11:00",
+              endTime: "12:00",
+              status: "pending",
+            },
+            {
+              id: "ses-003",
+              title: "Cybersecurity Trends and Threats",
+              presenters: ["Alex Thompson"],
+              scheduledDate: new Date(getRelativeDate(0).setHours(13, 30, 0, 0))
+                .toISOString()
+                .split("T")[0],
+              scheduledStart: "13:30",
+              endTime: "14:30",
+              status: "pending",
+            },
+            {
+              id: "ses-004",
+              title: "Building a DevOps Culture",
+              presenters: ["Jennifer Wu"],
+              scheduledDate: new Date(getRelativeDate(1).setHours(9, 0, 0, 0))
+                .toISOString()
+                .split("T")[0],
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-005",
+              title: "Machine Learning in Production",
+              presenters: ["Robert Kim", "Dr. Lisa Wang"],
+              scheduledDate: new Date(getRelativeDate(1).setHours(11, 0, 0, 0))
+                .toISOString()
+                .split("T")[0],
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-002",
+          name: "Workshop Room A",
+          sessionCount: 3,
+          locationSessionId: "HALL-5678",
+          passcode: "234567",
+          sessions: [
+            {
+              id: "ses-006",
+              title: "Hands-on Kubernetes Workshop",
+              presenters: ["Lisa Park"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "11:00",
+              status: "pending",
+            },
+            {
+              id: "ses-007",
+              title: "Advanced React Patterns",
+              presenters: ["David Martinez"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:30",
+              endTime: "13:00",
+              status: "pending",
+            },
+            {
+              id: "ses-008",
+              title: "Microservices Architecture",
+              presenters: ["Emily Zhang"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-003",
+          name: "Breakout Room B",
+          sessionCount: 2,
+          locationSessionId: "WORK-1234",
+          passcode: "345678",
+          sessions: [
+            {
+              id: "ses-009",
+              title: "API Design Best Practices",
+              presenters: ["Tom Anderson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "pending",
+            },
+            {
+              id: "ses-010",
+              title: "Performance Optimization Techniques",
+              presenters: ["Rachel Green"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "pending",
+            },
+          ],
+        },
+      ],
+    },
+    // UPCOMING EVENTS
+    {
+      id: "evt-002",
+      name: "Cloud Infrastructure & DevOps Summit",
+      dateRange: formatDateRange(getRelativeDate(7), getRelativeDate(8)),
+      startDate: getRelativeDate(7),
+      endDate: getRelativeDate(8),
+      locationCount: 4,
+      sessionCount: 18,
+      description:
+        "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
+      publicSummaryUrl: "/public/cloud-devops-summit-2024",
+      locations: [
+        {
+          id: "loc-004",
+          name: "Cloud Theater",
+          sessionCount: 5,
+          locationSessionId: "BREK-5678",
+          passcode: "456789",
+          sessions: [
+            {
+              id: "ses-011",
+              title: "Kubernetes at Scale",
+              presenters: ["Maya Patel"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-012",
+              title: "Multi-Cloud Strategies",
+              presenters: ["James Wilson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "pending",
+            },
+            {
+              id: "ses-013",
+              title: "Serverless Architecture Patterns",
+              presenters: ["Sofia Garcia"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "pending",
+            },
+            {
+              id: "ses-014",
+              title: "Infrastructure as Code Best Practices",
+              presenters: ["Chen Wei"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "pending",
+            },
+            {
+              id: "ses-015",
+              title: "Cloud Cost Optimization",
+              presenters: ["Amanda Lee"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-005",
+          name: "DevOps Workshop",
+          sessionCount: 6,
+          locationSessionId: "EXPO-1234",
+          passcode: "567890",
+          sessions: [
+            {
+              id: "ses-016",
+              title: "CI/CD Pipeline Automation",
+              presenters: ["Marcus Johnson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-017",
+              title: "GitOps with ArgoCD",
+              presenters: ["Yuki Tanaka"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "pending",
+            },
+            {
+              id: "ses-018",
+              title: "Observability & Monitoring",
+              presenters: ["Carlos Rivera"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "pending",
+            },
+            {
+              id: "ses-019",
+              title: "Security in DevOps",
+              presenters: ["Priya Sharma"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "pending",
+            },
+            {
+              id: "ses-020",
+              title: "Platform Engineering",
+              presenters: ["Oliver Brown"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "pending",
+            },
+            {
+              id: "ses-021",
+              title: "Developer Experience Tools",
+              presenters: ["Emma Davis"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "19:00",
+              endTime: "20:00",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-006",
+          name: "Container Lab",
+          sessionCount: 4,
+          locationSessionId: "TECH-5678",
+          passcode: "678901",
+          sessions: [
+            {
+              id: "ses-022",
+              title: "Docker Deep Dive",
+              presenters: ["Hassan Ali"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "pending",
+            },
+            {
+              id: "ses-023",
+              title: "Service Mesh Patterns",
+              presenters: ["Nina Kowalski"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "pending",
+            },
+            {
+              id: "ses-024",
+              title: "Container Security",
+              presenters: ["Ahmed Hassan"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "pending",
+            },
+            {
+              id: "ses-025",
+              title: "Microservices Best Practices",
+              presenters: ["Laura Martinez"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "16:00",
+              endTime: "17:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-007",
+          name: "Automation Studio",
+          sessionCount: 3,
+          locationSessionId: "BIZZ-1234",
+          passcode: "789012",
+          sessions: [
+            {
+              id: "ses-026",
+              title: "Terraform at Enterprise Scale",
+              presenters: ["Kevin O'Brien"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:30",
+              endTime: "11:00",
+              status: "pending",
+            },
+            {
+              id: "ses-027",
+              title: "Ansible for Cloud Automation",
+              presenters: ["Isabella Romano"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:30",
+              endTime: "13:00",
+              status: "pending",
+            },
+            {
+              id: "ses-028",
+              title: "Policy as Code",
+              presenters: ["Daniel Kim"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "pending",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-003",
+      name: "Design Systems & UX Conference",
+      dateRange: formatDateRange(getRelativeDate(20), getRelativeDate(21)),
+      startDate: getRelativeDate(20),
+      endDate: getRelativeDate(21),
+      locationCount: 2,
+      sessionCount: 8,
+      description:
+        "Explore the latest in design systems, UX research, and product design methodologies",
+      publicSummaryUrl: "/public/design-ux-conf-2024",
+      locations: [
+        {
+          id: "loc-008",
+          name: "Design Theater",
+          sessionCount: 5,
+          locationSessionId: "LEAD-5678",
+          passcode: "890123",
+          sessions: [
+            {
+              id: "ses-029",
+              title: "Building Scalable Design Systems",
+              presenters: ["Emma Thompson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-030",
+              title: "Design Tokens in Practice",
+              presenters: ["Lucas Chen"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "pending",
+            },
+            {
+              id: "ses-031",
+              title: "Accessibility-First Design",
+              presenters: ["Aisha Ndiaye"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "pending",
+            },
+            {
+              id: "ses-032",
+              title: "Component API Design",
+              presenters: ["Ryan Mitchell"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "pending",
+            },
+            {
+              id: "ses-033",
+              title: "Design System Governance",
+              presenters: ["Sophia Berg"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-009",
+          name: "UX Research Lab",
+          sessionCount: 3,
+          locationSessionId: "AMPH-9012",
+          passcode: "901234",
+          sessions: [
+            {
+              id: "ses-034",
+              title: "User Research at Scale",
+              presenters: ["Maria Santos"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "pending",
+            },
+            {
+              id: "ses-035",
+              title: "Rapid Prototyping Techniques",
+              presenters: ["Jacob Miller"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "pending",
+            },
+            {
+              id: "ses-036",
+              title: "Data-Driven Design Decisions",
+              presenters: ["Olivia Wang"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:30",
+              endTime: "16:00",
+              status: "pending",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-004",
+      name: "Web3 & Blockchain Summit",
+      dateRange: formatDateRange(getRelativeDate(33), getRelativeDate(34)),
+      startDate: getRelativeDate(33),
+      endDate: getRelativeDate(34),
+      locationCount: 2,
+      sessionCount: 10,
+      description:
+        "Comprehensive summit on blockchain technology, smart contracts, and decentralized applications",
+      publicSummaryUrl: "/public/web3-blockchain-2024",
+      locations: [
+        {
+          id: "loc-010",
+          name: "Blockchain Hall",
+          sessionCount: 6,
+          locationSessionId: "STGE-9012",
+          passcode: "112233",
+          sessions: [
+            {
+              id: "ses-037",
+              title: "Smart Contract Security",
+              presenters: ["Alex Turner"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-038",
+              title: "DeFi Architecture Patterns",
+              presenters: ["Raj Kapoor"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "pending",
+            },
+            {
+              id: "ses-039",
+              title: "NFT Marketplace Development",
+              presenters: ["Sophie Laurent"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "pending",
+            },
+            {
+              id: "ses-040",
+              title: "Layer 2 Scaling Solutions",
+              presenters: ["Mohammed Farah"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "pending",
+            },
+            {
+              id: "ses-041",
+              title: "Blockchain Interoperability",
+              presenters: ["Anna Kowalczyk"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "pending",
+            },
+            {
+              id: "ses-042",
+              title: "Web3 Gaming",
+              presenters: ["Tyler Jackson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "19:00",
+              endTime: "20:00",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-011",
+          name: "DApp Workshop",
+          sessionCount: 4,
+          locationSessionId: "AUDI-9012",
+          passcode: "223344",
+          sessions: [
+            {
+              id: "ses-043",
+              title: "Building with Ethereum",
+              presenters: ["Yuki Nakamura"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "pending",
+            },
+            {
+              id: "ses-044",
+              title: "Solidity Best Practices",
+              presenters: ["Carlos Mendez"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "pending",
+            },
+            {
+              id: "ses-045",
+              title: "Web3 Frontend Integration",
+              presenters: ["Lisa Anderson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "pending",
+            },
+            {
+              id: "ses-046",
+              title: "DAO Governance Models",
+              presenters: ["Ibrahim Youssef"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "16:00",
+              endTime: "17:30",
+              status: "pending",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-005",
+      name: "Data Science & Analytics Forum",
+      dateRange: formatDateRange(getRelativeDate(47), getRelativeDate(48)),
+      startDate: getRelativeDate(47),
+      endDate: getRelativeDate(48),
+      locationCount: 3,
+      sessionCount: 12,
+      description:
+        "Advanced forum on data science, machine learning operations, and business analytics",
+      publicSummaryUrl: "/public/data-science-forum-2024",
+      locations: [
+        {
+          id: "loc-012",
+          name: "Data Theater",
+          sessionCount: 5,
+          locationSessionId: "ROOM-9012",
+          passcode: "334455",
+          sessions: [
+            {
+              id: "ses-047",
+              title: "MLOps Best Practices",
+              presenters: ["Grace Liu"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "pending",
+            },
+            {
+              id: "ses-048",
+              title: "Feature Engineering at Scale",
+              presenters: ["Marcus Williams"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "pending",
+            },
+            {
+              id: "ses-049",
+              title: "Model Monitoring & Drift Detection",
+              presenters: ["Elena Popov"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "pending",
+            },
+            {
+              id: "ses-050",
+              title: "Real-Time Analytics Pipelines",
+              presenters: ["Hassan Ibrahim"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "pending",
+            },
+            {
+              id: "ses-051",
+              title: "Ethical AI & Bias Mitigation",
+              presenters: ["Amara Jones"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-013",
+          name: "Analytics Lab",
+          sessionCount: 4,
+          locationSessionId: "CONF-1230",
+          passcode: "445566",
+          sessions: [
+            {
+              id: "ses-052",
+              title: "Modern Data Stack",
+              presenters: ["Kevin Park"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "pending",
+            },
+            {
+              id: "ses-053",
+              title: "Data Visualization Best Practices",
+              presenters: ["Natalie Schmidt"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "pending",
+            },
+            {
+              id: "ses-054",
+              title: "Business Intelligence Strategies",
+              presenters: ["Raj Patel"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "pending",
+            },
+            {
+              id: "ses-055",
+              title: "Data Governance & Quality",
+              presenters: ["Sarah Cohen"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "16:00",
+              endTime: "17:30",
+              status: "pending",
+            },
+          ],
+        },
+        {
+          id: "loc-014",
+          name: "ML Workshop",
+          sessionCount: 3,
+          locationSessionId: "MEET-4560",
+          passcode: "556677",
+          sessions: [
+            {
+              id: "ses-056",
+              title: "Deep Learning Architectures",
+              presenters: ["Zhang Wei"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:30",
+              endTime: "11:00",
+              status: "pending",
+            },
+            {
+              id: "ses-057",
+              title: "Natural Language Processing",
+              presenters: ["Isabella Costa"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:30",
+              endTime: "13:00",
+              status: "pending",
+            },
+            {
+              id: "ses-058",
+              title: "Computer Vision Applications",
+              presenters: ["Omar Farooq"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "pending",
+            },
+          ],
+        },
+      ],
+    },
+    // PAST EVENTS
+    {
+      id: "evt-006",
+      name: "Tech Conference 2024 Spring Edition",
+      dateRange: formatDateRange(getRelativeDate(-36), getRelativeDate(-35)),
+      startDate: getRelativeDate(-36),
+      endDate: getRelativeDate(-35),
+      locationCount: 2,
+      sessionCount: 6,
+      description:
+        "Annual spring technology conference featuring software development trends and innovations",
+      publicSummaryUrl: "/public/tech-conf-spring-2024",
+      locations: [
+        {
+          id: "loc-015",
+          name: "Main Stage",
+          sessionCount: 4,
+          locationSessionId: "BALL-7890",
+          passcode: "667788",
+          sessions: [
+            {
+              id: "ses-059",
+              title: "State of Software Development 2024",
+              presenters: ["John Peterson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "completed",
+            },
+            {
+              id: "ses-060",
+              title: "Modern JavaScript Frameworks",
+              presenters: ["Anna Kowalski"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "completed",
+            },
+            {
+              id: "ses-061",
+              title: "API Design Principles",
+              presenters: ["Miguel Torres"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "completed",
+            },
+            {
+              id: "ses-062",
+              title: "Testing Strategies",
+              presenters: ["Rachel Green"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-016",
+          name: "Workshop Room",
+          sessionCount: 2,
+          locationSessionId: "CENT-0120",
+          passcode: "778899",
+          sessions: [
+            {
+              id: "ses-063",
+              title: "GraphQL Workshop",
+              presenters: ["David Chen"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "12:00",
+              status: "completed",
+            },
+            {
+              id: "ses-064",
+              title: "Performance Optimization",
+              presenters: ["Emma Wilson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:00",
+              endTime: "15:00",
+              status: "completed",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-007",
+      name: "Mobile Development Summit 2024",
+      dateRange: formatDateRange(getRelativeDate(-57), getRelativeDate(-56)),
+      startDate: getRelativeDate(-57),
+      endDate: getRelativeDate(-56),
+      locationCount: 3,
+      sessionCount: 12,
+      description:
+        "Summit focused on iOS, Android, and cross-platform mobile development",
+      publicSummaryUrl: "/public/mobile-dev-summit-2024",
+      locations: [
+        {
+          id: "loc-017",
+          name: "iOS Hall",
+          sessionCount: 4,
+          locationSessionId: "EXEC-1110",
+          passcode: "889900",
+          sessions: [
+            {
+              id: "ses-065",
+              title: "SwiftUI Advanced Patterns",
+              presenters: ["Sarah Johnson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "completed",
+            },
+            {
+              id: "ses-066",
+              title: "iOS App Architecture",
+              presenters: ["Michael Chen"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "completed",
+            },
+            {
+              id: "ses-067",
+              title: "Core Data Best Practices",
+              presenters: ["Elena Rodriguez"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "completed",
+            },
+            {
+              id: "ses-068",
+              title: "App Store Optimization",
+              presenters: ["James Taylor"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-018",
+          name: "Android Studio",
+          sessionCount: 5,
+          locationSessionId: "PRES-2220",
+          passcode: "990011",
+          sessions: [
+            {
+              id: "ses-069",
+              title: "Jetpack Compose",
+              presenters: ["Priya Sharma"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "completed",
+            },
+            {
+              id: "ses-070",
+              title: "Kotlin Coroutines",
+              presenters: ["David Kim"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "completed",
+            },
+            {
+              id: "ses-071",
+              title: "Material Design 3",
+              presenters: ["Lisa Wang"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "completed",
+            },
+            {
+              id: "ses-072",
+              title: "Android Testing Strategies",
+              presenters: ["Omar Hassan"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "completed",
+            },
+            {
+              id: "ses-073",
+              title: "Performance Optimization",
+              presenters: ["Anna Kowalski"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-019",
+          name: "Cross-Platform Lab",
+          sessionCount: 3,
+          locationSessionId: "VENT-3330",
+          passcode: "101112",
+          sessions: [
+            {
+              id: "ses-074",
+              title: "React Native Advanced",
+              presenters: ["Carlos Rivera"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "completed",
+            },
+            {
+              id: "ses-075",
+              title: "Flutter Development",
+              presenters: ["Yuki Tanaka"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "completed",
+            },
+            {
+              id: "ses-076",
+              title: "Mobile CI/CD",
+              presenters: ["Marcus Brown"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "completed",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-008",
+      name: "Cybersecurity Conference 2024",
+      dateRange: formatDateRange(getRelativeDate(-93), getRelativeDate(-92)),
+      startDate: getRelativeDate(-93),
+      endDate: getRelativeDate(-92),
+      locationCount: 2,
+      sessionCount: 8,
+      description:
+        "Annual conference on cybersecurity, threat detection, and enterprise security",
+      publicSummaryUrl: "/public/cybersecurity-2024",
+      locations: [
+        {
+          id: "loc-020",
+          name: "Security Theater",
+          sessionCount: 5,
+          locationSessionId: "THEA-4440",
+          passcode: "131415",
+          sessions: [
+            {
+              id: "ses-077",
+              title: "Zero Trust Architecture",
+              presenters: ["Robert Fischer"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "completed",
+            },
+            {
+              id: "ses-078",
+              title: "Cloud Security Best Practices",
+              presenters: ["Mei Lin"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "completed",
+            },
+            {
+              id: "ses-079",
+              title: "Threat Intelligence",
+              presenters: ["Ahmed Ali"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "completed",
+            },
+            {
+              id: "ses-080",
+              title: "Incident Response",
+              presenters: ["Julia Martinez"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "completed",
+            },
+            {
+              id: "ses-081",
+              title: "Security Automation",
+              presenters: ["Kevin O'Neill"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-021",
+          name: "Penetration Testing Lab",
+          sessionCount: 3,
+          locationSessionId: "GATH-5500",
+          passcode: "161718",
+          sessions: [
+            {
+              id: "ses-082",
+              title: "Ethical Hacking Techniques",
+              presenters: ["Nathan Wright"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "completed",
+            },
+            {
+              id: "ses-083",
+              title: "Web Application Security",
+              presenters: ["Sophia Berg"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "completed",
+            },
+            {
+              id: "ses-084",
+              title: "Network Security",
+              presenters: ["Daniel Park"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "completed",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-009",
+      name: "Product Management Summit 2024",
+      dateRange: formatDateRange(getRelativeDate(-128), getRelativeDate(-127)),
+      startDate: getRelativeDate(-128),
+      endDate: getRelativeDate(-127),
+      locationCount: 2,
+      sessionCount: 7,
+      description:
+        "Summit for product managers on strategy, roadmapping, and product-led growth",
+      publicSummaryUrl: "/public/pm-summit-2024",
+      locations: [
+        {
+          id: "loc-022",
+          name: "Product Theater",
+          sessionCount: 4,
+          locationSessionId: "SPAC-6600",
+          passcode: "192021",
+          sessions: [
+            {
+              id: "ses-085",
+              title: "Product Strategy Frameworks",
+              presenters: ["Rachel Green"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "completed",
+            },
+            {
+              id: "ses-086",
+              title: "User Story Mapping",
+              presenters: ["Tom Anderson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "completed",
+            },
+            {
+              id: "ses-087",
+              title: "Product Analytics",
+              presenters: ["Emma Davis"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "completed",
+            },
+            {
+              id: "ses-088",
+              title: "Pricing Strategies",
+              presenters: ["Oliver Smith"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-023",
+          name: "Strategy Workshop",
+          sessionCount: 3,
+          locationSessionId: "LOBY-7700",
+          passcode: "222324",
+          sessions: [
+            {
+              id: "ses-089",
+              title: "OKRs for Product Teams",
+              presenters: ["Nina Patel"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "completed",
+            },
+            {
+              id: "ses-090",
+              title: "Roadmap Planning",
+              presenters: ["Lucas Chen"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "completed",
+            },
+            {
+              id: "ses-091",
+              title: "Stakeholder Management",
+              presenters: ["Isabella Romano"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "completed",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "evt-010",
+      name: "Frontend Development Conference",
+      dateRange: formatDateRange(getRelativeDate(-164), getRelativeDate(-163)),
+      startDate: getRelativeDate(-164),
+      endDate: getRelativeDate(-163),
+      locationCount: 3,
+      sessionCount: 11,
+      description:
+        "Conference dedicated to modern frontend development, frameworks, and tooling",
+      publicSummaryUrl: "/public/frontend-conf-2024",
+      locations: [
+        {
+          id: "loc-024",
+          name: "JavaScript Hall",
+          sessionCount: 5,
+          locationSessionId: "AREA-8800",
+          passcode: "252627",
+          sessions: [
+            {
+              id: "ses-092",
+              title: "React Server Components",
+              presenters: ["Alex Turner"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:00",
+              endTime: "10:30",
+              status: "completed",
+            },
+            {
+              id: "ses-093",
+              title: "Vue 3 Composition API",
+              presenters: ["Sophie Laurent"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:00",
+              endTime: "12:30",
+              status: "completed",
+            },
+            {
+              id: "ses-094",
+              title: "Svelte & SvelteKit",
+              presenters: ["Hassan Ibrahim"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "13:30",
+              endTime: "15:00",
+              status: "completed",
+            },
+            {
+              id: "ses-095",
+              title: "TypeScript Advanced Types",
+              presenters: ["Maria Santos"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "15:30",
+              endTime: "17:00",
+              status: "completed",
+            },
+            {
+              id: "ses-096",
+              title: "Build Tools & Vite",
+              presenters: ["Ryan Mitchell"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "17:30",
+              endTime: "18:30",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-025",
+          name: "CSS & Design Workshop",
+          sessionCount: 3,
+          locationSessionId: "ZOON-9900",
+          passcode: "282930",
+          sessions: [
+            {
+              id: "ses-097",
+              title: "Modern CSS Layouts",
+              presenters: ["Olivia Wang"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "10:00",
+              endTime: "11:30",
+              status: "completed",
+            },
+            {
+              id: "ses-098",
+              title: "Tailwind CSS Best Practices",
+              presenters: ["Jacob Miller"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "12:00",
+              endTime: "13:30",
+              status: "completed",
+            },
+            {
+              id: "ses-099",
+              title: "CSS Animation Performance",
+              presenters: ["Aisha Ndiaye"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "completed",
+            },
+          ],
+        },
+        {
+          id: "loc-026",
+          name: "Performance Lab",
+          sessionCount: 3,
+          locationSessionId: "WEBR-1100",
+          passcode: "313233",
+          sessions: [
+            {
+              id: "ses-100",
+              title: "Web Performance Metrics",
+              presenters: ["Tyler Jackson"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "09:30",
+              endTime: "11:00",
+              status: "completed",
+            },
+            {
+              id: "ses-101",
+              title: "Optimizing Core Web Vitals",
+              presenters: ["Grace Liu"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "11:30",
+              endTime: "13:00",
+              status: "completed",
+            },
+            {
+              id: "ses-102",
+              title: "Progressive Web Apps",
+              presenters: ["Carlos Mendez"],
+              scheduledDate: "2025-11-17",
+              scheduledStart: "14:00",
+              endTime: "15:30",
+              status: "completed",
+            },
+          ],
+        },
+      ],
+    },
+  ];
 
   const filteredEvents = useMemo(() => {
     if (statusFilter === "all") return mockEvents;
@@ -1443,13 +1459,21 @@ export default function EventsPage() {
   };
 
   const handleAddEvent = () => {
+    // Open choice modal first
+    setIsChoiceModalOpen(true);
+  };
+
+  const handleChooseSpreadsheet = () => {
+    // User chose spreadsheet upload flow
     setIsUploadModalOpen(true);
   };
 
-  const handleUpload = (
-    fileName: string,
-    timezone: string
-  ) => {
+  const handleChooseManual = () => {
+    // User chose manual creation flow
+    setIsManualWizardOpen(true);
+  };
+
+  const handleUpload = (fileName: string, timezone: string) => {
     setUploadedFileData({ fileName, timezone });
     setIsUploadModalOpen(false);
     setIsSettingsModalOpen(true);
@@ -1462,6 +1486,19 @@ export default function EventsPage() {
     setUploadedFileData(null);
   };
 
+  const handleManualEventComplete = async (data: {
+    eventDetails: EventDetailsFormData;
+    locations: LocationFormData[];
+    sessionsByLocation: Record<string, SessionFormData[]>;
+  }) => {
+    console.log("Manual event created:", data);
+    // In production, this would call the API to create the event
+    // For now, just close the wizard
+    setIsManualWizardOpen(false);
+    // Optionally navigate to the new event detail page
+    // router.push(`/events/${newEventId}`);
+  };
+
   const StatusBadge = ({ event }: { event: Event }) => {
     const status = getEventStatus(event.startDate, event.endDate);
     const timeString = getRelativeTimeString(event.startDate, event.endDate);
@@ -1469,12 +1506,15 @@ export default function EventsPage() {
     const statusStyles = {
       active:
         "bg-accent-green-50 text-accent-green-700 border-accent-green-200",
-      upcoming: "bg-primary-teal-50 text-primary-teal-700 border-primary-teal-200",
+      upcoming:
+        "bg-primary-teal-50 text-primary-teal-700 border-primary-teal-200",
       past: "bg-gray-100 text-gray-600 border-gray-300",
     };
 
     return (
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${statusStyles[status]}`}>
+      <div
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${statusStyles[status]}`}
+      >
         {status === "active" && (
           <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
         )}
@@ -1487,17 +1527,16 @@ export default function EventsPage() {
     const eventStatus = getEventStatus(event.startDate, event.endDate);
 
     return (
-      <Card 
+      <Card
         className="overflow-hidden hover:border-primary-teal-300 hover:shadow-lg transition-all cursor-pointer shadow-sm border-2"
         onClick={() => router.push(`/events/${event.id}`)}
       >
         <div className="p-6">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold text-gray-900">{event.name}</h2>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
-              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
+                {event.name}
+              </h2>
               <StatusBadge event={event} />
             </div>
           </div>
@@ -1506,31 +1545,13 @@ export default function EventsPage() {
             <Calendar className="h-4 w-4 text-primary-teal-600" />
             <span className="text-gray-700 font-medium">{event.dateRange}</span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{event.stageCount} stages</span>
+            <span className="text-gray-600">
+              {event.locationCount} locations
+            </span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">{event.sessionCount} presentations</span>
-          </div>
-
-          <div className="flex items-start gap-2 mb-3">
-            <MapPin className="h-4 w-4 text-primary-teal-600 mt-1 flex-shrink-0" />
-            <div className="flex flex-wrap gap-2">
-              {event.stages.slice(0, 3).map((stage) => (
-                <span
-                  key={stage.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-gray-200 rounded-md text-sm"
-                >
-                  <span className="text-gray-700 font-medium">{stage.name}</span>
-                  <span className="text-gray-500 text-xs font-medium">
-                    ({stage.sessions.length})
-                  </span>
-                </span>
-              ))}
-              {event.stages.length > 3 && (
-                <span className="inline-flex items-center px-2.5 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600">
-                  +{event.stages.length - 3} more
-                </span>
-              )}
-            </div>
+            <span className="text-gray-600">
+              {event.sessionCount} presentations
+            </span>
           </div>
 
           <p className="text-sm text-gray-700 mb-3">{event.description}</p>
@@ -1559,7 +1580,7 @@ export default function EventsPage() {
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Manage and organize your events, stages, and presentations
+                Manage and organize your events, locations, and presentations
               </p>
             </div>
             <Button
@@ -1572,7 +1593,10 @@ export default function EventsPage() {
           </div>
 
           {/* Tab navigation */}
-          <Tabs value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+          <Tabs
+            value={statusFilter}
+            onValueChange={(value: any) => setStatusFilter(value)}
+          >
             <TabsList>
               <TabsTrigger value="active">Active</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
@@ -1655,6 +1679,15 @@ export default function EventsPage() {
         )}
       </div>
 
+      {/* Event Creation Choice Modal */}
+      <EventCreationChoiceModal
+        open={isChoiceModalOpen}
+        onOpenChange={setIsChoiceModalOpen}
+        onChooseSpreadsheet={handleChooseSpreadsheet}
+        onChooseManual={handleChooseManual}
+      />
+
+      {/* Spreadsheet Upload Flow */}
       <UploadScheduleModal
         open={isUploadModalOpen}
         onOpenChange={setIsUploadModalOpen}
@@ -1677,6 +1710,13 @@ export default function EventsPage() {
           }}
         />
       )}
+
+      {/* Manual Event Creation Wizard */}
+      <ManualEventWizard
+        open={isManualWizardOpen}
+        onOpenChange={setIsManualWizardOpen}
+        onComplete={handleManualEventComplete}
+      />
     </div>
   );
 }
