@@ -45,11 +45,11 @@ Guidelines:
 - Help users find relevant sessions based on their interests
 - Provide practical information about the event schedule and speakers`;
 
-  const result = streamText({
+  const result = await streamText({
     model: openai("gpt-4o-mini"),
     system: systemPrompt,
     messages,
   });
 
-  return result.toDataStreamResponse();
+  return result.toTextStreamResponse();
 }
