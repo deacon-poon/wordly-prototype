@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${roboto.variable}`}>
-      <body className={`font-sans antialiased h-screen overflow-hidden`}>
+      <body className={`font-sans antialiased`}>
         <Providers>
           <AppShellProvider>{children}</AppShellProvider>
         </Providers>

@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Plus,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -524,83 +525,32 @@ export default function EventDetailPage({
     <div className="h-full overflow-y-auto bg-white">
       {/* Page header */}
       <div className="border-b">
-        <div className="px-6 py-6">
-          {/* Row 1: Back button, Title, and Add Location button */}
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <div className="flex items-start gap-4">
-              <button
-                onClick={() => router.push("/events")}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors mt-0.5"
-              >
-                <ChevronLeft className="h-5 w-5 text-gray-600" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  {event.name}
-                </h1>
-                <p className="text-sm text-gray-600 mt-1 max-w-2xl">
-                  {event.description}
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() => setIsAddLocationModalOpen(true)}
-              variant="outline"
-              size="sm"
-              disabled={isPastEvent}
-              className="border-primary-teal-600 text-primary-teal-600 hover:bg-primary-teal-50 flex-shrink-0"
-              title={
-                isPastEvent
-                  ? "Cannot add locations to past events"
-                  : "Add a new location"
-              }
+        <div className="px-6 py-5">
+          {/* Row 1: Back + Title */}
+          <div className="flex items-center gap-3 mb-1">
+            <button
+              onClick={() => router.push("/events")}
+              className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
             >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Location
-            </Button>
+              <ChevronLeft className="h-5 w-5 text-gray-500" />
+            </button>
+            <h1 className="text-xl font-semibold text-gray-900">
+              {event.name}
+            </h1>
           </div>
 
-          {/* Row 2: Metadata (left) and Action Links (right) */}
-          <div className="flex items-center justify-between mb-4 ml-12">
-            {/* Left: Date and counts */}
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-primary-teal-600" />
-              <span className="text-gray-700 font-medium">
-                {event.dateRange}
-              </span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600">
-                {event.locationCount} locations
-              </span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600">
-                {event.sessionCount} presentations
-              </span>
-            </div>
-
-            {/* Right: Action links */}
-            <div className="flex items-center gap-4">
-              {event.publicSummaryUrl && (
-                <a
-                  href={event.publicSummaryUrl}
-                  className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Public Summaries</span>
-                </a>
-              )}
-              <button
-                onClick={handleDownloadForAV}
-                className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
-              >
-                <Download className="h-4 w-4" />
-                <span>Download for AV</span>
-              </button>
-            </div>
+          {/* Row 2: Metadata */}
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4 ml-10">
+            <Calendar className="h-4 w-4 text-gray-400" />
+            <span>{event.dateRange}</span>
+            <span className="text-gray-300">·</span>
+            <span>{event.locationCount} locations</span>
+            <span className="text-gray-300">·</span>
+            <span>{event.sessionCount} presentations</span>
           </div>
 
-          {/* Row 3: Tab navigation */}
-          <div className="ml-12">
+          {/* Row 3: Tabs (left) + Actions (right) */}
+          <div className="flex items-center justify-between ml-10">
             <Tabs
               value={selectedTab}
               onValueChange={(value: any) => setSelectedTab(value)}
@@ -612,6 +562,48 @@ export default function EventDetailPage({
                 <TabsTrigger value="all">All</TabsTrigger>
               </TabsList>
             </Tabs>
+
+            {/* Actions grouped together */}
+            <div className="flex items-center gap-2">
+              {event.publicSummaryUrl && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <a
+                    href={event.publicSummaryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-1.5" />
+                    Public Summaries Page
+                  </a>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDownloadForAV}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <Download className="h-4 w-4 mr-1.5" />
+                Download for AV
+              </Button>
+              <Button
+                onClick={() => setIsAddLocationModalOpen(true)}
+                size="sm"
+                disabled={isPastEvent}
+                className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+                title={
+                  isPastEvent ? "Cannot add to past events" : "Add Location"
+                }
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Location
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -662,34 +654,41 @@ export default function EventDetailPage({
                 {/* Date Header - Collapsible Accordion */}
                 <button
                   onClick={() => toggleDateExpansion(date)}
-                  className="w-full p-6 text-left"
+                  className="w-full px-4 py-4 flex items-center text-left"
                 >
-                  <div className="flex items-center gap-3">
+                  {/* Left: Icon column (fixed width for alignment) */}
+                  <div className="w-8 flex-shrink-0 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-primary-teal-600" />
+                  </div>
+
+                  {/* Center: Date info (grows) */}
+                  <div className="flex-1 flex items-center gap-3 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      {formatSessionDate(date)}
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      ({sessionsForDate.length}{" "}
+                      {sessionsForDate.length === 1
+                        ? "presentation"
+                        : "presentations"}
+                      , {locationsList.length}{" "}
+                      {locationsList.length === 1 ? "location" : "locations"})
+                    </span>
+                  </div>
+
+                  {/* Right: Chevron column (fixed width for alignment) */}
+                  <div className="w-10 flex-shrink-0 flex items-center justify-center">
                     <ChevronDown
-                      className={`h-5 w-5 text-primary-teal-600 transition-transform duration-200 flex-shrink-0 ${
-                        isDateExpanded ? "rotate-0" : "-rotate-90"
+                      className={`h-5 w-5 text-primary-teal-600 transition-transform duration-200 ${
+                        isDateExpanded ? "rotate-180" : ""
                       }`}
                     />
-                    <Calendar className="h-5 w-5 text-primary-teal-600" />
-                    <div className="text-left">
-                      <h3 className="font-semibold text-gray-900 text-lg">
-                        {formatSessionDate(date)}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {sessionsForDate.length}{" "}
-                        {sessionsForDate.length === 1
-                          ? "presentation"
-                          : "presentations"}{" "}
-                        across {locationsList.length}{" "}
-                        {locationsList.length === 1 ? "location" : "locations"}
-                      </p>
-                    </div>
                   </div>
                 </button>
 
                 {/* Locations for this date */}
                 {isDateExpanded && (
-                  <div className="px-6 pb-6 pt-2 space-y-3">
+                  <div className="px-4 pb-4 pt-2 space-y-3">
                     {locationsList.map(({ location, sessions }) => {
                       // Create a modified location object with only sessions for this date
                       const locationWithDateSessions = {

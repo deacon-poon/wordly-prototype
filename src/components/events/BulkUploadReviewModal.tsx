@@ -25,11 +25,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   X,
   Check,
@@ -38,7 +38,6 @@ import {
   Trash2,
   Filter,
   Search,
-  MoreVertical,
   CheckCircle2,
   XCircle,
 } from "lucide-react";
@@ -51,19 +50,19 @@ import { TIMEZONES, LANGUAGES } from "./forms/types";
 export interface UploadedSession {
   id: string;
   rowNumber: number;
+  location: string; // Required - groups sessions by location
   title: string;
   presenter: string;
   date: string;
-  time: string;
-  endTime?: string;
+  startTime: string; // Renamed from 'time' for clarity
+  endTime: string; // Required per spec
   timezone: string;
-  duration: number; // in minutes
+  duration: number; // in minutes (calculated from start/end)
   glossary: string;
   account: string;
   voicePack: string;
   language: string;
   label?: string;
-  location?: string; // For events flow
   // Validation state
   isValid: boolean;
   errors: SessionValidationError[];
@@ -101,6 +100,41 @@ const VOICE_PACKS = [
 ];
 
 // ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Parse time string to minutes since midnight for comparison
+ */
+function parseTimeToMinutes(timeStr: string): number {
+  // Handle formats like "09:00", "9:00 AM", "14:30", "2:30 PM"
+  const cleanTime = timeStr.trim().toUpperCase();
+
+  // Check for AM/PM format
+  const isPM = cleanTime.includes("PM");
+  const isAM = cleanTime.includes("AM");
+  const timeOnly = cleanTime.replace(/\s*(AM|PM)\s*/i, "").trim();
+
+  const [hoursStr, minsStr] = timeOnly.split(":");
+  let hours = parseInt(hoursStr, 10);
+  const mins = parseInt(minsStr || "0", 10);
+
+  if (isPM && hours !== 12) hours += 12;
+  if (isAM && hours === 12) hours = 0;
+
+  return hours * 60 + mins;
+}
+
+/**
+ * Calculate duration in minutes between two time strings
+ */
+function calculateDuration(startTime: string, endTime: string): number {
+  const startMins = parseTimeToMinutes(startTime);
+  const endMins = parseTimeToMinutes(endTime);
+  return endMins - startMins;
+}
+
+// ============================================================================
 // Validation Logic
 // ============================================================================
 
@@ -111,6 +145,14 @@ function validateSession(
   const errors: SessionValidationError[] = [];
 
   // Check for empty required fields
+  if (!session.location?.trim()) {
+    errors.push({
+      field: "location",
+      message: "Location is required",
+      type: "error",
+    });
+  }
+
   if (!session.title.trim()) {
     errors.push({
       field: "title",
@@ -135,55 +177,111 @@ function validateSession(
     });
   }
 
-  if (!session.time) {
+  if (!session.startTime) {
     errors.push({
-      field: "time",
+      field: "startTime",
       message: "Start time is required",
       type: "error",
     });
   }
 
-  // Check for time conflicts with other sessions on the same date
-  const conflictingSessions = allSessions.filter(
+  if (!session.endTime) {
+    errors.push({
+      field: "endTime",
+      message: "End time is required",
+      type: "error",
+    });
+  }
+
+  // Validate end time is after start time
+  if (session.startTime && session.endTime) {
+    const startMins = parseTimeToMinutes(session.startTime);
+    const endMins = parseTimeToMinutes(session.endTime);
+
+    if (endMins <= startMins) {
+      errors.push({
+        field: "endTime",
+        message: "End time must be after start time",
+        type: "error",
+      });
+    }
+  }
+
+  // Get sessions in the SAME LOCATION on the same date for conflict checking
+  const sameLocationSessions = allSessions.filter(
     (other) =>
       other.id !== session.id &&
-      other.date === session.date &&
-      other.time === session.time
+      other.location === session.location &&
+      other.date === session.date
+  );
+
+  // Check for exact time conflicts within same location
+  const conflictingSessions = sameLocationSessions.filter(
+    (other) => other.startTime === session.startTime
   );
 
   if (conflictingSessions.length > 0) {
     errors.push({
-      field: "time",
-      message: `Time conflict with session(s): ${conflictingSessions
+      field: "startTime",
+      message: `Time conflict with: ${conflictingSessions
         .map((s) => s.title || `Row ${s.rowNumber}`)
         .join(", ")}`,
       type: "error",
     });
   }
 
-  // Check for overlapping sessions (if end time exists)
-  if (session.endTime) {
-    const overlapping = allSessions.filter((other) => {
-      if (other.id === session.id || other.date !== session.date) return false;
-      // Simple overlap check
-      const sessionStart = session.time;
-      const sessionEnd = session.endTime!;
-      const otherStart = other.time;
-      const otherEnd = other.endTime || other.time;
+  // Check for overlapping sessions within same location
+  if (session.startTime && session.endTime) {
+    const sessionStart = parseTimeToMinutes(session.startTime);
+    const sessionEnd = parseTimeToMinutes(session.endTime);
 
-      return (
-        (sessionStart >= otherStart && sessionStart < otherEnd) ||
-        (sessionEnd > otherStart && sessionEnd <= otherEnd) ||
-        (sessionStart <= otherStart && sessionEnd >= otherEnd)
-      );
+    const overlapping = sameLocationSessions.filter((other) => {
+      if (!other.startTime || !other.endTime) return false;
+
+      const otherStart = parseTimeToMinutes(other.startTime);
+      const otherEnd = parseTimeToMinutes(other.endTime);
+
+      // Check if ranges overlap
+      return sessionStart < otherEnd && sessionEnd > otherStart;
     });
 
     if (overlapping.length > 0) {
       errors.push({
-        field: "time",
-        message: "Session time overlaps with another session",
-        type: "warning",
+        field: "startTime",
+        message: `Overlaps with: ${overlapping
+          .map((s) => s.title || `Row ${s.rowNumber}`)
+          .join(", ")}`,
+        type: "error",
       });
+    }
+
+    // Check for large gaps between sessions (warning only)
+    // Find the next session in the same location
+    const sortedLocationSessions = [...sameLocationSessions, session]
+      .filter((s) => s.startTime && s.endTime)
+      .sort(
+        (a, b) =>
+          parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime)
+      );
+
+    const sessionIndex = sortedLocationSessions.findIndex(
+      (s) => s.id === session.id
+    );
+    if (sessionIndex > 0) {
+      const prevSession = sortedLocationSessions[sessionIndex - 1];
+      const prevEnd = parseTimeToMinutes(prevSession.endTime);
+      const gap = sessionStart - prevEnd;
+
+      if (gap > 120) {
+        // More than 2 hours gap
+        errors.push({
+          field: "startTime",
+          message: `Large gap (${Math.round(gap / 60)}h ${
+            gap % 60
+          }m) from previous session`,
+          type: "warning",
+        });
+      }
     }
   }
 
@@ -204,16 +302,35 @@ function validateSession(
     });
   }
 
+  // Warning for sessions outside typical hours (before 6am or after 10pm)
+  if (session.startTime) {
+    const startMins = parseTimeToMinutes(session.startTime);
+    if (startMins < 360 || startMins > 1320) {
+      // 6:00 AM = 360, 10:00 PM = 1320
+      errors.push({
+        field: "startTime",
+        message: "Session scheduled outside typical hours (6am-10pm)",
+        type: "warning",
+      });
+    }
+  }
+
   return errors;
 }
 
-function validateAllSessions(
-  sessions: UploadedSession[]
-): UploadedSession[] {
+function validateAllSessions(sessions: UploadedSession[]): UploadedSession[] {
   return sessions.map((session) => {
-    const errors = validateSession(session, sessions);
+    // Recalculate duration from start/end times
+    let duration = session.duration;
+    if (session.startTime && session.endTime) {
+      const calculated = calculateDuration(session.startTime, session.endTime);
+      if (calculated > 0) duration = calculated;
+    }
+
+    const updatedSession = { ...session, duration };
+    const errors = validateSession(updatedSession, sessions);
     return {
-      ...session,
+      ...updatedSession,
       errors,
       isValid: errors.filter((e) => e.type === "error").length === 0,
     };
@@ -226,21 +343,99 @@ function validateAllSessions(
 
 function generateMockUploadData(): UploadedSession[] {
   const baseDate = "2025-12-18";
-  const times = [
-    "1:00 PM", "2:00 PM", "1:00 PM", "3:00 PM", "1:00 PM", 
-    "4:00 PM", "1:00 PM", "5:00 PM", "1:00 PM", "6:00 PM",
-    "1:00 PM", "7:00 PM", "1:00 PM", "8:00 PM", "1:00 PM"
+
+  // Create sessions with locations - some conflicts within same location
+  const mockData = [
+    // Main Auditorium - has time conflicts at 1:00 PM
+    {
+      location: "Main Auditorium",
+      startTime: "09:00",
+      endTime: "10:00",
+      title: "Opening Keynote",
+    },
+    {
+      location: "Main Auditorium",
+      startTime: "10:30",
+      endTime: "11:30",
+      title: "Product Roadmap",
+    },
+    {
+      location: "Main Auditorium",
+      startTime: "13:00",
+      endTime: "14:00",
+      title: "Customer Success Stories",
+    },
+    {
+      location: "Main Auditorium",
+      startTime: "13:00",
+      endTime: "14:30",
+      title: "Conflicting Session",
+    }, // CONFLICT
+    {
+      location: "Main Auditorium",
+      startTime: "15:00",
+      endTime: "16:00",
+      title: "Closing Remarks",
+    },
+    // Breakout Room A - valid sessions
+    {
+      location: "Breakout Room A",
+      startTime: "09:00",
+      endTime: "10:30",
+      title: "Technical Workshop",
+    },
+    {
+      location: "Breakout Room A",
+      startTime: "11:00",
+      endTime: "12:00",
+      title: "Hands-on Lab",
+    },
+    {
+      location: "Breakout Room A",
+      startTime: "14:00",
+      endTime: "15:30",
+      title: "Advanced Topics",
+    },
+    // Breakout Room B - has an overlap
+    {
+      location: "Breakout Room B",
+      startTime: "09:30",
+      endTime: "11:00",
+      title: "Design Thinking",
+    },
+    {
+      location: "Breakout Room B",
+      startTime: "10:30",
+      endTime: "12:00",
+      title: "Overlapping Workshop",
+    }, // OVERLAP
+    {
+      location: "Breakout Room B",
+      startTime: "13:00",
+      endTime: "14:00",
+      title: "UX Best Practices",
+    },
+    // Next day session
+    {
+      location: "Main Auditorium",
+      startTime: "09:00",
+      endTime: "10:00",
+      title: "Day 2 Opening",
+      date: "2025-12-19",
+    },
   ];
 
-  const sessions: UploadedSession[] = times.map((time, index) => ({
+  const sessions: UploadedSession[] = mockData.map((item, index) => ({
     id: `session-${index + 1}`,
     rowNumber: index + 1,
-    title: `Example Session Title ${index + 1}`,
+    location: item.location,
+    title: item.title,
     presenter: "John Doe",
-    date: index === 14 ? "2025-12-19" : baseDate,
-    time,
+    date: item.date || baseDate,
+    startTime: item.startTime,
+    endTime: item.endTime,
     timezone: "America/Los_Angeles",
-    duration: 45 + index,
+    duration: calculateDuration(item.startTime, item.endTime),
     glossary: "none",
     account: "1",
     voicePack: "feminine",
@@ -282,7 +477,8 @@ export function BulkUploadReviewModal({
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filtered sessions
+  // Filtered and sorted sessions
+  // Invalid sessions are surfaced at the top, valid at the bottom (per existing portal UX)
   const filteredSessions = useMemo(() => {
     let filtered = sessions;
 
@@ -293,15 +489,25 @@ export function BulkUploadReviewModal({
       filtered = filtered.filter((s) => !s.isValid);
     }
 
-    // Filter by search query
+    // Filter by search query (includes location)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (s) =>
           s.title.toLowerCase().includes(query) ||
-          s.presenter.toLowerCase().includes(query)
+          s.presenter.toLowerCase().includes(query) ||
+          s.location.toLowerCase().includes(query)
       );
     }
+
+    // Sort: invalid sessions first, then valid sessions
+    // Within each group, maintain original row order
+    filtered = [...filtered].sort((a, b) => {
+      if (a.isValid === b.isValid) {
+        return a.rowNumber - b.rowNumber; // Maintain row order within group
+      }
+      return a.isValid ? 1 : -1; // Invalid first (false < true)
+    });
 
     return filtered;
   }, [sessions, statusFilter, searchQuery]);
@@ -342,13 +548,22 @@ export function BulkUploadReviewModal({
     return session.errors.some((e) => e.field === field && e.type === "error");
   };
 
-  // Get field error message
-  const getFieldError = (
+  // Check if field has warning
+  const hasFieldWarning = (
     session: UploadedSession,
     field: string
-  ): string | undefined => {
-    const error = session.errors.find((e) => e.field === field);
-    return error?.message;
+  ): boolean => {
+    return session.errors.some(
+      (e) => e.field === field && e.type === "warning"
+    );
+  };
+
+  // Get all field errors/warnings
+  const getFieldErrors = (
+    session: UploadedSession,
+    field: string
+  ): SessionValidationError[] => {
+    return session.errors.filter((e) => e.field === field);
   };
 
   // Handle submit
@@ -367,6 +582,57 @@ export function BulkUploadReviewModal({
     }
   };
 
+  // Render cell with error/warning tooltip
+  const renderCellWithTooltip = (
+    session: UploadedSession,
+    field: string,
+    content: React.ReactNode
+  ) => {
+    const fieldErrors = getFieldErrors(session, field);
+    const hasError = fieldErrors.some((e) => e.type === "error");
+    const hasWarning = fieldErrors.some((e) => e.type === "warning");
+
+    if (fieldErrors.length === 0) {
+      return content;
+    }
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded cursor-help ${
+              hasError
+                ? "bg-red-100 text-red-800 border border-red-300"
+                : hasWarning
+                ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
+                : ""
+            }`}
+          >
+            {content}
+            {hasError && <AlertCircle className="h-3 w-3 text-red-600" />}
+            {!hasError && hasWarning && (
+              <AlertCircle className="h-3 w-3 text-yellow-600" />
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs">
+          <div className="space-y-1">
+            {fieldErrors.map((err, i) => (
+              <div
+                key={i}
+                className={`text-xs ${
+                  err.type === "error" ? "text-red-600" : "text-yellow-600"
+                }`}
+              >
+                {err.type === "error" ? "⛔" : "⚠️"} {err.message}
+              </div>
+            ))}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
   // Render editable cell
   const renderEditableCell = (
     session: UploadedSession,
@@ -377,65 +643,60 @@ export function BulkUploadReviewModal({
     const isEditing = editingRowId === session.id;
     const value = session[field] as string;
     const hasError = hasFieldError(session, field);
+    const hasWarning = hasFieldWarning(session, field);
 
     if (!isEditing) {
-      return (
-        <span
-          className={`${
-            hasError
-              ? "bg-red-100 text-red-800 px-2 py-1 rounded border border-red-300"
-              : ""
-          }`}
-          title={hasError ? getFieldError(session, field) : undefined}
-        >
-          {type === "select"
-            ? options?.find((o) => o.id === value)?.name || value
-            : value}
-        </span>
-      );
+      const displayValue =
+        type === "select"
+          ? options?.find((o) => o.id === value)?.name || value
+          : value || "—";
+
+      return renderCellWithTooltip(session, field, displayValue);
     }
 
     // Editing mode
+    const inputClassName = `h-8 ${
+      hasError
+        ? "border-red-500 focus:ring-red-500"
+        : hasWarning
+        ? "border-yellow-500 focus:ring-yellow-500"
+        : ""
+    }`;
+
     switch (type) {
       case "text":
         return (
           <Input
-            value={value}
+            value={value || ""}
             onChange={(e) => updateSession(session.id, field, e.target.value)}
-            className={`h-8 ${hasError ? "border-red-500" : ""}`}
+            className={inputClassName}
           />
         );
       case "date":
         return (
-          <div className="flex items-center gap-1">
-            <Input
-              type="date"
-              value={value}
-              onChange={(e) => updateSession(session.id, field, e.target.value)}
-              className={`h-8 w-32 ${hasError ? "border-red-500" : ""}`}
-            />
-          </div>
+          <Input
+            type="date"
+            value={value || ""}
+            onChange={(e) => updateSession(session.id, field, e.target.value)}
+            className={`${inputClassName} w-32`}
+          />
         );
       case "time":
         return (
-          <div className="flex items-center gap-1">
-            <Input
-              type="time"
-              value={value}
-              onChange={(e) => updateSession(session.id, field, e.target.value)}
-              className={`h-8 w-24 ${hasError ? "border-red-500" : ""}`}
-            />
-          </div>
+          <Input
+            type="time"
+            value={value || ""}
+            onChange={(e) => updateSession(session.id, field, e.target.value)}
+            className={`${inputClassName} w-24`}
+          />
         );
       case "select":
         return (
           <Select
-            value={value}
+            value={value || ""}
             onValueChange={(v) => updateSession(session.id, field, v)}
           >
-            <SelectTrigger
-              className={`h-8 w-32 ${hasError ? "border-red-500" : ""}`}
-            >
+            <SelectTrigger className={`${inputClassName} w-32`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -471,7 +732,11 @@ export function BulkUploadReviewModal({
                   {invalidCount} invalid
                 </span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -491,9 +756,7 @@ export function BulkUploadReviewModal({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    <span className="flex items-center gap-2">
-                      Show all
-                    </span>
+                    <span className="flex items-center gap-2">Show all</span>
                   </SelectItem>
                   <SelectItem value="valid">
                     <span className="flex items-center gap-2">
@@ -526,166 +789,204 @@ export function BulkUploadReviewModal({
 
         {/* Table */}
         <div className="flex-1 overflow-auto">
-          <Table>
-            <TableHeader className="sticky top-0 bg-white z-10">
-              <TableRow className="bg-gray-50">
-                <TableHead className="w-12 text-center">#</TableHead>
-                <TableHead className="w-16 text-center">Status</TableHead>
-                <TableHead className="w-20">Actions</TableHead>
-                <TableHead className="min-w-[200px]">Title</TableHead>
-                <TableHead className="min-w-[150px]">Presenter</TableHead>
-                <TableHead className="w-32">Date</TableHead>
-                <TableHead className="w-28">Time</TableHead>
-                <TableHead className="w-40">Timezone</TableHead>
-                <TableHead className="w-24">Duration</TableHead>
-                <TableHead className="w-32">Glossary</TableHead>
-                <TableHead className="w-40">Account</TableHead>
-                <TableHead className="w-36">Voice Pack</TableHead>
-                <TableHead className="w-32">Language</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSessions.map((session) => {
-                const isEditing = editingRowId === session.id;
+          <TooltipProvider delayDuration={200}>
+            <Table>
+              <TableHeader className="sticky top-0 bg-white z-10">
+                <TableRow className="bg-gray-50">
+                  <TableHead className="w-12 text-center">#</TableHead>
+                  <TableHead className="w-16 text-center">Status</TableHead>
+                  <TableHead className="w-20">Actions</TableHead>
+                  <TableHead className="min-w-[140px]">Location</TableHead>
+                  <TableHead className="min-w-[180px]">Title</TableHead>
+                  <TableHead className="min-w-[130px]">Presenter</TableHead>
+                  <TableHead className="w-32">Date</TableHead>
+                  <TableHead className="w-28">Start Time</TableHead>
+                  <TableHead className="w-28">End Time</TableHead>
+                  <TableHead className="w-40">Timezone</TableHead>
+                  <TableHead className="w-24">Duration</TableHead>
+                  <TableHead className="w-32">Glossary</TableHead>
+                  <TableHead className="w-40">Account</TableHead>
+                  <TableHead className="w-36">Voice Pack</TableHead>
+                  <TableHead className="w-32">Language</TableHead>
+                  <TableHead className="w-28">Label</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSessions.map((session) => {
+                  const isEditing = editingRowId === session.id;
 
-                return (
-                  <TableRow
-                    key={session.id}
-                    className={`${
-                      !session.isValid ? "bg-red-50" : ""
-                    } ${isEditing ? "bg-blue-50" : ""}`}
-                  >
-                    {/* Row number */}
-                    <TableCell className="text-center text-gray-500">
-                      {session.rowNumber}
-                    </TableCell>
+                  return (
+                    <TableRow
+                      key={session.id}
+                      className={`${!session.isValid ? "bg-red-50" : ""} ${
+                        isEditing ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      {/* Row number */}
+                      <TableCell className="text-center text-gray-500">
+                        {session.rowNumber}
+                      </TableCell>
 
-                    {/* Status */}
-                    <TableCell className="text-center">
-                      {session.isValid ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600 mx-auto" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-600 mx-auto" />
-                      )}
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        {isEditing ? (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-green-600"
-                              onClick={() => setEditingRowId(null)}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-red-600"
-                              onClick={() => setEditingRowId(null)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </>
+                      {/* Status */}
+                      <TableCell className="text-center">
+                        {session.isValid ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600 mx-auto" />
                         ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-primary-teal-600"
-                              onClick={() => setEditingRowId(session.id)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-red-600"
-                              onClick={() => deleteSession(session.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
+                          <XCircle className="h-5 w-5 text-red-600 mx-auto" />
                         )}
-                      </div>
-                    </TableCell>
+                      </TableCell>
 
-                    {/* Title */}
-                    <TableCell>
-                      {renderEditableCell(session, "title", "text")}
-                    </TableCell>
+                      {/* Actions */}
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {isEditing ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-green-600"
+                                onClick={() => setEditingRowId(null)}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-red-600"
+                                onClick={() => setEditingRowId(null)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-primary-teal-600"
+                                onClick={() => setEditingRowId(session.id)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-red-600"
+                                onClick={() => deleteSession(session.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
 
-                    {/* Presenter */}
-                    <TableCell>
-                      {renderEditableCell(session, "presenter", "text")}
-                    </TableCell>
+                      {/* Location */}
+                      <TableCell>
+                        {renderEditableCell(session, "location", "text")}
+                      </TableCell>
 
-                    {/* Date */}
-                    <TableCell>
-                      {renderEditableCell(session, "date", "date")}
-                    </TableCell>
+                      {/* Title */}
+                      <TableCell>
+                        {renderEditableCell(session, "title", "text")}
+                      </TableCell>
 
-                    {/* Time */}
-                    <TableCell>
-                      {renderEditableCell(session, "time", "time")}
-                    </TableCell>
+                      {/* Presenter */}
+                      <TableCell>
+                        {renderEditableCell(session, "presenter", "text")}
+                      </TableCell>
 
-                    {/* Timezone */}
-                    <TableCell>
-                      {renderEditableCell(
-                        session,
-                        "timezone",
-                        "select",
-                        TIMEZONES.map((tz) => ({ id: tz.value, name: tz.label }))
-                      )}
-                    </TableCell>
+                      {/* Date */}
+                      <TableCell>
+                        {renderEditableCell(session, "date", "date")}
+                      </TableCell>
 
-                    {/* Duration */}
-                    <TableCell>
-                      <span
-                        className={`${
-                          hasFieldError(session, "duration")
-                            ? "text-red-600"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        {session.duration} mins
-                      </span>
-                    </TableCell>
+                      {/* Start Time */}
+                      <TableCell>
+                        {renderEditableCell(session, "startTime", "time")}
+                      </TableCell>
 
-                    {/* Glossary */}
-                    <TableCell>
-                      {renderEditableCell(session, "glossary", "select", GLOSSARIES)}
-                    </TableCell>
+                      {/* End Time */}
+                      <TableCell>
+                        {renderEditableCell(session, "endTime", "time")}
+                      </TableCell>
 
-                    {/* Account */}
-                    <TableCell>
-                      {renderEditableCell(session, "account", "select", ACCOUNTS)}
-                    </TableCell>
+                      {/* Timezone */}
+                      <TableCell>
+                        {renderEditableCell(
+                          session,
+                          "timezone",
+                          "select",
+                          TIMEZONES.map((tz) => ({
+                            id: tz.value,
+                            name: tz.label,
+                          }))
+                        )}
+                      </TableCell>
 
-                    {/* Voice Pack */}
-                    <TableCell>
-                      {renderEditableCell(session, "voicePack", "select", VOICE_PACKS)}
-                    </TableCell>
+                      {/* Duration (read-only, calculated) */}
+                      <TableCell>
+                        {renderCellWithTooltip(
+                          session,
+                          "duration",
+                          <span className="text-gray-600">
+                            {session.duration > 0
+                              ? `${session.duration} mins`
+                              : "—"}
+                          </span>
+                        )}
+                      </TableCell>
 
-                    {/* Language */}
-                    <TableCell>
-                      {renderEditableCell(
-                        session,
-                        "language",
-                        "select",
-                        LANGUAGES.map((l) => ({ id: l.code, name: l.name }))
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      {/* Glossary */}
+                      <TableCell>
+                        {renderEditableCell(
+                          session,
+                          "glossary",
+                          "select",
+                          GLOSSARIES
+                        )}
+                      </TableCell>
+
+                      {/* Account */}
+                      <TableCell>
+                        {renderEditableCell(
+                          session,
+                          "account",
+                          "select",
+                          ACCOUNTS
+                        )}
+                      </TableCell>
+
+                      {/* Voice Pack */}
+                      <TableCell>
+                        {renderEditableCell(
+                          session,
+                          "voicePack",
+                          "select",
+                          VOICE_PACKS
+                        )}
+                      </TableCell>
+
+                      {/* Language */}
+                      <TableCell>
+                        {renderEditableCell(
+                          session,
+                          "language",
+                          "select",
+                          LANGUAGES.map((l) => ({ id: l.code, name: l.name }))
+                        )}
+                      </TableCell>
+
+                      {/* Label (optional) */}
+                      <TableCell>
+                        {renderEditableCell(session, "label", "text")}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TooltipProvider>
         </div>
 
         {/* Footer */}

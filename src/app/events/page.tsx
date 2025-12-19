@@ -124,7 +124,9 @@ export default function EventsPage() {
     fileName: string;
     timezone: string;
   } | null>(null);
-  const [reviewedSessions, setReviewedSessions] = useState<UploadedSession[] | null>(null);
+  const [reviewedSessions, setReviewedSessions] = useState<
+    UploadedSession[] | null
+  >(null);
 
   // Mock data
   const mockEvents: Event[] = [
@@ -1577,6 +1579,8 @@ export default function EventsPage() {
           {event.publicSummaryUrl && (
             <a
               href={event.publicSummaryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
             >

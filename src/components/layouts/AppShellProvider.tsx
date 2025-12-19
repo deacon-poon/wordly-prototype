@@ -41,11 +41,12 @@ export function AppShellProvider({ children }: AppShellProviderProps) {
     content: null,
   });
 
-  // Determine if we should show AppShell (skip for auth pages)
+  // Determine if we should show AppShell (skip for auth pages and public pages)
   const shouldShowAppShell =
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/login") &&
-    !pathname.startsWith("/signup");
+    !pathname.startsWith("/signup") &&
+    !pathname.startsWith("/public");
 
   // Get page title based on pathname
   const getPageTitle = () => {
