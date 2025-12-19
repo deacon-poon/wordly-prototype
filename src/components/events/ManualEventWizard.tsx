@@ -18,15 +18,14 @@ import {
   EventFormProvider,
   useEventForm,
   EventDetailsForm,
-  LocationListForm,
-  SessionListForm,
+  ScheduleBuilder,
   SessionCard,
-  LocationCard,
   WizardStep,
   EventDetailsFormData,
   LocationFormData,
   SessionFormData,
   DEFAULT_EVENT_DETAILS,
+  validateSchedule,
 } from "./forms";
 
 // ============================================================================
@@ -49,8 +48,7 @@ interface ManualEventWizardProps {
 
 const STEPS: { key: WizardStep; label: string; icon: React.ElementType }[] = [
   { key: "details", label: "Event Details", icon: Calendar },
-  { key: "locations", label: "Locations", icon: MapPin },
-  { key: "sessions", label: "Sessions", icon: Clock },
+  { key: "schedule", label: "Schedule", icon: MapPin },
   { key: "review", label: "Review", icon: FileText },
 ];
 
@@ -134,7 +132,6 @@ function WizardContent({
   } = useEventForm();
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeLocationIndex, setActiveLocationIndex] = useState(0);
 
   // Validation for each step
   const validateCurrentStep = (): boolean => {
@@ -156,29 +153,32 @@ function WizardContent({
         }
         break;
 
-      case "locations":
+      case "schedule":
+        // At least one location is required
         if (state.locations.length === 0) {
           newErrors.locations = "At least one location is required";
         }
+
+        // Validate each location has a name
         state.locations.forEach((loc, index) => {
           if (!loc.name.trim()) {
             newErrors[`${index}.name`] = "Location name is required";
           }
         });
-        break;
 
-      case "sessions":
-        // Sessions are optional, but validate any that exist
+        // Validate sessions within each location
         state.locations.forEach((loc, locIndex) => {
           const sessions = getSessionsForLocation(locIndex);
-          sessions.forEach((session, sesIndex) => {
-            if (!session.title.trim()) {
-              newErrors[`${locIndex}.${sesIndex}.title`] = "Title is required";
-            }
-            if (session.scheduledStart >= session.endTime) {
-              newErrors[`${locIndex}.${sesIndex}.endTime`] =
-                "End time must be after start time";
-            }
+          const validation = validateSchedule(
+            sessions,
+            state.eventDetails.startDate,
+            state.eventDetails.endDate
+          );
+
+          // Add any critical errors
+          validation.errors.forEach((error) => {
+            newErrors[`${locIndex}.${error.sessionIndex}.${error.type}`] =
+              error.message;
           });
         });
         break;
@@ -232,86 +232,24 @@ function WizardContent({
           </div>
         );
 
-      case "locations":
+      case "schedule":
         return (
           <div className="max-h-[60vh] overflow-y-auto px-1">
-            {errors.locations && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700">
-                <AlertCircle className="h-4 w-4" />
-                {errors.locations}
-              </div>
-            )}
-            <LocationListForm
+            <ScheduleBuilder
               locations={state.locations}
-              onUpdateLocation={updateLocation}
+              sessionsByLocation={state.sessionsByLocation}
+              eventStartDate={state.eventDetails.startDate}
+              eventEndDate={state.eventDetails.endDate}
+              defaultTimezone={state.eventDetails.timezone}
               onAddLocation={() => addLocation()}
+              onUpdateLocation={updateLocation}
               onRemoveLocation={removeLocation}
+              onAddSession={addSession}
+              onUpdateSession={updateSession}
+              onRemoveSession={removeSession}
+              getSessionsForLocation={getSessionsForLocation}
               errors={errors}
             />
-          </div>
-        );
-
-      case "sessions":
-        return (
-          <div className="max-h-[60vh] overflow-y-auto px-1">
-            {state.locations.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p>No locations to add sessions to.</p>
-                <p className="text-sm">
-                  Go back and add at least one location.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Location tabs/selector */}
-                <div className="flex flex-wrap gap-2 border-b pb-3">
-                  {state.locations.map((location, index) => {
-                    const sessionCount = getSessionsForLocation(index).length;
-                    return (
-                      <Button
-                        key={location.id || index}
-                        variant={
-                          activeLocationIndex === index ? "default" : "outline"
-                        }
-                        size="sm"
-                        onClick={() => setActiveLocationIndex(index)}
-                        className={
-                          activeLocationIndex === index
-                            ? "bg-primary-teal-600 hover:bg-primary-teal-700"
-                            : ""
-                        }
-                      >
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {location.name || `Location ${index + 1}`}
-                        {sessionCount > 0 && (
-                          <span className="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
-                            {sessionCount}
-                          </span>
-                        )}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                {/* Session list for active location */}
-                <SessionListForm
-                  sessions={getSessionsForLocation(activeLocationIndex)}
-                  onUpdateSession={(sessionIndex, data) =>
-                    updateSession(activeLocationIndex, sessionIndex, data)
-                  }
-                  onAddSession={() => addSession(activeLocationIndex)}
-                  onRemoveSession={(sessionIndex) =>
-                    removeSession(activeLocationIndex, sessionIndex)
-                  }
-                  locationName={
-                    state.locations[activeLocationIndex]?.name ||
-                    `Location ${activeLocationIndex + 1}`
-                  }
-                  defaultTimezone={state.eventDetails.timezone}
-                />
-              </div>
-            )}
           </div>
         );
 
@@ -320,6 +258,15 @@ function WizardContent({
           (sum, sessions) => sum + sessions.length,
           0
         );
+
+        // Sort sessions within each location for display
+        const sortSessionsByTime = (sessions: SessionFormData[]) => {
+          return [...sessions].sort((a, b) => {
+            const dateCompare = a.scheduledDate.localeCompare(b.scheduledDate);
+            if (dateCompare !== 0) return dateCompare;
+            return a.scheduledStart.localeCompare(b.scheduledStart);
+          });
+        };
 
         return (
           <div className="max-h-[60vh] overflow-y-auto px-1 space-y-6">
@@ -360,18 +307,29 @@ function WizardContent({
               </h3>
 
               {state.locations.map((location, locIndex) => {
-                const sessions = getSessionsForLocation(locIndex);
+                const sessions = sortSessionsByTime(
+                  getSessionsForLocation(locIndex)
+                );
                 return (
                   <Card key={location.id || locIndex} className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <MapPin className="h-4 w-4 text-primary-teal-600" />
-                      <h4 className="font-medium text-gray-900">
-                        {location.name}
-                      </h4>
-                      <span className="text-sm text-gray-500">
-                        ({sessions.length}{" "}
-                        {sessions.length === 1 ? "session" : "sessions"})
-                      </span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary-teal-600" />
+                        <h4 className="font-medium text-gray-900">
+                          {location.name}
+                        </h4>
+                        <span className="text-sm text-gray-500">
+                          ({sessions.length}{" "}
+                          {sessions.length === 1 ? "session" : "sessions"})
+                        </span>
+                      </div>
+                      {location.locationSessionId && (
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+                            {location.locationSessionId}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {sessions.length > 0 ? (
@@ -385,7 +343,8 @@ function WizardContent({
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 italic">
-                        No sessions added yet. You can add them later.
+                        No sessions added yet. You can add them later from the
+                        event detail page.
                       </p>
                     )}
                   </Card>
@@ -417,10 +376,8 @@ function WizardContent({
         <p className="text-sm text-gray-600 mb-4">
           {state.currentStep === "details" &&
             "Enter the basic details for your event"}
-          {state.currentStep === "locations" &&
-            "Add the physical locations where sessions will take place"}
-          {state.currentStep === "sessions" &&
-            "Add sessions to each location (you can skip this and add later)"}
+          {state.currentStep === "schedule" &&
+            "Add locations and sessions for your event"}
           {state.currentStep === "review" &&
             "Review your event before creating it"}
         </p>
@@ -444,23 +401,9 @@ function WizardContent({
         </Button>
 
         <div className="flex items-center gap-3">
-          {!isLastStep && state.currentStep === "sessions" && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                nextStep();
-                setErrors({});
-              }}
-            >
-              Skip for now
-            </Button>
-          )}
           <Button
             onClick={handleNext}
-            disabled={
-              state.isSubmitting ||
-              (!canProceed() && state.currentStep !== "sessions")
-            }
+            disabled={state.isSubmitting || !canProceed()}
             className="bg-primary-teal-600 hover:bg-primary-teal-700"
           >
             {state.isSubmitting ? (
@@ -503,7 +446,7 @@ export function ManualEventWizard({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden max-h-[90vh] flex flex-col">
         <EventFormProvider
           initialMode="create"
           initialEventDetails={DEFAULT_EVENT_DETAILS}

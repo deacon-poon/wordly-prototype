@@ -10,6 +10,10 @@ import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import { EventSettingsModal } from "@/components/events/EventSettingsModal";
 import { EventCreationChoiceModal } from "@/components/events/EventCreationChoiceModal";
 import { ManualEventWizard } from "@/components/events/ManualEventWizard";
+import {
+  BulkUploadReviewModal,
+  type UploadedSession,
+} from "@/components/events/BulkUploadReviewModal";
 import type {
   EventDetailsFormData,
   LocationFormData,
@@ -113,12 +117,14 @@ export default function EventsPage() {
   // Event creation flow modals
   const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isBulkReviewModalOpen, setIsBulkReviewModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isManualWizardOpen, setIsManualWizardOpen] = useState(false);
   const [uploadedFileData, setUploadedFileData] = useState<{
     fileName: string;
     timezone: string;
   } | null>(null);
+  const [reviewedSessions, setReviewedSessions] = useState<UploadedSession[] | null>(null);
 
   // Mock data
   const mockEvents: Event[] = [
@@ -1476,14 +1482,26 @@ export default function EventsPage() {
   const handleUpload = (fileName: string, timezone: string) => {
     setUploadedFileData({ fileName, timezone });
     setIsUploadModalOpen(false);
+    // Open the bulk review modal to review uploaded sessions
+    setIsBulkReviewModalOpen(true);
+  };
+
+  const handleBulkReviewSubmit = (sessions: UploadedSession[]) => {
+    console.log("Reviewed sessions:", sessions);
+    setReviewedSessions(sessions);
+    setIsBulkReviewModalOpen(false);
+    // After review, open settings modal
     setIsSettingsModalOpen(true);
   };
 
   const handleSaveEventSettings = (settings: any) => {
     console.log("Event settings:", settings);
     console.log("Uploaded file data:", uploadedFileData);
+    console.log("Reviewed sessions:", reviewedSessions);
+    // In production, this would create the event with all the sessions
     setIsSettingsModalOpen(false);
     setUploadedFileData(null);
+    setReviewedSessions(null);
   };
 
   const handleManualEventComplete = async (data: {
@@ -1694,6 +1712,13 @@ export default function EventsPage() {
         onUpload={async (file, timezone) => {
           handleUpload(file.name, timezone);
         }}
+      />
+
+      {/* Bulk Upload Review Modal */}
+      <BulkUploadReviewModal
+        open={isBulkReviewModalOpen}
+        onOpenChange={setIsBulkReviewModalOpen}
+        onSubmit={handleBulkReviewSubmit}
       />
 
       {isSettingsModalOpen && uploadedFileData && (

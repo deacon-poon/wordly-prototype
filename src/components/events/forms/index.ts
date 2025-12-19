@@ -25,3 +25,4 @@ export {
 export { EventDetailsForm } from "./EventDetailsForm";
 export { LocationForm, LocationListForm, LocationCard } from "./LocationForm";
 export { SessionForm, SessionListForm, SessionCard } from "./SessionForm";
+export { ScheduleBuilder } from "./ScheduleBuilder";

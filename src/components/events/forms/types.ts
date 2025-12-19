@@ -75,6 +75,10 @@ export interface LocationFormData {
   id?: string; // Present when editing, absent when creating
   name: string;
   description: string;
+  // Auto-generated credentials (displayed after creation, placeholders before)
+  locationSessionId?: string;
+  passcode?: string;
+  mobileId?: string;
 }
 
 export interface SessionFormData {
@@ -94,7 +98,7 @@ export interface SessionFormData {
 
 export type FormMode = "create" | "edit";
 
-export type WizardStep = "details" | "locations" | "sessions" | "review";
+export type WizardStep = "details" | "schedule" | "review";
 
 export interface EventFormState {
   mode: FormMode;
@@ -128,6 +132,9 @@ export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
 export const DEFAULT_LOCATION: LocationFormData = {
   name: "",
   description: "",
+  locationSessionId: undefined,
+  passcode: undefined,
+  mobileId: undefined,
 };
 
 export const DEFAULT_SESSION: SessionFormData = {
@@ -215,4 +222,132 @@ export function parsePresenters(presentersString: string): string[] {
 
 export function formatPresenters(presenters: string[]): string {
   return presenters.join(", ");
+}
+
+/**
+ * Generate a location session ID (e.g., "MAIN-1234")
+ */
+export function generateLocationSessionId(locationName: string): string {
+  const prefix = locationName
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 4)
+    .padEnd(4, "X");
+  const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${prefix}-${suffix}`;
+}
+
+/**
+ * Generate a 6-digit passcode
+ */
+export function generatePasscode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * Generate an 8-digit mobile ID
+ */
+export function generateMobileId(): string {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
+}
+
+/**
+ * Validate sessions for schedule conflicts
+ */
+export interface ScheduleValidationResult {
+  valid: boolean;
+  errors: ScheduleError[];
+  warnings: ScheduleWarning[];
+}
+
+export interface ScheduleError {
+  type: "overlap" | "invalid_time" | "outside_event";
+  locationIndex: number;
+  sessionIndex: number;
+  message: string;
+}
+
+export interface ScheduleWarning {
+  type: "short_duration" | "large_gap" | "outside_hours";
+  locationIndex: number;
+  sessionIndex: number;
+  message: string;
+}
+
+export function validateSchedule(
+  sessions: SessionFormData[],
+  eventStartDate: string,
+  eventEndDate: string
+): ScheduleValidationResult {
+  const errors: ScheduleError[] = [];
+  const warnings: ScheduleWarning[] = [];
+
+  // Sort sessions by date and start time
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const dateCompare = a.scheduledDate.localeCompare(b.scheduledDate);
+    if (dateCompare !== 0) return dateCompare;
+    return a.scheduledStart.localeCompare(b.scheduledStart);
+  });
+
+  sortedSessions.forEach((session, index) => {
+    const originalIndex = sessions.findIndex((s) => s.id === session.id);
+
+    // Check if session is within event date range
+    if (session.scheduledDate < eventStartDate || session.scheduledDate > eventEndDate) {
+      errors.push({
+        type: "outside_event",
+        locationIndex: 0,
+        sessionIndex: originalIndex,
+        message: `Session "${session.title || "Untitled"}" is outside the event date range`,
+      });
+    }
+
+    // Check if end time is after start time
+    if (session.endTime <= session.scheduledStart) {
+      errors.push({
+        type: "invalid_time",
+        locationIndex: 0,
+        sessionIndex: originalIndex,
+        message: `Session "${session.title || "Untitled"}" end time must be after start time`,
+      });
+    }
+
+    // Check for overlaps with next session on same day
+    if (index < sortedSessions.length - 1) {
+      const nextSession = sortedSessions[index + 1];
+      if (
+        session.scheduledDate === nextSession.scheduledDate &&
+        session.endTime > nextSession.scheduledStart
+      ) {
+        errors.push({
+          type: "overlap",
+          locationIndex: 0,
+          sessionIndex: originalIndex,
+          message: `Session "${session.title || "Untitled"}" overlaps with "${nextSession.title || "Untitled"}"`,
+        });
+      }
+    }
+
+    // Warning: Short duration (< 5 minutes)
+    const startMinutes = parseInt(session.scheduledStart.split(":")[0]) * 60 + 
+                        parseInt(session.scheduledStart.split(":")[1]);
+    const endMinutes = parseInt(session.endTime.split(":")[0]) * 60 + 
+                      parseInt(session.endTime.split(":")[1]);
+    const duration = endMinutes - startMinutes;
+    
+    if (duration > 0 && duration < 5) {
+      warnings.push({
+        type: "short_duration",
+        locationIndex: 0,
+        sessionIndex: originalIndex,
+        message: `Session "${session.title || "Untitled"}" is very short (${duration} minutes)`,
+      });
+    }
+  });
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
 }

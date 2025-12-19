@@ -12,6 +12,9 @@ import {
   DEFAULT_LOCATION,
   DEFAULT_SESSION,
   generateTempId,
+  generateLocationSessionId,
+  generatePasscode,
+  generateMobileId,
 } from "./types";
 
 // ============================================================================
@@ -65,7 +68,7 @@ type EventFormAction =
 // Step Order
 // ============================================================================
 
-const STEP_ORDER: WizardStep[] = ["details", "locations", "sessions", "review"];
+const STEP_ORDER: WizardStep[] = ["details", "schedule", "review"];
 
 function getNextStep(current: WizardStep): WizardStep {
   const currentIndex = STEP_ORDER.indexOf(current);
@@ -122,12 +125,28 @@ function eventFormReducer(
       return { ...state, eventDetails: action.payload };
 
     case "ADD_LOCATION": {
+      const tempId = generateTempId();
+      const locationName =
+        action.payload?.name || `Location ${state.locations.length + 1}`;
       const newLocation: LocationFormData = action.payload || {
         ...DEFAULT_LOCATION,
-        id: generateTempId(),
+        id: tempId,
+        name: locationName,
       };
       if (!newLocation.id) {
-        newLocation.id = generateTempId();
+        newLocation.id = tempId;
+      }
+      // Auto-generate credentials for new locations
+      if (!newLocation.locationSessionId) {
+        newLocation.locationSessionId = generateLocationSessionId(
+          newLocation.name || locationName
+        );
+      }
+      if (!newLocation.passcode) {
+        newLocation.passcode = generatePasscode();
+      }
+      if (!newLocation.mobileId) {
+        newLocation.mobileId = generateMobileId();
       }
       return {
         ...state,
@@ -371,13 +390,12 @@ export function EventFormProvider({
       switch (state.currentStep) {
         case "details":
           return !!state.eventDetails.name.trim();
-        case "locations":
+        case "schedule":
+          // At least one location is required, and all locations must have names
           return (
             state.locations.length > 0 &&
             state.locations.every((l) => l.name.trim())
           );
-        case "sessions":
-          return true; // Sessions are optional per location
         case "review":
           return true;
         default:
