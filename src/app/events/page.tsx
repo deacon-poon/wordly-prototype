@@ -6,19 +6,8 @@ import { Calendar, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
-import { EventSettingsModal } from "@/components/events/EventSettingsModal";
-import { EventCreationChoiceModal } from "@/components/events/EventCreationChoiceModal";
 import { ManualEventWizard } from "@/components/events/ManualEventWizard";
-import {
-  BulkUploadReviewModal,
-  type UploadedSession,
-} from "@/components/events/BulkUploadReviewModal";
-import type {
-  EventDetailsFormData,
-  LocationFormData,
-  SessionFormData,
-} from "@/components/events/forms";
+import type { EventDetailsFormData } from "@/components/events/forms";
 import { saveEvent, serializeEvent } from "@/lib/eventStore";
 
 // Data interfaces
@@ -93,19 +82,8 @@ export default function EventsPage() {
   const [statusFilter, setStatusFilter] = useState<EventStatus | "all">(
     "active"
   );
-  // Event creation flow modals
-  const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isBulkReviewModalOpen, setIsBulkReviewModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  // Event creation modal
   const [isManualWizardOpen, setIsManualWizardOpen] = useState(false);
-  const [uploadedFileData, setUploadedFileData] = useState<{
-    fileName: string;
-    timezone: string;
-  } | null>(null);
-  const [reviewedSessions, setReviewedSessions] = useState<
-    UploadedSession[] | null
-  >(null);
 
   // Events state - initialized with mock data
   // In production, this would be fetched from an API
@@ -1447,119 +1425,8 @@ export default function EventsPage() {
   };
 
   const handleAddEvent = () => {
-    // Open choice modal first
-    setIsChoiceModalOpen(true);
-  };
-
-  const handleChooseSpreadsheet = () => {
-    // User chose spreadsheet upload flow
-    setIsUploadModalOpen(true);
-  };
-
-  const handleChooseManual = () => {
-    // User chose manual creation flow
+    // Open the event creation modal directly
     setIsManualWizardOpen(true);
-  };
-
-  const handleUpload = (fileName: string, timezone: string) => {
-    setUploadedFileData({ fileName, timezone });
-    setIsUploadModalOpen(false);
-    // Open the bulk review modal to review uploaded sessions
-    setIsBulkReviewModalOpen(true);
-  };
-
-  const handleBulkReviewSubmit = (sessions: UploadedSession[]) => {
-    console.log("Reviewed sessions:", sessions);
-    setReviewedSessions(sessions);
-    setIsBulkReviewModalOpen(false);
-    // After review, open settings modal
-    setIsSettingsModalOpen(true);
-  };
-
-  const handleSaveEventSettings = (settings: any) => {
-    if (!reviewedSessions || reviewedSessions.length === 0) {
-      setIsSettingsModalOpen(false);
-      setUploadedFileData(null);
-      setReviewedSessions(null);
-      return;
-    }
-
-    // Create a new event from the uploaded sessions
-    const newEventId = `evt-${Date.now()}`;
-
-    // Group sessions by location
-    const locationMap = new Map<
-      string,
-      { sessions: Session[]; locationId: string }
-    >();
-
-    reviewedSessions.forEach((session, index) => {
-      const locationName = session.location;
-      if (!locationMap.has(locationName)) {
-        locationMap.set(locationName, {
-          sessions: [],
-          locationId: `loc-${Date.now()}-${index}`,
-        });
-      }
-      const loc = locationMap.get(locationName)!;
-      loc.sessions.push({
-        id: `ses-${Date.now()}-${index}`,
-        title: session.title,
-        presenters: session.presenter.split(",").map((p) => p.trim()),
-        scheduledDate: session.date,
-        scheduledStart: session.startTime,
-        endTime: session.endTime,
-        status: "pending",
-      });
-    });
-
-    // Determine date range from sessions
-    const allDates = reviewedSessions.map((s) => new Date(s.date));
-    const startDate = new Date(Math.min(...allDates.map((d) => d.getTime())));
-    const endDate = new Date(Math.max(...allDates.map((d) => d.getTime())));
-
-    // Create locations array
-    const locations: Location[] = Array.from(locationMap.entries()).map(
-      ([name, data]) => ({
-        id: data.locationId,
-        name,
-        sessionCount: data.sessions.length,
-        locationSessionId: `LOC-${Math.random()
-          .toString(36)
-          .substring(2, 6)
-          .toUpperCase()}`,
-        passcode: Math.random().toString().substring(2, 8),
-        sessions: data.sessions,
-      })
-    );
-
-    // Create the new event
-    const newEvent: Event = {
-      id: newEventId,
-      name:
-        settings.eventName ||
-        `Uploaded Event ${new Date().toLocaleDateString()}`,
-      dateRange: formatDateRange(startDate, endDate),
-      startDate,
-      endDate,
-      locationCount: locations.length,
-      sessionCount: reviewedSessions.length,
-      description: settings.description || "",
-      locations,
-    };
-
-    // Add to events list
-    setEvents((prev) => [newEvent, ...prev]);
-
-    // Save to localStorage for persistence across pages
-    saveEvent(serializeEvent(newEvent));
-
-    setIsSettingsModalOpen(false);
-    setUploadedFileData(null);
-    setReviewedSessions(null);
-
-    // Navigate to the new event
-    router.push(`/events/${newEventId}`);
   };
 
   const handleManualEventComplete = async (data: {
@@ -1752,46 +1619,7 @@ export default function EventsPage() {
         )}
       </div>
 
-      {/* Event Creation Choice Modal */}
-      <EventCreationChoiceModal
-        open={isChoiceModalOpen}
-        onOpenChange={setIsChoiceModalOpen}
-        onChooseSpreadsheet={handleChooseSpreadsheet}
-        onChooseManual={handleChooseManual}
-      />
-
-      {/* Spreadsheet Upload Flow */}
-      <UploadScheduleModal
-        open={isUploadModalOpen}
-        onOpenChange={setIsUploadModalOpen}
-        onUpload={async (file, timezone) => {
-          handleUpload(file.name, timezone);
-        }}
-      />
-
-      {/* Bulk Upload Review Modal */}
-      <BulkUploadReviewModal
-        open={isBulkReviewModalOpen}
-        onOpenChange={setIsBulkReviewModalOpen}
-        onSubmit={handleBulkReviewSubmit}
-      />
-
-      {isSettingsModalOpen && uploadedFileData && (
-        <EventSettingsModal
-          open={isSettingsModalOpen}
-          onOpenChange={(open) => {
-            setIsSettingsModalOpen(open);
-            if (!open) {
-              setUploadedFileData(null);
-            }
-          }}
-          onSave={async (settings) => {
-            handleSaveEventSettings(settings);
-          }}
-        />
-      )}
-
-      {/* Manual Event Creation Wizard */}
+      {/* Event Creation Modal */}
       <ManualEventWizard
         open={isManualWizardOpen}
         onOpenChange={setIsManualWizardOpen}

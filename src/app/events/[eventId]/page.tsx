@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   Download,
   ExternalLink,
+  FileSpreadsheet,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,11 @@ import {
   EditLocationModal,
 } from "@/components/events/AddLocationModal";
 import { AddSessionModal } from "@/components/events/AddSessionModal";
+import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
+import {
+  BulkUploadReviewModal,
+  type UploadedSession,
+} from "@/components/events/BulkUploadReviewModal";
 import type {
   LocationFormData,
   SessionFormData,
@@ -389,6 +395,10 @@ export default function EventDetailPage({
   } | null>(null);
   const [isEditLocationModalOpen, setIsEditLocationModalOpen] = useState(false);
 
+  // Bulk upload flow modals
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isBulkReviewModalOpen, setIsBulkReviewModalOpen] = useState(false);
+
   // Generate mock event data based on the event ID
   // In production, this would be fetched from an API
   // Using state so we can update it when adding locations/sessions
@@ -561,6 +571,113 @@ export default function EventDetailPage({
     window.URL.revokeObjectURL(url);
   };
 
+  // Bulk upload handlers
+  const handleBulkUpload = async (file: File, timezone: string) => {
+    // File is selected, close upload modal and open review modal
+    setIsUploadModalOpen(false);
+    setIsBulkReviewModalOpen(true);
+  };
+
+  const handleBulkReviewSubmit = (sessions: UploadedSession[]) => {
+    // Process the reviewed sessions and add them to the event
+    const locationMap = new Map<
+      string,
+      { sessions: Session[]; locationId: string; existingLocationId?: string }
+    >();
+
+    // Check if locations already exist
+    const existingLocations = new Map(
+      event.locations.map((loc) => [loc.name.toLowerCase(), loc.id])
+    );
+
+    sessions.forEach((session, index) => {
+      const locationName = session.location;
+      const locationKey = locationName.toLowerCase();
+
+      if (!locationMap.has(locationName)) {
+        locationMap.set(locationName, {
+          sessions: [],
+          locationId: `loc-${Date.now()}-${index}`,
+          existingLocationId: existingLocations.get(locationKey),
+        });
+      }
+
+      const loc = locationMap.get(locationName)!;
+      loc.sessions.push({
+        id: `ses-${Date.now()}-${index}`,
+        title: session.title,
+        presenters: session.presenter.split(",").map((p) => p.trim()),
+        scheduledDate: session.date,
+        scheduledStart: session.startTime,
+        endTime: session.endTime,
+        status: "pending",
+      });
+    });
+
+    // Update event with new locations and sessions
+    setEvent((prev) => {
+      const updatedLocations = [...prev.locations];
+
+      locationMap.forEach((data, name) => {
+        if (data.existingLocationId) {
+          // Add sessions to existing location
+          const locIndex = updatedLocations.findIndex(
+            (loc) => loc.id === data.existingLocationId
+          );
+          if (locIndex !== -1) {
+            updatedLocations[locIndex] = {
+              ...updatedLocations[locIndex],
+              sessions: [...updatedLocations[locIndex].sessions, ...data.sessions],
+              sessionCount:
+                updatedLocations[locIndex].sessions.length + data.sessions.length,
+            };
+          }
+        } else {
+          // Create new location
+          updatedLocations.push({
+            id: data.locationId,
+            name,
+            sessionCount: data.sessions.length,
+            locationSessionId: `LOC-${Math.random()
+              .toString(36)
+              .substring(2, 6)
+              .toUpperCase()}`,
+            passcode: Math.random().toString().substring(2, 8),
+            sessions: data.sessions,
+          });
+        }
+      });
+
+      // Recalculate date range if needed
+      const allDates = updatedLocations.flatMap((loc) =>
+        loc.sessions.map((s) => new Date(s.scheduledDate))
+      );
+      const startDate =
+        allDates.length > 0
+          ? new Date(Math.min(...allDates.map((d) => d.getTime())))
+          : prev.startDate;
+      const endDate =
+        allDates.length > 0
+          ? new Date(Math.max(...allDates.map((d) => d.getTime())))
+          : prev.endDate;
+
+      return {
+        ...prev,
+        locations: updatedLocations,
+        locationCount: updatedLocations.length,
+        sessionCount: updatedLocations.reduce(
+          (sum, loc) => sum + loc.sessions.length,
+          0
+        ),
+        startDate,
+        endDate,
+        dateRange: formatDateRange(startDate, endDate),
+      };
+    });
+
+    setIsBulkReviewModalOpen(false);
+  };
+
   const mainContent = (
     <div className="h-full overflow-y-auto bg-white">
       {/* Page header */}
@@ -630,6 +747,20 @@ export default function EventDetailPage({
               >
                 <Download className="h-4 w-4 mr-1.5" />
                 Bulk Download Links
+              </Button>
+              <Button
+                onClick={() => setIsUploadModalOpen(true)}
+                size="sm"
+                variant="outline"
+                disabled={isPastEvent}
+                title={
+                  isPastEvent
+                    ? "Cannot add to past events"
+                    : "Upload locations and sessions from spreadsheet"
+                }
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-1" />
+                Upload Schedule
               </Button>
               <Button
                 onClick={() => setIsAddLocationModalOpen(true)}
@@ -1032,6 +1163,20 @@ export default function EventDetailPage({
           }}
         />
       )}
+
+      {/* Upload Schedule Modal */}
+      <UploadScheduleModal
+        open={isUploadModalOpen}
+        onOpenChange={setIsUploadModalOpen}
+        onUpload={handleBulkUpload}
+      />
+
+      {/* Bulk Upload Review Modal */}
+      <BulkUploadReviewModal
+        open={isBulkReviewModalOpen}
+        onOpenChange={setIsBulkReviewModalOpen}
+        onSubmit={handleBulkReviewSubmit}
+      />
     </div>
   );
 
