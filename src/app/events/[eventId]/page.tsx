@@ -81,9 +81,22 @@ interface Event {
 // Helper functions
 function getEventStatus(startDate: Date, endDate: Date): EventStatus {
   const now = new Date();
-  if (now >= startDate && now <= endDate) {
+  // Compare dates only (ignore time) to avoid timezone issues
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const start = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate()
+  );
+  const end = new Date(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate()
+  );
+
+  if (today >= start && today <= end) {
     return "active";
-  } else if (now < startDate) {
+  } else if (today < start) {
     return "upcoming";
   } else {
     return "past";
