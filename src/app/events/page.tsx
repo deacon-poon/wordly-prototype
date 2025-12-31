@@ -19,6 +19,7 @@ import type {
   LocationFormData,
   SessionFormData,
 } from "@/components/events/forms";
+import { saveEvent, serializeEvent } from "@/lib/eventStore";
 
 // Data interfaces
 interface Session {
@@ -67,28 +68,6 @@ function getEventStatus(startDate: Date, endDate: Date): EventStatus {
   }
 }
 
-function getRelativeTimeString(startDate: Date, endDate: Date): string {
-  const now = new Date();
-  const status = getEventStatus(startDate, endDate);
-
-  if (status === "active") {
-    return "Live now";
-  }
-
-  const diffTime = Math.abs(startDate.getTime() - now.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (status === "upcoming") {
-    if (diffDays === 0) return "Starting today";
-    if (diffDays === 1) return "Starting tomorrow";
-    return `Starting in ${diffDays} days`;
-  }
-
-  if (diffDays === 0) return "Ended today";
-  if (diffDays === 1) return "Ended yesterday";
-  return `Ended ${diffDays} days ago`;
-}
-
 const getRelativeDate = (daysFromNow: number): Date => {
   const date = new Date();
   date.setDate(date.getDate() + daysFromNow);
@@ -128,8 +107,9 @@ export default function EventsPage() {
     UploadedSession[] | null
   >(null);
 
-  // Mock data
-  const mockEvents: Event[] = [
+  // Events state - initialized with mock data
+  // In production, this would be fetched from an API
+  const [events, setEvents] = useState<Event[]>(() => [
     // ACTIVE EVENT (happening now)
     {
       id: "evt-001",
@@ -1435,35 +1415,35 @@ export default function EventsPage() {
         },
       ],
     },
-  ];
+  ]);
 
   const filteredEvents = useMemo(() => {
-    if (statusFilter === "all") return mockEvents;
-    return mockEvents.filter(
+    if (statusFilter === "all") return events;
+    return events.filter(
       (event) => getEventStatus(event.startDate, event.endDate) === statusFilter
     );
-  }, [mockEvents, statusFilter]);
+  }, [events, statusFilter]);
 
   const groupedEvents = useMemo(() => {
     return {
-      active: mockEvents.filter(
+      active: events.filter(
         (e) => getEventStatus(e.startDate, e.endDate) === "active"
       ),
-      upcoming: mockEvents.filter(
+      upcoming: events.filter(
         (e) => getEventStatus(e.startDate, e.endDate) === "upcoming"
       ),
-      past: mockEvents.filter(
+      past: events.filter(
         (e) => getEventStatus(e.startDate, e.endDate) === "past"
       ),
-      all: mockEvents,
+      all: events,
     };
-  }, [mockEvents]);
+  }, [events]);
 
   const statusCounts = {
     active: groupedEvents.active.length,
     upcoming: groupedEvents.upcoming.length,
     past: groupedEvents.past.length,
-    all: mockEvents.length,
+    all: events.length,
   };
 
   const handleAddEvent = () => {
@@ -1497,50 +1477,124 @@ export default function EventsPage() {
   };
 
   const handleSaveEventSettings = (settings: any) => {
-    console.log("Event settings:", settings);
-    console.log("Uploaded file data:", uploadedFileData);
-    console.log("Reviewed sessions:", reviewedSessions);
-    // In production, this would create the event with all the sessions
+    if (!reviewedSessions || reviewedSessions.length === 0) {
+      setIsSettingsModalOpen(false);
+      setUploadedFileData(null);
+      setReviewedSessions(null);
+      return;
+    }
+
+    // Create a new event from the uploaded sessions
+    const newEventId = `evt-${Date.now()}`;
+
+    // Group sessions by location
+    const locationMap = new Map<
+      string,
+      { sessions: Session[]; locationId: string }
+    >();
+
+    reviewedSessions.forEach((session, index) => {
+      const locationName = session.location;
+      if (!locationMap.has(locationName)) {
+        locationMap.set(locationName, {
+          sessions: [],
+          locationId: `loc-${Date.now()}-${index}`,
+        });
+      }
+      const loc = locationMap.get(locationName)!;
+      loc.sessions.push({
+        id: `ses-${Date.now()}-${index}`,
+        title: session.title,
+        presenters: session.presenter.split(",").map((p) => p.trim()),
+        scheduledDate: session.date,
+        scheduledStart: session.startTime,
+        endTime: session.endTime,
+        status: "pending",
+      });
+    });
+
+    // Determine date range from sessions
+    const allDates = reviewedSessions.map((s) => new Date(s.date));
+    const startDate = new Date(Math.min(...allDates.map((d) => d.getTime())));
+    const endDate = new Date(Math.max(...allDates.map((d) => d.getTime())));
+
+    // Create locations array
+    const locations: Location[] = Array.from(locationMap.entries()).map(
+      ([name, data]) => ({
+        id: data.locationId,
+        name,
+        sessionCount: data.sessions.length,
+        locationSessionId: `LOC-${Math.random()
+          .toString(36)
+          .substring(2, 6)
+          .toUpperCase()}`,
+        passcode: Math.random().toString().substring(2, 8),
+        sessions: data.sessions,
+      })
+    );
+
+    // Create the new event
+    const newEvent: Event = {
+      id: newEventId,
+      name:
+        settings.eventName ||
+        `Uploaded Event ${new Date().toLocaleDateString()}`,
+      dateRange: formatDateRange(startDate, endDate),
+      startDate,
+      endDate,
+      locationCount: locations.length,
+      sessionCount: reviewedSessions.length,
+      description: settings.description || "",
+      locations,
+    };
+
+    // Add to events list
+    setEvents((prev) => [newEvent, ...prev]);
+
+    // Save to localStorage for persistence across pages
+    saveEvent(serializeEvent(newEvent));
+
     setIsSettingsModalOpen(false);
     setUploadedFileData(null);
     setReviewedSessions(null);
+
+    // Navigate to the new event
+    router.push(`/events/${newEventId}`);
   };
 
   const handleManualEventComplete = async (data: {
     eventDetails: EventDetailsFormData;
-    locations: LocationFormData[];
-    sessionsByLocation: Record<string, SessionFormData[]>;
   }) => {
-    console.log("Manual event created:", data);
-    // In production, this would call the API to create the event
-    // For now, just close the wizard
-    setIsManualWizardOpen(false);
-    // Optionally navigate to the new event detail page
-    // router.push(`/events/${newEventId}`);
-  };
+    // Create a new event ID
+    const newEventId = `evt-${Date.now()}`;
 
-  const StatusBadge = ({ event }: { event: Event }) => {
-    const status = getEventStatus(event.startDate, event.endDate);
-    const timeString = getRelativeTimeString(event.startDate, event.endDate);
+    // Parse dates from the form data
+    const startDate = new Date(data.eventDetails.startDate);
+    const endDate = new Date(data.eventDetails.endDate);
 
-    const statusStyles = {
-      active:
-        "bg-accent-green-50 text-accent-green-700 border-accent-green-200",
-      upcoming:
-        "bg-primary-teal-50 text-primary-teal-700 border-primary-teal-200",
-      past: "bg-gray-100 text-gray-600 border-gray-300",
+    // Create the new event object
+    const newEvent: Event = {
+      id: newEventId,
+      name: data.eventDetails.name,
+      dateRange: formatDateRange(startDate, endDate),
+      startDate,
+      endDate,
+      locationCount: 0,
+      sessionCount: 0,
+      description: data.eventDetails.description || "",
+      locations: [],
     };
 
-    return (
-      <div
-        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${statusStyles[status]}`}
-      >
-        {status === "active" && (
-          <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
-        )}
-        <span>{timeString}</span>
-      </div>
-    );
+    // Add the new event to the list
+    setEvents((prev) => [newEvent, ...prev]);
+
+    // Save to localStorage for persistence across pages
+    saveEvent(serializeEvent(newEvent));
+
+    setIsManualWizardOpen(false);
+
+    // Navigate to the new event detail page where user can add locations/sessions
+    router.push(`/events/${newEventId}`);
   };
 
   const EventCard = ({ event }: { event: Event }) => {
@@ -1554,10 +1608,7 @@ export default function EventsPage() {
         <div className="p-6">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
-                {event.name}
-              </h2>
-              <StatusBadge event={event} />
+              <h2 className="text-xl font-bold text-gray-900">{event.name}</h2>
             </div>
           </div>
 

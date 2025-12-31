@@ -22,7 +22,6 @@ export interface Session {
 export interface Location {
   id: string;
   name: string;
-  description?: string;
   locationSessionId: string;
   passcode: string;
   mobileId?: string;
@@ -74,7 +73,6 @@ export interface EventDetailsFormData {
 export interface LocationFormData {
   id?: string; // Present when editing, absent when creating
   name: string;
-  description: string;
   // Auto-generated credentials (displayed after creation, placeholders before)
   locationSessionId?: string;
   passcode?: string;
@@ -131,7 +129,6 @@ export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
 
 export const DEFAULT_LOCATION: LocationFormData = {
   name: "",
-  description: "",
   locationSessionId: undefined,
   passcode: undefined,
   mobileId: undefined,

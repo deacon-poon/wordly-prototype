@@ -81,7 +81,7 @@ export function LocationAccordion({
     <div
       className={`relative transition-all duration-200 border rounded-lg bg-white ${
         isExpanded
-          ? "border-primary-teal-300 shadow-sm"
+          ? "border-gray-200 shadow-sm ring-1 ring-inset ring-gray-100"
           : "border-gray-200 hover:border-gray-300"
       }`}
     >
@@ -217,7 +217,26 @@ export function LocationAccordion({
 
       {/* Presentations - Collapsible */}
       {isExpanded && (
-        <div className="border-t border-primary-teal-200 divide-y divide-gray-100">
+        <div className="border-t border-gray-200 divide-y divide-gray-100">
+          {/* Empty state when no sessions */}
+          {location.sessions.length === 0 && (
+            <div className="px-4 py-6 text-center">
+              <p className="text-sm text-gray-500 mb-3">
+                No sessions in this location yet.
+              </p>
+              {onAddSession && !isPastEvent && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onAddSession(location)}
+                  className="text-primary-teal-600 border-primary-teal-600 hover:bg-primary-teal-50"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Session
+                </Button>
+              )}
+            </div>
+          )}
           {location.sessions.map((session) => (
             <div
               key={session.id}

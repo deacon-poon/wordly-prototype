@@ -19,14 +19,30 @@ interface EventChatbotProps {
   eventName: string;
   eventDescription: string;
   sessions: SessionContext[];
+  /** Optional: Control open state externally */
+  open?: boolean;
+  /** Optional: Callback when open state changes */
+  onOpenChange?: (open: boolean) => void;
+  /** Optional: Initial message to send when chat opens */
+  initialMessage?: string;
 }
 
 export function EventChatbot({
   eventName,
   eventDescription,
   sessions,
+  open,
+  onOpenChange,
+  initialMessage,
 }: EventChatbotProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  // Support both controlled and uncontrolled modes
+  const isOpen = open !== undefined ? open : internalIsOpen;
+  const setIsOpen = (value: boolean) => {
+    setInternalIsOpen(value);
+    onOpenChange?.(value);
+  };
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +69,27 @@ export function EventChatbot({
       ]);
     }
   }, [eventName, messages.length, setMessages]);
+
+  // Handle initial message when chat opens
+  const [hasHandledInitialMessage, setHasHandledInitialMessage] =
+    useState(false);
+  useEffect(() => {
+    if (
+      isOpen &&
+      initialMessage &&
+      !hasHandledInitialMessage &&
+      messages.length > 0
+    ) {
+      sendMessage(initialMessage);
+      setHasHandledInitialMessage(true);
+    }
+  }, [
+    isOpen,
+    initialMessage,
+    hasHandledInitialMessage,
+    messages.length,
+    sendMessage,
+  ]);
 
   const isLoading = status === "submitted" || status === "streaming";
 

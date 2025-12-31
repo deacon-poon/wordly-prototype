@@ -158,7 +158,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
       <aside
         ref={ref}
         className={cn(
-          "flex flex-col h-screen text-gray-800 will-change-[width] bg-muted/40",
+          "flex flex-col h-screen text-gray-800 will-change-[width]",
           {
             "w-[70px] transition-[width] duration-300 ease-in-out": isCollapsed,
             "w-[240px] transition-[width] duration-300 ease-in-out":

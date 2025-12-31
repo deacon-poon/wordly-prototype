@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { EventChatbot } from "@/components/public/EventChatbot";
 
 // Data interfaces
 interface SessionDetail {
@@ -401,13 +402,41 @@ export default function SessionDetailPage({
 
   const sentimentStyle = sentimentStyles[session.aiInsights.sentiment];
 
+  // Chatbot state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInitialMessage, setChatInitialMessage] = useState<
+    string | undefined
+  >(undefined);
+
+  const handleStartConversation = () => {
+    // Set an initial message about this specific session
+    setChatInitialMessage(
+      `Tell me more about the session "${
+        session.title
+      }" by ${session.presenters.join(", ")}`
+    );
+    setIsChatOpen(true);
+  };
+
+  // Prepare session context for the chatbot
+  const sessionContext = [
+    {
+      title: session.title,
+      presenters: session.presenters,
+      summary: session.summary,
+      scheduledDate: session.scheduledDate,
+      scheduledStart: session.scheduledStart,
+      locationName: session.locationName || "",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <Image
-            src="/asset/wordly-logo-teal-with-container.png"
+            src="/logo/wordly-logo-rebrand-blue.svg"
             alt="Wordly"
             width={100}
             height={28}
@@ -638,6 +667,7 @@ export default function SessionDetailPage({
               <Button
                 variant="secondary"
                 className="w-full bg-white text-primary-teal-700 hover:bg-white/90"
+                onClick={handleStartConversation}
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
                 Start Conversation
@@ -755,7 +785,7 @@ export default function SessionDetailPage({
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Image
-                src="/asset/wordly-logo-teal-with-container.png"
+                src="/logo/wordly-logo-rebrand-blue.svg"
                 alt="Wordly"
                 width={100}
                 height={26}
@@ -776,6 +806,16 @@ export default function SessionDetailPage({
           </div>
         </div>
       </footer>
+
+      {/* AI Chatbot */}
+      <EventChatbot
+        eventName={event.name}
+        eventDescription={`Session: ${session.title}`}
+        sessions={sessionContext}
+        open={isChatOpen}
+        onOpenChange={setIsChatOpen}
+        initialMessage={chatInitialMessage}
+      />
     </div>
   );
 }

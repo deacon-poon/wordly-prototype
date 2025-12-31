@@ -4,9 +4,9 @@ import React, { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,33 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Info, Upload as UploadIcon } from "lucide-react";
+import { Info, Upload, X, FileSpreadsheet } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-
-// Common timezones
-const TIMEZONES = [
-  { value: "America/New_York", label: "America/New_York (EST/EDT)" },
-  { value: "America/Chicago", label: "America/Chicago (CST/CDT)" },
-  { value: "America/Denver", label: "America/Denver (MST/MDT)" },
-  { value: "America/Los_Angeles", label: "America/Los_Angeles (PST/PDT)" },
-  { value: "America/Anchorage", label: "America/Anchorage (AKST/AKDT)" },
-  { value: "Pacific/Honolulu", label: "Pacific/Honolulu (HST)" },
-  { value: "Europe/London", label: "Europe/London (GMT/BST)" },
-  { value: "Europe/Paris", label: "Europe/Paris (CET/CEST)" },
-  { value: "Europe/Berlin", label: "Europe/Berlin (CET/CEST)" },
-  { value: "Europe/Madrid", label: "Europe/Madrid (CET/CEST)" },
-  { value: "Europe/Rome", label: "Europe/Rome (CET/CEST)" },
-  { value: "Europe/Amsterdam", label: "Europe/Amsterdam (CET/CEST)" },
-  { value: "Asia/Tokyo", label: "Asia/Tokyo (JST)" },
-  { value: "Asia/Shanghai", label: "Asia/Shanghai (CST)" },
-  { value: "Asia/Hong_Kong", label: "Asia/Hong_Kong (HKT)" },
-  { value: "Asia/Singapore", label: "Asia/Singapore (SGT)" },
-  { value: "Asia/Dubai", label: "Asia/Dubai (GST)" },
-  { value: "Australia/Sydney", label: "Australia/Sydney (AEDT/AEST)" },
-  { value: "Australia/Melbourne", label: "Australia/Melbourne (AEDT/AEST)" },
-  { value: "UTC", label: "UTC (Coordinated Universal Time)" },
-];
+import { TIMEZONES } from "./forms/types";
 
 interface UploadScheduleModalProps {
   open: boolean;
@@ -77,35 +53,6 @@ export function UploadScheduleModal({
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedFile) {
-      alert("Please select a file first");
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      await onUpload(selectedFile, timezone);
-
-      // Reset form on success
-      setSelectedFile(null);
-      setTimezone("America/Los_Angeles");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("Failed to upload file. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleDownloadTemplate = () => {
     // Create a sample CSV template per spec
     const csvContent = `Location,Title,Presenter,Date,Start Time,End Time,Timezone
@@ -124,130 +71,181 @@ export function UploadScheduleModal({
     window.URL.revokeObjectURL(url);
   };
 
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      alert("Please select a file first");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      await onUpload(selectedFile, timezone);
+
+      // Reset form on success
+      handleReset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedFile(null);
+    setTimezone("America/Los_Angeles");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCancel = () => {
+    handleReset();
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-0">
-        {/* Close button */}
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 disabled:pointer-events-none z-10"
-        >
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </button>
+      <DialogContent className="sm:max-w-[550px]">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+              <FileSpreadsheet className="h-5 w-5 text-primary-teal-600" />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-semibold text-gray-900">
+                Upload Schedule
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-600">
+                Import locations and sessions from a spreadsheet
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
 
-        <div className="p-6 space-y-8">
-          {/* Header */}
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-900">
-              Upload Schedule
-            </DialogTitle>
-          </DialogHeader>
-
-          {/* Description with download link */}
-          <div className="space-y-2">
-            <DialogDescription className="text-base text-gray-700 leading-relaxed">
-              Upload a spreadsheet containing your schedule. <br />
-              You can{" "}
+        <div className="py-4 space-y-6">
+          {/* Upload Section */}
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            {/* Upload instructions */}
+            <div className="text-sm text-gray-700">
+              Upload a spreadsheet containing your event schedule.{" "}
               <button
                 onClick={handleDownloadTemplate}
                 className="text-blue-600 underline hover:text-blue-700 font-medium"
               >
-                download this CSV of the expected format
-              </button>{" "}
-              first.
-            </DialogDescription>
-          </div>
+                Download template
+              </button>
+            </div>
 
-          {/* File input area (hidden) */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,.xlsx,.xls"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+            {/* File input (hidden) */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
 
-          {/* File upload display */}
-          {selectedFile && (
-            <div className="p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <UploadIcon className="h-5 w-5 text-primary-teal-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {selectedFile.name}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {(selectedFile.size / 1024).toFixed(2)} KB
-                    </p>
+            {/* File upload display or button */}
+            {selectedFile ? (
+              <div className="p-3 bg-white border border-primary-teal-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Upload className="h-5 w-5 text-primary-teal-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {selectedFile.name}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {(selectedFile.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      setSelectedFile(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedFile(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
-            </div>
-          )}
-
-          {/* Timezone selector */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Label
-                htmlFor="timezone-select"
-                className="text-sm font-bold text-gray-900"
-              >
-                Default Timezone
-              </Label>
-              <Info className="h-[13.33px] w-[13.33px] text-gray-500" />
-            </div>
-            <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger
-                id="timezone-select"
-                className="w-full min-h-[36px] bg-white border-gray-300 rounded-md"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIMEZONES.map((tz) => (
-                  <SelectItem key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500">
-              Used when the Timezone column is omitted from your spreadsheet
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2">
-            {!selectedFile && (
+            ) : (
               <Button
-                onClick={handleUploadClick}
-                disabled={isUploading}
-                className="bg-[#128197] hover:bg-[#0f6b7a] text-white h-9 px-4"
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
               >
+                <Upload className="h-4 w-4 mr-2" />
                 Select File
               </Button>
             )}
-            <Button
-              onClick={handleSubmit}
-              disabled={isUploading || !selectedFile}
-              className="bg-[#128197] hover:bg-[#0f6b7a] text-white h-9 px-4"
-            >
-              {isUploading ? "Uploading..." : "Upload"}
-            </Button>
+
+            {/* Timezone selector */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label
+                  htmlFor="timezone-select"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Default Timezone
+                </Label>
+                <Info className="h-3.5 w-3.5 text-gray-500" />
+              </div>
+              <Select value={timezone} onValueChange={setTimezone}>
+                <SelectTrigger id="timezone-select" className="w-full bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Info about defaults */}
+            <div className="p-3 bg-white border border-gray-200 rounded-lg">
+              <div className="flex gap-2">
+                <Info className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-gray-600">
+                  <p className="font-medium text-gray-900 mb-1">
+                    How defaults work
+                  </p>
+                  <ul className="space-y-0.5 list-disc list-inside">
+                    <li>Blank fields use the default timezone above</li>
+                    <li>Values in your spreadsheet override defaults</li>
+                    <li>Locations will be created automatically</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isUploading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isUploading || !selectedFile}
+            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+          >
+            {isUploading ? "Processing..." : "Review Schedule"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

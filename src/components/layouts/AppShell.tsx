@@ -81,7 +81,7 @@ export function AppShell({
           isCollapsed ? "w-0" : "w-[240px]"
         )}
       >
-        <div className="w-[240px] h-full bg-muted/40">{sidebar}</div>
+        <div className="w-[240px] h-full">{sidebar}</div>
       </div>
 
       {/* Main content area - unified elevated container */}

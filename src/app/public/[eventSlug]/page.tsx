@@ -963,11 +963,11 @@ export default function PublicSummaryPage({
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <Image
-            src="/asset/wordly-logo-teal-with-container.png"
+            src="/logo/wordly-logo-rebrand-blue.svg"
             alt="Wordly"
-            width={100}
-            height={28}
-            className="h-7 w-auto"
+            width={120}
+            height={36}
+            className="h-8 w-auto"
           />
           <div className="flex items-center gap-1.5 text-sm text-gray-500">
             <Globe className="h-4 w-4" />
@@ -1134,10 +1134,10 @@ export default function PublicSummaryPage({
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Image
-                src="/asset/wordly-logo-teal-with-container.png"
+                src="/logo/wordly-logo-rebrand-blue.svg"
                 alt="Wordly"
                 width={100}
-                height={26}
+                height={28}
                 className="h-6 w-auto"
               />
               <span className="text-sm text-gray-500">

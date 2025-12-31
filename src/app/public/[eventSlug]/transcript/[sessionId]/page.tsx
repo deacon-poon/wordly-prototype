@@ -66,7 +66,10 @@ function formatDate(dateString: string): string {
 }
 
 // Mock data generator
-function getMockTranscriptData(eventSlug: string, sessionId: string): SessionTranscript {
+function getMockTranscriptData(
+  eventSlug: string,
+  sessionId: string
+): SessionTranscript {
   const transcriptSegments: TranscriptSegment[] = [
     {
       id: "seg-001",
@@ -298,7 +301,9 @@ function TranscriptSegment({
   return (
     <div
       className={`py-4 px-4 rounded-lg transition-colors ${
-        isHighlighted ? "bg-primary-teal-50 border-l-4 border-primary-teal-500" : "hover:bg-gray-50"
+        isHighlighted
+          ? "bg-primary-teal-50 border-l-4 border-primary-teal-500"
+          : "hover:bg-gray-50"
       }`}
     >
       <div className="flex items-start gap-4">
@@ -342,7 +347,7 @@ export default function TranscriptPage({
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <Image
-            src="/asset/wordly-logo-teal-with-container.png"
+            src="/logo/wordly-logo-rebrand-blue.svg"
             alt="Wordly"
             width={100}
             height={28}
@@ -531,13 +536,15 @@ export default function TranscriptPage({
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Image
-                src="/asset/wordly-logo-teal-with-container.png"
+                src="/logo/wordly-logo-rebrand-blue.svg"
                 alt="Wordly"
                 width={100}
                 height={26}
                 className="h-6 w-auto"
               />
-              <span className="text-sm text-gray-500">Powered by Wordly AI</span>
+              <span className="text-sm text-gray-500">
+                Powered by Wordly AI
+              </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <a href="#" className="hover:text-gray-900 transition-colors">
@@ -553,4 +560,3 @@ export default function TranscriptPage({
     </div>
   );
 }
-

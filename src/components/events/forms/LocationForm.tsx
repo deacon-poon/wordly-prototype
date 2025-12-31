@@ -3,7 +3,6 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Trash2, Plus, GripVertical } from "lucide-react";
@@ -68,26 +67,6 @@ export function LocationForm({
         />
         {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
       </div>
-
-      {/* Description (optional, shown in full mode) */}
-      {!compact && (
-        <div className="space-y-2">
-          <Label
-            htmlFor={`location-description-${index || 0}`}
-            className="text-sm font-medium text-gray-700"
-          >
-            Description (optional)
-          </Label>
-          <Textarea
-            id={`location-description-${index || 0}`}
-            value={data.description || ""}
-            onChange={(e) => onChange({ description: e.target.value })}
-            placeholder="Brief description of this location"
-            disabled={readOnly}
-            rows={2}
-          />
-        </div>
-      )}
 
       {/* Delete button for list context */}
       {onDelete && canDelete && !readOnly && (
@@ -263,9 +242,6 @@ export function LocationCard({
           <MapPin className="h-5 w-5 text-primary-teal-600" />
           <div>
             <h4 className="font-semibold text-gray-900">{location.name}</h4>
-            {location.description && (
-              <p className="text-sm text-gray-600">{location.description}</p>
-            )}
             <p className="text-xs text-gray-500 mt-1">
               {sessionCount} {sessionCount === 1 ? "session" : "sessions"}
             </p>

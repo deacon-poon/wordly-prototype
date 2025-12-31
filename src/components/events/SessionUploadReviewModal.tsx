@@ -40,6 +40,7 @@ import {
   Search,
   CheckCircle2,
   XCircle,
+  MapPin,
 } from "lucide-react";
 import { TIMEZONES, LANGUAGES } from "./forms/types";
 
@@ -47,22 +48,17 @@ import { TIMEZONES, LANGUAGES } from "./forms/types";
 // Types
 // ============================================================================
 
-export interface UploadedSession {
+export interface UploadedSessionRow {
   id: string;
   rowNumber: number;
-  location: string; // Required - groups sessions by location
   title: string;
   presenter: string;
   date: string;
-  startTime: string; // Renamed from 'time' for clarity
-  endTime: string; // Required per spec
+  startTime: string;
+  endTime: string;
   timezone: string;
   duration: number; // in minutes (calculated from start/end)
-  glossary: string;
-  account: string;
-  voicePack: string;
   language: string;
-  label?: string;
   // Validation state
   isValid: boolean;
   errors: SessionValidationError[];
@@ -77,29 +73,6 @@ export interface SessionValidationError {
 type StatusFilter = "all" | "valid" | "invalid";
 
 // ============================================================================
-// Mock Data (for dropdowns)
-// ============================================================================
-
-const GLOSSARIES = [
-  { id: "none", name: "None" },
-  { id: "tech", name: "Technical Terms" },
-  { id: "medical", name: "Medical Terminology" },
-  { id: "legal", name: "Legal Terms" },
-];
-
-const ACCOUNTS = [
-  { id: "1", name: "Deacon Poon (2a4...)" },
-  { id: "2", name: "Main Account (8ff...)" },
-  { id: "3", name: "Development (3a2...)" },
-];
-
-const VOICE_PACKS = [
-  { id: "feminine", name: "Feminine Voice" },
-  { id: "masculine", name: "Masculine Voice" },
-  { id: "neutral", name: "Neutral Voice" },
-];
-
-// ============================================================================
 // Helper Functions
 // ============================================================================
 
@@ -107,10 +80,7 @@ const VOICE_PACKS = [
  * Parse time string to minutes since midnight for comparison
  */
 function parseTimeToMinutes(timeStr: string): number {
-  // Handle formats like "09:00", "9:00 AM", "14:30", "2:30 PM"
   const cleanTime = timeStr.trim().toUpperCase();
-
-  // Check for AM/PM format
   const isPM = cleanTime.includes("PM");
   const isAM = cleanTime.includes("AM");
   const timeOnly = cleanTime.replace(/\s*(AM|PM)\s*/i, "").trim();
@@ -139,20 +109,12 @@ function calculateDuration(startTime: string, endTime: string): number {
 // ============================================================================
 
 function validateSession(
-  session: UploadedSession,
-  allSessions: UploadedSession[]
+  session: UploadedSessionRow,
+  allSessions: UploadedSessionRow[]
 ): SessionValidationError[] {
   const errors: SessionValidationError[] = [];
 
   // Check for empty required fields
-  if (!session.location?.trim()) {
-    errors.push({
-      field: "location",
-      message: "Location is required",
-      type: "error",
-    });
-  }
-
   if (!session.title.trim()) {
     errors.push({
       field: "title",
@@ -207,16 +169,13 @@ function validateSession(
     }
   }
 
-  // Get sessions in the SAME LOCATION on the same date for conflict checking
-  const sameLocationSessions = allSessions.filter(
-    (other) =>
-      other.id !== session.id &&
-      other.location === session.location &&
-      other.date === session.date
+  // Check for overlapping sessions on the same date (within same location)
+  const sameDateSessions = allSessions.filter(
+    (other) => other.id !== session.id && other.date === session.date
   );
 
-  // Check for exact time conflicts within same location
-  const conflictingSessions = sameLocationSessions.filter(
+  // Check for exact time conflicts
+  const conflictingSessions = sameDateSessions.filter(
     (other) => other.startTime === session.startTime
   );
 
@@ -230,12 +189,12 @@ function validateSession(
     });
   }
 
-  // Check for overlapping sessions within same location
+  // Check for overlapping sessions
   if (session.startTime && session.endTime) {
     const sessionStart = parseTimeToMinutes(session.startTime);
     const sessionEnd = parseTimeToMinutes(session.endTime);
 
-    const overlapping = sameLocationSessions.filter((other) => {
+    const overlapping = sameDateSessions.filter((other) => {
       if (!other.startTime || !other.endTime) return false;
 
       const otherStart = parseTimeToMinutes(other.startTime);
@@ -253,35 +212,6 @@ function validateSession(
           .join(", ")}`,
         type: "error",
       });
-    }
-
-    // Check for large gaps between sessions (warning only)
-    // Find the next session in the same location
-    const sortedLocationSessions = [...sameLocationSessions, session]
-      .filter((s) => s.startTime && s.endTime)
-      .sort(
-        (a, b) =>
-          parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime)
-      );
-
-    const sessionIndex = sortedLocationSessions.findIndex(
-      (s) => s.id === session.id
-    );
-    if (sessionIndex > 0) {
-      const prevSession = sortedLocationSessions[sessionIndex - 1];
-      const prevEnd = parseTimeToMinutes(prevSession.endTime);
-      const gap = sessionStart - prevEnd;
-
-      if (gap > 120) {
-        // More than 2 hours gap
-        errors.push({
-          field: "startTime",
-          message: `Large gap (${Math.round(gap / 60)}h ${
-            gap % 60
-          }m) from previous session`,
-          type: "warning",
-        });
-      }
     }
   }
 
@@ -302,23 +232,12 @@ function validateSession(
     });
   }
 
-  // Warning for sessions outside typical hours (before 6am or after 10pm)
-  if (session.startTime) {
-    const startMins = parseTimeToMinutes(session.startTime);
-    if (startMins < 360 || startMins > 1320) {
-      // 6:00 AM = 360, 10:00 PM = 1320
-      errors.push({
-        field: "startTime",
-        message: "Session scheduled outside typical hours (6am-10pm)",
-        type: "warning",
-      });
-    }
-  }
-
   return errors;
 }
 
-function validateAllSessions(sessions: UploadedSession[]): UploadedSession[] {
+function validateAllSessions(
+  sessions: UploadedSessionRow[]
+): UploadedSessionRow[] {
   return sessions.map((session) => {
     // Recalculate duration from start/end times
     let duration = session.duration;
@@ -338,107 +257,70 @@ function validateAllSessions(sessions: UploadedSession[]): UploadedSession[] {
 }
 
 // ============================================================================
-// Generate Mock Upload Data
+// Generate Mock Upload Data (for prototype)
 // ============================================================================
 
-function generateMockUploadData(): UploadedSession[] {
-  const baseDate = "2025-12-18";
+export function generateMockSessionData(
+  defaultTimezone: string = "America/Los_Angeles"
+): UploadedSessionRow[] {
+  const today = new Date().toISOString().split("T")[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
-  // Create sessions with locations - some conflicts within same location
   const mockData = [
-    // Main Auditorium - has time conflicts at 1:00 PM
     {
-      location: "Main Auditorium",
+      title: "Opening Keynote",
+      presenter: "John Doe, Jane Smith",
+      date: today,
       startTime: "09:00",
       endTime: "10:00",
-      title: "Opening Keynote",
     },
     {
-      location: "Main Auditorium",
+      title: "Product Showcase",
+      presenter: "Jane Smith",
+      date: today,
       startTime: "10:30",
       endTime: "11:30",
-      title: "Product Roadmap",
     },
     {
-      location: "Main Auditorium",
+      title: "Hands-on Workshop",
+      presenter: "Bob Johnson",
+      date: today,
       startTime: "13:00",
-      endTime: "14:00",
-      title: "Customer Success Stories",
+      endTime: "15:00",
     },
     {
-      location: "Main Auditorium",
-      startTime: "13:00",
-      endTime: "14:30",
-      title: "Conflicting Session",
-    }, // CONFLICT
-    {
-      location: "Main Auditorium",
-      startTime: "15:00",
-      endTime: "16:00",
-      title: "Closing Remarks",
-    },
-    // Breakout Room A - valid sessions
-    {
-      location: "Breakout Room A",
-      startTime: "09:00",
-      endTime: "10:30",
-      title: "Technical Workshop",
+      title: "Q&A Session",
+      presenter: "Alice Lee",
+      date: today,
+      startTime: "15:30",
+      endTime: "16:30",
     },
     {
-      location: "Breakout Room A",
-      startTime: "11:00",
-      endTime: "12:00",
-      title: "Hands-on Lab",
-    },
-    {
-      location: "Breakout Room A",
-      startTime: "14:00",
-      endTime: "15:30",
-      title: "Advanced Topics",
-    },
-    // Breakout Room B - has an overlap
-    {
-      location: "Breakout Room B",
-      startTime: "09:30",
-      endTime: "11:00",
-      title: "Design Thinking",
-    },
-    {
-      location: "Breakout Room B",
-      startTime: "10:30",
-      endTime: "12:00",
-      title: "Overlapping Workshop",
-    }, // OVERLAP
-    {
-      location: "Breakout Room B",
-      startTime: "13:00",
-      endTime: "14:00",
-      title: "UX Best Practices",
-    },
-    // Next day session
-    {
-      location: "Main Auditorium",
+      title: "Day 2 Opening",
+      presenter: "John Doe",
+      date: tomorrow,
       startTime: "09:00",
       endTime: "10:00",
-      title: "Day 2 Opening",
-      date: "2025-12-19",
+    },
+    {
+      title: "Deep Dive Technical",
+      presenter: "Bob Johnson, Alice Lee",
+      date: tomorrow,
+      startTime: "10:30",
+      endTime: "12:00",
     },
   ];
 
-  const sessions: UploadedSession[] = mockData.map((item, index) => ({
+  const sessions: UploadedSessionRow[] = mockData.map((item, index) => ({
     id: `session-${index + 1}`,
     rowNumber: index + 1,
-    location: item.location,
     title: item.title,
-    presenter: "John Doe",
-    date: item.date || baseDate,
+    presenter: item.presenter,
+    date: item.date,
     startTime: item.startTime,
     endTime: item.endTime,
-    timezone: "America/Los_Angeles",
+    timezone: defaultTimezone,
     duration: calculateDuration(item.startTime, item.endTime),
-    glossary: "none",
-    account: "1",
-    voicePack: "feminine",
     language: "en-US",
     isValid: true,
     errors: [],
@@ -451,26 +333,30 @@ function generateMockUploadData(): UploadedSession[] {
 // Props
 // ============================================================================
 
-interface BulkUploadReviewModalProps {
+interface SessionUploadReviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (sessions: UploadedSession[]) => void;
-  initialSessions?: UploadedSession[];
+  onSubmit: (sessions: UploadedSessionRow[]) => void;
+  locationName: string;
+  initialSessions?: UploadedSessionRow[];
+  defaultTimezone?: string;
 }
 
 // ============================================================================
 // Component
 // ============================================================================
 
-export function BulkUploadReviewModal({
+export function SessionUploadReviewModal({
   open,
   onOpenChange,
   onSubmit,
+  locationName,
   initialSessions,
-}: BulkUploadReviewModalProps) {
+  defaultTimezone = "America/Los_Angeles",
+}: SessionUploadReviewModalProps) {
   // State
-  const [sessions, setSessions] = useState<UploadedSession[]>(
-    initialSessions || generateMockUploadData()
+  const [sessions, setSessions] = useState<UploadedSessionRow[]>(
+    initialSessions || generateMockSessionData(defaultTimezone)
   );
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -478,7 +364,6 @@ export function BulkUploadReviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filtered and sorted sessions
-  // Invalid sessions are surfaced at the top, valid at the bottom (per existing portal UX)
   const filteredSessions = useMemo(() => {
     let filtered = sessions;
 
@@ -489,24 +374,22 @@ export function BulkUploadReviewModal({
       filtered = filtered.filter((s) => !s.isValid);
     }
 
-    // Filter by search query (includes location)
+    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (s) =>
           s.title.toLowerCase().includes(query) ||
-          s.presenter.toLowerCase().includes(query) ||
-          s.location.toLowerCase().includes(query)
+          s.presenter.toLowerCase().includes(query)
       );
     }
 
-    // Sort: invalid sessions first, then valid sessions
-    // Within each group, maintain original row order
+    // Sort: invalid sessions first
     filtered = [...filtered].sort((a, b) => {
       if (a.isValid === b.isValid) {
-        return a.rowNumber - b.rowNumber; // Maintain row order within group
+        return a.rowNumber - b.rowNumber;
       }
-      return a.isValid ? 1 : -1; // Invalid first (false < true)
+      return a.isValid ? 1 : -1;
     });
 
     return filtered;
@@ -518,12 +401,11 @@ export function BulkUploadReviewModal({
 
   // Update a session field
   const updateSession = useCallback(
-    (id: string, field: keyof UploadedSession, value: any) => {
+    (id: string, field: keyof UploadedSessionRow, value: string) => {
       setSessions((prev) => {
         const updated = prev.map((s) =>
           s.id === id ? { ...s, [field]: value } : s
         );
-        // Re-validate all sessions
         return validateAllSessions(updated);
       });
     },
@@ -534,7 +416,6 @@ export function BulkUploadReviewModal({
   const deleteSession = useCallback((id: string) => {
     setSessions((prev) => {
       const filtered = prev.filter((s) => s.id !== id);
-      // Re-number and re-validate
       const renumbered = filtered.map((s, i) => ({
         ...s,
         rowNumber: i + 1,
@@ -543,24 +424,9 @@ export function BulkUploadReviewModal({
     });
   }, []);
 
-  // Check if field has error
-  const hasFieldError = (session: UploadedSession, field: string): boolean => {
-    return session.errors.some((e) => e.field === field && e.type === "error");
-  };
-
-  // Check if field has warning
-  const hasFieldWarning = (
-    session: UploadedSession,
-    field: string
-  ): boolean => {
-    return session.errors.some(
-      (e) => e.field === field && e.type === "warning"
-    );
-  };
-
-  // Get all field errors/warnings
+  // Get field errors
   const getFieldErrors = (
-    session: UploadedSession,
+    session: UploadedSessionRow,
     field: string
   ): SessionValidationError[] => {
     return session.errors.filter((e) => e.field === field);
@@ -584,7 +450,7 @@ export function BulkUploadReviewModal({
 
   // Render cell with error/warning tooltip
   const renderCellWithTooltip = (
-    session: UploadedSession,
+    session: UploadedSessionRow,
     field: string,
     content: React.ReactNode
   ) => {
@@ -635,15 +501,16 @@ export function BulkUploadReviewModal({
 
   // Render editable cell
   const renderEditableCell = (
-    session: UploadedSession,
-    field: keyof UploadedSession,
+    session: UploadedSessionRow,
+    field: keyof UploadedSessionRow,
     type: "text" | "date" | "time" | "select",
     options?: { id: string; name: string }[]
   ) => {
     const isEditing = editingRowId === session.id;
     const value = session[field] as string;
-    const hasError = hasFieldError(session, field);
-    const hasWarning = hasFieldWarning(session, field);
+    const fieldErrors = getFieldErrors(session, field);
+    const hasError = fieldErrors.some((e) => e.type === "error");
+    const hasWarning = fieldErrors.some((e) => e.type === "warning");
 
     if (!isEditing) {
       const displayValue =
@@ -713,13 +580,24 @@ export function BulkUploadReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[1400px] max-h-[90vh] p-0 flex flex-col">
+      <DialogContent className="max-w-[90vw] w-[1100px] max-h-[90vh] p-0 flex flex-col">
         {/* Header */}
         <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-semibold text-gray-900">
-              Review Uploaded Sessions
-            </DialogTitle>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+                <MapPin className="h-5 w-5 text-primary-teal-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold text-gray-900">
+                  Review Sessions for {locationName}
+                </DialogTitle>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  Review and edit the parsed sessions before adding to the
+                  location
+                </p>
+              </div>
+            </div>
             {/* Stats */}
             <div className="flex items-center gap-3 text-sm">
               <span className="flex items-center gap-1 text-green-600">
@@ -746,9 +624,7 @@ export function BulkUploadReviewModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">
-                    <span className="flex items-center gap-2">Show all</span>
-                  </SelectItem>
+                  <SelectItem value="all">Show all</SelectItem>
                   <SelectItem value="valid">
                     <span className="flex items-center gap-2">
                       <Check className="h-3 w-3 text-green-600" />
@@ -769,7 +645,7 @@ export function BulkUploadReviewModal({
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Filter by content..."
+                placeholder="Filter by title or presenter..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9"
@@ -787,19 +663,14 @@ export function BulkUploadReviewModal({
                   <TableHead className="w-12 text-center">#</TableHead>
                   <TableHead className="w-16 text-center">Status</TableHead>
                   <TableHead className="w-20">Actions</TableHead>
-                  <TableHead className="min-w-[140px]">Location</TableHead>
                   <TableHead className="min-w-[180px]">Title</TableHead>
-                  <TableHead className="min-w-[130px]">Presenter</TableHead>
+                  <TableHead className="min-w-[150px]">Presenter</TableHead>
                   <TableHead className="w-32">Date</TableHead>
                   <TableHead className="w-28">Start Time</TableHead>
                   <TableHead className="w-28">End Time</TableHead>
-                  <TableHead className="w-40">Timezone</TableHead>
                   <TableHead className="w-24">Duration</TableHead>
-                  <TableHead className="w-32">Glossary</TableHead>
-                  <TableHead className="w-40">Account</TableHead>
-                  <TableHead className="w-36">Voice Pack</TableHead>
+                  <TableHead className="w-40">Timezone</TableHead>
                   <TableHead className="w-32">Language</TableHead>
-                  <TableHead className="w-28">Label</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -872,11 +743,6 @@ export function BulkUploadReviewModal({
                         </div>
                       </TableCell>
 
-                      {/* Location */}
-                      <TableCell>
-                        {renderEditableCell(session, "location", "text")}
-                      </TableCell>
-
                       {/* Title */}
                       <TableCell>
                         {renderEditableCell(session, "title", "text")}
@@ -902,19 +768,6 @@ export function BulkUploadReviewModal({
                         {renderEditableCell(session, "endTime", "time")}
                       </TableCell>
 
-                      {/* Timezone */}
-                      <TableCell>
-                        {renderEditableCell(
-                          session,
-                          "timezone",
-                          "select",
-                          TIMEZONES.map((tz) => ({
-                            id: tz.value,
-                            name: tz.label,
-                          }))
-                        )}
-                      </TableCell>
-
                       {/* Duration (read-only, calculated) */}
                       <TableCell>
                         {renderCellWithTooltip(
@@ -928,33 +781,16 @@ export function BulkUploadReviewModal({
                         )}
                       </TableCell>
 
-                      {/* Glossary */}
+                      {/* Timezone */}
                       <TableCell>
                         {renderEditableCell(
                           session,
-                          "glossary",
+                          "timezone",
                           "select",
-                          GLOSSARIES
-                        )}
-                      </TableCell>
-
-                      {/* Account */}
-                      <TableCell>
-                        {renderEditableCell(
-                          session,
-                          "account",
-                          "select",
-                          ACCOUNTS
-                        )}
-                      </TableCell>
-
-                      {/* Voice Pack */}
-                      <TableCell>
-                        {renderEditableCell(
-                          session,
-                          "voicePack",
-                          "select",
-                          VOICE_PACKS
+                          TIMEZONES.map((tz) => ({
+                            id: tz.value,
+                            name: tz.label,
+                          }))
                         )}
                       </TableCell>
 
@@ -967,11 +803,6 @@ export function BulkUploadReviewModal({
                           LANGUAGES.map((l) => ({ id: l.code, name: l.name }))
                         )}
                       </TableCell>
-
-                      {/* Label (optional) */}
-                      <TableCell>
-                        {renderEditableCell(session, "label", "text")}
-                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -983,7 +814,8 @@ export function BulkUploadReviewModal({
         {/* Footer */}
         <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between flex-shrink-0">
           <div className="text-sm text-gray-600">
-            Showing {filteredSessions.length} of {sessions.length} sessions
+            {sessions.length} sessions will be added to{" "}
+            <span className="font-medium">{locationName}</span>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -998,7 +830,9 @@ export function BulkUploadReviewModal({
               disabled={isSubmitting || invalidCount > 0}
               className="bg-primary-teal-600 hover:bg-primary-teal-700"
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {isSubmitting
+                ? "Adding..."
+                : `Add Location with ${sessions.length} Sessions`}
             </Button>
           </div>
         </div>

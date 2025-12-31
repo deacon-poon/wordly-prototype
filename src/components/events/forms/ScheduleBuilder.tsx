@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -485,23 +484,6 @@ function LocationCard({
           <div className="px-4 pb-4 space-y-4">
             {/* Divider */}
             <div className="h-px bg-gray-200" />
-
-            {/* Location Description */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">
-                Description (optional)
-              </Label>
-              <Textarea
-                value={location.description || ""}
-                onChange={(e) =>
-                  onUpdateLocation({ description: e.target.value })
-                }
-                placeholder="Brief description of this location"
-                disabled={readOnly}
-                rows={2}
-                className="resize-none"
-              />
-            </div>
 
             {/* Sessions Header */}
             <div className="flex items-center justify-between">

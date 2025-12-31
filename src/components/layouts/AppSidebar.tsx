@@ -45,20 +45,18 @@ export function AppSidebar() {
   // Desktop sidebar
   const DesktopSidebar = (
     <Sidebar className="flex flex-col h-screen z-30">
-      <SidebarHeader className="flex items-center justify-start px-4">
-        <div className="flex items-center">
-          <Image
-            src="/logo/wordly-logo-primary-with-radius-border.png"
-            alt="Wordly Logo"
-            width={36}
-            height={36}
-          />
-          {!isCollapsed && (
-            <span className="text-xl font-bold text-primary-teal-600 ml-2">
-              wordly
-            </span>
+      <SidebarHeader className="flex items-center justify-start px-4 pt-3">
+        <Image
+          src="/logo/wordly-logo-rebrand-blue.svg"
+          alt="Wordly Logo"
+          width={120}
+          height={36}
+          className={cn(
+            "h-9 w-auto transition-opacity duration-300",
+            isCollapsed ? "opacity-0" : "opacity-100"
           )}
-        </div>
+          priority
+        />
       </SidebarHeader>
       <SidebarNav className="flex-grow overflow-y-auto">
         <NavWorkspace pathname={pathname} onClick={handleNavClick} />
@@ -83,14 +81,12 @@ export function AppSidebar() {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Image
-                src="/logo/wordly-logo-primary-with-radius-border.png"
+                src="/logo/wordly-logo-rebrand-blue.svg"
                 alt="Wordly Logo"
-                width={28}
+                width={100}
                 height={28}
+                className="h-7 w-auto"
               />
-              <span className="text-xl font-bold text-primary-teal-600 ml-2">
-                wordly
-              </span>
             </div>
             <SheetClose className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
               <X className="h-4 w-4" />

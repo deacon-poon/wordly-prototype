@@ -11,6 +11,12 @@ import {
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  getStoredEvent,
+  saveEvent,
+  deserializeEvent,
+  serializeEvent,
+} from "@/lib/eventStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -138,7 +144,13 @@ const formatDateRange = (startDate: Date, endDate: Date): string => {
 
 // Generate mock event data based on event ID
 function getMockEventData(eventId: string): Event {
-  // Map of event IDs to event data
+  // First, check if the event exists in localStorage (user-created events)
+  const storedEvent = getStoredEvent(eventId);
+  if (storedEvent) {
+    return deserializeEvent(storedEvent);
+  }
+
+  // Map of event IDs to event data (demo events)
   const eventDataMap: Record<string, Partial<Event>> = {
     "evt-001": {
       name: "AI & Machine Learning Summit 2024",
@@ -165,9 +177,24 @@ function getMockEventData(eventId: string): Event {
     },
   };
 
-  const eventData = eventDataMap[eventId] || eventDataMap["evt-001"];
+  const eventData = eventDataMap[eventId];
   const today = new Date().toISOString().split("T")[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
+  // For new events (not in our mock data), return an empty event
+  if (!eventData) {
+    return {
+      id: eventId,
+      name: "New Event",
+      dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
+      startDate: getRelativeDate(0),
+      endDate: getRelativeDate(1),
+      locationCount: 0,
+      sessionCount: 0,
+      description: "Add locations and sessions to get started",
+      locations: [],
+    };
+  }
 
   return {
     id: eventId,
@@ -368,6 +395,17 @@ export default function EventDetailPage({
   const [event, setEvent] = useState<Event>(() =>
     getMockEventData(resolvedParams.eventId)
   );
+
+  // Save event changes to localStorage for persistence
+  useEffect(() => {
+    // Only save user-created events (not demo events)
+    if (
+      event.id.startsWith("evt-") &&
+      !["evt-001", "evt-002", "evt-003"].includes(event.id)
+    ) {
+      saveEvent(serializeEvent(event));
+    }
+  }, [event]);
 
   const eventStatus = getEventStatus(event.startDate, event.endDate);
   const isPastEvent = eventStatus === "past";
@@ -591,7 +629,7 @@ export default function EventDetailPage({
                 className="text-gray-600 hover:text-gray-900"
               >
                 <Download className="h-4 w-4 mr-1.5" />
-                Download for AV
+                Bulk Download Links
               </Button>
               <Button
                 onClick={() => setIsAddLocationModalOpen(true)}
@@ -612,15 +650,102 @@ export default function EventDetailPage({
 
       {/* Schedule grouped by date */}
       <div className="p-6 space-y-6">
-        {filteredDates.length === 0 ? (
+        {/* Show locations without sessions */}
+        {event.locations.filter((loc) => loc.sessions.length === 0).length >
+          0 && (
+          <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-amber-400" />
+              <h3 className="text-sm font-semibold text-amber-800">
+                Locations awaiting sessions
+              </h3>
+              <span className="text-xs text-amber-600">
+                (
+                {
+                  event.locations.filter((loc) => loc.sessions.length === 0)
+                    .length
+                }{" "}
+                {event.locations.filter((loc) => loc.sessions.length === 0)
+                  .length === 1
+                  ? "location"
+                  : "locations"}
+                )
+              </span>
+            </div>
+            <p className="text-xs text-amber-700 ml-4">
+              These locations don&apos;t have any sessions scheduled yet. Add
+              sessions to schedule them on specific dates.
+            </p>
+            {event.locations
+              .filter((loc) => loc.sessions.length === 0)
+              .map((location) => (
+                <LocationAccordion
+                  key={location.id}
+                  location={location}
+                  defaultExpanded={false}
+                  onStartLocation={(location, e) =>
+                    handleStartLocation(location, event.name, e)
+                  }
+                  onLinksToJoin={(location, e) =>
+                    handleWaysToJoin(location, event.name, e)
+                  }
+                  onRenameLocation={(location) => {
+                    setEditLocationContext({ location });
+                    setIsEditLocationModalOpen(true);
+                  }}
+                  onDeleteLocation={(location) => {
+                    if (
+                      confirm(
+                        `Are you sure you want to delete "${location.name}"?`
+                      )
+                    ) {
+                      setEvent((prev) => ({
+                        ...prev,
+                        locations: prev.locations.filter(
+                          (l) => l.id !== location.id
+                        ),
+                        locationCount: prev.locationCount - 1,
+                      }));
+                    }
+                  }}
+                  onAddSession={(location) => {
+                    setAddSessionContext({
+                      locationName: location.name,
+                      locationSessionId: location.locationSessionId,
+                      locationPasscode: location.passcode,
+                    });
+                    setIsAddSessionModalOpen(true);
+                  }}
+                  isPastEvent={isPastEvent}
+                  showCredentials={true}
+                />
+              ))}
+          </div>
+        )}
+
+        {filteredDates.length === 0 &&
+        event.locations.filter((loc) => loc.sessions.length === 0).length ===
+          0 ? (
           <Card className="p-8 text-center">
             <p className="text-gray-600">
               {selectedTab === "active" && "No sessions scheduled for today"}
               {selectedTab === "upcoming" && "No upcoming sessions"}
               {selectedTab === "past" && "No past sessions"}
+              {selectedTab === "all" && event.locations.length === 0 && (
+                <>
+                  No locations yet.{" "}
+                  <button
+                    onClick={() => setIsAddLocationModalOpen(true)}
+                    className="text-primary-teal-600 hover:underline font-medium"
+                  >
+                    Add your first location
+                  </button>{" "}
+                  to get started.
+                </>
+              )}
             </p>
           </Card>
-        ) : (
+        ) : filteredDates.length > 0 ? (
           // Display dates first, then locations within each date
           filteredDates.map((date) => {
             const sessionsForDate = sessionsByDate[date];
@@ -649,7 +774,7 @@ export default function EventDetailPage({
                 key={date}
                 className={`relative transition-all duration-200 border rounded-lg ${
                   isDateExpanded
-                    ? "border-gray-300 bg-gray-50/30 shadow-sm"
+                    ? "border-gray-200 bg-white shadow-sm ring-1 ring-inset ring-gray-100"
                     : "border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
@@ -744,7 +869,7 @@ export default function EventDetailPage({
               </div>
             );
           })
-        )}
+        ) : null}
       </div>
 
       {/* Ways to Join Modal */}
@@ -774,18 +899,37 @@ export default function EventDetailPage({
         open={isAddLocationModalOpen}
         onOpenChange={setIsAddLocationModalOpen}
         eventName={event.name}
-        onSave={async (locationData: LocationFormData) => {
+        onSave={async (
+          locationData: LocationFormData,
+          sessions?: SessionFormData[]
+        ) => {
+          // Create sessions if provided from bulk upload
+          const newSessions: Session[] = sessions
+            ? sessions.map((s, index) => ({
+                id: `session-${Date.now()}-${index}`,
+                title: s.title,
+                presenters: s.presenters
+                  .split(",")
+                  .map((p) => p.trim())
+                  .filter(Boolean),
+                scheduledDate: s.scheduledDate,
+                scheduledStart: s.scheduledStart,
+                endTime: s.endTime,
+                status: "pending" as const,
+              }))
+            : [];
+
           // Create a new location with generated IDs
           const newLocation: Location = {
             id: `loc-${Date.now()}`,
             name: locationData.name,
-            sessionCount: 0,
+            sessionCount: newSessions.length,
             locationSessionId:
               locationData.locationSessionId ||
               `LOC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
             passcode:
               locationData.passcode || Math.random().toString().substring(2, 8),
-            sessions: [],
+            sessions: newSessions,
           };
 
           // Update event state with new location
@@ -793,6 +937,7 @@ export default function EventDetailPage({
             ...prev,
             locations: [...prev.locations, newLocation],
             locationCount: prev.locationCount + 1,
+            sessionCount: prev.sessionCount + newSessions.length,
           }));
 
           setIsAddLocationModalOpen(false);
@@ -808,7 +953,6 @@ export default function EventDetailPage({
           initialData={{
             id: editLocationContext.location.id,
             name: editLocationContext.location.name,
-            description: "",
           }}
           onSave={async (locationData: LocationFormData) => {
             // Update the location in state

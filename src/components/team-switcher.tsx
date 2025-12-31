@@ -12,28 +12,17 @@ export function TeamSwitcher() {
 
   return (
     <div className="flex w-full items-center">
-      <div
+      <Image
+        src="/logo/wordly-logo-rebrand-blue.svg"
+        alt="Wordly Logo"
+        width={120}
+        height={36}
         className={cn(
-          "flex items-center gap-3",
-          isCollapsed ? "justify-center w-full" : ""
+          "h-9 w-auto transition-opacity duration-300",
+          isCollapsed ? "opacity-0" : "opacity-100"
         )}
-      >
-        <div className="flex  items-center justify-center">
-          <Image
-            src="/logo/wordly-logo-primary-with-radius-border.png"
-            alt="Wordly Logo"
-            width={40}
-            height={40}
-          />
-        </div>
-        {!isCollapsed && (
-          <div className="flex flex-col justify-center">
-            <span className="text-xl font-bold text-primary-teal-600">
-              Wordly
-            </span>
-          </div>
-        )}
-      </div>
+        priority
+      />
     </div>
   );
 }

@@ -11,16 +11,14 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center">
             <Image
-              src="/logo/wordly-logo-primary-with-radius-border.png"
+              src="/logo/wordly-logo-rebrand-blue.svg"
               alt="Wordly Logo"
-              width={32}
-              height={32}
+              width={120}
+              height={36}
+              className="h-9 w-auto"
             />
-            <span className="text-2xl font-bold text-primary-teal-600">
-              wordly
-            </span>
           </div>
           <nav className="flex items-center gap-6">
             <Link
