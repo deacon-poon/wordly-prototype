@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -46,14 +47,24 @@ export function EventChatbot({
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Create transport with event context for the chat API
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        body: {
+          eventContext: {
+            eventName,
+            description: eventDescription,
+            sessions,
+          },
+        },
+      }),
+    [eventName, eventDescription, sessions]
+  );
+
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    body: {
-      eventContext: {
-        eventName,
-        description: eventDescription,
-        sessions,
-      },
-    },
+    transport,
   });
 
   // Add welcome message on mount
