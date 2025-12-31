@@ -39,10 +39,7 @@ import {
   BulkUploadReviewModal,
   type UploadedSession,
 } from "@/components/events/BulkUploadReviewModal";
-import type {
-  LocationFormData,
-  SessionFormData,
-} from "@/components/events/forms";
+import type { LocationFormData, SessionFormData } from "@/components/events/forms";
 
 // Data interfaces (will be imported from shared types in production)
 interface Session {
@@ -627,9 +624,13 @@ export default function EventDetailPage({
           if (locIndex !== -1) {
             updatedLocations[locIndex] = {
               ...updatedLocations[locIndex],
-              sessions: [...updatedLocations[locIndex].sessions, ...data.sessions],
+              sessions: [
+                ...updatedLocations[locIndex].sessions,
+                ...data.sessions,
+              ],
               sessionCount:
-                updatedLocations[locIndex].sessions.length + data.sessions.length,
+                updatedLocations[locIndex].sessions.length +
+                data.sessions.length,
             };
           }
         } else {
@@ -1030,37 +1031,18 @@ export default function EventDetailPage({
         open={isAddLocationModalOpen}
         onOpenChange={setIsAddLocationModalOpen}
         eventName={event.name}
-        onSave={async (
-          locationData: LocationFormData,
-          sessions?: SessionFormData[]
-        ) => {
-          // Create sessions if provided from bulk upload
-          const newSessions: Session[] = sessions
-            ? sessions.map((s, index) => ({
-                id: `session-${Date.now()}-${index}`,
-                title: s.title,
-                presenters: s.presenters
-                  .split(",")
-                  .map((p) => p.trim())
-                  .filter(Boolean),
-                scheduledDate: s.scheduledDate,
-                scheduledStart: s.scheduledStart,
-                endTime: s.endTime,
-                status: "pending" as const,
-              }))
-            : [];
-
-          // Create a new location with generated IDs
+        onSave={async (locationData: LocationFormData) => {
+          // Create a new empty location with generated IDs
           const newLocation: Location = {
             id: `loc-${Date.now()}`,
             name: locationData.name,
-            sessionCount: newSessions.length,
+            sessionCount: 0,
             locationSessionId:
               locationData.locationSessionId ||
               `LOC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
             passcode:
               locationData.passcode || Math.random().toString().substring(2, 8),
-            sessions: newSessions,
+            sessions: [],
           };
 
           // Update event state with new location
@@ -1068,7 +1050,6 @@ export default function EventDetailPage({
             ...prev,
             locations: [...prev.locations, newLocation],
             locationCount: prev.locationCount + 1,
-            sessionCount: prev.sessionCount + newSessions.length,
           }));
 
           setIsAddLocationModalOpen(false);
