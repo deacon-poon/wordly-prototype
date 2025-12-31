@@ -20,26 +20,28 @@ import {
 } from "@/lib/eventStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { WaysToJoinModal } from "@/components/WaysToJoinModal";
-import { PresentationEditDrawer } from "@/components/events/PresentationEditDrawer";
 import { LocationAccordion } from "@/components/events/LocationAccordion";
 import {
   AddLocationModal,
   EditLocationModal,
 } from "@/components/events/AddLocationModal";
-import { AddSessionModal } from "@/components/events/AddSessionModal";
+import { SessionPanel } from "@/components/events/SessionPanel";
 import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
 import {
   BulkUploadReviewModal,
   type UploadedSession,
 } from "@/components/events/BulkUploadReviewModal";
-import type { LocationFormData, SessionFormData } from "@/components/events/forms";
+import type {
+  LocationFormData,
+  SessionFormData,
+} from "@/components/events/forms";
 
 // Data interfaces (will be imported from shared types in production)
 interface Session {
@@ -369,24 +371,21 @@ export default function EventDetailPage({
     location: Location | null;
     eventName: string | null;
   }>({ location: null, eventName: null });
-  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
-  const [editingSession, setEditingSession] = useState<{
-    session: Session;
-    eventName: string;
-    locationName: string;
-    locationSessionId: string;
-    locationPasscode: string;
-  } | null>(null);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
 
-  // Add Location/Session modals
-  const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
-  const [isAddSessionModalOpen, setIsAddSessionModalOpen] = useState(false);
-  const [addSessionContext, setAddSessionContext] = useState<{
+  // Session panel state (unified for add/edit)
+  const [sessionPanelState, setSessionPanelState] = useState<{
+    isOpen: boolean;
+    mode: "add" | "edit";
+    session?: Session;
+    locationId: string;
     locationName: string;
     locationSessionId: string;
     locationPasscode: string;
   } | null>(null);
+
+  // Add Location modal
+  const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
   const [editLocationContext, setEditLocationContext] = useState<{
     location: Location;
   } | null>(null);
@@ -511,19 +510,88 @@ export default function EventDetailPage({
 
   const handleEditSession = (
     session: Session,
-    eventName: string,
     location: Location,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    setEditingSession({
+    setSessionPanelState({
+      isOpen: true,
+      mode: "edit",
       session,
-      eventName,
+      locationId: location.id,
       locationName: location.name,
       locationSessionId: location.locationSessionId,
       locationPasscode: location.passcode,
     });
-    setIsEditDrawerOpen(true);
+  };
+
+  const handleAddSession = (location: Location) => {
+    setSessionPanelState({
+      isOpen: true,
+      mode: "add",
+      locationId: location.id,
+      locationName: location.name,
+      locationSessionId: location.locationSessionId,
+      locationPasscode: location.passcode,
+    });
+  };
+
+  const handleCloseSessionPanel = () => {
+    setSessionPanelState(null);
+  };
+
+  const handleSaveSession = (
+    sessionData: Session | SessionFormData,
+    isNew: boolean
+  ) => {
+    if (isNew) {
+      // Adding new session
+      const formData = sessionData as SessionFormData;
+      const newSession: Session = {
+        id: `ses-${Date.now()}`,
+        title: formData.title,
+        presenters: formData.presenters
+          .split(",")
+          .map((p) => p.trim())
+          .filter(Boolean),
+        scheduledDate: formData.scheduledDate,
+        scheduledStart: formData.scheduledStart,
+        endTime: formData.endTime,
+        status: "pending",
+      };
+
+      setEvent((prev) => ({
+        ...prev,
+        sessionCount: prev.sessionCount + 1,
+        locations: prev.locations.map((loc) =>
+          loc.id === sessionPanelState?.locationId
+            ? {
+                ...loc,
+                sessions: [...loc.sessions, newSession],
+                sessionCount: loc.sessionCount + 1,
+              }
+            : loc
+        ),
+      }));
+    } else {
+      // Editing existing session
+      const updatedSession = sessionData as Session;
+      setEvent((prev) => ({
+        ...prev,
+        locations: prev.locations.map((loc) =>
+          loc.id === sessionPanelState?.locationId
+            ? {
+                ...loc,
+                sessions: loc.sessions.map((s) =>
+                  s.id === updatedSession.id ? updatedSession : s
+                ),
+              }
+            : loc
+        ),
+      }));
+    }
+
+    setSessionPanelState(null);
   };
 
   const handleDownloadForAV = () => {
@@ -840,14 +908,7 @@ export default function EventDetailPage({
                       }));
                     }
                   }}
-                  onAddSession={(location) => {
-                    setAddSessionContext({
-                      locationName: location.name,
-                      locationSessionId: location.locationSessionId,
-                      locationPasscode: location.passcode,
-                    });
-                    setIsAddSessionModalOpen(true);
-                  }}
+                  onAddSession={handleAddSession}
                   isPastEvent={isPastEvent}
                   showCredentials={true}
                 />
@@ -967,7 +1028,7 @@ export default function EventDetailPage({
                             handleWaysToJoin(location, event.name, e)
                           }
                           onEditSession={(session, location, e) =>
-                            handleEditSession(session, event.name, location, e)
+                            handleEditSession(session, location, e)
                           }
                           onRenameLocation={(location) => {
                             setEditLocationContext({ location });
@@ -983,14 +1044,7 @@ export default function EventDetailPage({
                               console.log("Delete location:", location.id);
                             }
                           }}
-                          onAddSession={(location) => {
-                            setAddSessionContext({
-                              locationName: location.name,
-                              locationSessionId: location.locationSessionId,
-                              locationPasscode: location.passcode,
-                            });
-                            setIsAddSessionModalOpen(true);
-                          }}
+                          onAddSession={handleAddSession}
                           isPastEvent={isPastEvent}
                           showCredentials={true}
                         />
@@ -1083,68 +1137,6 @@ export default function EventDetailPage({
         />
       )}
 
-      {/* Add Session Modal */}
-      {addSessionContext && (
-        <AddSessionModal
-          open={isAddSessionModalOpen}
-          onOpenChange={(open) => {
-            setIsAddSessionModalOpen(open);
-            if (!open) {
-              setAddSessionContext(null);
-            }
-          }}
-          locationName={addSessionContext.locationName}
-          locationSessionId={addSessionContext.locationSessionId}
-          locationPasscode={addSessionContext.locationPasscode}
-          eventName={event.name}
-          defaultDate={event.startDate.toISOString().split("T")[0]}
-          onSave={async (sessionData: SessionFormData) => {
-            // Find the location to add the session to
-            const locationId = event.locations.find(
-              (loc) =>
-                loc.locationSessionId === addSessionContext.locationSessionId
-            )?.id;
-
-            if (!locationId) {
-              console.error("Location not found");
-              return;
-            }
-
-            // Create a new session
-            const newSession: Session = {
-              id: `ses-${Date.now()}`,
-              title: sessionData.title,
-              presenters: sessionData.presenters
-                .split(",")
-                .map((p) => p.trim())
-                .filter(Boolean),
-              scheduledDate: sessionData.scheduledDate,
-              scheduledStart: sessionData.scheduledStart,
-              endTime: sessionData.endTime,
-              status: "pending",
-            };
-
-            // Update event state with new session
-            setEvent((prev) => ({
-              ...prev,
-              sessionCount: prev.sessionCount + 1,
-              locations: prev.locations.map((loc) =>
-                loc.id === locationId
-                  ? {
-                      ...loc,
-                      sessions: [...loc.sessions, newSession],
-                      sessionCount: loc.sessionCount + 1,
-                    }
-                  : loc
-              ),
-            }));
-
-            setIsAddSessionModalOpen(false);
-            setAddSessionContext(null);
-          }}
-        />
-      )}
-
       {/* Upload Schedule Modal */}
       <UploadScheduleModal
         open={isUploadModalOpen}
@@ -1163,56 +1155,24 @@ export default function EventDetailPage({
 
   return (
     <div className="h-full">
-      {isEditDrawerOpen && editingSession ? (
+      {sessionPanelState?.isOpen ? (
         <ResizablePanelGroup direction="horizontal" className="h-full">
           <ResizablePanel defaultSize={60} minSize={45}>
             {mainContent}
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize={40} minSize={30}>
-            <div className="h-full flex flex-col bg-white border-l">
-              {/* Custom header */}
-              <div className="border-b px-6 py-4 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Presentation
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-0.5">
-                    {editingSession.eventName} · {editingSession.locationName}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setIsEditDrawerOpen(false);
-                    setEditingSession(null);
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ChevronLeft className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
-
-              {/* Presentation edit form */}
-              <div className="flex-1 overflow-y-auto">
-                <PresentationEditDrawer
-                  session={editingSession.session}
-                  isOpen={true}
-                  onClose={() => {
-                    setIsEditDrawerOpen(false);
-                    setEditingSession(null);
-                  }}
-                  onSave={(updatedSession) => {
-                    console.log("Save presentation:", updatedSession);
-                    setIsEditDrawerOpen(false);
-                    setEditingSession(null);
-                  }}
-                  inline={true}
-                  locationName={editingSession.locationName}
-                  locationSessionId={editingSession.locationSessionId}
-                  locationPasscode={editingSession.locationPasscode}
-                />
-              </div>
-            </div>
+            <SessionPanel
+              mode={sessionPanelState.mode}
+              session={sessionPanelState.session}
+              locationName={sessionPanelState.locationName}
+              locationSessionId={sessionPanelState.locationSessionId}
+              locationPasscode={sessionPanelState.locationPasscode}
+              eventName={event.name}
+              defaultDate={event.startDate.toISOString().split("T")[0]}
+              onClose={handleCloseSessionPanel}
+              onSave={handleSaveSession}
+            />
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (
