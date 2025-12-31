@@ -47,7 +47,6 @@ export function EventChatbot({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    api: "/api/chat",
     body: {
       eventContext: {
         eventName,
