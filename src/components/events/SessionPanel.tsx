@@ -169,8 +169,8 @@ export function SessionPanel({
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="border-b px-6 py-4 flex items-center justify-between">
+      {/* Sticky Header */}
+      <div className="flex-shrink-0 border-b px-6 py-4 flex items-center justify-between bg-white sticky top-0 z-10">
         <div>
           <div className="flex items-center gap-2">
             {mode === "add" ? (
@@ -195,8 +195,12 @@ export function SessionPanel({
         </button>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+      {/* Scrollable Form Body */}
+      <form
+        id="session-form"
+        onSubmit={handleSubmit}
+        className="flex-1 overflow-y-auto min-h-0"
+      >
         <div className="p-6 space-y-6">
           {isReadOnly && (
             <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700">
@@ -214,27 +218,28 @@ export function SessionPanel({
             locationName={locationName}
           />
         </div>
-
-        {/* Footer Actions */}
-        <div className="border-t px-6 py-4 flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSaving || isReadOnly || !formData.title.trim()}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
-          >
-            {isSaving
-              ? mode === "add"
-                ? "Adding..."
-                : "Saving..."
-              : mode === "add"
-              ? "Add Session"
-              : "Save Changes"}
-          </Button>
-        </div>
       </form>
+
+      {/* Sticky Footer Actions */}
+      <div className="flex-shrink-0 border-t px-6 py-4 flex justify-end gap-3 bg-white">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          form="session-form"
+          disabled={isSaving || isReadOnly || !formData.title.trim()}
+          className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+        >
+          {isSaving
+            ? mode === "add"
+              ? "Adding..."
+              : "Saving..."
+            : mode === "add"
+            ? "Add Session"
+            : "Save Changes"}
+        </Button>
+      </div>
     </div>
   );
 }

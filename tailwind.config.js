@@ -67,7 +67,7 @@ module.exports = {
           800: "#050E1F",
           900: "#030916",
         },
-                // Accent Green palette - Figma Variables Source of Truth  
+        // Accent Green palette - Figma Variables Source of Truth
         "accent-green": {
           50: "#E8FCF7", // Calculated from base
           100: "#C8F9EC", // Calculated from base
