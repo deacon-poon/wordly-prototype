@@ -821,7 +821,7 @@ export default function EventDetailPage({
                     rel="noopener noreferrer"
                   >
                     <ExternalLink className="h-4 w-4 @lg:mr-1.5" />
-                    <span className="hidden @lg:inline">Public Summaries</span>
+                    <span className="hidden @lg:inline">Public Summaries Page</span>
                   </a>
                 </Button>
               )}
@@ -833,7 +833,7 @@ export default function EventDetailPage({
                 title="Bulk Download Links"
               >
                 <Download className="h-4 w-4 @lg:mr-1.5" />
-                <span className="hidden @lg:inline">Download</span>
+                <span className="hidden @lg:inline">Bulk Download Links</span>
               </Button>
               <Button
                 onClick={() => setIsUploadModalOpen(true)}
@@ -847,7 +847,7 @@ export default function EventDetailPage({
                 }
               >
                 <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
-                <span className="hidden @md:inline">Upload</span>
+                <span className="hidden @md:inline">Upload Schedule</span>
               </Button>
               <Button
                 onClick={() => setIsAddLocationModalOpen(true)}
