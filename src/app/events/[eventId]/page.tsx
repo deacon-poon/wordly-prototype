@@ -4,12 +4,15 @@ import React, { useState, useMemo, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
+  Check,
   ChevronDown,
   ChevronLeft,
   Download,
+  Edit2,
   ExternalLink,
   FileSpreadsheet,
   Plus,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +23,7 @@ import {
 } from "@/lib/eventStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResizablePanelGroup,
@@ -404,6 +408,10 @@ export default function EventDetailPage({
   } | null>(null);
   const [isEditLocationModalOpen, setIsEditLocationModalOpen] = useState(false);
 
+  // Event name editing
+  const [isEditingEventName, setIsEditingEventName] = useState(false);
+  const [editedEventName, setEditedEventName] = useState("");
+
   // Bulk upload flow modals
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isBulkReviewModalOpen, setIsBulkReviewModalOpen] = useState(false);
@@ -765,7 +773,7 @@ export default function EventDetailPage({
       {/* Page header */}
       <div className="border-b">
         <div className="px-6 py-5">
-          {/* Row 1: Back + Title */}
+          {/* Row 1: Back + Title (editable) */}
           <div className="flex items-center gap-3 mb-1">
             <button
               onClick={() => router.push("/events")}
@@ -773,12 +781,68 @@ export default function EventDetailPage({
             >
               <ChevronLeft className="h-5 w-5 text-gray-500" />
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">
-              {event.name}
-            </h1>
+            {isEditingEventName ? (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  value={editedEventName}
+                  onChange={(e) => setEditedEventName(e.target.value)}
+                  className="text-xl font-semibold h-9 max-w-md"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && editedEventName.trim()) {
+                      setEvent((prev) => ({
+                        ...prev,
+                        name: editedEventName.trim(),
+                      }));
+                      setIsEditingEventName(false);
+                    } else if (e.key === "Escape") {
+                      setIsEditingEventName(false);
+                    }
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    if (editedEventName.trim()) {
+                      setEvent((prev) => ({
+                        ...prev,
+                        name: editedEventName.trim(),
+                      }));
+                      setIsEditingEventName(false);
+                    }
+                  }}
+                  className="p-1.5 hover:bg-green-100 rounded-md transition-colors text-green-600"
+                  title="Save"
+                >
+                  <Check className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setIsEditingEventName(false)}
+                  className="p-1.5 hover:bg-gray-100 rounded-md transition-colors text-gray-500"
+                  title="Cancel"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 group">
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {event.name}
+                </h1>
+                <button
+                  onClick={() => {
+                    setEditedEventName(event.name);
+                    setIsEditingEventName(true);
+                  }}
+                  className="p-1 hover:bg-gray-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  title="Edit event name"
+                >
+                  <Edit2 className="h-4 w-4 text-gray-500" />
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Row 2: Metadata */}
+          {/* Row 2: Metadata + Public Summary Link */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-4 ml-10">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4 text-gray-400" />
@@ -788,6 +852,20 @@ export default function EventDetailPage({
             <span>{event.locationCount} locations</span>
             <span className="text-gray-300">·</span>
             <span>{event.sessionCount} presentations</span>
+            {event.publicSummaryUrl && (
+              <>
+                <span className="text-gray-300">·</span>
+                <a
+                  href={event.publicSummaryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary-teal-600 hover:text-primary-teal-700 hover:underline"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Public Summary
+                </a>
+              </>
+            )}
           </div>
 
           {/* Row 3: Tabs (left) + Actions (right) - container-query responsive */}
@@ -807,24 +885,6 @@ export default function EventDetailPage({
 
             {/* Actions - responsive based on container width */}
             <div className="flex flex-wrap items-center gap-2">
-              {event.publicSummaryUrl && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="text-gray-600 hover:text-gray-900"
-                  title="Public Summaries Page"
-                >
-                  <a
-                    href={event.publicSummaryUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink className="h-4 w-4 @lg:mr-1.5" />
-                    <span className="hidden @lg:inline">Public Summaries Page</span>
-                  </a>
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 size="sm"
