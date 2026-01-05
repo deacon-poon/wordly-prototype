@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   getStoredEvent,
   saveEvent,
@@ -594,6 +595,7 @@ export default function EventDetailPage({
             : loc
         ),
       }));
+      toast.success(`Session "${formData.title}" added successfully`);
     } else {
       // Editing existing session
       const updatedSession = sessionData as Session;
@@ -610,6 +612,7 @@ export default function EventDetailPage({
             : loc
         ),
       }));
+      toast.success("Session updated successfully");
     }
 
     setSessionPanelState(null);
@@ -765,6 +768,18 @@ export default function EventDetailPage({
       };
     });
 
+    const newLocationsCount = Array.from(locationMap.values()).filter(
+      (data) => !data.existingLocationId
+    ).length;
+    const totalSessions = sessions.length;
+
+    toast.success(
+      `Imported ${totalSessions} session${totalSessions > 1 ? "s" : ""}${
+        newLocationsCount > 0
+          ? ` across ${newLocationsCount} new location${newLocationsCount > 1 ? "s" : ""}`
+          : ""
+      }`
+    );
     setIsBulkReviewModalOpen(false);
   };
 
@@ -795,6 +810,7 @@ export default function EventDetailPage({
                         name: editedEventName.trim(),
                       }));
                       setIsEditingEventName(false);
+                      toast.success("Event name updated");
                     } else if (e.key === "Escape") {
                       setIsEditingEventName(false);
                     }
@@ -808,6 +824,7 @@ export default function EventDetailPage({
                         name: editedEventName.trim(),
                       }));
                       setIsEditingEventName(false);
+                      toast.success("Event name updated");
                     }
                   }}
                   className="p-1.5 hover:bg-green-100 rounded-md transition-colors text-green-600"
@@ -985,6 +1002,7 @@ export default function EventDetailPage({
                         ),
                         locationCount: prev.locationCount - 1,
                       }));
+                      toast.success(`Location "${location.name}" deleted`);
                     }
                   }}
                   onAddSession={handleAddSession}
@@ -1185,6 +1203,7 @@ export default function EventDetailPage({
             locationCount: prev.locationCount + 1,
           }));
 
+          toast.success(`Location "${locationData.name}" added successfully`);
           setIsAddLocationModalOpen(false);
         }}
       />
@@ -1210,6 +1229,7 @@ export default function EventDetailPage({
               ),
             }));
 
+            toast.success("Location renamed successfully");
             setIsEditLocationModalOpen(false);
             setEditLocationContext(null);
           }}

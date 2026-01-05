@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/store/providers";
 import { AppShellProvider } from "@/components/layouts/AppShellProvider";
 import { VercelToolbar } from "@/components/VercelToolbar";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Wordly - Intelligent Speech Platform",
@@ -22,6 +23,7 @@ export default function RootLayout({
         <Providers>
           <AppShellProvider>{children}</AppShellProvider>
         </Providers>
+        <Toaster position="top-right" richColors closeButton />
         <VercelToolbar />
       </body>
     </html>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -128,7 +129,7 @@ export function EventSettingsModal({
 
   const handleSave = async () => {
     if (!eventName.trim()) {
-      alert("Please enter an event name");
+      toast.error("Please enter an event name");
       return;
     }
 
@@ -147,7 +148,7 @@ export function EventSettingsModal({
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving event settings:", error);
-      alert("Failed to save settings. Please try again.");
+      toast.error("Failed to save settings. Please try again.");
     } finally {
       setIsSaving(false);
     }

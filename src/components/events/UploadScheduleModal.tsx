@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +49,7 @@ export function UploadScheduleModal({
       if (validTypes.includes(file.type) || file.name.endsWith(".csv")) {
         setSelectedFile(file);
       } else {
-        alert("Please select a valid CSV or Excel file");
+        toast.error("Please select a valid CSV or Excel file");
       }
     }
   };
@@ -73,7 +74,7 @@ export function UploadScheduleModal({
 
   const handleSubmit = async () => {
     if (!selectedFile) {
-      alert("Please select a file first");
+      toast.error("Please select a file first");
       return;
     }
 
@@ -86,7 +87,7 @@ export function UploadScheduleModal({
       onOpenChange(false);
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("Failed to upload file. Please try again.");
+      toast.error("Failed to upload file. Please try again.");
     } finally {
       setIsUploading(false);
     }

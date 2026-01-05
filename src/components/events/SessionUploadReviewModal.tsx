@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -435,7 +436,7 @@ export function SessionUploadReviewModal({
   // Handle submit
   const handleSubmit = async () => {
     if (invalidCount > 0) {
-      alert("Please fix all errors before submitting");
+      toast.error("Please fix all errors before submitting");
       return;
     }
 

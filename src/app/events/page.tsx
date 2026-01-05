@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Calendar, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -1472,6 +1473,8 @@ export default function EventsPage() {
     saveEvent(serializeEvent(newEvent));
 
     setIsManualWizardOpen(false);
+
+    toast.success(`Event "${data.eventDetails.name}" created`);
 
     // Navigate to the new event detail page where user can add locations/sessions
     router.push(`/events/${newEventId}`);
