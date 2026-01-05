@@ -47,10 +47,6 @@ interface SessionFormProps {
   canDelete?: boolean;
   /** Location name (for context display) */
   locationName?: string;
-  /** Location Session ID (read-only display) */
-  locationSessionId?: string;
-  /** Location Passcode (read-only display) */
-  locationPasscode?: string;
 }
 
 /**
@@ -67,8 +63,6 @@ export function SessionForm({
   onDelete,
   canDelete = true,
   locationName,
-  locationSessionId,
-  locationPasscode,
 }: SessionFormProps) {
   const handleLanguageToggle = (code: string) => {
     if (readOnly) return;
@@ -222,36 +216,6 @@ export function SessionForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
-      )}
-
-      {/* Session ID (read-only, location-level) */}
-      {locationSessionId && !compact && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Session ID (Location-level)
-          </Label>
-          <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md font-mono text-sm text-gray-900">
-            {locationSessionId}
-          </div>
-          <p className="text-xs text-gray-500">
-            Shared across all presentations in this location
-          </p>
-        </div>
-      )}
-
-      {/* Passcode (read-only) */}
-      {locationPasscode && !compact && (
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Passcode (Location-level)
-          </Label>
-          <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md font-mono text-sm text-gray-900">
-            {locationPasscode}
-          </div>
-          <p className="text-xs text-gray-500">
-            Shared across all presentations in this location
-          </p>
         </div>
       )}
 

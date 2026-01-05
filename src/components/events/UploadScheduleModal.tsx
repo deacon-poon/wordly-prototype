@@ -228,6 +228,18 @@ export function UploadScheduleModal({
                 </div>
               </div>
             </div>
+
+            {/* QR Code preservation info */}
+            <div className="p-3 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
+              <div className="flex gap-2">
+                <Info className="h-4 w-4 text-primary-teal-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-primary-teal-800">
+                  <span className="font-medium">Re-uploading?</span> Locations
+                  with matching names will retain their existing QR codes and
+                  session IDs.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

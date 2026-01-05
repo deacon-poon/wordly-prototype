@@ -504,9 +504,9 @@ export default function EventDetailPage({
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    // Open Present web app directly
-    const presentUrl = `https://present.wordly.ai/${location.locationSessionId}`;
-    window.open(presentUrl, "_blank", "noopener,noreferrer");
+    // Open Join web app directly (presenter entry point)
+    const joinUrl = `https://join.wordly.ai/${location.locationSessionId}`;
+    window.open(joinUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleWaysToJoin = (

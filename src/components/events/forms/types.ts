@@ -55,19 +55,15 @@ export interface Event {
 // Form Data Types (for form state, slightly different from persisted data)
 // ============================================================================
 
+/**
+ * Event details form data - simplified per Dec 31 design sync.
+ * Event-level defaults have been eliminated; sessions inherit from account-level session defaults.
+ */
 export interface EventDetailsFormData {
   name: string;
   description: string;
   startDate: string;
   endDate: string;
-  timezone: string;
-  glossaryId: string;
-  accountId: string;
-  accessType: "open" | "passcode";
-  publishTranscripts: boolean;
-  startingLanguage: string;
-  otherLanguages: string[];
-  customFields: Record<string, string>;
 }
 
 export interface LocationFormData {
@@ -117,14 +113,6 @@ export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
   description: "",
   startDate: new Date().toISOString().split("T")[0],
   endDate: new Date().toISOString().split("T")[0],
-  timezone: "America/Los_Angeles",
-  glossaryId: "",
-  accountId: "",
-  accessType: "open",
-  publishTranscripts: true,
-  startingLanguage: "en-US",
-  otherLanguages: ["en-US"],
-  customFields: {},
 };
 
 export const DEFAULT_LOCATION: LocationFormData = {

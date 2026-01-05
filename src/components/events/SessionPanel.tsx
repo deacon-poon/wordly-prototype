@@ -212,8 +212,6 @@ export function SessionPanel({
             mode={mode === "add" ? "create" : "edit"}
             readOnly={isReadOnly}
             locationName={locationName}
-            locationSessionId={locationSessionId}
-            locationPasscode={locationPasscode}
           />
         </div>
 

@@ -315,6 +315,24 @@ export function LocationAccordion({
               <div className="w-10 flex-shrink-0" />
             </div>
           ))}
+
+          {/* Add Session button at bottom of list (always visible when expanded with sessions) */}
+          {location.sessions.length > 0 && onAddSession && !isPastEvent && (
+            <div className="px-4 py-3 border-t border-gray-100">
+              <div className="flex items-center">
+                <div className="w-8 flex-shrink-0" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onAddSession(location)}
+                  className="text-primary-teal-600 hover:text-primary-teal-700 hover:bg-primary-teal-50 -ml-2"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Session
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

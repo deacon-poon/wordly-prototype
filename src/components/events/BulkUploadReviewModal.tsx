@@ -602,9 +602,9 @@ export function BulkUploadReviewModal({
           <span
             className={`inline-flex items-center gap-1 px-2 py-1 rounded cursor-help ${
               hasError
-                ? "bg-red-100 text-red-800 border border-red-300"
+                ? "bg-red-50 text-red-900 border-2 border-red-400 font-medium"
                 : hasWarning
-                ? "bg-yellow-100 text-yellow-800 border border-yellow-300"
+                ? "bg-yellow-50 text-yellow-900 border border-yellow-400"
                 : ""
             }`}
           >
@@ -809,9 +809,7 @@ export function BulkUploadReviewModal({
                   return (
                     <TableRow
                       key={session.id}
-                      className={`${!session.isValid ? "bg-red-50" : ""} ${
-                        isEditing ? "bg-blue-50" : ""
-                      }`}
+                      className={isEditing ? "bg-blue-50" : ""}
                     >
                       {/* Row number */}
                       <TableCell className="text-center text-gray-500">
