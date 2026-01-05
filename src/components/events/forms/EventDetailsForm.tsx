@@ -39,7 +39,10 @@ export function EventDetailsForm({
     <div className="space-y-6">
       {/* Event Name */}
       <div className="space-y-2">
-        <Label htmlFor="event-name" className="text-sm font-semibold text-gray-900">
+        <Label
+          htmlFor="event-name"
+          className="text-sm font-semibold text-gray-900"
+        >
           Event Name *
         </Label>
         <Input
@@ -55,7 +58,10 @@ export function EventDetailsForm({
 
       {/* Description (optional) */}
       <div className="space-y-2">
-        <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+        <Label
+          htmlFor="description"
+          className="text-sm font-medium text-gray-700"
+        >
           Description
         </Label>
         <Textarea
@@ -71,7 +77,10 @@ export function EventDetailsForm({
       {/* Date Range */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="start-date" className="text-sm font-semibold text-gray-900">
+          <Label
+            htmlFor="start-date"
+            className="text-sm font-semibold text-gray-900"
+          >
             Start Date *
           </Label>
           <Input
@@ -87,7 +96,10 @@ export function EventDetailsForm({
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="end-date" className="text-sm font-semibold text-gray-900">
+          <Label
+            htmlFor="end-date"
+            className="text-sm font-semibold text-gray-900"
+          >
             End Date *
           </Label>
           <Input

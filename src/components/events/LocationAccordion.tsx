@@ -106,7 +106,7 @@ export function LocationAccordion({
           </span>
         </div>
 
-        {/* Right: Actions */}
+        {/* Right: Actions - responsive to container width */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {onLinksToJoin && (
             <Button
@@ -117,9 +117,10 @@ export function LocationAccordion({
                 onLinksToJoin(location, e);
               }}
               className="text-primary-teal-600 hover:text-primary-teal-700 hover:bg-primary-teal-50"
+              title="Links to join"
             >
-              <QrCode className="h-4 w-4 mr-1.5" />
-              Links to join
+              <QrCode className="h-4 w-4 @md:mr-1.5" />
+              <span className="hidden @md:inline">Links to join</span>
             </Button>
           )}
           {onStartLocation && (
@@ -135,8 +136,8 @@ export function LocationAccordion({
               className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white disabled:opacity-50"
               title={isPastEvent ? "This event has ended" : "Start Location"}
             >
-              <Play className="h-4 w-4 mr-1.5" />
-              Start Location
+              <Play className="h-4 w-4 @md:mr-1.5" />
+              <span className="hidden @md:inline">Start Location</span>
             </Button>
           )}
 

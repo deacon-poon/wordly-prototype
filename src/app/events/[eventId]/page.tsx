@@ -761,7 +761,7 @@ export default function EventDetailPage({
   };
 
   const mainContent = (
-    <div className="h-full overflow-y-auto bg-white">
+    <div className="h-full overflow-y-auto bg-white @container">
       {/* Page header */}
       <div className="border-b">
         <div className="px-6 py-5">
@@ -779,20 +779,23 @@ export default function EventDetailPage({
           </div>
 
           {/* Row 2: Metadata */}
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4 ml-10">
-            <Calendar className="h-4 w-4 text-gray-400" />
-            <span>{event.dateRange}</span>
-            <span className="text-gray-300">·</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-4 ml-10">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-gray-400" />
+              {event.dateRange}
+            </span>
+            <span className="text-gray-300 hidden @sm:inline">·</span>
             <span>{event.locationCount} locations</span>
             <span className="text-gray-300">·</span>
             <span>{event.sessionCount} presentations</span>
           </div>
 
-          {/* Row 3: Tabs (left) + Actions (right) */}
-          <div className="flex items-center justify-between ml-10">
+          {/* Row 3: Tabs (left) + Actions (right) - container-query responsive */}
+          <div className="flex flex-wrap items-center justify-between gap-3 ml-10">
             <Tabs
               value={selectedTab}
               onValueChange={(value: any) => setSelectedTab(value)}
+              className="flex-shrink-0"
             >
               <TabsList>
                 <TabsTrigger value="active">Active</TabsTrigger>
@@ -802,22 +805,23 @@ export default function EventDetailPage({
               </TabsList>
             </Tabs>
 
-            {/* Actions grouped together */}
-            <div className="flex items-center gap-2">
+            {/* Actions - responsive based on container width */}
+            <div className="flex flex-wrap items-center gap-2">
               {event.publicSummaryUrl && (
                 <Button
                   variant="ghost"
                   size="sm"
                   asChild
                   className="text-gray-600 hover:text-gray-900"
+                  title="Public Summaries Page"
                 >
                   <a
                     href={event.publicSummaryUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <ExternalLink className="h-4 w-4 mr-1.5" />
-                    Public Summaries Page
+                    <ExternalLink className="h-4 w-4 @lg:mr-1.5" />
+                    <span className="hidden @lg:inline">Public Summaries</span>
                   </a>
                 </Button>
               )}
@@ -826,9 +830,10 @@ export default function EventDetailPage({
                 size="sm"
                 onClick={handleDownloadForAV}
                 className="text-gray-600 hover:text-gray-900"
+                title="Bulk Download Links"
               >
-                <Download className="h-4 w-4 mr-1.5" />
-                Bulk Download Links
+                <Download className="h-4 w-4 @lg:mr-1.5" />
+                <span className="hidden @lg:inline">Download</span>
               </Button>
               <Button
                 onClick={() => setIsUploadModalOpen(true)}
@@ -841,8 +846,8 @@ export default function EventDetailPage({
                     : "Upload locations and sessions from spreadsheet"
                 }
               >
-                <FileSpreadsheet className="h-4 w-4 mr-1" />
-                Upload Schedule
+                <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
+                <span className="hidden @md:inline">Upload</span>
               </Button>
               <Button
                 onClick={() => setIsAddLocationModalOpen(true)}
@@ -853,8 +858,8 @@ export default function EventDetailPage({
                   isPastEvent ? "Cannot add to past events" : "Add Location"
                 }
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Location
+                <Plus className="h-4 w-4 @md:mr-1" />
+                <span className="hidden @md:inline">Add Location</span>
               </Button>
             </div>
           </div>
@@ -1170,11 +1175,11 @@ export default function EventDetailPage({
     <div className="h-full">
       {sessionPanelState?.isOpen ? (
         <ResizablePanelGroup direction="horizontal" className="h-full">
-          <ResizablePanel defaultSize={60} minSize={45}>
+          <ResizablePanel defaultSize={65} minSize={50}>
             {mainContent}
           </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel defaultSize={40} minSize={30}>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
             <SessionPanel
               mode={sessionPanelState.mode}
               session={sessionPanelState.session}

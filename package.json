@@ -50,6 +50,7 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@reduxjs/toolkit": "2.0.1",
+    "@tailwindcss/container-queries": "^0.1.1",
     "@tanstack/react-table": "^8.21.3",
     "@vercel/toolbar": "^0.1.41",
     "ai": "^5.0.115",
