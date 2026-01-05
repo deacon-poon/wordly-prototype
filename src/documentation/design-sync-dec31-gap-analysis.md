@@ -12,10 +12,10 @@
 | Session Form          | Hide irrelevant fields (Session ID, Passcode)               | ✅ Implemented           |
 | Error Display         | Pastel pink or remove row color                             | ✅ Implemented           |
 | Branding Colors       | Use Brand Blue 500 instead of action teal                   | ❌ Needs design input    |
-| Post-Creation Edits   | Only event name editable                                    | ❌ Not enforced          |
+| Post-Creation Edits   | Only event name editable                                    | ✅ Implemented           |
 | QR Code Info          | Text explaining QR preservation on re-upload                | ✅ Implemented           |
 | Start Location Link   | Link to join.wordly.ai                                      | ✅ Implemented           |
-| Public Summary Page   | Move link up, show schedule for unrun sessions              | ⚠️ Partial               |
+| Public Summary Page   | Move link up, show schedule for unrun sessions              | ✅ Link moved, schedule TBD |
 | Responsive Layout     | Side panel should not overflow main content                 | ✅ Implemented           |
 
 ---
