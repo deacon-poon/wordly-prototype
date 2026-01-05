@@ -35,6 +35,7 @@ import {
   X,
   Check,
   AlertCircle,
+  Loader2,
   Pencil,
   Trash2,
   Filter,
@@ -997,7 +998,14 @@ export function BulkUploadReviewModal({
               disabled={isSubmitting || invalidCount > 0}
               className="bg-primary-teal-600 hover:bg-primary-teal-700"
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
             </Button>
           </div>
         </div>

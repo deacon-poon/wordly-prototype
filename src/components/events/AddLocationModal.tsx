@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import { useStandaloneLocationForm, LocationFormData } from "./forms";
 
 // ============================================================================
@@ -123,7 +123,14 @@ export function AddLocationModal({
             disabled={isSaving || !location.name.trim()}
             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
           >
-            {isSaving ? "Adding..." : "Add Location"}
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Location"
+            )}
           </Button>
         </div>
       </DialogContent>
@@ -235,7 +242,14 @@ export function EditLocationModal({
             disabled={isSaving || !location.name.trim()}
             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </div>
       </DialogContent>

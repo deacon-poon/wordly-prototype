@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Info, Upload, X, FileSpreadsheet } from "lucide-react";
+import { Info, Loader2, Upload, X, FileSpreadsheet } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { TIMEZONES } from "./forms/types";
 
@@ -257,7 +257,14 @@ export function UploadScheduleModal({
             disabled={isUploading || !selectedFile}
             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
           >
-            {isUploading ? "Processing..." : "Review Schedule"}
+            {isUploading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Review Schedule"
+            )}
           </Button>
         </div>
       </DialogContent>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Plus, Edit2, MapPin } from "lucide-react";
+import { ChevronLeft, Loader2, Plus, Edit2, MapPin } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -231,13 +231,16 @@ export function SessionPanel({
           disabled={isSaving || isReadOnly || !formData.title.trim()}
           className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
         >
-          {isSaving
-            ? mode === "add"
-              ? "Adding..."
-              : "Saving..."
-            : mode === "add"
-            ? "Add Session"
-            : "Save Changes"}
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {mode === "add" ? "Adding..." : "Saving..."}
+            </>
+          ) : mode === "add" ? (
+            "Add Session"
+          ) : (
+            "Save Changes"
+          )}
         </Button>
       </div>
     </div>
