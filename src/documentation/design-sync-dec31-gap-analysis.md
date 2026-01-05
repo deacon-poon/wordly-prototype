@@ -2,21 +2,21 @@
 
 ## Summary of Key Decisions
 
-| Topic                 | Decision                                                    | Current Status           |
-| --------------------- | ----------------------------------------------------------- | ------------------------ |
-| Event Creation Flow   | Create blank event → event page → manual add OR bulk upload | ✅ Implemented           |
-| Bulk Upload Button    | Next to "Add Location" at event level                       | ✅ Implemented           |
-| Add Session Button    | At bottom of session list (not empty state only)            | ✅ Implemented           |
-| Unified Session Panel | Side panel for both add and edit                            | ✅ Implemented           |
-| **Event Defaults**    | **ELIMINATE** - rely on session defaults instead            | ✅ Implemented           |
-| Session Form          | Hide irrelevant fields (Session ID, Passcode)               | ✅ Implemented           |
-| Error Display         | Pastel pink or remove row color                             | ✅ Implemented           |
-| Branding Colors       | Use Brand Blue 500 instead of action teal                   | ❌ Needs design input    |
-| Post-Creation Edits   | Only event name editable                                    | ✅ Implemented           |
-| QR Code Info          | Text explaining QR preservation on re-upload                | ✅ Implemented           |
-| Start Location Link   | Link to join.wordly.ai                                      | ✅ Implemented           |
+| Topic                 | Decision                                                    | Current Status              |
+| --------------------- | ----------------------------------------------------------- | --------------------------- |
+| Event Creation Flow   | Create blank event → event page → manual add OR bulk upload | ✅ Implemented              |
+| Bulk Upload Button    | Next to "Add Location" at event level                       | ✅ Implemented              |
+| Add Session Button    | At bottom of session list (not empty state only)            | ✅ Implemented              |
+| Unified Session Panel | Side panel for both add and edit                            | ✅ Implemented              |
+| **Event Defaults**    | **ELIMINATE** - rely on session defaults instead            | ✅ Implemented              |
+| Session Form          | Hide irrelevant fields (Session ID, Passcode)               | ✅ Implemented              |
+| Error Display         | Pastel pink or remove row color                             | ✅ Implemented              |
+| Branding Colors       | Use Brand Blue 500 instead of action teal                   | ❌ Needs design input       |
+| Post-Creation Edits   | Only event name editable                                    | ✅ Implemented              |
+| QR Code Info          | Text explaining QR preservation on re-upload                | ✅ Implemented              |
+| Start Location Link   | Link to join.wordly.ai                                      | ✅ Implemented              |
 | Public Summary Page   | Move link up, show schedule for unrun sessions              | ✅ Link moved, schedule TBD |
-| Responsive Layout     | Side panel should not overflow main content                 | ✅ Implemented           |
+| Responsive Layout     | Side panel should not overflow main content                 | ✅ Implemented              |
 
 ---
 
