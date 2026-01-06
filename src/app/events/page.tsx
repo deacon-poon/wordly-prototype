@@ -1560,7 +1560,7 @@ export default function EventsPage() {
         </div>
       </div>
 
-      <div className="p-6 space-y-8">
+      <div className="px-6 pb-6 space-y-6">
         {statusFilter === "all" && groupedEvents.active.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">

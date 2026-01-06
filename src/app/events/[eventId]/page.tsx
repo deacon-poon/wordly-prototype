@@ -932,7 +932,7 @@ export default function EventDetailPage({
       </div>
 
       {/* Schedule grouped by date */}
-      <div className="p-6 space-y-6">
+      <div className="px-6 pb-6 pt-4 space-y-4">
         {/* Show locations without sessions */}
         {event.locations.filter((loc) => loc.sessions.length === 0).length >
           0 && (
