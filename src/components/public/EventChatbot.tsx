@@ -95,7 +95,7 @@ export function EventChatbot({
       !hasHandledInitialMessage &&
       messages.length > 0
     ) {
-      sendMessage(initialMessage);
+      sendMessage({ text: initialMessage });
       setHasHandledInitialMessage(true);
     }
   }, [
@@ -119,7 +119,7 @@ export function EventChatbot({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isLoading) {
-      sendMessage(input);
+      sendMessage({ text: input });
       setInput("");
     }
   };
