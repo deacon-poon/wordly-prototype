@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Trash2, Plus, GripVertical, User, Users } from "lucide-react";
+import {
+  Clock,
+  Trash2,
+  Plus,
+  GripVertical,
+  User,
+  Users,
+  ChevronDown,
+  Settings2,
+} from "lucide-react";
 import {
   SessionFormData,
   FormMode,
@@ -21,6 +30,7 @@ import {
   TIMEZONES,
   getLanguageName,
 } from "./types";
+import { cn } from "@/lib/utils";
 
 // ============================================================================
 // Single Session Form Props
@@ -64,6 +74,8 @@ export function SessionForm({
   canDelete = true,
   locationName,
 }: SessionFormProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   const handleLanguageToggle = (code: string) => {
     if (readOnly) return;
     const selected = data.languages.includes(code)
@@ -191,67 +203,93 @@ export function SessionForm({
         </div>
       </div>
 
-      {/* Timezone */}
+      {/* Advanced Settings Toggle */}
       {!compact && (
-        <div className="space-y-2">
-          <Label
-            htmlFor={`session-timezone-${index || 0}`}
-            className="text-sm font-medium text-gray-700"
+        <>
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
           >
-            Timezone
-          </Label>
-          <Select
-            value={data.timezone}
-            onValueChange={(value) => onChange({ timezone: value })}
-            disabled={readOnly}
-          >
-            <SelectTrigger id={`session-timezone-${index || 0}`}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TIMEZONES.map((tz) => (
-                <SelectItem key={tz.value} value={tz.value}>
-                  {tz.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+            <Settings2 className="h-4 w-4" />
+            <span>{showAdvanced ? "Hide" : "Show"} advanced settings</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform duration-200",
+                showAdvanced && "rotate-180"
+              )}
+            />
+          </button>
 
-      {/* Languages */}
-      {!compact && (
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
-            Languages (up to 8)
-          </Label>
-          <div className="grid grid-cols-2 gap-3">
-            {LANGUAGES.slice(0, 8).map((lang) => (
-              <div key={lang.code} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`lang-${lang.code}-${index || 0}`}
-                  checked={data.languages.includes(lang.code)}
-                  onCheckedChange={() => handleLanguageToggle(lang.code)}
-                  disabled={
-                    readOnly ||
-                    (data.languages.length >= 8 &&
-                      !data.languages.includes(lang.code))
-                  }
-                />
-                <label
-                  htmlFor={`lang-${lang.code}-${index || 0}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+          {/* Advanced Settings Content */}
+          {showAdvanced && (
+            <div className="space-y-4 pt-2 border-t border-gray-100">
+              <p className="text-xs text-gray-500 italic">
+                These settings inherit from your Session Defaults. Override only
+                if needed for this specific session.
+              </p>
+
+              {/* Timezone */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-timezone-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
                 >
-                  {lang.name}
-                </label>
+                  Timezone
+                </Label>
+                <Select
+                  value={data.timezone}
+                  onValueChange={(value) => onChange({ timezone: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-timezone-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map((tz) => (
+                      <SelectItem key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500">
-            Selected: {data.languages.length}/8 (ALS automatically detects
-            languages)
-          </p>
-        </div>
+
+              {/* Languages */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">
+                  Languages (up to 8)
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {LANGUAGES.slice(0, 8).map((lang) => (
+                    <div key={lang.code} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`lang-${lang.code}-${index || 0}`}
+                        checked={data.languages.includes(lang.code)}
+                        onCheckedChange={() => handleLanguageToggle(lang.code)}
+                        disabled={
+                          readOnly ||
+                          (data.languages.length >= 8 &&
+                            !data.languages.includes(lang.code))
+                        }
+                      />
+                      <label
+                        htmlFor={`lang-${lang.code}-${index || 0}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {lang.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Selected: {data.languages.length}/8 (ALS automatically detects
+                  languages)
+                </p>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Delete button for list context */}
