@@ -876,10 +876,10 @@ export default function EventDetailPage({
                   href={event.publicSummaryUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary-teal-600 hover:text-primary-teal-700 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-primary-teal-600 hover:text-primary-teal-700 font-medium"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Public Summary
+                  <ExternalLink className="h-4 w-4" />
+                  Public Summaries Page
                 </a>
               </>
             )}

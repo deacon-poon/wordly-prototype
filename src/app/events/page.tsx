@@ -1503,7 +1503,9 @@ export default function EventsPage() {
             <span>{event.sessionCount} presentations</span>
           </div>
 
-          <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
+          <p className="text-sm text-gray-600 line-clamp-2">
+            {event.description}
+          </p>
 
           {event.publicSummaryUrl && (
             <a
