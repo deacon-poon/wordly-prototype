@@ -164,7 +164,7 @@ export function SessionPanel({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white border-l border-gray-200">
       {/* Sticky Header */}
       <div className="flex-shrink-0 border-b px-6 py-4 flex items-center justify-between bg-white sticky top-0 z-10">
         <div>

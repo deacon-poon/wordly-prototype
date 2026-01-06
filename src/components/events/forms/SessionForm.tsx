@@ -209,7 +209,7 @@ export function SessionForm({
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors py-2"
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors py-2"
           >
             <Settings2 className="h-4 w-4" />
             <span>{showAdvanced ? "Hide" : "Show"} advanced settings</span>
@@ -262,7 +262,10 @@ export function SessionForm({
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
                   {LANGUAGES.slice(0, 8).map((lang) => (
-                    <div key={lang.code} className="flex items-center space-x-2">
+                    <div
+                      key={lang.code}
+                      className="flex items-center space-x-2"
+                    >
                       <Checkbox
                         id={`lang-${lang.code}-${index || 0}`}
                         checked={data.languages.includes(lang.code)}

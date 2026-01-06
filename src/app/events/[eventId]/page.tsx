@@ -1246,7 +1246,7 @@ export default function EventDetailPage({
           <ResizablePanel defaultSize={65} minSize={50}>
             {mainContent}
           </ResizablePanel>
-          <ResizableHandle withHandle />
+          <ResizableHandle className="w-px bg-transparent hover:bg-gray-300 transition-colors" />
           <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
             <SessionPanel
               mode={sessionPanelState.mode}
