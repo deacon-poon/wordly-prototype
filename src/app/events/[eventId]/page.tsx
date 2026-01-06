@@ -784,76 +784,88 @@ export default function EventDetailPage({
       {/* Page header */}
       <div className="border-b">
         <div className="px-6 py-5">
-          {/* Row 1: Back + Title (editable) */}
-          <div className="flex items-center gap-3 mb-1">
-            <button
-              onClick={() => router.push("/events")}
-              className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+          {/* Row 1: Back + Title (editable) + Add Location */}
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <button
+                onClick={() => router.push("/events")}
+                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors flex-shrink-0"
+              >
+                <ChevronLeft className="h-5 w-5 text-gray-500" />
+              </button>
+              {isEditingEventName ? (
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Input
+                    value={editedEventName}
+                    onChange={(e) => setEditedEventName(e.target.value)}
+                    className="text-xl font-semibold h-9 max-w-md"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && editedEventName.trim()) {
+                        setEvent((prev) => ({
+                          ...prev,
+                          name: editedEventName.trim(),
+                        }));
+                        setIsEditingEventName(false);
+                        toast.success("Event name updated");
+                      } else if (e.key === "Escape") {
+                        setIsEditingEventName(false);
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (editedEventName.trim()) {
+                        setEvent((prev) => ({
+                          ...prev,
+                          name: editedEventName.trim(),
+                        }));
+                        setIsEditingEventName(false);
+                        toast.success("Event name updated");
+                      }
+                    }}
+                    className="p-1.5 hover:bg-green-100 rounded-md transition-colors text-green-600 flex-shrink-0"
+                    title="Save"
+                  >
+                    <Check className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setIsEditingEventName(false)}
+                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors text-gray-500 flex-shrink-0"
+                    title="Cancel"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 min-w-0">
+                  <h1 className="text-xl font-semibold text-gray-900 truncate">
+                    {event.name}
+                  </h1>
+                  <button
+                    onClick={() => {
+                      setEditedEventName(event.name);
+                      setIsEditingEventName(true);
+                    }}
+                    className="p-1.5 hover:bg-gray-100 rounded-md transition-colors flex-shrink-0"
+                    title="Edit event name"
+                    aria-label="Edit event name"
+                  >
+                    <Edit2 className="h-4 w-4 text-gray-400" />
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* Add Location button - primary action */}
+            <Button
+              onClick={() => setIsAddLocationModalOpen(true)}
+              disabled={isPastEvent}
+              className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white flex-shrink-0"
+              title={isPastEvent ? "Cannot add to past events" : "Add Location"}
             >
-              <ChevronLeft className="h-5 w-5 text-gray-500" />
-            </button>
-            {isEditingEventName ? (
-              <div className="flex items-center gap-2 flex-1">
-                <Input
-                  value={editedEventName}
-                  onChange={(e) => setEditedEventName(e.target.value)}
-                  className="text-xl font-semibold h-9 max-w-md"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && editedEventName.trim()) {
-                      setEvent((prev) => ({
-                        ...prev,
-                        name: editedEventName.trim(),
-                      }));
-                      setIsEditingEventName(false);
-                      toast.success("Event name updated");
-                    } else if (e.key === "Escape") {
-                      setIsEditingEventName(false);
-                    }
-                  }}
-                />
-                <button
-                  onClick={() => {
-                    if (editedEventName.trim()) {
-                      setEvent((prev) => ({
-                        ...prev,
-                        name: editedEventName.trim(),
-                      }));
-                      setIsEditingEventName(false);
-                      toast.success("Event name updated");
-                    }
-                  }}
-                  className="p-1.5 hover:bg-green-100 rounded-md transition-colors text-green-600"
-                  title="Save"
-                >
-                  <Check className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => setIsEditingEventName(false)}
-                  className="p-1.5 hover:bg-gray-100 rounded-md transition-colors text-gray-500"
-                  title="Cancel"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {event.name}
-                </h1>
-                <button
-                  onClick={() => {
-                    setEditedEventName(event.name);
-                    setIsEditingEventName(true);
-                  }}
-                  className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                  title="Edit event name"
-                  aria-label="Edit event name"
-                >
-                  <Edit2 className="h-4 w-4 text-gray-400" />
-                </button>
-              </div>
-            )}
+              <Plus className="h-4 w-4 @sm:mr-2" />
+              <span className="hidden @sm:inline">Add Location</span>
+            </Button>
           </div>
 
           {/* Row 2: Metadata + Public Summary Link */}
@@ -906,8 +918,8 @@ export default function EventDetailPage({
                 className="text-gray-600 hover:text-gray-900"
                 title="Bulk Download Links"
               >
-                <Download className="h-4 w-4 @lg:mr-1.5" />
-                <span className="hidden @lg:inline">Bulk Download Links</span>
+                <Download className="h-4 w-4 @md:mr-1.5" />
+                <span className="hidden @md:inline">Bulk Download Links</span>
               </Button>
               <Button
                 onClick={() => setIsUploadModalOpen(true)}
@@ -922,18 +934,6 @@ export default function EventDetailPage({
               >
                 <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
                 <span className="hidden @md:inline">Upload Schedule</span>
-              </Button>
-              <Button
-                onClick={() => setIsAddLocationModalOpen(true)}
-                size="sm"
-                disabled={isPastEvent}
-                className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
-                title={
-                  isPastEvent ? "Cannot add to past events" : "Add Location"
-                }
-              >
-                <Plus className="h-4 w-4 @md:mr-1" />
-                <span className="hidden @md:inline">Add Location</span>
               </Button>
             </div>
           </div>
@@ -1058,10 +1058,10 @@ export default function EventDetailPage({
             return (
               <div
                 key={date}
-                className={`relative transition-all duration-200 border rounded-lg ${
+                className={`relative transition-all duration-200 rounded-lg ${
                   isDateExpanded
-                    ? "border-gray-200 bg-white shadow-sm ring-1 ring-inset ring-gray-100"
-                    : "border-gray-200 bg-white hover:border-gray-300"
+                    ? "border-2 border-gray-300 bg-white shadow-sm"
+                    : "border-2 border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
                 {/* Date Header - Collapsible Accordion */}

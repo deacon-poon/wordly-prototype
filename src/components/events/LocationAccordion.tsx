@@ -79,10 +79,10 @@ export function LocationAccordion({
 
   return (
     <div
-      className={`relative transition-all duration-200 border rounded-lg bg-white ${
+      className={`relative transition-all duration-200 rounded-md bg-gray-50/50 ${
         isExpanded
-          ? "border-gray-200 shadow-sm ring-1 ring-inset ring-gray-100"
-          : "border-gray-200 hover:border-gray-300"
+          ? "border border-gray-200 shadow-sm"
+          : "border border-dashed border-gray-200 hover:border-gray-300 hover:bg-gray-50"
       }`}
     >
       {/* Location Header */}
