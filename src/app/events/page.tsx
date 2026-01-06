@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Calendar, ExternalLink, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManualEventWizard } from "@/components/events/ManualEventWizard";
 import type { EventDetailsFormData } from "@/components/events/forms";
@@ -1484,31 +1483,27 @@ export default function EventsPage() {
     const eventStatus = getEventStatus(event.startDate, event.endDate);
 
     return (
-      <Card
-        className="overflow-hidden hover:border-primary-teal-300 hover:shadow-md transition-all cursor-pointer"
+      <div
+        className="rounded-lg border border-gray-200 bg-white hover:border-primary-teal-300 hover:shadow-md transition-all cursor-pointer"
         onClick={() => router.push(`/events/${event.id}`)}
       >
-        <div className="p-6">
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900">{event.name}</h2>
-            </div>
+        <div className="px-4 py-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            {event.name}
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-2">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-gray-400" />
+              {event.dateRange}
+            </span>
+            <span className="text-gray-300">·</span>
+            <span>{event.locationCount} locations</span>
+            <span className="text-gray-300">·</span>
+            <span>{event.sessionCount} presentations</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm mb-3">
-            <Calendar className="h-4 w-4 text-primary-teal-600" />
-            <span className="text-gray-700 font-medium">{event.dateRange}</span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
-              {event.locationCount} locations
-            </span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
-              {event.sessionCount} presentations
-            </span>
-          </div>
-
-          <p className="text-sm text-gray-700 mb-3">{event.description}</p>
+          <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
 
           {event.publicSummaryUrl && (
             <a
@@ -1516,14 +1511,14 @@ export default function EventsPage() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium"
+              className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium mt-3"
             >
               <ExternalLink className="h-4 w-4" />
               <span>Public Summaries Page</span>
             </a>
           )}
         </div>
-      </Card>
+      </div>
     );
   };
 
@@ -1621,7 +1616,7 @@ export default function EventsPage() {
         )}
 
         {filteredEvents.length === 0 && (
-          <Card className="p-12 text-center">
+          <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
             <p className="text-gray-600 text-lg">
               {statusFilter === "active" && "No active events"}
               {statusFilter === "upcoming" && "No upcoming events"}
@@ -1629,9 +1624,9 @@ export default function EventsPage() {
               {statusFilter === "all" && "No events found"}
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              Click "Add Event" to create your first event
+              Click &quot;Add Event&quot; to create your first event
             </p>
-          </Card>
+          </div>
         )}
       </div>
 
