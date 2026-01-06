@@ -1558,8 +1558,6 @@ export default function EventsPage() {
             </TabsList>
           </Tabs>
         </div>
-        {/* Border below tabs */}
-        <div className="border-b border-gray-200" />
       </div>
 
       <div className="p-6 space-y-8">

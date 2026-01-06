@@ -929,8 +929,6 @@ export default function EventDetailPage({
             </div>
           </div>
         </div>
-        {/* Border below tabs */}
-        <div className="border-b border-gray-200" />
       </div>
 
       {/* Schedule grouped by date */}
