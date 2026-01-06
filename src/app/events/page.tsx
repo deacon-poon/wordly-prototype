@@ -1485,7 +1485,7 @@ export default function EventsPage() {
 
     return (
       <Card
-        className="overflow-hidden hover:border-primary-teal-300 hover:shadow-lg transition-all cursor-pointer shadow-sm border-2"
+        className="overflow-hidden hover:border-primary-teal-300 hover:shadow-md transition-all cursor-pointer"
         onClick={() => router.push(`/events/${event.id}`)}
       >
         <div className="p-6">

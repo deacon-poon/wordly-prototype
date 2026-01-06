@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
 import {
   Calendar,
   Check,
   ChevronDown,
-  ChevronLeft,
   Download,
   Edit2,
   ExternalLink,
@@ -380,7 +378,6 @@ export default function EventDetailPage({
 }: {
   params: Promise<{ eventId: string }>;
 }) {
-  const router = useRouter();
   const resolvedParams = use(params);
   const [selectedTab, setSelectedTab] = useState<
     "active" | "upcoming" | "past" | "all"
@@ -784,15 +781,9 @@ export default function EventDetailPage({
       {/* Page header */}
       <div className="border-b">
         <div className="px-6 py-5">
-          {/* Row 1: Back + Title (editable) + Add Location */}
+          {/* Row 1: Title (editable) + Add Location */}
           <div className="flex items-center justify-between gap-3 mb-1">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <button
-                onClick={() => router.push("/events")}
-                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors flex-shrink-0"
-              >
-                <ChevronLeft className="h-5 w-5 text-gray-500" />
-              </button>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               {isEditingEventName ? (
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <Input
@@ -839,7 +830,7 @@ export default function EventDetailPage({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 min-w-0">
-                  <h1 className="text-xl font-semibold text-gray-900 truncate">
+                  <h1 className="text-2xl font-semibold text-gray-900 truncate">
                     {event.name}
                   </h1>
                   <button
@@ -869,7 +860,7 @@ export default function EventDetailPage({
           </div>
 
           {/* Row 2: Metadata + Public Summary Link */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-4 ml-10">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-4">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4 text-gray-400" />
               {event.dateRange}
@@ -895,7 +886,7 @@ export default function EventDetailPage({
           </div>
 
           {/* Row 3: Tabs (left) + Actions (right) - container-query responsive */}
-          <div className="flex flex-wrap items-center justify-between gap-3 ml-10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <Tabs
               value={selectedTab}
               onValueChange={(value: any) => setSelectedTab(value)}
