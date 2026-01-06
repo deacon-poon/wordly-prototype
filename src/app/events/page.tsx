@@ -1448,9 +1448,10 @@ export default function EventsPage() {
     // Create a new event ID
     const newEventId = `evt-${Date.now()}`;
 
-    // Parse dates from the form data
-    const startDate = new Date(data.eventDetails.startDate);
-    const endDate = new Date(data.eventDetails.endDate);
+    // Parse dates from the form data as LOCAL dates (not UTC)
+    // Adding T00:00:00 ensures the date is interpreted in local timezone
+    const startDate = new Date(data.eventDetails.startDate + "T00:00:00");
+    const endDate = new Date(data.eventDetails.endDate + "T00:00:00");
 
     // Create the new event object
     const newEvent: Event = {
