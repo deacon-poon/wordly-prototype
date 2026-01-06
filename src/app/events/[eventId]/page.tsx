@@ -1060,8 +1060,8 @@ export default function EventDetailPage({
                 key={date}
                 className={`relative transition-all duration-200 rounded-lg ${
                   isDateExpanded
-                    ? "border-2 border-gray-300 bg-white shadow-sm"
-                    : "border-2 border-gray-200 bg-white hover:border-gray-300"
+                    ? "border border-gray-300 bg-white shadow-sm"
+                    : "border border-gray-200 bg-white hover:border-gray-300"
                 }`}
               >
                 {/* Date Header - Collapsible Accordion */}
