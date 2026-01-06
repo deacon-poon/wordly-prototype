@@ -1527,7 +1527,7 @@ export default function EventsPage() {
   return (
     <div className="h-full overflow-y-auto bg-white">
       {/* Page header */}
-      <div className="border-b">
+      <div>
         <div className="px-6 py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -1558,6 +1558,8 @@ export default function EventsPage() {
             </TabsList>
           </Tabs>
         </div>
+        {/* Border below tabs */}
+        <div className="border-b border-gray-200" />
       </div>
 
       <div className="p-6 space-y-8">
