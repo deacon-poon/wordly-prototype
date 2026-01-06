@@ -444,7 +444,12 @@ function getMockEventData(eventSlug: string): PublicEvent {
           {
             id: "ses-011",
             title: "Panel: Women in AI Leadership",
-            presenters: ["Dr. Maya Patel", "Jennifer Wu", "Sofia Hernandez", "Aisha Johnson"],
+            presenters: [
+              "Dr. Maya Patel",
+              "Jennifer Wu",
+              "Sofia Hernandez",
+              "Aisha Johnson",
+            ],
             scheduledDate: dayAfterStr,
             scheduledStart: "7:30 PM",
             endTime: "8:30 PM",
@@ -967,7 +972,9 @@ function SummaryCard({
           /* Upcoming session - no summary yet */
           <div className="text-center py-6">
             <CalendarClock className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">Session hasn&apos;t started yet</p>
+            <p className="text-gray-500 font-medium">
+              Session hasn&apos;t started yet
+            </p>
             <p className="text-sm text-gray-400 mt-1">
               Summary will be available after the session completes
             </p>

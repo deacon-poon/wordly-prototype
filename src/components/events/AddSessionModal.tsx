@@ -25,8 +25,6 @@ interface AddSessionModalProps {
   onOpenChange: (open: boolean) => void;
   onSave: (session: SessionFormData) => Promise<void>;
   locationName: string;
-  locationSessionId?: string;
-  locationPasscode?: string;
   eventName?: string;
   defaultDate?: string;
   defaultTimezone?: string;
@@ -46,8 +44,6 @@ export function AddSessionModal({
   onOpenChange,
   onSave,
   locationName,
-  locationSessionId,
-  locationPasscode,
   eventName,
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
@@ -118,8 +114,6 @@ export function AddSessionModal({
             errors={errors}
             mode="create"
             locationName={locationName}
-            locationSessionId={locationSessionId}
-            locationPasscode={locationPasscode}
           />
         </div>
 
@@ -150,8 +144,6 @@ interface EditSessionModalProps {
   onSave: (session: SessionFormData) => Promise<void>;
   initialData: SessionFormData;
   locationName: string;
-  locationSessionId?: string;
-  locationPasscode?: string;
   eventName?: string;
   readOnly?: boolean;
 }
@@ -166,8 +158,6 @@ export function EditSessionModal({
   onSave,
   initialData,
   locationName,
-  locationSessionId,
-  locationPasscode,
   eventName,
   readOnly = false,
 }: EditSessionModalProps) {
@@ -236,8 +226,6 @@ export function EditSessionModal({
             mode="edit"
             readOnly={readOnly}
             locationName={locationName}
-            locationSessionId={locationSessionId}
-            locationPasscode={locationPasscode}
           />
         </div>
 

@@ -25,8 +25,6 @@ interface PresentationEditDrawerProps {
   onSave: (updatedSession: Session) => void;
   inline?: boolean;
   locationName?: string;
-  locationSessionId?: string;
-  locationPasscode?: string;
 }
 
 /**
@@ -40,8 +38,6 @@ export function PresentationEditDrawer({
   onSave,
   inline = false,
   locationName,
-  locationSessionId,
-  locationPasscode,
 }: PresentationEditDrawerProps) {
   // Convert Session to SessionFormData
   const initialFormData: SessionFormData = {
@@ -144,8 +140,6 @@ export function PresentationEditDrawer({
         mode="edit"
         readOnly={isReadOnly}
         locationName={locationName}
-        locationSessionId={locationSessionId}
-        locationPasscode={locationPasscode}
       />
 
       {/* Footer Actions */}

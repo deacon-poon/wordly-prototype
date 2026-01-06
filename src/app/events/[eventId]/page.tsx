@@ -398,8 +398,6 @@ export default function EventDetailPage({
     session?: Session;
     locationId: string;
     locationName: string;
-    locationSessionId: string;
-    locationPasscode: string;
   } | null>(null);
 
   // Add Location modal
@@ -542,8 +540,6 @@ export default function EventDetailPage({
       session,
       locationId: location.id,
       locationName: location.name,
-      locationSessionId: location.locationSessionId,
-      locationPasscode: location.passcode,
     });
   };
 
@@ -553,8 +549,6 @@ export default function EventDetailPage({
       mode: "add",
       locationId: location.id,
       locationName: location.name,
-      locationSessionId: location.locationSessionId,
-      locationPasscode: location.passcode,
     });
   };
 
@@ -1265,8 +1259,6 @@ export default function EventDetailPage({
               mode={sessionPanelState.mode}
               session={sessionPanelState.session}
               locationName={sessionPanelState.locationName}
-              locationSessionId={sessionPanelState.locationSessionId}
-              locationPasscode={sessionPanelState.locationPasscode}
               eventName={event.name}
               defaultDate={event.startDate.toISOString().split("T")[0]}
               onClose={handleCloseSessionPanel}

@@ -29,8 +29,6 @@ interface SessionPanelProps {
   session?: Session;
   /** Location details */
   locationName: string;
-  locationSessionId: string;
-  locationPasscode: string;
   eventName: string;
   /** Default date for new sessions */
   defaultDate?: string;
@@ -52,8 +50,6 @@ export function SessionPanel({
   mode,
   session,
   locationName,
-  locationSessionId,
-  locationPasscode,
   eventName,
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
