@@ -779,7 +779,7 @@ export default function EventDetailPage({
   const mainContent = (
     <div className="h-full overflow-y-auto bg-white @container">
       {/* Page header */}
-      <div className="border-b">
+      <div>
         <div className="px-6 py-5">
           {/* Row 1: Title (editable) + Add Location */}
           <div className="flex items-center justify-between gap-3 mb-1">
@@ -929,6 +929,8 @@ export default function EventDetailPage({
             </div>
           </div>
         </div>
+        {/* Border below tabs */}
+        <div className="border-b border-gray-200" />
       </div>
 
       {/* Schedule grouped by date */}
