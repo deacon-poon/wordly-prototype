@@ -74,7 +74,12 @@ export function EventChatbot({
         {
           id: "welcome",
           role: "assistant",
-          content: `Hi! I'm your AI assistant for ${eventName}. I can help you explore the session summaries, find talks on specific topics, or answer questions about the presentations. What would you like to know?`,
+          parts: [
+            {
+              type: "text",
+              text: `Hi! I'm your AI assistant for ${eventName}. I can help you explore the session summaries, find talks on specific topics, or answer questions about the presentations. What would you like to know?`,
+            },
+          ],
         },
       ]);
     }
@@ -201,14 +206,12 @@ export function EventChatbot({
               >
                 <p className="whitespace-pre-wrap leading-relaxed">
                   {message.parts
-                    ? message.parts
-                        .filter(
-                          (part): part is { type: "text"; text: string } =>
-                            part.type === "text"
-                        )
-                        .map((part) => part.text)
-                        .join("")
-                    : message.content}
+                    ?.filter(
+                      (part): part is { type: "text"; text: string } =>
+                        part.type === "text"
+                    )
+                    .map((part) => part.text)
+                    .join("") || ""}
                 </p>
               </div>
             </div>
