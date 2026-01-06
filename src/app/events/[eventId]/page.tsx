@@ -1154,13 +1154,7 @@ export default function EventDetailPage({
           roomSessionId={waysToJoinModal.location.locationSessionId}
           roomName={waysToJoinModal.location.name}
           eventName={waysToJoinModal.eventName}
-          type="location"
-          sessionCount={waysToJoinModal.location.sessions.length}
-          sessions={waysToJoinModal.location.sessions.map((s) => ({
-            title: s.title,
-            scheduledStart: s.scheduledStart,
-            endTime: s.endTime,
-          }))}
+          passcode={waysToJoinModal.location.passcode}
         />
       )}
 
