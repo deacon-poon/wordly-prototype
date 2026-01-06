@@ -770,7 +770,9 @@ export default function EventDetailPage({
     toast.success(
       `Imported ${totalSessions} session${totalSessions > 1 ? "s" : ""}${
         newLocationsCount > 0
-          ? ` across ${newLocationsCount} new location${newLocationsCount > 1 ? "s" : ""}`
+          ? ` across ${newLocationsCount} new location${
+              newLocationsCount > 1 ? "s" : ""
+            }`
           : ""
       }`
     );

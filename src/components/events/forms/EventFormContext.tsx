@@ -191,7 +191,6 @@ function eventFormReducer(
         ...DEFAULT_SESSION,
         id: generateTempId(),
         scheduledDate: state.eventDetails.startDate,
-        timezone: state.eventDetails.timezone,
       };
       if (!newSession.id) {
         newSession.id = generateTempId();
