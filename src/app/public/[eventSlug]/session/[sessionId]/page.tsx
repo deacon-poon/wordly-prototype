@@ -17,7 +17,6 @@ import {
   Copy,
   Check,
   Sparkles,
-  Tag,
   MessageCircle,
   Target,
   BookOpen,
@@ -708,23 +707,6 @@ export default function SessionDetailPage({
                   </li>
                 ))}
               </ul>
-            </InsightSection>
-
-            {/* Key Topics */}
-            <InsightSection
-              icon={<Tag className="h-5 w-5" />}
-              title="Key Topics Covered"
-            >
-              <div className="flex flex-wrap gap-2">
-                {session.aiInsights.keyTopics.map((topic) => (
-                  <span
-                    key={topic}
-                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
-                  >
-                    {topic}
-                  </span>
-                ))}
-              </div>
             </InsightSection>
 
             {/* Speaker Info */}

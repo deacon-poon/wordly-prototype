@@ -6,6 +6,7 @@ import Link from "next/link";
 import { use } from "react";
 import {
   Calendar,
+  CalendarClock,
   Clock,
   Search,
   ChevronDown,
@@ -49,15 +50,16 @@ interface SessionSummary {
   endTime: string;
   sessionType: "Keynote" | "Workshop" | "Panel" | "Talk" | "Breakout";
   duration: string;
-  tldr: string;
-  summary: string;
-  keyTakeaways: string[];
+  tldr?: string; // Optional - may not exist for unrun sessions
+  summary?: string; // Optional - may not exist for unrun sessions
+  keyTakeaways?: string[]; // Optional - may not exist for unrun sessions
   tags: string[];
   notableQuote?: {
     text: string;
     speaker: string;
   };
   locationName?: string;
+  hasCompleted?: boolean; // Whether the session has run and has a summary
 }
 
 interface Location {
@@ -103,6 +105,16 @@ function getUniqueTags(sessions: SessionSummary[]): string[] {
     session.tags.forEach((tag) => tags.add(tag));
   });
   return Array.from(tags).sort();
+}
+
+// Check if a session has completed (has summary available)
+function hasSessionCompleted(session: SessionSummary): boolean {
+  // If hasCompleted is explicitly set, use it
+  if (session.hasCompleted !== undefined) {
+    return session.hasCompleted;
+  }
+  // Otherwise, check if summary exists
+  return Boolean(session.summary && session.tldr);
 }
 
 // Convert time string to comparable number for sorting
@@ -416,6 +428,31 @@ function getMockEventData(eventSlug: string): PublicEvent {
             ],
             tags: ["Trends", "Future", "Community", "Wrap-up"],
           },
+          // Upcoming sessions - no summary yet
+          {
+            id: "ses-010",
+            title: "Workshop: Hands-on with GPT-5 APIs",
+            presenters: ["Emma Zhang", "Carlos Rivera"],
+            scheduledDate: dayAfterStr,
+            scheduledStart: "5:30 PM",
+            endTime: "7:00 PM",
+            sessionType: "Workshop",
+            duration: "90 min",
+            tags: ["AI", "APIs", "Hands-on", "GPT"],
+            hasCompleted: false,
+          },
+          {
+            id: "ses-011",
+            title: "Panel: Women in AI Leadership",
+            presenters: ["Dr. Maya Patel", "Jennifer Wu", "Sofia Hernandez", "Aisha Johnson"],
+            scheduledDate: dayAfterStr,
+            scheduledStart: "7:30 PM",
+            endTime: "8:30 PM",
+            sessionType: "Panel",
+            duration: "60 min",
+            tags: ["Leadership", "Diversity", "AI", "Career"],
+            hasCompleted: false,
+          },
         ],
       },
     ],
@@ -554,15 +591,25 @@ function CompactCard({
   searchQuery?: string;
   onTagClick?: (tag: string) => void;
 }) {
+  const isCompleted = hasSessionCompleted(session);
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg hover:border-primary-teal-300 hover:shadow-sm transition-all">
       <Link
-        href={`/public/${eventSlug}/session/${session.id}`}
-        className="flex items-center px-4 py-3 group"
+        href={isCompleted ? `/public/${eventSlug}/session/${session.id}` : "#"}
+        className={cn(
+          "flex items-center px-4 py-3 group",
+          !isCompleted && "cursor-default"
+        )}
+        onClick={(e) => !isCompleted && e.preventDefault()}
       >
         {/* Left: Icon column (fixed width for alignment) */}
         <div className="w-8 flex-shrink-0 flex items-center justify-center">
-          <FileText className="h-5 w-5 text-primary-teal-600" />
+          {isCompleted ? (
+            <FileText className="h-5 w-5 text-primary-teal-600" />
+          ) : (
+            <CalendarClock className="h-5 w-5 text-gray-400" />
+          )}
         </div>
 
         {/* Center: Title and Presenters (grows) */}
@@ -576,8 +623,20 @@ function CompactCard({
             >
               {session.sessionType}
             </span>
+            {!isCompleted && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                Upcoming
+              </span>
+            )}
           </div>
-          <h5 className="font-medium text-gray-900 truncate group-hover:text-primary-teal-700 transition-colors">
+          <h5
+            className={cn(
+              "font-medium truncate transition-colors",
+              isCompleted
+                ? "text-gray-900 group-hover:text-primary-teal-700"
+                : "text-gray-700"
+            )}
+          >
             <HighlightText text={session.title} searchQuery={searchQuery} />
           </h5>
           <p className="text-xs text-gray-600 truncate mt-0.5 flex items-center gap-1">
@@ -595,45 +654,67 @@ function CompactCard({
 
         {/* Right: Time badge + Arrow */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="flex items-center px-3 py-1.5 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
-            <span className="text-sm font-bold text-primary-teal-700 whitespace-nowrap">
+          <div
+            className={cn(
+              "flex items-center px-3 py-1.5 rounded-md border",
+              isCompleted
+                ? "bg-primary-teal-50 border-primary-teal-200"
+                : "bg-gray-50 border-gray-200"
+            )}
+          >
+            <span
+              className={cn(
+                "text-sm font-bold whitespace-nowrap",
+                isCompleted ? "text-primary-teal-700" : "text-gray-600"
+              )}
+            >
               {session.scheduledStart} - {session.endTime}
             </span>
           </div>
-          <div className="w-8 flex items-center justify-center">
-            <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-primary-teal-600 transition-colors" />
-          </div>
+          {isCompleted && (
+            <div className="w-8 flex items-center justify-center">
+              <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-primary-teal-600 transition-colors" />
+            </div>
+          )}
         </div>
       </Link>
 
-      {/* TL;DR preview - subtle bottom section */}
+      {/* TL;DR preview or Upcoming message */}
       <div className="px-4 pb-3 flex items-start">
         <div className="w-8 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-gray-500 line-clamp-1">
-            <Sparkles className="h-3 w-3 inline mr-1 text-primary-teal-500" />
-            <HighlightText text={session.tldr} searchQuery={searchQuery} />
-          </p>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {session.tags.slice(0, 4).map((tag) => (
-              <button
-                key={tag}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onTagClick?.(tag);
-                }}
-                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 hover:bg-primary-teal-50 hover:text-primary-teal-700 transition-colors"
-              >
-                {tag}
-              </button>
-            ))}
-            {session.tags.length > 4 && (
-              <span className="text-[10px] text-gray-400">
-                +{session.tags.length - 4}
-              </span>
-            )}
-          </div>
+          {isCompleted && session.tldr ? (
+            <>
+              <p className="text-xs text-gray-500 line-clamp-1">
+                <Sparkles className="h-3 w-3 inline mr-1 text-primary-teal-500" />
+                <HighlightText text={session.tldr} searchQuery={searchQuery} />
+              </p>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {session.tags.slice(0, 4).map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onTagClick?.(tag);
+                    }}
+                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 hover:bg-primary-teal-50 hover:text-primary-teal-700 transition-colors"
+                  >
+                    {tag}
+                  </button>
+                ))}
+                {session.tags.length > 4 && (
+                  <span className="text-[10px] text-gray-400">
+                    +{session.tags.length - 4}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-gray-400 italic">
+              Summary will be available after session completes
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -653,11 +734,26 @@ function SummaryCard({
   onTagClick?: (tag: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const isCompleted = hasSessionCompleted(session);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-primary-teal-300 hover:shadow-lg transition-all">
+    <div
+      className={cn(
+        "bg-white border rounded-xl overflow-hidden transition-all",
+        isCompleted
+          ? "border-gray-200 hover:border-primary-teal-300 hover:shadow-lg"
+          : "border-gray-200"
+      )}
+    >
       {/* Header row with badges and share */}
-      <div className="px-6 pt-5 pb-4 border-b border-gray-100 bg-gradient-to-r from-gray-50/50 to-white">
+      <div
+        className={cn(
+          "px-6 pt-5 pb-4 border-b border-gray-100",
+          isCompleted
+            ? "bg-gradient-to-r from-gray-50/50 to-white"
+            : "bg-gray-50/30"
+        )}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {/* Session type and duration badges */}
@@ -674,25 +770,50 @@ function SummaryCard({
                 <Clock className="h-3 w-3" />
                 {session.duration}
               </span>
+              {!isCompleted && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                  <CalendarClock className="h-3 w-3" />
+                  Upcoming
+                </span>
+              )}
             </div>
 
             {/* Title */}
-            <Link
-              href={`/public/${eventSlug}/session/${session.id}`}
-              className="block group"
-            >
-              <h4 className="text-lg font-semibold text-gray-900 mb-2 leading-tight group-hover:text-primary-teal-600 transition-colors">
+            {isCompleted ? (
+              <Link
+                href={`/public/${eventSlug}/session/${session.id}`}
+                className="block group"
+              >
+                <h4 className="text-lg font-semibold text-gray-900 mb-2 leading-tight group-hover:text-primary-teal-600 transition-colors">
+                  <HighlightText
+                    text={session.title}
+                    searchQuery={searchQuery}
+                  />
+                </h4>
+              </Link>
+            ) : (
+              <h4 className="text-lg font-semibold text-gray-700 mb-2 leading-tight">
                 <HighlightText text={session.title} searchQuery={searchQuery} />
               </h4>
-            </Link>
+            )}
 
             {/* Presenter and time */}
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
               <div className="flex items-center gap-1.5">
                 {session.presenters.length > 1 ? (
-                  <Users className="h-4 w-4 text-primary-teal-600" />
+                  <Users
+                    className={cn(
+                      "h-4 w-4",
+                      isCompleted ? "text-primary-teal-600" : "text-gray-400"
+                    )}
+                  />
                 ) : (
-                  <User className="h-4 w-4 text-primary-teal-600" />
+                  <User
+                    className={cn(
+                      "h-4 w-4",
+                      isCompleted ? "text-primary-teal-600" : "text-gray-400"
+                    )}
+                  />
                 )}
                 <span className="font-medium">
                   <HighlightText
@@ -701,17 +822,34 @@ function SummaryCard({
                   />
                 </span>
               </div>
-              <div className="flex items-center px-2.5 py-1 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
-                <Clock className="h-3.5 w-3.5 text-primary-teal-600 mr-1.5" />
-                <span className="text-sm font-semibold text-primary-teal-700">
+              <div
+                className={cn(
+                  "flex items-center px-2.5 py-1 rounded-md border",
+                  isCompleted
+                    ? "bg-primary-teal-50 border-primary-teal-200"
+                    : "bg-gray-100 border-gray-200"
+                )}
+              >
+                <Clock
+                  className={cn(
+                    "h-3.5 w-3.5 mr-1.5",
+                    isCompleted ? "text-primary-teal-600" : "text-gray-500"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-sm font-semibold",
+                    isCompleted ? "text-primary-teal-700" : "text-gray-600"
+                  )}
+                >
                   {session.scheduledStart} - {session.endTime}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Share button */}
-          <ShareButton session={session} />
+          {/* Share button - only for completed sessions */}
+          {isCompleted && <ShareButton session={session} />}
         </div>
 
         {/* Topic tags */}
@@ -724,96 +862,117 @@ function SummaryCard({
 
       {/* Content body */}
       <div className="px-6 py-5 space-y-5">
-        {/* TL;DR section */}
-        <div className="bg-gradient-to-r from-primary-teal-50 to-primary-teal-50/30 rounded-lg p-4 border border-primary-teal-100">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-primary-teal-600" />
-            <span className="text-xs font-bold text-primary-teal-700 uppercase tracking-wider">
-              TL;DR
-            </span>
-          </div>
-          <p className="text-gray-800 font-medium leading-relaxed">
-            <HighlightText text={session.tldr} searchQuery={searchQuery} />
-          </p>
-        </div>
-
-        {/* Key Takeaways */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="h-4 w-4 text-amber-500" />
-            <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-              Key Takeaways
-            </span>
-          </div>
-          <ul className="space-y-2">
-            {session.keyTakeaways.map((takeaway, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-teal-100 text-primary-teal-700 text-xs font-semibold flex items-center justify-center mt-0.5">
-                  {index + 1}
+        {isCompleted && session.tldr ? (
+          <>
+            {/* TL;DR section */}
+            <div className="bg-gradient-to-r from-primary-teal-50 to-primary-teal-50/30 rounded-lg p-4 border border-primary-teal-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-primary-teal-600" />
+                <span className="text-xs font-bold text-primary-teal-700 uppercase tracking-wider">
+                  TL;DR
                 </span>
-                <span className="text-gray-700 leading-relaxed">
-                  <HighlightText text={takeaway} searchQuery={searchQuery} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+              </div>
+              <p className="text-gray-800 font-medium leading-relaxed">
+                <HighlightText text={session.tldr} searchQuery={searchQuery} />
+              </p>
+            </div>
 
-        {/* Notable Quote */}
-        {session.notableQuote && (
-          <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-teal-500">
-            <div className="flex items-start gap-3">
-              <Quote className="h-5 w-5 text-primary-teal-400 flex-shrink-0 mt-0.5" />
+            {/* Key Takeaways */}
+            {session.keyTakeaways && session.keyTakeaways.length > 0 && (
               <div>
-                <p className="text-gray-800 italic leading-relaxed mb-2">
-                  &ldquo;{session.notableQuote.text}&rdquo;
-                </p>
-                <p className="text-sm font-medium text-primary-teal-700">
-                  — {session.notableQuote.speaker}
+                <div className="flex items-center gap-2 mb-3">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Key Takeaways
+                  </span>
+                </div>
+                <ul className="space-y-2">
+                  {session.keyTakeaways.map((takeaway, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-teal-100 text-primary-teal-700 text-xs font-semibold flex items-center justify-center mt-0.5">
+                        {index + 1}
+                      </span>
+                      <span className="text-gray-700 leading-relaxed">
+                        <HighlightText
+                          text={takeaway}
+                          searchQuery={searchQuery}
+                        />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Notable Quote */}
+            {session.notableQuote && (
+              <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-teal-500">
+                <div className="flex items-start gap-3">
+                  <Quote className="h-5 w-5 text-primary-teal-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-800 italic leading-relaxed mb-2">
+                      &ldquo;{session.notableQuote.text}&rdquo;
+                    </p>
+                    <p className="text-sm font-medium text-primary-teal-700">
+                      — {session.notableQuote.speaker}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Expandable full summary */}
+            {isExpanded && session.summary && (
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="h-4 w-4 text-gray-500" />
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    Full Summary
+                  </span>
+                </div>
+                <p className="text-gray-700 leading-relaxed">
+                  <HighlightText
+                    text={session.summary}
+                    searchQuery={searchQuery}
+                  />
                 </p>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Expandable full summary */}
-        {isExpanded && (
-          <div className="border-t border-gray-100 pt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="h-4 w-4 text-gray-500" />
-              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                Full Summary
-              </span>
+            {/* Actions row */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-sm font-medium text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
+              >
+                {isExpanded ? "Show less" : "Read full summary"}
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    isExpanded && "rotate-180"
+                  )}
+                />
+              </button>
+
+              <Link
+                href={`/public/${eventSlug}/session/${session.id}`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+              >
+                View full insights
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-            <p className="text-gray-700 leading-relaxed">
-              <HighlightText text={session.summary} searchQuery={searchQuery} />
+          </>
+        ) : (
+          /* Upcoming session - no summary yet */
+          <div className="text-center py-6">
+            <CalendarClock className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">Session hasn&apos;t started yet</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Summary will be available after the session completes
             </p>
           </div>
         )}
-
-        {/* Actions row */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-sm font-medium text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
-          >
-            {isExpanded ? "Show less" : "Read full summary"}
-            <ChevronDown
-              className={cn(
-                "h-4 w-4 transition-transform",
-                isExpanded && "rotate-180"
-              )}
-            />
-          </button>
-
-          <Link
-            href={`/public/${eventSlug}/session/${session.id}`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
-          >
-            View full insights
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
       </div>
     </div>
   );
