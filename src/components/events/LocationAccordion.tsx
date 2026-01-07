@@ -83,28 +83,39 @@ export function LocationAccordion({
         isExpanded ? "border-gray-200/60" : "hover:border-gray-200/60"
       }`}
     >
-      {/* Location Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center text-left"
-      >
-        {/* Left: Icon column (fixed width for alignment with date icon) */}
-        <div className="w-8 flex-shrink-0 flex items-center justify-center">
-          <MapPin className="h-5 w-5 text-primary-teal-600" />
+      {/* Location Header - using div with role="button" to avoid nested button issue */}
+      <div className="w-full px-4 py-3 flex items-center text-left">
+        {/* Clickable area for expand/collapse */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsExpanded(!isExpanded)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsExpanded(!isExpanded);
+            }
+          }}
+          className="flex items-center flex-1 min-w-0 cursor-pointer"
+        >
+          {/* Left: Icon column (fixed width for alignment with date icon) */}
+          <div className="w-8 flex-shrink-0 flex items-center justify-center">
+            <MapPin className="h-5 w-5 text-primary-teal-600" />
+          </div>
+
+          {/* Center: Name + Count (grows) */}
+          <div className="flex-1 flex items-center gap-2 min-w-0">
+            <h4 className="font-semibold text-gray-900 truncate">
+              {location.name}
+            </h4>
+            <span className="text-sm text-gray-500 flex-shrink-0">
+              ({location.sessions.length}{" "}
+              {location.sessions.length === 1 ? "presentation" : "presentations"})
+            </span>
+          </div>
         </div>
 
-        {/* Center: Name + Count (grows) */}
-        <div className="flex-1 flex items-center gap-2 min-w-0">
-          <h4 className="font-semibold text-gray-900 truncate">
-            {location.name}
-          </h4>
-          <span className="text-sm text-gray-500 flex-shrink-0">
-            ({location.sessions.length}{" "}
-            {location.sessions.length === 1 ? "presentation" : "presentations"})
-          </span>
-        </div>
-
-        {/* Right: Actions - responsive to container width */}
+        {/* Right: Actions - NOT inside the clickable area */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {onLinksToJoin && (
             <Button
@@ -182,15 +193,26 @@ export function LocationAccordion({
           )}
         </div>
 
-        {/* Right: Chevron column (fixed width for alignment with date chevron) */}
-        <div className="w-10 flex-shrink-0 flex items-center justify-center">
+        {/* Right: Chevron column - also clickable for expand/collapse */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsExpanded(!isExpanded)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsExpanded(!isExpanded);
+            }
+          }}
+          className="w-10 flex-shrink-0 flex items-center justify-center cursor-pointer"
+        >
           <ChevronDown
             className={`h-5 w-5 text-primary-teal-600 transition-transform duration-200 ${
               isExpanded ? "rotate-180" : ""
             }`}
           />
         </div>
-      </button>
+      </div>
 
       {/* Credentials row - aligned with icon column */}
       {showCredentials && (
