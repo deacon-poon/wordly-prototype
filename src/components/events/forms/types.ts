@@ -83,7 +83,17 @@ export interface SessionFormData {
   scheduledStart: string;
   endTime: string;
   timezone: string;
-  languages: string[];
+  // Advanced settings (inherit from Session Defaults)
+  accountId: string;
+  startingLanguage: string; // Primary presenter language
+  autoSelect: boolean; // ALS auto-detect
+  languages: string[]; // Selected output languages
+  glossaryId: string;
+  transcriptSetting: "save" | "save-workspace" | "none";
+  accessType: "open" | "passcode";
+  floorAudio: boolean;
+  voicePack: string;
+  label: string;
 }
 
 // ============================================================================
@@ -129,7 +139,17 @@ export const DEFAULT_SESSION: SessionFormData = {
   scheduledStart: "09:00",
   endTime: "10:00",
   timezone: "America/Los_Angeles",
+  // Advanced settings - inherit from Session Defaults
+  accountId: "",
+  startingLanguage: "en-US",
+  autoSelect: true,
   languages: ["en-US"],
+  glossaryId: "",
+  transcriptSetting: "save-workspace",
+  accessType: "open",
+  floorAudio: false,
+  voicePack: "feminine",
+  label: "",
 };
 
 // ============================================================================
@@ -180,6 +200,40 @@ export const TIMEZONES = [
   { value: "Australia/Sydney", label: "Australia/Sydney (AEDT/AEST)" },
   { value: "Australia/Melbourne", label: "Australia/Melbourne (AEDT/AEST)" },
   { value: "UTC", label: "UTC (Coordinated Universal Time)" },
+] as const;
+
+// Mock accounts (in production, fetched from API)
+export const ACCOUNTS = [
+  { id: "acc-default", name: "Default Account" },
+  { id: "acc-2a49e", name: "Deacon Poon (2a49e)" },
+  { id: "acc-corp", name: "Corporate Events" },
+  { id: "acc-training", name: "Training Sessions" },
+] as const;
+
+// Mock glossaries (in production, fetched from API)
+export const GLOSSARIES = [
+  { id: "", name: "None" },
+  { id: "gloss-tech", name: "Technology Terms" },
+  { id: "gloss-medical", name: "Medical Terminology" },
+  { id: "gloss-legal", name: "Legal Terms" },
+  { id: "gloss-finance", name: "Financial Terms" },
+] as const;
+
+export const TRANSCRIPT_SETTINGS = [
+  { value: "save-workspace", label: "Save transcript to workspace" },
+  { value: "save", label: "Save transcript" },
+  { value: "none", label: "Don't save transcript" },
+] as const;
+
+export const ACCESS_TYPES = [
+  { value: "open", label: "Open" },
+  { value: "passcode", label: "Require passcode" },
+] as const;
+
+export const VOICE_PACKS = [
+  { id: "feminine", name: "Feminine Voice" },
+  { id: "masculine", name: "Masculine Voice" },
+  { id: "neutral", name: "Neutral Voice" },
 ] as const;
 
 // ============================================================================

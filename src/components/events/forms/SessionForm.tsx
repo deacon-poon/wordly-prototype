@@ -22,12 +22,26 @@ import {
   Users,
   ChevronDown,
   Settings2,
+  Info,
+  Sparkles,
+  X,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   SessionFormData,
   FormMode,
   LANGUAGES,
   TIMEZONES,
+  ACCOUNTS,
+  GLOSSARIES,
+  TRANSCRIPT_SETTINGS,
+  ACCESS_TYPES,
+  VOICE_PACKS,
   getLanguageName,
 } from "./types";
 import { cn } from "@/lib/utils";
@@ -205,7 +219,7 @@ export function SessionForm({
 
       {/* Advanced Settings Toggle */}
       {!compact && (
-        <>
+        <TooltipProvider>
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
@@ -223,11 +237,37 @@ export function SessionForm({
 
           {/* Advanced Settings Content */}
           {showAdvanced && (
-            <div className="space-y-4 pt-2 border-t border-gray-100">
+            <div className="space-y-4 pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-500 italic">
                 These settings inherit from your Session Defaults. Override only
                 if needed for this specific session.
               </p>
+
+              {/* Account */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-account-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Account
+                </Label>
+                <Select
+                  value={data.accountId}
+                  onValueChange={(value) => onChange({ accountId: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-account-${index || 0}`}>
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCOUNTS.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Timezone */}
               <div className="space-y-2">
@@ -255,44 +295,269 @@ export function SessionForm({
                 </Select>
               </div>
 
-              {/* Languages */}
+              {/* Starting Language (Primary) */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-starting-lang-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Language
+                </Label>
+                <Select
+                  value={data.startingLanguage}
+                  onValueChange={(value) => onChange({ startingLanguage: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-starting-lang-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>
+                        <span className="flex items-center gap-2">
+                          <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                          {lang.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Auto Select */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-autoselect-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Auto Select
+                </Label>
+                <Select
+                  value={data.autoSelect ? "enabled" : "disabled"}
+                  onValueChange={(value) => onChange({ autoSelect: value === "enabled" })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-autoselect-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="enabled">Enabled</SelectItem>
+                    <SelectItem value="disabled">Disabled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Output Languages (Selections) */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium text-gray-700">
-                  Languages (up to 8)
+                  Selections (up to 8 languages)
                 </Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {LANGUAGES.slice(0, 8).map((lang) => (
-                    <div
-                      key={lang.code}
-                      className="flex items-center space-x-2"
-                    >
-                      <Checkbox
-                        id={`lang-${lang.code}-${index || 0}`}
-                        checked={data.languages.includes(lang.code)}
-                        onCheckedChange={() => handleLanguageToggle(lang.code)}
-                        disabled={
-                          readOnly ||
-                          (data.languages.length >= 8 &&
-                            !data.languages.includes(lang.code))
-                        }
-                      />
-                      <label
-                        htmlFor={`lang-${lang.code}-${index || 0}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                {/* Selected languages as chips */}
+                <div className="flex flex-wrap gap-2">
+                  {data.languages.map((langCode) => {
+                    const lang = LANGUAGES.find((l) => l.code === langCode);
+                    return (
+                      <span
+                        key={langCode}
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-200 rounded-md text-sm"
                       >
-                        {lang.name}
-                      </label>
-                    </div>
-                  ))}
+                        <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                        {lang?.name || langCode}
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            onClick={() => handleLanguageToggle(langCode)}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
+                {/* Add language dropdown */}
+                {!readOnly && data.languages.length < 8 && (
+                  <Select
+                    value=""
+                    onValueChange={(value) => {
+                      if (value && !data.languages.includes(value)) {
+                        handleLanguageToggle(value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Add language..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.filter((l) => !data.languages.includes(l.code)).map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          <span className="flex items-center gap-2">
+                            <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                            {lang.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <p className="text-xs text-gray-500">
-                  Selected: {data.languages.length}/8 (ALS automatically detects
-                  languages)
+                  Selected: {data.languages.length}/8
                 </p>
+              </div>
+
+              {/* Glossary */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-glossary-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Glossary
+                </Label>
+                <Select
+                  value={data.glossaryId}
+                  onValueChange={(value) => onChange({ glossaryId: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-glossary-${index || 0}`}>
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GLOSSARIES.map((glossary) => (
+                      <SelectItem key={glossary.id} value={glossary.id}>
+                        {glossary.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Transcript */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-transcript-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Transcript
+                </Label>
+                <Select
+                  value={data.transcriptSetting}
+                  onValueChange={(value: "save" | "save-workspace" | "none") => onChange({ transcriptSetting: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-transcript-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TRANSCRIPT_SETTINGS.map((setting) => (
+                      <SelectItem key={setting.value} value={setting.value}>
+                        {setting.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Access */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-access-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Access
+                </Label>
+                <Select
+                  value={data.accessType}
+                  onValueChange={(value: "open" | "passcode") => onChange({ accessType: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-access-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCESS_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Floor Audio */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Label
+                    htmlFor={`session-floor-audio-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Floor audio
+                  </Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">
+                        Enable floor audio to capture ambient sound in the room.
+                        Useful for Q&A sessions or audience participation.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Checkbox
+                  id={`session-floor-audio-${index || 0}`}
+                  checked={data.floorAudio}
+                  onCheckedChange={(checked) => onChange({ floorAudio: checked === true })}
+                  disabled={readOnly}
+                />
+              </div>
+
+              {/* Voice Pack */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-voice-pack-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Voice Pack
+                </Label>
+                <Select
+                  value={data.voicePack}
+                  onValueChange={(value) => onChange({ voicePack: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-voice-pack-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VOICE_PACKS.map((pack) => (
+                      <SelectItem key={pack.id} value={pack.id}>
+                        {pack.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Label */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-label-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Label
+                </Label>
+                <Input
+                  id={`session-label-${index || 0}`}
+                  value={data.label}
+                  onChange={(e) => onChange({ label: e.target.value })}
+                  placeholder="Optional label for this session"
+                  disabled={readOnly}
+                />
               </div>
             </div>
           )}
-        </>
+        </TooltipProvider>
       )}
 
       {/* Delete button for list context */}

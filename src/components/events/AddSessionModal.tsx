@@ -59,7 +59,17 @@ export function AddSessionModal({
             scheduledStart: "09:00",
             endTime: "10:00",
             timezone: defaultTimezone,
+            // Advanced settings - inherit from Session Defaults
+            accountId: "",
+            startingLanguage: "en-US",
+            autoSelect: true,
             languages: ["en-US"],
+            glossaryId: "",
+            transcriptSetting: "save-workspace",
+            accessType: "open",
+            floorAudio: false,
+            voicePack: "feminine",
+            label: "",
           }
         : undefined,
       defaultTimezone
