@@ -237,67 +237,71 @@ export function SessionForm({
 
           {/* Advanced Settings Content */}
           {showAdvanced && (
-            <div className="space-y-5 pt-4 border-t border-gray-100">
+            <div className="space-y-6 pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-500 italic">
                 These settings inherit from your Session Defaults. Override only
                 if needed for this specific session.
               </p>
 
-              {/* Row 1: Account & Timezone */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`session-account-${index || 0}`}
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Account
-                  </Label>
-                  <Select
-                    value={data.accountId}
-                    onValueChange={(value) => onChange({ accountId: value })}
-                    disabled={readOnly}
-                  >
-                    <SelectTrigger id={`session-account-${index || 0}`}>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ACCOUNTS.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`session-timezone-${index || 0}`}
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Timezone
-                  </Label>
-                  <Select
-                    value={data.timezone}
-                    onValueChange={(value) => onChange({ timezone: value })}
-                    disabled={readOnly}
-                  >
-                    <SelectTrigger id={`session-timezone-${index || 0}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIMEZONES.map((tz) => (
-                        <SelectItem key={tz.value} value={tz.value}>
-                          {tz.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Account */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-account-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Account
+                </Label>
+                <Select
+                  value={data.accountId}
+                  onValueChange={(value) => onChange({ accountId: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-account-${index || 0}`}>
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCOUNTS.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Row 2: Language & Auto Select */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Timezone */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor={`session-timezone-${index || 0}`}
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Timezone
+                </Label>
+                <Select
+                  value={data.timezone}
+                  onValueChange={(value) => onChange({ timezone: value })}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id={`session-timezone-${index || 0}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map((tz) => (
+                      <SelectItem key={tz.value} value={tz.value}>
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* ─── Language & Translation ─────────────────────────────── */}
+              <div className="space-y-4 pt-4 border-t border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Language & Translation
+                </h4>
+
+                {/* Starting Language */}
                 <div className="space-y-2">
                   <Label
                     htmlFor={`session-starting-lang-${index || 0}`}
@@ -326,6 +330,7 @@ export function SessionForm({
                   </Select>
                 </div>
 
+                {/* Auto Select */}
                 <div className="space-y-2">
                   <Label
                     htmlFor={`session-autoselect-${index || 0}`}
@@ -347,70 +352,68 @@ export function SessionForm({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              {/* Selections (Languages) - Full width with cleaner chip styling */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Selections
-                </Label>
-                <div className="p-3 border border-gray-200 rounded-lg bg-white min-h-[42px]">
-                  <div className="flex flex-wrap gap-2">
-                    {data.languages.map((langCode) => {
-                      const lang = LANGUAGES.find((l) => l.code === langCode);
-                      return (
-                        <span
-                          key={langCode}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:border-gray-400 transition-colors"
-                        >
-                          <Sparkles className="h-3 w-3 text-primary-teal-500" />
-                          {lang?.name || langCode}
-                          {!readOnly && (
-                            <button
-                              type="button"
-                              onClick={() => handleLanguageToggle(langCode)}
-                              className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          )}
-                        </span>
-                      );
-                    })}
-                    {data.languages.length === 0 && (
-                      <span className="text-sm text-gray-400 italic">No languages selected</span>
-                    )}
-                  </div>
-                </div>
-                {/* Add language dropdown */}
-                {!readOnly && data.languages.length < 8 && (
-                  <Select
-                    value={undefined}
-                    onValueChange={(value) => {
-                      if (value && !data.languages.includes(value)) {
-                        handleLanguageToggle(value);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Add language..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.filter((l) => !data.languages.includes(l.code)).map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          <span className="flex items-center gap-2">
+                {/* Selections (Output Languages) */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Selections
+                  </Label>
+                  <div className="p-3 border border-gray-200 rounded-lg bg-white min-h-[42px]">
+                    <div className="flex flex-wrap gap-2">
+                      {data.languages.map((langCode) => {
+                        const lang = LANGUAGES.find((l) => l.code === langCode);
+                        return (
+                          <span
+                            key={langCode}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:border-gray-400 transition-colors"
+                          >
                             <Sparkles className="h-3 w-3 text-primary-teal-500" />
-                            {lang.name}
+                            {lang?.name || langCode}
+                            {!readOnly && (
+                              <button
+                                type="button"
+                                onClick={() => handleLanguageToggle(langCode)}
+                                className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
                           </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
+                        );
+                      })}
+                      {data.languages.length === 0 && (
+                        <span className="text-sm text-gray-400 italic">No languages selected</span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Add language dropdown */}
+                  {!readOnly && data.languages.length < 8 && (
+                    <Select
+                      value={undefined}
+                      onValueChange={(value) => {
+                        if (value && !data.languages.includes(value)) {
+                          handleLanguageToggle(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Add language..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES.filter((l) => !data.languages.includes(l.code)).map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            <span className="flex items-center gap-2">
+                              <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                              {lang.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
 
-              {/* Row 3: Glossary & Transcript */}
-              <div className="grid grid-cols-2 gap-4">
+                {/* Glossary */}
                 <div className="space-y-2">
                   <Label
                     htmlFor={`session-glossary-${index || 0}`}
@@ -435,7 +438,15 @@ export function SessionForm({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
+              {/* ─── Output Settings ────────────────────────────────────── */}
+              <div className="space-y-4 pt-4 border-t border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Output Settings
+                </h4>
+
+                {/* Transcript */}
                 <div className="space-y-2">
                   <Label
                     htmlFor={`session-transcript-${index || 0}`}
@@ -460,35 +471,8 @@ export function SessionForm({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              {/* Row 4: Access & Voice Pack */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`session-access-${index || 0}`}
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Access
-                  </Label>
-                  <Select
-                    value={data.accessType}
-                    onValueChange={(value: "open" | "passcode") => onChange({ accessType: value })}
-                    disabled={readOnly}
-                  >
-                    <SelectTrigger id={`session-access-${index || 0}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ACCESS_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
+                {/* Voice Pack */}
                 <div className="space-y-2">
                   <Label
                     htmlFor={`session-voice-pack-${index || 0}`}
@@ -515,37 +499,70 @@ export function SessionForm({
                 </div>
               </div>
 
-              {/* Row 5: Floor Audio checkbox */}
-              <div className="flex items-center justify-between py-2 px-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center gap-2">
+              {/* ─── Access & Audio ─────────────────────────────────────── */}
+              <div className="space-y-4 pt-4 border-t border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Access & Audio
+                </h4>
+
+                {/* Access */}
+                <div className="space-y-2">
                   <Label
-                    htmlFor={`session-floor-audio-${index || 0}`}
-                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                    htmlFor={`session-access-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
                   >
-                    Floor audio
+                    Access
                   </Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs text-xs">
-                        Enable floor audio to capture ambient sound in the room.
-                        Useful for Q&A sessions or audience participation.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <Select
+                    value={data.accessType}
+                    onValueChange={(value: "open" | "passcode") => onChange({ accessType: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-access-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACCESS_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Checkbox
-                  id={`session-floor-audio-${index || 0}`}
-                  checked={data.floorAudio}
-                  onCheckedChange={(checked) => onChange({ floorAudio: checked === true })}
-                  disabled={readOnly}
-                />
+
+                {/* Floor Audio */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Label
+                      htmlFor={`session-floor-audio-${index || 0}`}
+                      className="text-sm font-medium text-gray-700 cursor-pointer"
+                    >
+                      Floor audio
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">
+                          Enable floor audio to capture ambient sound in the room.
+                          Useful for Q&A sessions or audience participation.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Checkbox
+                    id={`session-floor-audio-${index || 0}`}
+                    checked={data.floorAudio}
+                    onCheckedChange={(checked) => onChange({ floorAudio: checked === true })}
+                    disabled={readOnly}
+                  />
+                </div>
               </div>
 
-              {/* Row 6: Label - full width */}
-              <div className="space-y-2">
+              {/* Label - standalone at the end */}
+              <div className="space-y-2 pt-4 border-t border-gray-100">
                 <Label
                   htmlFor={`session-label-${index || 0}`}
                   className="text-sm font-medium text-gray-700"
