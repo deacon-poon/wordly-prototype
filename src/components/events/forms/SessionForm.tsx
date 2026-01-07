@@ -379,7 +379,7 @@ export function SessionForm({
                 {/* Add language dropdown */}
                 {!readOnly && data.languages.length < 8 && (
                   <Select
-                    value=""
+                    value={undefined}
                     onValueChange={(value) => {
                       if (value && !data.languages.includes(value)) {
                         handleLanguageToggle(value);

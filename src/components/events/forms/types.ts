@@ -140,11 +140,11 @@ export const DEFAULT_SESSION: SessionFormData = {
   endTime: "10:00",
   timezone: "America/Los_Angeles",
   // Advanced settings - inherit from Session Defaults
-  accountId: "",
+  accountId: "acc-default",
   startingLanguage: "en-US",
   autoSelect: true,
   languages: ["en-US"],
-  glossaryId: "",
+  glossaryId: "none",
   transcriptSetting: "save-workspace",
   accessType: "open",
   floorAudio: false,
@@ -212,7 +212,7 @@ export const ACCOUNTS = [
 
 // Mock glossaries (in production, fetched from API)
 export const GLOSSARIES = [
-  { id: "", name: "None" },
+  { id: "none", name: "None" },
   { id: "gloss-tech", name: "Technology Terms" },
   { id: "gloss-medical", name: "Medical Terminology" },
   { id: "gloss-legal", name: "Legal Terms" },

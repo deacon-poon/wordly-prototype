@@ -60,11 +60,11 @@ export function AddSessionModal({
             endTime: "10:00",
             timezone: defaultTimezone,
             // Advanced settings - inherit from Session Defaults
-            accountId: "",
+            accountId: "acc-default",
             startingLanguage: "en-US",
             autoSelect: true,
             languages: ["en-US"],
-            glossaryId: "",
+            glossaryId: "none",
             transcriptSetting: "save-workspace",
             accessType: "open",
             floorAudio: false,
