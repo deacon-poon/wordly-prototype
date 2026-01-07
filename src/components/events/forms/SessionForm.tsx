@@ -237,144 +237,150 @@ export function SessionForm({
 
           {/* Advanced Settings Content */}
           {showAdvanced && (
-            <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="space-y-5 pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-500 italic">
                 These settings inherit from your Session Defaults. Override only
                 if needed for this specific session.
               </p>
 
-              {/* Account */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-account-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Account
-                </Label>
-                <Select
-                  value={data.accountId}
-                  onValueChange={(value) => onChange({ accountId: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-account-${index || 0}`}>
-                    <SelectValue placeholder="Select account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCOUNTS.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Row 1: Account & Timezone */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-account-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Account
+                  </Label>
+                  <Select
+                    value={data.accountId}
+                    onValueChange={(value) => onChange({ accountId: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-account-${index || 0}`}>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACCOUNTS.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-timezone-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Timezone
+                  </Label>
+                  <Select
+                    value={data.timezone}
+                    onValueChange={(value) => onChange({ timezone: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-timezone-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Timezone */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-timezone-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Timezone
-                </Label>
-                <Select
-                  value={data.timezone}
-                  onValueChange={(value) => onChange({ timezone: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-timezone-${index || 0}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIMEZONES.map((tz) => (
-                      <SelectItem key={tz.value} value={tz.value}>
-                        {tz.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Row 2: Language & Auto Select */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-starting-lang-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Language
+                  </Label>
+                  <Select
+                    value={data.startingLanguage}
+                    onValueChange={(value) => onChange({ startingLanguage: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-starting-lang-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map((lang) => (
+                        <SelectItem key={lang.code} value={lang.code}>
+                          <span className="flex items-center gap-2">
+                            <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                            {lang.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-autoselect-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Auto Select
+                  </Label>
+                  <Select
+                    value={data.autoSelect ? "enabled" : "disabled"}
+                    onValueChange={(value) => onChange({ autoSelect: value === "enabled" })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-autoselect-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="enabled">Enabled</SelectItem>
+                      <SelectItem value="disabled">Disabled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Starting Language (Primary) */}
+              {/* Selections (Languages) - Full width with cleaner chip styling */}
               <div className="space-y-2">
-                <Label
-                  htmlFor={`session-starting-lang-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Language
-                </Label>
-                <Select
-                  value={data.startingLanguage}
-                  onValueChange={(value) => onChange({ startingLanguage: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-starting-lang-${index || 0}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.code} value={lang.code}>
-                        <span className="flex items-center gap-2">
-                          <Sparkles className="h-3 w-3 text-primary-teal-500" />
-                          {lang.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Auto Select */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-autoselect-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Auto Select
-                </Label>
-                <Select
-                  value={data.autoSelect ? "enabled" : "disabled"}
-                  onValueChange={(value) => onChange({ autoSelect: value === "enabled" })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-autoselect-${index || 0}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="enabled">Enabled</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Output Languages (Selections) */}
-              <div className="space-y-3">
                 <Label className="text-sm font-medium text-gray-700">
-                  Selections (up to 8 languages)
+                  Selections
                 </Label>
-                {/* Selected languages as chips */}
-                <div className="flex flex-wrap gap-2">
-                  {data.languages.map((langCode) => {
-                    const lang = LANGUAGES.find((l) => l.code === langCode);
-                    return (
-                      <span
-                        key={langCode}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-200 rounded-md text-sm"
-                      >
-                        <Sparkles className="h-3 w-3 text-primary-teal-500" />
-                        {lang?.name || langCode}
-                        {!readOnly && (
-                          <button
-                            type="button"
-                            onClick={() => handleLanguageToggle(langCode)}
-                            className="ml-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        )}
-                      </span>
-                    );
-                  })}
+                <div className="p-3 border border-gray-200 rounded-lg bg-white min-h-[42px]">
+                  <div className="flex flex-wrap gap-2">
+                    {data.languages.map((langCode) => {
+                      const lang = LANGUAGES.find((l) => l.code === langCode);
+                      return (
+                        <span
+                          key={langCode}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:border-gray-400 transition-colors"
+                        >
+                          <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                          {lang?.name || langCode}
+                          {!readOnly && (
+                            <button
+                              type="button"
+                              onClick={() => handleLanguageToggle(langCode)}
+                              className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </span>
+                      );
+                    })}
+                    {data.languages.length === 0 && (
+                      <span className="text-sm text-gray-400 italic">No languages selected</span>
+                    )}
+                  </div>
                 </div>
                 {/* Add language dropdown */}
                 {!readOnly && data.languages.length < 8 && (
@@ -401,95 +407,120 @@ export function SessionForm({
                     </SelectContent>
                   </Select>
                 )}
-                <p className="text-xs text-gray-500">
-                  Selected: {data.languages.length}/8
-                </p>
               </div>
 
-              {/* Glossary */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-glossary-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Glossary
-                </Label>
-                <Select
-                  value={data.glossaryId}
-                  onValueChange={(value) => onChange({ glossaryId: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-glossary-${index || 0}`}>
-                    <SelectValue placeholder="None" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GLOSSARIES.map((glossary) => (
-                      <SelectItem key={glossary.id} value={glossary.id}>
-                        {glossary.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Row 3: Glossary & Transcript */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-glossary-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Glossary
+                  </Label>
+                  <Select
+                    value={data.glossaryId}
+                    onValueChange={(value) => onChange({ glossaryId: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-glossary-${index || 0}`}>
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GLOSSARIES.map((glossary) => (
+                        <SelectItem key={glossary.id} value={glossary.id}>
+                          {glossary.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-transcript-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Transcript
+                  </Label>
+                  <Select
+                    value={data.transcriptSetting}
+                    onValueChange={(value: "save" | "save-workspace" | "none") => onChange({ transcriptSetting: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-transcript-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRANSCRIPT_SETTINGS.map((setting) => (
+                        <SelectItem key={setting.value} value={setting.value}>
+                          {setting.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Transcript */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-transcript-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Transcript
-                </Label>
-                <Select
-                  value={data.transcriptSetting}
-                  onValueChange={(value: "save" | "save-workspace" | "none") => onChange({ transcriptSetting: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-transcript-${index || 0}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TRANSCRIPT_SETTINGS.map((setting) => (
-                      <SelectItem key={setting.value} value={setting.value}>
-                        {setting.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Row 4: Access & Voice Pack */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-access-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Access
+                  </Label>
+                  <Select
+                    value={data.accessType}
+                    onValueChange={(value: "open" | "passcode") => onChange({ accessType: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-access-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACCESS_TYPES.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`session-voice-pack-${index || 0}`}
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Voice Pack
+                  </Label>
+                  <Select
+                    value={data.voicePack}
+                    onValueChange={(value) => onChange({ voicePack: value })}
+                    disabled={readOnly}
+                  >
+                    <SelectTrigger id={`session-voice-pack-${index || 0}`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VOICE_PACKS.map((pack) => (
+                        <SelectItem key={pack.id} value={pack.id}>
+                          {pack.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Access */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-access-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Access
-                </Label>
-                <Select
-                  value={data.accessType}
-                  onValueChange={(value: "open" | "passcode") => onChange({ accessType: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-access-${index || 0}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCESS_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Floor Audio */}
-              <div className="flex items-center justify-between">
+              {/* Row 5: Floor Audio checkbox */}
+              <div className="flex items-center justify-between py-2 px-3 border border-gray-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Label
                     htmlFor={`session-floor-audio-${index || 0}`}
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
                   >
                     Floor audio
                   </Label>
@@ -513,33 +544,7 @@ export function SessionForm({
                 />
               </div>
 
-              {/* Voice Pack */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor={`session-voice-pack-${index || 0}`}
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Voice Pack
-                </Label>
-                <Select
-                  value={data.voicePack}
-                  onValueChange={(value) => onChange({ voicePack: value })}
-                  disabled={readOnly}
-                >
-                  <SelectTrigger id={`session-voice-pack-${index || 0}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VOICE_PACKS.map((pack) => (
-                      <SelectItem key={pack.id} value={pack.id}>
-                        {pack.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Label */}
+              {/* Row 6: Label - full width */}
               <div className="space-y-2">
                 <Label
                   htmlFor={`session-label-${index || 0}`}
