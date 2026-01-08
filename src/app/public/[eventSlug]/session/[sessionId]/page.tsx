@@ -40,7 +40,6 @@ interface SessionDetail {
   scheduledDate: string;
   scheduledStart: string;
   endTime: string;
-  sessionType: "Keynote" | "Workshop" | "Panel" | "Talk" | "Breakout";
   duration: string;
   tldr: string;
   summary: string;
@@ -73,18 +72,8 @@ interface RelatedSession {
   id: string;
   title: string;
   presenters: string[];
-  sessionType: string;
   tags: string[];
 }
-
-// Session type colors
-const sessionTypeStyles: Record<string, string> = {
-  Keynote: "bg-amber-100 text-amber-800 border-amber-200",
-  Workshop: "bg-purple-100 text-purple-800 border-purple-200",
-  Panel: "bg-blue-100 text-blue-800 border-blue-200",
-  Talk: "bg-primary-teal-100 text-primary-teal-800 border-primary-teal-200",
-  Breakout: "bg-gray-100 text-gray-800 border-gray-200",
-};
 
 const sentimentStyles: Record<string, { bg: string; icon: React.ReactNode }> = {
   Inspirational: {
@@ -147,7 +136,6 @@ function getMockSessionData(
       scheduledDate: todayStr,
       scheduledStart: "9:00 AM",
       endTime: "10:30 AM",
-      sessionType: "Keynote",
       duration: "90 min",
       tldr: "AI assistants will be standard for knowledge workers by 2030, fundamentally changing how we approach problem-solving and creativity.",
       summary:
@@ -228,7 +216,6 @@ function getMockSessionData(
       scheduledDate: todayStr,
       scheduledStart: "11:00 AM",
       endTime: "12:00 PM",
-      sessionType: "Talk",
       duration: "60 min",
       tldr: "Microservices architecture with event-driven patterns is key to handling millions of concurrent users at scale.",
       summary:
@@ -301,21 +288,18 @@ function getMockSessionData(
       id: "ses-003",
       title: "Panel: The Ethics of Artificial Intelligence",
       presenters: ["Multiple Speakers"],
-      sessionType: "Panel",
       tags: ["AI Ethics", "Policy"],
     },
     {
       id: "ses-004",
       title: "Hands-on: Building Your First ML Pipeline",
       presenters: ["Dr. James Wilson"],
-      sessionType: "Workshop",
       tags: ["Machine Learning", "Hands-on"],
     },
     {
       id: "ses-008",
       title: "Security in the Age of AI",
       presenters: ["David Chen", "Maria Santos"],
-      sessionType: "Talk",
       tags: ["Security", "AI"],
     },
   ];
@@ -466,14 +450,6 @@ export default function SessionDetailPage({
         <div className="max-w-6xl mx-auto px-6 py-8">
           {/* Badges */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span
-              className={cn(
-                "inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold border",
-                sessionTypeStyles[session.sessionType]
-              )}
-            >
-              {session.sessionType}
-            </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-gray-600 bg-gray-100">
               <Clock className="h-3.5 w-3.5" />
               {session.duration}
@@ -742,11 +718,6 @@ export default function SessionDetailPage({
                     href={`/public/${event.slug}/session/${related.id}`}
                     className="block p-3 rounded-lg border border-gray-200 hover:border-primary-teal-300 hover:bg-primary-teal-50/50 transition-all"
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-gray-500">
-                        {related.sessionType}
-                      </span>
-                    </div>
                     <h4 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
                       {related.title}
                     </h4>
@@ -773,8 +744,8 @@ export default function SessionDetailPage({
                 height={26}
                 className="h-6 w-auto"
               />
-              <span className="text-sm text-gray-500">
-                Powered by Wordly AI
+              <span className="text-sm text-gray-400">
+                © {new Date().getFullYear()} Wordly, Inc.
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">

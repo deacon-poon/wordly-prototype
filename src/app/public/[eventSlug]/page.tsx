@@ -48,7 +48,6 @@ interface SessionSummary {
   scheduledDate: string;
   scheduledStart: string;
   endTime: string;
-  sessionType: "Keynote" | "Workshop" | "Panel" | "Talk" | "Breakout";
   duration: string;
   tldr?: string; // Optional - may not exist for unrun sessions
   summary?: string; // Optional - may not exist for unrun sessions
@@ -101,8 +100,11 @@ function getUniqueDates(sessions: SessionSummary[]): string[] {
 
 function getUniqueTags(sessions: SessionSummary[]): string[] {
   const tags = new Set<string>();
+  // Only collect tags from completed sessions (tags are AI-generated from summaries)
   sessions.forEach((session) => {
+    if (hasSessionCompleted(session)) {
     session.tags.forEach((tag) => tags.add(tag));
+    }
   });
   return Array.from(tags).sort();
 }
@@ -147,15 +149,6 @@ function getAllSessions(locations: Location[]): SessionSummary[] {
     return timeToMinutes(a.scheduledStart) - timeToMinutes(b.scheduledStart);
   });
 }
-
-// Session type colors
-const sessionTypeStyles: Record<string, string> = {
-  Keynote: "bg-amber-100 text-amber-800 border-amber-200",
-  Workshop: "bg-purple-100 text-purple-800 border-purple-200",
-  Panel: "bg-blue-100 text-blue-800 border-blue-200",
-  Talk: "bg-primary-teal-100 text-primary-teal-800 border-primary-teal-200",
-  Breakout: "bg-gray-100 text-gray-800 border-gray-200",
-};
 
 // Mock data generator based on event slug
 function getMockEventData(eventSlug: string): PublicEvent {
@@ -218,7 +211,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: todayStr,
             scheduledStart: "9:00 AM",
             endTime: "10:30 AM",
-            sessionType: "Keynote",
             duration: "90 min",
             tldr: "AI assistants will be standard for knowledge workers by 2030, fundamentally changing how we approach problem-solving and creativity.",
             summary:
@@ -242,7 +234,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: todayStr,
             scheduledStart: "11:00 AM",
             endTime: "12:00 PM",
-            sessionType: "Talk",
             duration: "60 min",
             tldr: "Microservices architecture with event-driven patterns is key to handling millions of concurrent users at scale.",
             summary:
@@ -270,7 +261,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: tomorrowStr,
             scheduledStart: "9:00 AM",
             endTime: "10:30 AM",
-            sessionType: "Panel",
             duration: "90 min",
             tldr: "AI developers have a responsibility to ensure fair, unbiased systems through transparent algorithms and diverse training data.",
             summary:
@@ -296,7 +286,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: todayStr,
             scheduledStart: "2:00 PM",
             endTime: "4:00 PM",
-            sessionType: "Workshop",
             duration: "120 min",
             tldr: "A complete guide to building production-ready ML pipelines with proper versioning, experiment tracking, and automated testing.",
             summary:
@@ -320,7 +309,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: tomorrowStr,
             scheduledStart: "11:00 AM",
             endTime: "12:30 PM",
-            sessionType: "Talk",
             duration: "90 min",
             tldr: "Custom operators and multi-tenancy patterns unlock the full potential of Kubernetes at enterprise scale.",
             summary:
@@ -340,7 +328,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: dayAfterStr,
             scheduledStart: "9:00 AM",
             endTime: "10:30 AM",
-            sessionType: "Talk",
             duration: "90 min",
             tldr: "Data contracts and schema evolution are the foundation of reliable, maintainable data pipelines.",
             summary:
@@ -371,7 +358,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: todayStr,
             scheduledStart: "3:00 PM",
             endTime: "4:00 PM",
-            sessionType: "Breakout",
             duration: "60 min",
             tldr: "Self-service onboarding and optimized activation funnels are the keys to sustainable product-led growth.",
             summary:
@@ -395,7 +381,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: tomorrowStr,
             scheduledStart: "2:00 PM",
             endTime: "3:30 PM",
-            sessionType: "Talk",
             duration: "90 min",
             tldr: "AI is a double-edged sword for security—it powers both advanced threats and sophisticated defenses.",
             summary:
@@ -415,7 +400,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: dayAfterStr,
             scheduledStart: "4:00 PM",
             endTime: "5:00 PM",
-            sessionType: "Keynote",
             duration: "60 min",
             tldr: "The conference wrapped up with key announcements and a preview of emerging trends to watch in the coming year.",
             summary:
@@ -428,7 +412,7 @@ function getMockEventData(eventSlug: string): PublicEvent {
             ],
             tags: ["Trends", "Future", "Community", "Wrap-up"],
           },
-          // Upcoming sessions - no summary yet
+          // Upcoming sessions - no summary or tags yet (will be generated after session runs)
           {
             id: "ses-010",
             title: "Workshop: Hands-on with GPT-5 APIs",
@@ -436,9 +420,8 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: dayAfterStr,
             scheduledStart: "5:30 PM",
             endTime: "7:00 PM",
-            sessionType: "Workshop",
             duration: "90 min",
-            tags: ["AI", "APIs", "Hands-on", "GPT"],
+            tags: [],
             hasCompleted: false,
           },
           {
@@ -453,9 +436,8 @@ function getMockEventData(eventSlug: string): PublicEvent {
             scheduledDate: dayAfterStr,
             scheduledStart: "7:30 PM",
             endTime: "8:30 PM",
-            sessionType: "Panel",
             duration: "60 min",
-            tags: ["Leadership", "Diversity", "AI", "Career"],
+            tags: [],
             hasCompleted: false,
           },
         ],
@@ -619,21 +601,13 @@ function CompactCard({
 
         {/* Center: Title and Presenters (grows) */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <span
-              className={cn(
-                "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border",
-                sessionTypeStyles[session.sessionType]
-              )}
-            >
-              {session.sessionType}
-            </span>
             {!isCompleted && (
+            <div className="mb-0.5">
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 Upcoming
               </span>
-            )}
           </div>
+          )}
           <h5
             className={cn(
               "font-medium truncate transition-colors",
@@ -761,16 +735,8 @@ function SummaryCard({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            {/* Session type and duration badges */}
+            {/* Duration badge */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span
-                className={cn(
-                  "inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border",
-                  sessionTypeStyles[session.sessionType]
-                )}
-              >
-                {session.sessionType}
-              </span>
               <span className="inline-flex items-center gap-1 text-xs text-gray-500">
                 <Clock className="h-3 w-3" />
                 {session.duration}
@@ -857,12 +823,14 @@ function SummaryCard({
           {isCompleted && <ShareButton session={session} />}
         </div>
 
-        {/* Topic tags */}
+        {/* Topic tags - only for completed sessions */}
+        {isCompleted && session.tags && session.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-4">
           {session.tags.map((tag) => (
             <TopicTag key={tag} tag={tag} onClick={() => onTagClick?.(tag)} />
           ))}
         </div>
+        )}
       </div>
 
       {/* Content body */}
@@ -1306,8 +1274,8 @@ export default function PublicSummaryPage({
                 height={28}
                 className="h-6 w-auto"
               />
-              <span className="text-sm text-gray-500">
-                Powered by Wordly AI
+              <span className="text-sm text-gray-400">
+                © {new Date().getFullYear()} Wordly, Inc.
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">

@@ -36,7 +36,10 @@ import {
   EditLocationModal,
 } from "@/components/events/AddLocationModal";
 import { SessionPanel } from "@/components/events/SessionPanel";
-import { UploadScheduleModal } from "@/components/events/UploadScheduleModal";
+import {
+  UploadScheduleModal,
+  type SessionDefaults,
+} from "@/components/events/UploadScheduleModal";
 import {
   BulkUploadReviewModal,
   type UploadedSession,
@@ -74,6 +77,7 @@ interface Event {
   dateRange: string;
   startDate: Date;
   endDate: Date;
+  timezone: string; // Event timezone (e.g., "America/Los_Angeles")
   locationCount: number;
   sessionCount: number;
   description: string;
@@ -177,6 +181,7 @@ function getMockEventData(eventId: string): Event {
       name: "AI & Machine Learning Summit 2024",
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
+      timezone: "America/Los_Angeles",
       description:
         "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
       publicSummaryUrl: "/public/ai-ml-summit-2024",
@@ -185,6 +190,7 @@ function getMockEventData(eventId: string): Event {
       name: "Cloud Infrastructure & DevOps Summit",
       startDate: getRelativeDate(7),
       endDate: getRelativeDate(8),
+      timezone: "America/New_York",
       description:
         "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
       publicSummaryUrl: "/public/cloud-devops-summit-2024",
@@ -193,6 +199,7 @@ function getMockEventData(eventId: string): Event {
       name: "Frontend Development Conference 2024",
       startDate: getRelativeDate(14),
       endDate: getRelativeDate(15),
+      timezone: "America/Los_Angeles",
       description:
         "Explore the latest in frontend technologies, React, Vue, and modern web development",
     },
@@ -210,6 +217,7 @@ function getMockEventData(eventId: string): Event {
       dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
+      timezone: "America/Los_Angeles",
       locationCount: 0,
       sessionCount: 0,
       description: "Add locations and sessions to get started",
@@ -226,6 +234,7 @@ function getMockEventData(eventId: string): Event {
     ),
     startDate: eventData.startDate || getRelativeDate(0),
     endDate: eventData.endDate || getRelativeDate(1),
+    timezone: eventData.timezone || "America/Los_Angeles",
     locationCount: 3,
     sessionCount: 12,
     description:
@@ -652,8 +661,10 @@ export default function EventDetailPage({
   };
 
   // Bulk upload handlers
-  const handleBulkUpload = async (file: File, timezone: string) => {
-    // File is selected, close upload modal and open review modal
+  const handleBulkUpload = async (file: File, defaults: SessionDefaults) => {
+    // File is selected, store defaults and open review modal
+    // In production, these defaults would be passed to the review/processing step
+    console.log("Bulk upload with defaults:", defaults);
     setIsUploadModalOpen(false);
     setIsBulkReviewModalOpen(true);
   };
@@ -965,7 +976,8 @@ export default function EventDetailPage({
                 <LocationAccordion
                   key={location.id}
                   location={location}
-                  defaultExpanded={false}
+                  defaultExpanded={true}
+                  eventTimezone={event.timezone}
                   onStartLocation={(location, e) =>
                     handleStartLocation(location, event.name, e)
                   }
@@ -1105,6 +1117,7 @@ export default function EventDetailPage({
                           key={location.id}
                           location={locationWithDateSessions}
                           defaultExpanded={true}
+                          eventTimezone={event.timezone}
                           onStartLocation={(location, e) =>
                             handleStartLocation(location, event.name, e)
                           }

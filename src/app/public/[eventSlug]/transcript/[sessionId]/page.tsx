@@ -542,8 +542,8 @@ export default function TranscriptPage({
                 height={26}
                 className="h-6 w-auto"
               />
-              <span className="text-sm text-gray-500">
-                Powered by Wordly AI
+              <span className="text-sm text-gray-400">
+                © {new Date().getFullYear()} Wordly, Inc.
               </span>
             </div>
             <div className="flex items-center gap-6 text-sm text-gray-500">

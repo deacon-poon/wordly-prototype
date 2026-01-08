@@ -28,6 +28,7 @@ interface Event {
   dateRange: string;
   startDate: string; // ISO string for serialization
   endDate: string; // ISO string for serialization
+  timezone: string; // Event timezone (e.g., "America/Los_Angeles")
   locationCount: number;
   sessionCount: number;
   description: string;
@@ -93,6 +94,7 @@ export function serializeEvent(event: {
   dateRange: string;
   startDate: Date;
   endDate: Date;
+  timezone: string;
   locationCount: number;
   sessionCount: number;
   description: string;
@@ -115,6 +117,7 @@ export function deserializeEvent(event: Event): {
   dateRange: string;
   startDate: Date;
   endDate: Date;
+  timezone: string;
   locationCount: number;
   sessionCount: number;
   description: string;

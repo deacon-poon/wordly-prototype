@@ -49,6 +49,16 @@ export function PresentationEditDrawer({
     endTime: session.endTime,
     timezone: "America/Los_Angeles",
     languages: ["en-US", "es", "fr"],
+    // Advanced settings - use defaults
+    accountId: "acc-default",
+    startingLanguage: "en-US",
+    autoSelect: true,
+    glossaryId: "none",
+    transcriptSetting: "save-workspace",
+    accessType: "open",
+    floorAudio: false,
+    voicePack: "feminine",
+    label: "",
   };
 
   const {

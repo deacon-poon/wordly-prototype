@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getTimezoneAbbr } from "@/components/ui/datetime-picker";
 
 interface Session {
   id: string;
@@ -31,6 +32,7 @@ interface Session {
   scheduledDate: string;
   scheduledStart: string;
   endTime: string;
+  timezone?: string;
   status: "pending" | "active" | "completed" | "skipped";
 }
 
@@ -46,6 +48,8 @@ interface Location {
 interface LocationAccordionProps {
   location: Location;
   defaultExpanded?: boolean;
+  /** Event-level timezone - used for displaying session times */
+  eventTimezone?: string;
   onStartLocation?: (location: Location, e: React.MouseEvent) => void;
   onLinksToJoin?: (location: Location, e: React.MouseEvent) => void;
   onEditSession?: (
@@ -63,6 +67,7 @@ interface LocationAccordionProps {
 export function LocationAccordion({
   location,
   defaultExpanded = false,
+  eventTimezone = "America/Los_Angeles",
   onStartLocation,
   onLinksToJoin,
   onEditSession,
@@ -110,7 +115,10 @@ export function LocationAccordion({
             </h4>
             <span className="text-sm text-gray-500 flex-shrink-0">
               ({location.sessions.length}{" "}
-              {location.sessions.length === 1 ? "presentation" : "presentations"})
+              {location.sessions.length === 1
+                ? "presentation"
+                : "presentations"}
+              )
             </span>
           </div>
         </div>
@@ -303,9 +311,12 @@ export function LocationAccordion({
 
               {/* Right: Time badge + Edit button (aligns with action buttons above) */}
               <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex items-center px-3 py-1.5 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
                   <span className="text-sm font-bold text-primary-teal-700 whitespace-nowrap">
-                    {session.scheduledStart} - {session.endTime}
+                    {session.scheduledStart} – {session.endTime}
+                  </span>
+                  <span className="text-xs font-medium text-primary-teal-600 bg-primary-teal-100 px-1.5 py-0.5 rounded">
+                    {getTimezoneAbbr(session.timezone || eventTimezone)}
                   </span>
                 </div>
 

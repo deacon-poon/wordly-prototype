@@ -3,9 +3,25 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Calendar, ExternalLink, Plus } from "lucide-react";
+import {
+  Calendar,
+  ExternalLink,
+  Plus,
+  MoreVertical,
+  Trash2,
+  AlertTriangle,
+  Edit2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ManualEventWizard } from "@/components/events/ManualEventWizard";
 import type { EventDetailsFormData } from "@/components/events/forms";
 import { saveEvent, serializeEvent } from "@/lib/eventStore";
@@ -38,6 +54,7 @@ interface Event {
   dateRange: string;
   startDate: Date;
   endDate: Date;
+  timezone: string; // Event timezone (e.g., "America/Los_Angeles")
   locationCount: number;
   sessionCount: number;
   description: string;
@@ -98,6 +115,11 @@ export default function EventsPage() {
   // Event creation modal
   const [isManualWizardOpen, setIsManualWizardOpen] = useState(false);
 
+  // Delete event state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Events state - initialized with mock data
   // In production, this would be fetched from an API
   const [events, setEvents] = useState<Event[]>(() => [
@@ -108,6 +130,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
+      timezone: "America/Los_Angeles",
       locationCount: 3,
       sessionCount: 10,
       description:
@@ -250,6 +273,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(7), getRelativeDate(8)),
       startDate: getRelativeDate(7),
       endDate: getRelativeDate(8),
+      timezone: "America/New_York",
       locationCount: 4,
       sessionCount: 18,
       description:
@@ -462,6 +486,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(20), getRelativeDate(21)),
       startDate: getRelativeDate(20),
       endDate: getRelativeDate(21),
+      timezone: "America/Los_Angeles",
       locationCount: 2,
       sessionCount: 8,
       description:
@@ -566,6 +591,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(33), getRelativeDate(34)),
       startDate: getRelativeDate(33),
       endDate: getRelativeDate(34),
+      timezone: "America/Chicago",
       locationCount: 2,
       sessionCount: 10,
       description:
@@ -688,6 +714,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(47), getRelativeDate(48)),
       startDate: getRelativeDate(47),
       endDate: getRelativeDate(48),
+      timezone: "America/Denver",
       locationCount: 3,
       sessionCount: 12,
       description:
@@ -838,6 +865,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(-36), getRelativeDate(-35)),
       startDate: getRelativeDate(-36),
       endDate: getRelativeDate(-35),
+      timezone: "America/Los_Angeles",
       locationCount: 2,
       sessionCount: 6,
       description:
@@ -924,6 +952,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(-57), getRelativeDate(-56)),
       startDate: getRelativeDate(-57),
       endDate: getRelativeDate(-56),
+      timezone: "America/New_York",
       locationCount: 3,
       sessionCount: 12,
       description:
@@ -1073,6 +1102,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(-93), getRelativeDate(-92)),
       startDate: getRelativeDate(-93),
       endDate: getRelativeDate(-92),
+      timezone: "America/Chicago",
       locationCount: 2,
       sessionCount: 8,
       description:
@@ -1177,6 +1207,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(-128), getRelativeDate(-127)),
       startDate: getRelativeDate(-128),
       endDate: getRelativeDate(-127),
+      timezone: "America/Los_Angeles",
       locationCount: 2,
       sessionCount: 7,
       description:
@@ -1272,6 +1303,7 @@ export default function EventsPage() {
       dateRange: formatDateRange(getRelativeDate(-164), getRelativeDate(-163)),
       startDate: getRelativeDate(-164),
       endDate: getRelativeDate(-163),
+      timezone: "America/New_York",
       locationCount: 3,
       sessionCount: 11,
       description:
@@ -1460,9 +1492,10 @@ export default function EventsPage() {
       dateRange: formatDateRange(startDate, endDate),
       startDate,
       endDate,
+      timezone: data.eventDetails.timezone,
       locationCount: 0,
       sessionCount: 0,
-      description: data.eventDetails.description || "",
+      description: "", // Description field removed from create form
       locations: [],
     };
 
@@ -1480,6 +1513,42 @@ export default function EventsPage() {
     router.push(`/events/${newEventId}`);
   };
 
+  // Delete event handlers
+  const handleDeleteEventClick = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEventToDelete(event);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDeleteEvent = async () => {
+    if (!eventToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      // Remove from state
+      setEvents((prev) => prev.filter((e) => e.id !== eventToDelete.id));
+
+      // Remove from localStorage
+      const storedEvents = localStorage.getItem("wordly-events");
+      if (storedEvents) {
+        const parsed = JSON.parse(storedEvents);
+        const updated = parsed.filter(
+          (e: { id: string }) => e.id !== eventToDelete.id
+        );
+        localStorage.setItem("wordly-events", JSON.stringify(updated));
+      }
+
+      toast.success(`Event "${eventToDelete.name}" deleted`);
+      setIsDeleteDialogOpen(false);
+      setEventToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete event:", error);
+      toast.error("Failed to delete event. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const EventCard = ({ event }: { event: Event }) => {
     const eventStatus = getEventStatus(event.startDate, event.endDate);
 
@@ -1489,9 +1558,45 @@ export default function EventsPage() {
         onClick={() => router.push(`/events/${event.id}`)}
       >
         <div className="px-4 py-4">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          {/* Header with title and actions */}
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <h2 className="text-lg font-semibold text-gray-900">
             {event.name}
           </h2>
+
+            {/* Actions menu - vertical dots to match event detail pattern */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/events/${event.id}`);
+                  }}
+                >
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Edit Event
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => handleDeleteEventClick(event, e as any)}
+                  className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Event
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-2">
             <span className="flex items-center gap-1.5">
@@ -1504,9 +1609,11 @@ export default function EventsPage() {
             <span>{event.sessionCount} presentations</span>
           </div>
 
+          {event.description && (
           <p className="text-sm text-gray-600 line-clamp-2">
             {event.description}
           </p>
+          )}
 
           {event.publicSummaryUrl && (
             <a
@@ -1638,6 +1745,33 @@ export default function EventsPage() {
         open={isManualWizardOpen}
         onOpenChange={setIsManualWizardOpen}
         onComplete={handleManualEventComplete}
+      />
+
+      {/* Delete Event Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) setEventToDelete(null);
+        }}
+        title="Delete Event"
+        description={
+          eventToDelete
+            ? `This will permanently delete "${eventToDelete.name}" and all its locations, sessions, and associated data. This action cannot be undone.`
+            : "This will permanently delete this event."
+        }
+        onConfirm={handleConfirmDeleteEvent}
+        confirmText="Delete Event"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isDeleting}
+        icon={<AlertTriangle className="h-12 w-12" />}
+        validationText={eventToDelete?.name}
+        validationLabel={
+          eventToDelete
+            ? `To confirm, please type the event name "${eventToDelete.name}"`
+            : undefined
+        }
       />
     </div>
   );

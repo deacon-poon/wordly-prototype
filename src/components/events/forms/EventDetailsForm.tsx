@@ -3,7 +3,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { TimezoneSelector } from "@/components/ui/datetime-picker";
 import { EventDetailsFormData, FormMode } from "./types";
 
 // ============================================================================
@@ -26,6 +26,7 @@ interface EventDetailsFormProps {
 // ============================================================================
 // Component - Simplified per Dec 31 design sync
 // Event-level defaults eliminated; sessions inherit from account session defaults.
+// Timezone added per Jan 2026 design sync - event-level timezone setting.
 // ============================================================================
 
 export function EventDetailsForm({
@@ -54,24 +55,6 @@ export function EventDetailsForm({
           className={errors.name ? "border-red-500" : ""}
         />
         {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-      </div>
-
-      {/* Description (optional) */}
-      <div className="space-y-2">
-        <Label
-          htmlFor="description"
-          className="text-sm font-medium text-gray-700"
-        >
-          Description
-        </Label>
-        <Textarea
-          id="description"
-          value={data.description}
-          onChange={(e) => onChange({ description: e.target.value })}
-          placeholder="Brief description of the event (optional)"
-          disabled={readOnly}
-          rows={2}
-        />
       </div>
 
       {/* Date Range */}
@@ -115,6 +98,24 @@ export function EventDetailsForm({
             <p className="text-sm text-red-500">{errors.endDate}</p>
           )}
         </div>
+      </div>
+
+      {/* Event Timezone */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold text-gray-900">
+          Event Timezone *
+        </Label>
+        <p className="text-xs text-gray-500 mb-1.5">
+          All session times will be displayed in this timezone
+        </p>
+        <TimezoneSelector
+          value={data.timezone}
+          onChange={(timezone) => onChange({ timezone })}
+          disabled={readOnly}
+        />
+        {errors.timezone && (
+          <p className="text-sm text-red-500">{errors.timezone}</p>
+        )}
       </div>
     </div>
   );
