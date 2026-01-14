@@ -913,16 +913,19 @@ export default function EventDetailPage({
 
             {/* Actions - responsive based on container width */}
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDownloadForAV}
-                className="text-gray-600 hover:text-gray-900"
-                title="Bulk Download Links"
-              >
-                <Download className="h-4 w-4 @md:mr-1.5" />
-                <span className="hidden @md:inline">Bulk Download Links</span>
-              </Button>
+              {/* Only show bulk download when there are locations with sessions */}
+              {event.locations.some((loc) => loc.sessions.length > 0) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownloadForAV}
+                  className="text-gray-600 hover:text-gray-900"
+                  title="Bulk Download Links"
+                >
+                  <Download className="h-4 w-4 @md:mr-1.5" />
+                  <span className="hidden @md:inline">Bulk Download Links</span>
+                </Button>
+              )}
               <Button
                 onClick={() => setIsUploadModalOpen(true)}
                 size="sm"
@@ -1016,23 +1019,25 @@ export default function EventDetailPage({
         event.locations.filter((loc) => loc.sessions.length === 0).length ===
           0 ? (
           <Card className="p-8 text-center">
-            <p className="text-gray-600">
-              {selectedTab === "active" && "No sessions scheduled for today"}
-              {selectedTab === "upcoming" && "No upcoming sessions"}
-              {selectedTab === "past" && "No past sessions"}
-              {selectedTab === "all" && event.locations.length === 0 && (
-                <>
-                  No locations yet.{" "}
-                  <button
-                    onClick={() => setIsAddLocationModalOpen(true)}
-                    className="text-primary-teal-600 hover:underline font-medium"
-                  >
-                    Add your first location
-                  </button>{" "}
-                  to get started.
-                </>
-              )}
-            </p>
+            {/* New event - no locations at all */}
+            {event.locations.length === 0 ? (
+              <div className="space-y-3">
+                <p className="text-gray-700 font-medium">
+                  This is a new event.
+                </p>
+                <p className="text-gray-600">
+                  Use the buttons above to add locations one at a time or bulk
+                  import your schedule.
+                </p>
+              </div>
+            ) : (
+              <p className="text-gray-600">
+                {selectedTab === "active" && "No sessions scheduled for today"}
+                {selectedTab === "upcoming" && "No upcoming sessions"}
+                {selectedTab === "past" && "No past sessions"}
+                {selectedTab === "all" && "No sessions found"}
+              </p>
+            )}
           </Card>
         ) : filteredDates.length > 0 ? (
           // Display dates first, then locations within each date
