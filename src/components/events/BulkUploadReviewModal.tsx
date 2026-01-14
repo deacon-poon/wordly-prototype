@@ -652,13 +652,13 @@ export function BulkUploadReviewModal({
             )}
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
+        <TooltipContent side="top" className="max-w-xs bg-white border border-gray-200 shadow-lg">
           <div className="space-y-1">
             {fieldErrors.map((err, i) => (
               <div
                 key={i}
-                className={`text-xs ${
-                  err.type === "error" ? "text-red-600" : "text-yellow-600"
+                className={`text-xs font-medium ${
+                  err.type === "error" ? "text-red-600" : "text-amber-600"
                 }`}
               >
                 {err.type === "error" ? "⛔" : "⚠️"} {err.message}
