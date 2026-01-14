@@ -1,6 +1,28 @@
 import * as XLSX from "xlsx";
 import type { UploadedSession } from "@/components/events/BulkUploadReviewModal";
 
+// Language name to code mapping
+const LANGUAGE_MAP: Record<string, string> = {
+  "english (us)": "en-US",
+  "english": "en-US",
+  "spanish": "es",
+  "french": "fr",
+  "german": "de",
+  "italian": "it",
+  "portuguese": "pt",
+  "chinese": "zh",
+  "japanese": "ja",
+  "korean": "ko",
+};
+
+// Voice pack name to ID mapping
+const VOICE_PACK_MAP: Record<string, string> = {
+  "feminine voice": "feminine",
+  "feminine": "feminine",
+  "masculine voice": "masculine",
+  "masculine": "masculine",
+};
+
 /**
  * Parse an Excel or CSV file containing event schedule data.
  * Returns an array of UploadedSession objects for review.
@@ -27,58 +49,73 @@ export async function parseScheduleFile(
           defval: "", // Default value for empty cells
         });
 
+        console.log("Parsed rows:", jsonData.length);
+
         // Map to UploadedSession format
-        const sessions: UploadedSession[] = jsonData.map((row, index) => {
-          // Handle column name variations
-          const location =
-            row["Location"] || row["location"] || row["Room"] || "Main Room";
-          const title =
-            row["Title"] || row["title"] || row["Session Title"] || "";
-          const presenter =
-            row["Presenter"] ||
-            row["presenter"] ||
-            row["Presenters"] ||
-            row["Speaker"] ||
-            "";
-          const date = parseDate(row["Date"] || row["date"]);
-          const time = row["Time"] || row["time"] || row["Start Time"] || "";
-          const duration = parseInt(row["Duration"] || row["duration"] || "60");
-          const timezone =
-            row["Timezone"] || row["timezone"] || defaultTimezone;
-          const glossary =
-            row["Glossary"] || row["glossary"] || "none";
-          const account =
-            row["Account"] || row["account"] || "";
-          const voicePack =
-            row["Voice Pack"] || row["voicePack"] || row["Voice"] || "feminine";
-          const language =
-            row["Language"] || row["language"] || "en-US";
-          const label = row["Label"] || row["label"] || "";
+        const sessions: UploadedSession[] = jsonData
+          .filter((row) => {
+            // Skip empty rows
+            const title = row["Title"] || row["title"] || "";
+            return title.trim() !== "";
+          })
+          .map((row, index) => {
+            // Handle column name variations
+            const location =
+              row["Location"] || row["location"] || row["Room"] || row["room"] || "Main Room";
+            const title =
+              row["Title"] || row["title"] || row["Session Title"] || "";
+            const presenter =
+              row["Presenter"] ||
+              row["presenter"] ||
+              row["Presenters"] ||
+              row["Speaker"] ||
+              "";
+            const dateRaw = row["Date"] || row["date"] || "";
+            const date = parseDate(dateRaw);
+            const time = row["Time"] || row["time"] || row["Start Time"] || row["start time"] || "";
+            const durationRaw = row["Duration"] || row["duration"] || "60";
+            const duration = parseInt(durationRaw) || 60;
+            const timezone =
+              row["Timezone"] || row["timezone"] || defaultTimezone;
+            const glossaryRaw = row["Glossary"] || row["glossary"] || "";
+            const glossary = glossaryRaw || "none";
+            const accountRaw = row["Account"] || row["account"] || "";
+            const account = accountRaw || "";
+            const voicePackRaw =
+              row["Voice Pack"] || row["voicePack"] || row["Voice"] || "feminine";
+            const voicePack = VOICE_PACK_MAP[voicePackRaw.toLowerCase()] || voicePackRaw;
+            const languageRaw =
+              row["Language"] || row["language"] || "en-US";
+            const language = LANGUAGE_MAP[languageRaw.toLowerCase()] || languageRaw;
+            const label = row["Label"] || row["label"] || "";
 
-          // Parse time and calculate end time
-          const { startTime, endTime } = parseTimeAndDuration(time, duration);
+            // Parse time and calculate end time
+            const { startTime, endTime } = parseTimeAndDuration(time, duration);
 
-          return {
-            id: `session-${Date.now()}-${index}`,
-            rowNumber: index + 1,
-            location,
-            title,
-            presenter,
-            date,
-            startTime,
-            endTime,
-            timezone,
-            duration,
-            glossary,
-            account,
-            voicePack,
-            language,
-            label,
-            isValid: true,
-            errors: [],
-          };
-        });
+            console.log(`Row ${index + 1}:`, { title, date, startTime, endTime, location });
 
+            return {
+              id: `session-${Date.now()}-${index}`,
+              rowNumber: index + 1,
+              location,
+              title,
+              presenter,
+              date,
+              startTime,
+              endTime,
+              timezone,
+              duration,
+              glossary,
+              account,
+              voicePack,
+              language,
+              label,
+              isValid: true,
+              errors: [],
+            };
+          });
+
+        console.log("Processed sessions:", sessions.length);
         resolve(sessions);
       } catch (error) {
         console.error("Error parsing file:", error);
@@ -100,23 +137,46 @@ export async function parseScheduleFile(
 function parseDate(dateValue: any): string {
   if (!dateValue) return new Date().toISOString().split("T")[0];
 
+  const currentYear = new Date().getFullYear();
+
   // If it's already a string in a reasonable format
   if (typeof dateValue === "string") {
+    const trimmed = dateValue.trim();
+    
     // Handle MM/DD/YYYY format
-    const mdyMatch = dateValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const mdyMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (mdyMatch) {
       const [, month, day, year] = mdyMatch;
       return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     }
 
+    // Handle MM/DD/YY format
+    const mdyShortMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+    if (mdyShortMatch) {
+      const [, month, day, shortYear] = mdyShortMatch;
+      const year = parseInt(shortYear) > 50 ? `19${shortYear}` : `20${shortYear}`;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    // Handle MM/DD format (no year - assume current or next year)
+    const mdMatch = trimmed.match(/^(\d{1,2})\/(\d{1,2})$/);
+    if (mdMatch) {
+      const [, month, day] = mdMatch;
+      // If the date is in the past this year, assume next year
+      const testDate = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+      const year = testDate < new Date() ? currentYear + 1 : currentYear;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
     // Handle YYYY-MM-DD format
-    const ymdMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const ymdMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
     if (ymdMatch) {
-      return dateValue;
+      const [, year, month, day] = ymdMatch;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
     }
 
     // Try to parse as date
-    const parsed = new Date(dateValue);
+    const parsed = new Date(trimmed);
     if (!isNaN(parsed.getTime())) {
       return parsed.toISOString().split("T")[0];
     }

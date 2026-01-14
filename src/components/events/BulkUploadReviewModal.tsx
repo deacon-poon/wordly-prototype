@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -472,12 +472,21 @@ export function BulkUploadReviewModal({
 }: BulkUploadReviewModalProps) {
   // State
   const [sessions, setSessions] = useState<UploadedSession[]>(
-    initialSessions || generateMockUploadData()
+    initialSessions && initialSessions.length > 0 
+      ? validateAllSessions(initialSessions)
+      : generateMockUploadData()
   );
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Update sessions when initialSessions prop changes
+  useEffect(() => {
+    if (initialSessions && initialSessions.length > 0) {
+      setSessions(validateAllSessions(initialSessions));
+    }
+  }, [initialSessions]);
 
   // Filtered and sorted sessions
   // Invalid sessions are surfaced at the top, valid at the bottom (per existing portal UX)
