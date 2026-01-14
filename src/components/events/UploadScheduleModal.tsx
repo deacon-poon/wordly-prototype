@@ -138,13 +138,24 @@ export function UploadScheduleModal({
   };
 
   const handleDownloadTemplate = () => {
-    // Download the Excel template from public folder
+    // Generate CSV template with headers and example row
+    const headers = ["Location", "Title", "Presenter", "Date", "Start Time", "End Time", "Timezone", "Glossary", "Account", "Voice Pack", "Language", "Label"];
+    const exampleRow = ["Main Stage", "Example Session Title", "John Doe", "12/04/2025", "1:00 PM", "1:50 PM", "America/Los_Angeles", "", "", "", "English (US)", ""];
+    
+    const csvContent = [
+      headers.join(","),
+      exampleRow.join(",")
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = "/templates/event-schedule-template.xlsx";
-    a.download = "event-schedule-template.xlsx";
+    a.href = url;
+    a.download = "event-schedule-template.csv";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleSubmit = async () => {
