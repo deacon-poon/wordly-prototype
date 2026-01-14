@@ -1021,13 +1021,15 @@ export default function EventDetailPage({
           <Card className="p-8 text-center">
             {/* New event - no locations at all */}
             {event.locations.length === 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <p className="text-gray-700 font-medium">
-                  This is a new event.
+                  This is a new event
                 </p>
                 <p className="text-gray-600">
-                  Use the buttons above to add locations one at a time or bulk
-                  import your schedule.
+                  Click <span className="font-medium">Add Location</span> to add
+                  locations one at a time, or{" "}
+                  <span className="font-medium">Upload Schedule</span> to bulk
+                  import from a spreadsheet.
                 </p>
               </div>
             ) : (
