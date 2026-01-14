@@ -587,6 +587,8 @@ export function BulkUploadReviewModal({
 
   // Handle submit
   const handleSubmit = async () => {
+    console.log("Submit clicked - sessions:", sessions.length, "invalid:", invalidCount);
+    
     if (invalidCount > 0) {
       toast.error("Please fix all errors before submitting");
       return;
@@ -594,6 +596,7 @@ export function BulkUploadReviewModal({
 
     setIsSubmitting(true);
     try {
+      console.log("Submitting sessions:", sessions);
       await onSubmit(sessions);
       onOpenChange(false);
     } finally {

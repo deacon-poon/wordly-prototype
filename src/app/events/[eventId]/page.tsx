@@ -703,6 +703,9 @@ export default function EventDetailPage({
   };
 
   const handleBulkReviewSubmit = (sessions: UploadedSession[]) => {
+    console.log("handleBulkReviewSubmit called with", sessions.length, "sessions");
+    console.log("Sessions data:", sessions);
+    
     // Process the reviewed sessions and add them to the event
     const locationMap = new Map<
       string,
