@@ -471,22 +471,30 @@ export function BulkUploadReviewModal({
   initialSessions,
 }: BulkUploadReviewModalProps) {
   // State
-  const [sessions, setSessions] = useState<UploadedSession[]>(
-    initialSessions && initialSessions.length > 0 
-      ? validateAllSessions(initialSessions)
-      : generateMockUploadData()
-  );
+  const [sessions, setSessions] = useState<UploadedSession[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Update sessions when initialSessions prop changes
+  // Initialize/update sessions when modal opens or initialSessions changes
   useEffect(() => {
-    if (initialSessions && initialSessions.length > 0) {
-      setSessions(validateAllSessions(initialSessions));
+    if (open) {
+      if (initialSessions && initialSessions.length > 0) {
+        // Use parsed data from file upload
+        console.log("Using parsed sessions:", initialSessions.length);
+        setSessions(validateAllSessions(initialSessions));
+      } else {
+        // Fall back to mock data for demo purposes
+        console.log("Using mock data");
+        setSessions(generateMockUploadData());
+      }
+      // Reset filters when modal opens
+      setStatusFilter("all");
+      setSearchQuery("");
+      setEditingRowId(null);
     }
-  }, [initialSessions]);
+  }, [open, initialSessions]);
 
   // Filtered and sorted sessions
   // Invalid sessions are surfaced at the top, valid at the bottom (per existing portal UX)

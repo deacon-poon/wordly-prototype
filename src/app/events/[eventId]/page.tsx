@@ -668,6 +668,15 @@ export default function EventDetailPage({
       // Parse the uploaded file
       const sessions = await parseScheduleFile(file, defaults.timezone);
       
+      if (sessions.length === 0) {
+        toast.error("No sessions found in the file. Please check the format.");
+        // Still open review modal with mock data for demo
+        setParsedSessions([]);
+        setIsUploadModalOpen(false);
+        setIsBulkReviewModalOpen(true);
+        return;
+      }
+      
       // Apply defaults to sessions that don't have values
       const sessionsWithDefaults = sessions.map((session) => ({
         ...session,
@@ -686,6 +695,10 @@ export default function EventDetailPage({
     } catch (error) {
       console.error("Error parsing file:", error);
       toast.error(error instanceof Error ? error.message : "Failed to parse file");
+      // Still open review modal with mock data for demo
+      setParsedSessions([]);
+      setIsUploadModalOpen(false);
+      setIsBulkReviewModalOpen(true);
     }
   };
 
