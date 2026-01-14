@@ -792,7 +792,7 @@ export default function EventDetailPage({
           ? new Date(Math.max(...allDates.map((d) => d.getTime())))
           : prev.endDate;
 
-      return {
+      const updated = {
         ...prev,
         locations: updatedLocations,
         locationCount: updatedLocations.length,
@@ -804,12 +804,19 @@ export default function EventDetailPage({
         endDate,
         dateRange: formatDateRange(startDate, endDate),
       };
+      console.log("Updated event state:", updated);
+      console.log("Updated locations:", updated.locations);
+      return updated;
     });
 
     const newLocationsCount = Array.from(locationMap.values()).filter(
       (data) => !data.existingLocationId
     ).length;
     const totalSessions = sessions.length;
+
+    console.log("Location map:", Array.from(locationMap.entries()));
+    console.log("New locations count:", newLocationsCount);
+    console.log("Total sessions:", totalSessions);
 
     toast.success(
       `Imported ${totalSessions} session${totalSessions > 1 ? "s" : ""}${
