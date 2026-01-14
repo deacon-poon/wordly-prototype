@@ -72,9 +72,10 @@ export async function parseScheduleFile(
               "";
             const dateRaw = row["Date"] || row["date"] || "";
             const date = parseDate(dateRaw);
-            const time = row["Time"] || row["time"] || row["Start Time"] || row["start time"] || "";
-            const durationRaw = row["Duration"] || row["duration"] || "60";
-            const duration = parseInt(durationRaw) || 60;
+            const startTimeRaw = row["Start Time"] || row["start time"] || row["Time"] || row["time"] || "";
+            const endTimeRaw = row["End Time"] || row["End time"] || row["end time"] || "";
+            const durationRaw = row["Duration"] || row["duration"] || "";
+            const duration = durationRaw ? parseInt(durationRaw) : 60;
             const timezone =
               row["Timezone"] || row["timezone"] || defaultTimezone;
             const glossaryRaw = row["Glossary"] || row["glossary"] || "";
@@ -89,8 +90,8 @@ export async function parseScheduleFile(
             const language = LANGUAGE_MAP[languageRaw.toLowerCase()] || languageRaw;
             const label = row["Label"] || row["label"] || "";
 
-            // Parse time and calculate end time
-            const { startTime, endTime } = parseTimeAndDuration(time, duration);
+            // Parse start time, and use explicit end time if provided, otherwise calculate from duration
+            const { startTime, endTime } = parseTimeRange(startTimeRaw, endTimeRaw, duration);
 
             console.log(`Row ${index + 1}:`, { title, date, startTime, endTime, location });
 
@@ -193,47 +194,63 @@ function parseDate(dateValue: any): string {
 }
 
 /**
- * Parse time string and calculate end time based on duration
+ * Parse a single time value to HH:MM format
  */
-function parseTimeAndDuration(
-  timeValue: any,
-  durationMinutes: number
-): { startTime: string; endTime: string } {
-  let startTime = "09:00";
+function parseTimeValue(timeValue: any): string | null {
+  if (!timeValue) return null;
 
-  if (timeValue) {
-    // Handle "HH:MM AM/PM" format
-    const ampmMatch = String(timeValue).match(
-      /^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i
-    );
-    if (ampmMatch) {
-      let hours = parseInt(ampmMatch[1]);
-      const minutes = ampmMatch[2];
-      const meridiem = ampmMatch[3]?.toUpperCase();
+  const strValue = String(timeValue).trim();
 
-      if (meridiem === "PM" && hours !== 12) {
-        hours += 12;
-      } else if (meridiem === "AM" && hours === 12) {
-        hours = 0;
-      }
+  // Handle "HH:MM AM/PM" format
+  const ampmMatch = strValue.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1]);
+    const minutes = ampmMatch[2];
+    const meridiem = ampmMatch[3]?.toUpperCase();
 
-      startTime = `${hours.toString().padStart(2, "0")}:${minutes}`;
+    if (meridiem === "PM" && hours !== 12) {
+      hours += 12;
+    } else if (meridiem === "AM" && hours === 12) {
+      hours = 0;
     }
-    // Handle "HH:MM" 24-hour format
-    else if (/^\d{1,2}:\d{2}$/.test(String(timeValue))) {
-      const [hours, minutes] = String(timeValue).split(":");
-      startTime = `${hours.padStart(2, "0")}:${minutes}`;
-    }
-    // Handle Excel decimal time (e.g., 0.5 = 12:00 PM)
-    else if (typeof timeValue === "number" && timeValue < 1) {
-      const totalMinutes = Math.round(timeValue * 24 * 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      startTime = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-    }
+
+    return `${hours.toString().padStart(2, "0")}:${minutes}`;
   }
 
-  // Calculate end time
+  // Handle "HH:MM" 24-hour format
+  if (/^\d{1,2}:\d{2}$/.test(strValue)) {
+    const [hours, minutes] = strValue.split(":");
+    return `${hours.padStart(2, "0")}:${minutes}`;
+  }
+
+  // Handle Excel decimal time (e.g., 0.5 = 12:00 PM)
+  if (typeof timeValue === "number" && timeValue < 1) {
+    const totalMinutes = Math.round(timeValue * 24 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+  }
+
+  return null;
+}
+
+/**
+ * Parse start and end time, or calculate end time from duration
+ */
+function parseTimeRange(
+  startTimeValue: any,
+  endTimeValue: any,
+  durationMinutes: number
+): { startTime: string; endTime: string } {
+  const startTime = parseTimeValue(startTimeValue) || "09:00";
+  
+  // Use explicit end time if provided
+  const parsedEndTime = parseTimeValue(endTimeValue);
+  if (parsedEndTime) {
+    return { startTime, endTime: parsedEndTime };
+  }
+
+  // Calculate end time from duration
   const [startHours, startMinutes] = startTime.split(":").map(Number);
   const totalStartMinutes = startHours * 60 + startMinutes;
   const totalEndMinutes = totalStartMinutes + (durationMinutes || 60);
