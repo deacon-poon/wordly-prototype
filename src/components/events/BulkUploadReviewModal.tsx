@@ -587,18 +587,33 @@ export function BulkUploadReviewModal({
 
   // Handle submit
   const handleSubmit = async () => {
-    console.log("Submit clicked - sessions:", sessions.length, "invalid:", invalidCount);
+    console.log("Submit clicked - sessions:", sessions.length, "invalid:", invalidCount, "valid:", validCount);
     
-    if (invalidCount > 0) {
-      toast.error("Please fix all errors before submitting");
+    // Get only valid sessions
+    const validSessions = sessions.filter((s) => s.isValid);
+    
+    if (validSessions.length === 0) {
+      toast.error("No valid sessions to import. Please fix all errors first.");
       return;
+    }
+
+    // If there are invalid sessions, ask for confirmation
+    if (invalidCount > 0) {
+      const proceed = window.confirm(
+        `${invalidCount} session(s) have errors and will be skipped. Import ${validCount} valid session(s)?`
+      );
+      if (!proceed) return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log("Submitting sessions:", sessions);
-      await onSubmit(sessions);
+      console.log("Submitting valid sessions:", validSessions);
+      await onSubmit(validSessions);
       onOpenChange(false);
+      
+      if (invalidCount > 0) {
+        toast.success(`Imported ${validCount} sessions. ${invalidCount} skipped due to errors.`);
+      }
     } finally {
       setIsSubmitting(false);
     }
