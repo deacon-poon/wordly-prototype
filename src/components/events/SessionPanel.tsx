@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Loader2, Plus, Edit2, MapPin, Trash2 } from "lucide-react";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ChevronLeft, Loader2, Plus, Edit2, MapPin, Trash2, AlertTriangle } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -73,6 +74,8 @@ export function SessionPanel({
 }: SessionPanelProps) {
   // Track selected location for move functionality
   const [selectedLocationId, setSelectedLocationId] = useState(locationId);
+  // Delete confirmation dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   // Convert Session to SessionFormData for edit mode
   const getInitialFormData = (): SessionFormData => {
     if (mode === "edit" && session) {
@@ -270,11 +273,7 @@ export function SessionPanel({
             <Button
               type="button"
               variant="ghost"
-              onClick={() => {
-                if (window.confirm(`Delete "${session.title}"? This cannot be undone.`)) {
-                  onDelete(session.id);
-                }
-              }}
+              onClick={() => setIsDeleteDialogOpen(true)}
               disabled={isSaving}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
@@ -308,6 +307,21 @@ export function SessionPanel({
           </Button>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {mode === "edit" && session && onDelete && (
+        <ConfirmationDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          title="Delete Session"
+          description={`Are you sure you want to delete "${session.title}"? This action cannot be undone.`}
+          onConfirm={() => onDelete(session.id)}
+          confirmText="Delete Session"
+          cancelText="Cancel"
+          variant="destructive"
+          icon={<AlertTriangle className="h-12 w-12" />}
+        />
+      )}
     </div>
   );
 }
