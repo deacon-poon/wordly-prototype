@@ -200,10 +200,13 @@ export function SessionForm({
                 className={errors.endTime ? "border-red-500" : ""}
               />
             </div>
-            {/* Timezone badge */}
-            <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-2 rounded-md whitespace-nowrap">
-              {getTimezoneAbbr(data.timezone)}
-            </span>
+            {/* Timezone selector - compact inline version */}
+            <TimezoneSelector
+              value={data.timezone}
+              onChange={(timezone) => onChange({ timezone })}
+              disabled={readOnly}
+              compact
+            />
           </div>
           {(errors.scheduledStart || errors.endTime) && (
             <p className="text-sm text-red-500">
@@ -211,14 +214,32 @@ export function SessionForm({
             </p>
           )}
         </div>
+      </div>
 
-        {/* Timezone Selector - inline */}
-        <TimezoneSelector
-          value={data.timezone}
-          onChange={(timezone) => onChange({ timezone })}
+      {/* Glossary - always visible for consistency with Sessions page */}
+      <div className="space-y-2">
+        <Label
+          htmlFor={`session-glossary-${index || 0}`}
+          className="text-sm font-semibold text-gray-900"
+        >
+          Glossary
+        </Label>
+        <Select
+          value={data.glossaryId}
+          onValueChange={(value) => onChange({ glossaryId: value })}
           disabled={readOnly}
-          showLabel
-        />
+        >
+          <SelectTrigger id={`session-glossary-${index || 0}`}>
+            <SelectValue placeholder="None" />
+          </SelectTrigger>
+          <SelectContent>
+            {GLOSSARIES.map((glossary) => (
+              <SelectItem key={glossary.id} value={glossary.id}>
+                {glossary.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Advanced Settings Toggle */}
@@ -400,32 +421,6 @@ export function SessionForm({
                         </SelectContent>
                       </Select>
                     )}
-                  </div>
-
-                  {/* Glossary */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor={`session-glossary-${index || 0}`}
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Glossary
-                    </Label>
-                    <Select
-                      value={data.glossaryId}
-                      onValueChange={(value) => onChange({ glossaryId: value })}
-                      disabled={readOnly}
-                    >
-                      <SelectTrigger id={`session-glossary-${index || 0}`}>
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {GLOSSARIES.map((glossary) => (
-                          <SelectItem key={glossary.id} value={glossary.id}>
-                            {glossary.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               </div>

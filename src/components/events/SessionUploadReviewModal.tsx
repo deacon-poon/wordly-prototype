@@ -43,7 +43,7 @@ import {
   XCircle,
   MapPin,
 } from "lucide-react";
-import { TIMEZONES, LANGUAGES } from "./forms/types";
+import { TIMEZONES, LANGUAGES, GLOSSARIES } from "./forms/types";
 
 // ============================================================================
 // Types
@@ -60,6 +60,8 @@ export interface UploadedSessionRow {
   timezone: string;
   duration: number; // in minutes (calculated from start/end)
   language: string;
+  glossary: string;
+  label: string;
   // Validation state
   isValid: boolean;
   errors: SessionValidationError[];
@@ -323,6 +325,8 @@ export function generateMockSessionData(
     timezone: defaultTimezone,
     duration: calculateDuration(item.startTime, item.endTime),
     language: "en-US",
+    glossary: "none",
+    label: "",
     isValid: true,
     errors: [],
   }));
@@ -672,6 +676,8 @@ export function SessionUploadReviewModal({
                   <TableHead className="w-24">Duration</TableHead>
                   <TableHead className="w-40">Timezone</TableHead>
                   <TableHead className="w-32">Language</TableHead>
+                  <TableHead className="w-40">Glossary</TableHead>
+                  <TableHead className="min-w-[120px]">Label</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -803,6 +809,21 @@ export function SessionUploadReviewModal({
                           "select",
                           LANGUAGES.map((l) => ({ id: l.code, name: l.name }))
                         )}
+                      </TableCell>
+
+                      {/* Glossary */}
+                      <TableCell>
+                        {renderEditableCell(
+                          session,
+                          "glossary",
+                          "select",
+                          GLOSSARIES.map((g) => ({ id: g.id, name: g.name }))
+                        )}
+                      </TableCell>
+
+                      {/* Label */}
+                      <TableCell>
+                        {renderEditableCell(session, "label", "text")}
                       </TableCell>
                     </TableRow>
                   );

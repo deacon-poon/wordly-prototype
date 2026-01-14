@@ -73,6 +73,8 @@ interface TimezoneSelectorProps {
   disabled?: boolean;
   className?: string;
   showLabel?: boolean;
+  /** Compact mode - shows only abbreviation in a small inline selector */
+  compact?: boolean;
 }
 
 export function TimezoneSelector({
@@ -81,7 +83,33 @@ export function TimezoneSelector({
   disabled = false,
   className,
   showLabel = false,
+  compact = false,
 }: TimezoneSelectorProps) {
+  // Compact mode - small inline selector showing abbreviation
+  if (compact) {
+    return (
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
+        <SelectTrigger
+          className={cn(
+            "w-auto h-auto px-2.5 py-2 text-xs font-medium text-gray-600 bg-gray-100 border-0 hover:bg-gray-200 focus:ring-1 focus:ring-gray-300 rounded-md",
+            disabled && "opacity-50 cursor-not-allowed",
+            className
+          )}
+        >
+          <SelectValue>{getTimezoneAbbr(value)}</SelectValue>
+        </SelectTrigger>
+        <SelectContent className="max-h-[300px]">
+          {TIMEZONES.map((tz) => (
+            <SelectItem key={tz.value} value={tz.value}>
+              {tz.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  // Standard mode
   return (
     <div className={cn("space-y-1.5", className)}>
       {showLabel && (
