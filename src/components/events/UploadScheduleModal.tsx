@@ -213,12 +213,12 @@ export function UploadScheduleModal({
               </Label>
               <button
                 onClick={handleDownloadTemplate}
-                className="text-xs font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+                className="text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 underline transition-colors"
               >
                 Download template
               </button>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-600">
               Upload a CSV or Excel file containing your event schedule.
             </p>
 
@@ -281,13 +281,13 @@ export function UploadScheduleModal({
               <button
                 type="button"
                 onClick={() => setShowDefaults(!showDefaults)}
-                className="text-xs font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+                className="text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 underline transition-colors"
               >
                 {showDefaults ? "Done editing" : "Customize"}
               </button>
             </div>
             
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-600">
               {showDefaults
                 ? "Edit these fields to change the default values for this upload only."
                 : "These settings are pulled from your workspace defaults and will apply to all uploaded sessions."}
