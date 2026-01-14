@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Loader2, Plus, Edit2, MapPin } from "lucide-react";
+import { ChevronLeft, Loader2, Plus, Edit2, MapPin, Trash2 } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -45,6 +45,7 @@ interface SessionPanelProps {
   /** Callbacks */
   onClose: () => void;
   onSave: (session: Session | SessionFormData, isNew: boolean, newLocationId?: string) => void;
+  onDelete?: (sessionId: string) => void;
   onAddLocation?: () => void;
 }
 
@@ -67,6 +68,7 @@ export function SessionPanel({
   locations,
   onClose,
   onSave,
+  onDelete,
   onAddLocation,
 }: SessionPanelProps) {
   // Track selected location for move functionality
@@ -261,27 +263,50 @@ export function SessionPanel({
       </form>
 
       {/* Sticky Footer Actions */}
-      <div className="flex-shrink-0 border-t px-6 py-4 flex justify-end gap-3 bg-white">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          form="session-form"
-          disabled={isSaving || isReadOnly || !formData.title.trim()}
-          className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {mode === "add" ? "Adding..." : "Saving..."}
-            </>
-          ) : mode === "add" ? (
-            "Add Session"
-          ) : (
-            "Save Changes"
+      <div className="flex-shrink-0 border-t px-6 py-4 flex justify-between bg-white">
+        {/* Delete button - only show in edit mode */}
+        <div>
+          {mode === "edit" && session && onDelete && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                if (window.confirm(`Delete "${session.title}"? This cannot be undone.`)) {
+                  onDelete(session.id);
+                }
+              }}
+              disabled={isSaving}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
           )}
-        </Button>
+        </div>
+        
+        {/* Save/Cancel buttons */}
+        <div className="flex gap-3">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="session-form"
+            disabled={isSaving || isReadOnly || !formData.title.trim()}
+            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {mode === "add" ? "Adding..." : "Saving..."}
+              </>
+            ) : mode === "add" ? (
+              "Add Session"
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

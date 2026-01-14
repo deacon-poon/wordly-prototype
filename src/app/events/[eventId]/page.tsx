@@ -656,6 +656,28 @@ export default function EventDetailPage({
     setSessionPanelState(null);
   };
 
+  const handleDeleteSession = (sessionId: string) => {
+    const locationId = sessionPanelState?.locationId;
+    if (!locationId) return;
+
+    setEvent((prev) => ({
+      ...prev,
+      sessionCount: prev.sessionCount - 1,
+      locations: prev.locations.map((loc) =>
+        loc.id === locationId
+          ? {
+              ...loc,
+              sessions: loc.sessions.filter((s) => s.id !== sessionId),
+              sessionCount: loc.sessionCount - 1,
+            }
+          : loc
+      ),
+    }));
+
+    toast.success("Session deleted");
+    setSessionPanelState(null);
+  };
+
   const handleDownloadForAV = () => {
     // Generate CSV content with event details for AV crew
     const csvRows = [];
@@ -1370,6 +1392,7 @@ export default function EventDetailPage({
               locations={event.locations.map((loc) => ({ id: loc.id, name: loc.name }))}
               onClose={handleCloseSessionPanel}
               onSave={handleSaveSession}
+              onDelete={handleDeleteSession}
               onAddLocation={() => setIsAddLocationModalOpen(true)}
             />
           </ResizablePanel>
