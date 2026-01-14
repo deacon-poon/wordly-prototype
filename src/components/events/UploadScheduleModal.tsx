@@ -287,7 +287,9 @@ export function UploadScheduleModal({
             </div>
             
             <p className="text-xs text-gray-500">
-              These settings are pulled from your workspace defaults and will apply to all uploaded sessions.
+              {showDefaults
+                ? "Edit these fields to change the default values for this upload only."
+                : "These settings are pulled from your workspace defaults and will apply to all uploaded sessions."}
             </p>
 
             {/* Key defaults - always visible */}
