@@ -815,18 +815,31 @@ export default function EventDetailPage({
         }
       });
 
-      // Recalculate date range if needed
+      // Expand date range to include new sessions (but never shrink it)
       const allDates = updatedLocations.flatMap((loc) =>
         loc.sessions.map((s) => new Date(s.scheduledDate))
       );
-      const startDate =
-        allDates.length > 0
-          ? new Date(Math.min(...allDates.map((d) => d.getTime())))
-          : prev.startDate;
-      const endDate =
-        allDates.length > 0
-          ? new Date(Math.max(...allDates.map((d) => d.getTime())))
-          : prev.endDate;
+      
+      // Get today's date (at midnight) for comparison
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // Calculate the min/max dates from sessions
+      const sessionMinDate = allDates.length > 0
+        ? new Date(Math.min(...allDates.map((d) => d.getTime())))
+        : null;
+      const sessionMaxDate = allDates.length > 0
+        ? new Date(Math.max(...allDates.map((d) => d.getTime())))
+        : null;
+      
+      // Only EXPAND the date range, never shrink it
+      // Also ensure we don't mark the event as "past" by keeping endDate >= today
+      const startDate = sessionMinDate
+        ? new Date(Math.min(prev.startDate.getTime(), sessionMinDate.getTime()))
+        : prev.startDate;
+      const endDate = sessionMaxDate
+        ? new Date(Math.max(prev.endDate.getTime(), sessionMaxDate.getTime(), today.getTime()))
+        : new Date(Math.max(prev.endDate.getTime(), today.getTime()));
 
       const updated = {
         ...prev,
