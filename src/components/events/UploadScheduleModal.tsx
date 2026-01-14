@@ -32,6 +32,7 @@ import {
   ChevronDown,
   Sparkles,
   Settings2,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -90,6 +91,7 @@ export function UploadScheduleModal({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [showDefaults, setShowDefaults] = useState(false);
+  const [confirmOverwrite, setConfirmOverwrite] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Session defaults state - pre-populated from workspace settings
@@ -175,6 +177,7 @@ export function UploadScheduleModal({
     setSelectedFile(null);
     setDefaults(WORKSPACE_SESSION_DEFAULTS);
     setShowDefaults(false);
+    setConfirmOverwrite(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -641,6 +644,22 @@ export function UploadScheduleModal({
             </div>
           )}
 
+          {/* Warning callout about overwriting */}
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-gray-700">
+                <p className="font-medium text-amber-800 mb-1">
+                  Important: This will replace existing sessions
+                </p>
+                <p className="text-amber-700">
+                  Uploading a schedule will overwrite <strong>all</strong> existing sessions for this event. 
+                  Locations with the same name will keep their current QR codes.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Info callout - matches ManualEventWizard pattern */}
           <div className="p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
             <div className="flex gap-3">
@@ -653,10 +672,26 @@ export function UploadScheduleModal({
                   <li>• All sessions will inherit the defaults above</li>
                   <li>• Values in your spreadsheet override these defaults</li>
                   <li>• Locations are created automatically from your data</li>
-                  <li>• Re-uploading? Locations with matching names keep their QR codes</li>
                 </ul>
               </div>
             </div>
+          </div>
+
+          {/* Confirmation checkbox */}
+          <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <Checkbox
+              id="confirm-overwrite"
+              checked={confirmOverwrite}
+              onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
+              className="mt-0.5"
+            />
+            <label
+              htmlFor="confirm-overwrite"
+              className="text-sm text-gray-700 cursor-pointer leading-snug"
+            >
+              I understand that uploading this schedule will{" "}
+              <strong>replace all existing sessions</strong> for this event.
+            </label>
           </div>
         </div>
 
@@ -670,7 +705,7 @@ export function UploadScheduleModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isUploading || !selectedFile}
+            disabled={isUploading || !selectedFile || !confirmOverwrite}
             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
           >
             {isUploading ? (

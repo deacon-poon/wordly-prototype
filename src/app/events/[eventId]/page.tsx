@@ -934,11 +934,11 @@ export default function EventDetailPage({
                 title={
                   isPastEvent
                     ? "Cannot add to past events"
-                    : "Upload locations and sessions from spreadsheet"
+                    : "Replace all sessions with a new schedule from spreadsheet"
                 }
               >
                 <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
-                <span className="hidden @md:inline">Upload Schedule</span>
+                <span className="hidden @md:inline">Replace Schedule</span>
               </Button>
             </div>
           </div>
@@ -1028,7 +1028,7 @@ export default function EventDetailPage({
                 <p className="text-gray-600">
                   Click <span className="font-medium">Add Location</span> to add
                   locations one at a time, or{" "}
-                  <span className="font-medium">Upload Schedule</span> to bulk
+                  <span className="font-medium">Replace Schedule</span> to bulk
                   import from a spreadsheet.
                 </p>
               </div>
