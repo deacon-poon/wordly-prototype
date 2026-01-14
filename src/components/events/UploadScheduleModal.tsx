@@ -207,17 +207,19 @@ export function UploadScheduleModal({
         <div className="py-4 space-y-6">
           {/* File Upload Section */}
           <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-900">
-              Schedule File
-            </Label>
-            <p className="text-sm text-gray-600">
-              Upload a spreadsheet containing your event schedule.{" "}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold text-gray-900">
+                Schedule File
+              </Label>
               <button
                 onClick={handleDownloadTemplate}
-                className="text-primary-teal-600 hover:text-primary-teal-700 font-medium underline"
+                className="text-xs font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
               >
                 Download template
               </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              Upload a CSV or Excel file containing your event schedule.
             </p>
 
             {/* File input (hidden) */}
@@ -232,30 +234,30 @@ export function UploadScheduleModal({
             {/* File upload display or button */}
             {selectedFile ? (
               <div className="flex items-center justify-between p-3 border border-primary-teal-300 rounded-lg bg-primary-teal-50/50">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded bg-primary-teal-100 flex items-center justify-center">
                     <FileSpreadsheet className="h-4 w-4 text-primary-teal-600" />
                   </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedFile.name}
-                      </p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedFile.name}
+                    </p>
                     <p className="text-xs text-gray-500">
-                        {(selectedFile.size / 1024).toFixed(2)} KB
-                      </p>
-                    </div>
+                      {(selectedFile.size / 1024).toFixed(2)} KB
+                    </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      setSelectedFile(null);
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = "";
-                      }
-                    }}
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedFile(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
                   className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             ) : (
               <Button
@@ -279,9 +281,8 @@ export function UploadScheduleModal({
               <button
                 type="button"
                 onClick={() => setShowDefaults(!showDefaults)}
-                className="flex items-center gap-1 text-xs font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
-                >
-                <Settings2 className="h-3.5 w-3.5" />
+                className="text-xs font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+              >
                 {showDefaults ? "Done editing" : "Customize"}
               </button>
             </div>
