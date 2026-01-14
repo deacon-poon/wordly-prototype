@@ -23,19 +23,29 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
+/** Location option for dropdown */
+interface LocationOption {
+  id: string;
+  name: string;
+}
+
 interface SessionPanelProps {
   mode: "add" | "edit";
   /** Required for edit mode */
   session?: Session;
   /** Location details */
   locationName: string;
+  locationId?: string;
   eventName: string;
   /** Default date for new sessions */
   defaultDate?: string;
   defaultTimezone?: string;
+  /** Available locations for move functionality */
+  locations?: LocationOption[];
   /** Callbacks */
   onClose: () => void;
-  onSave: (session: Session | SessionFormData, isNew: boolean) => void;
+  onSave: (session: Session | SessionFormData, isNew: boolean, newLocationId?: string) => void;
+  onAddLocation?: () => void;
 }
 
 // ============================================================================
@@ -50,12 +60,17 @@ export function SessionPanel({
   mode,
   session,
   locationName,
+  locationId,
   eventName,
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
+  locations,
   onClose,
   onSave,
+  onAddLocation,
 }: SessionPanelProps) {
+  // Track selected location for move functionality
+  const [selectedLocationId, setSelectedLocationId] = useState(locationId);
   // Convert Session to SessionFormData for edit mode
   const getInitialFormData = (): SessionFormData => {
     if (mode === "edit" && session) {
@@ -125,7 +140,7 @@ export function SessionPanel({
 
   const isReadOnly = hasStarted();
 
-  // Reset form when session changes (edit mode)
+  // Reset form and location when session changes (edit mode)
   useEffect(() => {
     if (mode === "edit" && session) {
       updateSession({
@@ -138,10 +153,12 @@ export function SessionPanel({
         timezone: defaultTimezone,
         languages: ["en-US"],
       });
+      setSelectedLocationId(locationId);
     } else if (mode === "add") {
       reset();
+      setSelectedLocationId(locationId);
     }
-  }, [session, mode]);
+  }, [session, mode, locationId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,6 +174,9 @@ export function SessionPanel({
     setIsSaving(true);
 
     try {
+      // Check if location changed
+      const locationChanged = selectedLocationId && selectedLocationId !== locationId;
+      
       if (mode === "edit" && session) {
         // Convert presenters string back to array
         const presentersArray = formData.presenters
@@ -173,10 +193,10 @@ export function SessionPanel({
           endTime: formData.endTime,
         };
 
-        onSave(updatedSession, false);
+        onSave(updatedSession, false, locationChanged ? selectedLocationId : undefined);
       } else {
         // Add mode - pass the form data
-        onSave(formData, true);
+        onSave(formData, true, selectedLocationId);
       }
     } finally {
       setIsSaving(false);
@@ -232,6 +252,10 @@ export function SessionPanel({
             mode={mode === "add" ? "create" : "edit"}
             readOnly={isReadOnly}
             locationName={locationName}
+            locations={locations}
+            selectedLocationId={selectedLocationId}
+            onLocationChange={setSelectedLocationId}
+            onAddLocation={onAddLocation}
           />
         </div>
       </form>

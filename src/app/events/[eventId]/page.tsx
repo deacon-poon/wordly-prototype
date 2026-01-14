@@ -566,7 +566,8 @@ export default function EventDetailPage({
 
   const handleSaveSession = (
     sessionData: Session | SessionFormData,
-    isNew: boolean
+    isNew: boolean,
+    newLocationId?: string
   ) => {
     if (isNew) {
       // Adding new session
@@ -584,11 +585,14 @@ export default function EventDetailPage({
         status: "pending",
       };
 
+      // Add to selected location (which may be different from the one panel was opened from)
+      const targetLocationId = newLocationId || sessionPanelState?.locationId;
+      
       setEvent((prev) => ({
         ...prev,
         sessionCount: prev.sessionCount + 1,
         locations: prev.locations.map((loc) =>
-          loc.id === sessionPanelState?.locationId
+          loc.id === targetLocationId
             ? {
                 ...loc,
                 sessions: [...loc.sessions, newSession],
@@ -601,20 +605,52 @@ export default function EventDetailPage({
     } else {
       // Editing existing session
       const updatedSession = sessionData as Session;
-      setEvent((prev) => ({
-        ...prev,
-        locations: prev.locations.map((loc) =>
-          loc.id === sessionPanelState?.locationId
-            ? {
+      const originalLocationId = sessionPanelState?.locationId;
+      
+      // Check if session is being moved to a different location
+      if (newLocationId && newLocationId !== originalLocationId) {
+        // Move session to new location
+        setEvent((prev) => ({
+          ...prev,
+          locations: prev.locations.map((loc) => {
+            if (loc.id === originalLocationId) {
+              // Remove from original location
+              return {
                 ...loc,
-                sessions: loc.sessions.map((s) =>
-                  s.id === updatedSession.id ? updatedSession : s
-                ),
-              }
-            : loc
-        ),
-      }));
-      toast.success("Session updated successfully");
+                sessions: loc.sessions.filter((s) => s.id !== updatedSession.id),
+                sessionCount: loc.sessionCount - 1,
+              };
+            }
+            if (loc.id === newLocationId) {
+              // Add to new location
+              return {
+                ...loc,
+                sessions: [...loc.sessions, updatedSession],
+                sessionCount: loc.sessionCount + 1,
+              };
+            }
+            return loc;
+          }),
+        }));
+        const newLocationName = event.locations.find((l) => l.id === newLocationId)?.name;
+        toast.success(`Session moved to "${newLocationName}"`);
+      } else {
+        // Update in same location
+        setEvent((prev) => ({
+          ...prev,
+          locations: prev.locations.map((loc) =>
+            loc.id === originalLocationId
+              ? {
+                  ...loc,
+                  sessions: loc.sessions.map((s) =>
+                    s.id === updatedSession.id ? updatedSession : s
+                  ),
+                }
+              : loc
+          ),
+        }));
+        toast.success("Session updated successfully");
+      }
     }
 
     setSessionPanelState(null);
@@ -1315,10 +1351,13 @@ export default function EventDetailPage({
               mode={sessionPanelState.mode}
               session={sessionPanelState.session}
               locationName={sessionPanelState.locationName}
+              locationId={sessionPanelState.locationId}
               eventName={event.name}
               defaultDate={event.startDate.toISOString().split("T")[0]}
+              locations={event.locations.map((loc) => ({ id: loc.id, name: loc.name }))}
               onClose={handleCloseSessionPanel}
               onSave={handleSaveSession}
+              onAddLocation={() => setIsAddLocationModalOpen(true)}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

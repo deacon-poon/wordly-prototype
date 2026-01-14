@@ -30,6 +30,7 @@ import {
   Info,
   Sparkles,
   X,
+  MapPin,
 } from "lucide-react";
 import {
   Tooltip,
@@ -54,6 +55,12 @@ import { cn } from "@/lib/utils";
 // Single Session Form Props
 // ============================================================================
 
+/** Location option for dropdown */
+interface LocationOption {
+  id: string;
+  name: string;
+}
+
 interface SessionFormProps {
   /** Form data */
   data: SessionFormData;
@@ -73,8 +80,16 @@ interface SessionFormProps {
   onDelete?: () => void;
   /** Whether delete is allowed */
   canDelete?: boolean;
-  /** Location name (for context display) */
+  /** Location name (for context display) - used when locations not provided */
   locationName?: string;
+  /** Available locations for dropdown */
+  locations?: LocationOption[];
+  /** Currently selected location ID */
+  selectedLocationId?: string;
+  /** Callback when location is changed */
+  onLocationChange?: (locationId: string) => void;
+  /** Callback to add a new location */
+  onAddLocation?: () => void;
 }
 
 /**
@@ -91,6 +106,10 @@ export function SessionForm({
   onDelete,
   canDelete = true,
   locationName,
+  locations,
+  selectedLocationId,
+  onLocationChange,
+  onAddLocation,
 }: SessionFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -124,15 +143,56 @@ export function SessionForm({
         {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
       </div>
 
-      {/* Location (read-only context display) */}
-      {locationName && (
+      {/* Location - editable dropdown if locations provided, read-only otherwise */}
+      {(locations && locations.length > 0) ? (
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold text-gray-900">Location</Label>
+          <Select
+            value={selectedLocationId}
+            onValueChange={(value) => {
+              if (value === "__add_new__" && onAddLocation) {
+                onAddLocation();
+              } else if (onLocationChange) {
+                onLocationChange(value);
+              }
+            }}
+            disabled={readOnly}
+          >
+            <SelectTrigger>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-gray-400" />
+                <SelectValue placeholder="Select location" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {locations.map((loc) => (
+                <SelectItem key={loc.id} value={loc.id}>
+                  {loc.name}
+                </SelectItem>
+              ))}
+              {onAddLocation && (
+                <>
+                  <div className="border-t my-1" />
+                  <SelectItem value="__add_new__" className="text-primary-teal-600">
+                    <span className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add New Location
+                    </span>
+                  </SelectItem>
+                </>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : locationName ? (
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Location</Label>
-          <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700">
+          <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-gray-400" />
             {locationName}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Presenters */}
       <div className="space-y-2">
