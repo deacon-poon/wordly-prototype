@@ -48,6 +48,7 @@ import type {
   LocationFormData,
   SessionFormData,
 } from "@/components/events/forms";
+import { parseScheduleFile } from "@/lib/utils/parseSchedule";
 
 // Data interfaces (will be imported from shared types in production)
 interface Session {
@@ -420,6 +421,7 @@ export default function EventDetailPage({
   // Bulk upload flow modals
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isBulkReviewModalOpen, setIsBulkReviewModalOpen] = useState(false);
+  const [parsedSessions, setParsedSessions] = useState<UploadedSession[]>([]);
 
   // Generate mock event data based on the event ID
   // In production, this would be fetched from an API
@@ -662,11 +664,29 @@ export default function EventDetailPage({
 
   // Bulk upload handlers
   const handleBulkUpload = async (file: File, defaults: SessionDefaults) => {
-    // File is selected, store defaults and open review modal
-    // In production, these defaults would be passed to the review/processing step
-    console.log("Bulk upload with defaults:", defaults);
-    setIsUploadModalOpen(false);
-    setIsBulkReviewModalOpen(true);
+    try {
+      // Parse the uploaded file
+      const sessions = await parseScheduleFile(file, defaults.timezone);
+      
+      // Apply defaults to sessions that don't have values
+      const sessionsWithDefaults = sessions.map((session) => ({
+        ...session,
+        timezone: session.timezone || defaults.timezone,
+        glossary: session.glossary || defaults.glossaryId,
+        account: session.account || defaults.accountId,
+        voicePack: session.voicePack || defaults.voicePack,
+        language: session.language || defaults.startingLanguage,
+      }));
+
+      setParsedSessions(sessionsWithDefaults);
+      setIsUploadModalOpen(false);
+      setIsBulkReviewModalOpen(true);
+      
+      toast.success(`Parsed ${sessions.length} sessions from file`);
+    } catch (error) {
+      console.error("Error parsing file:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to parse file");
+    }
   };
 
   const handleBulkReviewSubmit = (sessions: UploadedSession[]) => {
@@ -934,11 +954,15 @@ export default function EventDetailPage({
                 title={
                   isPastEvent
                     ? "Cannot add to past events"
-                    : "Replace all sessions with a new schedule from spreadsheet"
+                    : event.sessionCount > 0
+                    ? "Replace all sessions with a new schedule from spreadsheet"
+                    : "Upload locations and sessions from spreadsheet"
                 }
               >
                 <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
-                <span className="hidden @md:inline">Replace Schedule</span>
+                <span className="hidden @md:inline">
+                  {event.sessionCount > 0 ? "Replace Schedule" : "Upload Schedule"}
+                </span>
               </Button>
             </div>
           </div>
@@ -1028,7 +1052,7 @@ export default function EventDetailPage({
                 <p className="text-gray-600">
                   Click <span className="font-medium">Add Location</span> to add
                   locations one at a time, or{" "}
-                  <span className="font-medium">Replace Schedule</span> to bulk
+                  <span className="font-medium">Upload Schedule</span> to bulk
                   import from a spreadsheet.
                 </p>
               </div>
@@ -1242,6 +1266,7 @@ export default function EventDetailPage({
         open={isUploadModalOpen}
         onOpenChange={setIsUploadModalOpen}
         onUpload={handleBulkUpload}
+        hasExistingSessions={event.sessionCount > 0}
       />
 
       {/* Bulk Upload Review Modal */}
@@ -1249,6 +1274,7 @@ export default function EventDetailPage({
         open={isBulkReviewModalOpen}
         onOpenChange={setIsBulkReviewModalOpen}
         onSubmit={handleBulkReviewSubmit}
+        initialSessions={parsedSessions}
       />
     </div>
   );

@@ -81,12 +81,15 @@ interface UploadScheduleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpload: (file: File, defaults: SessionDefaults) => Promise<void>;
+  /** Whether the event already has sessions (affects warning messaging) */
+  hasExistingSessions?: boolean;
 }
 
 export function UploadScheduleModal({
   open,
   onOpenChange,
   onUpload,
+  hasExistingSessions = false,
 }: UploadScheduleModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -135,21 +138,13 @@ export function UploadScheduleModal({
   };
 
   const handleDownloadTemplate = () => {
-    // Create a sample CSV template per spec
-    const csvContent = `Location,Title,Presenter,Date,Start Time,End Time,Timezone
-"Main Auditorium","Opening Keynote","John Doe, Jane Smith","2024-11-15","09:00","10:30","America/Los_Angeles"
-"Main Auditorium","Product Showcase","Jane Smith","2024-11-15","11:00","12:00","America/Los_Angeles"
-"Workshop Room A","Hands-on Workshop","Bob Johnson, Alice Lee","2024-11-15","13:00","15:00","America/Los_Angeles"`;
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
+    // Download the Excel template from public folder
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "event-schedule-template.csv";
+    a.href = "/templates/event-schedule-template.xlsx";
+    a.download = "event-schedule-template.xlsx";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
   };
 
   const handleSubmit = async () => {
@@ -286,7 +281,7 @@ export function UploadScheduleModal({
                 onClick={() => setShowDefaults(!showDefaults)}
                 className="text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 underline transition-colors"
               >
-                {showDefaults ? "Done editing" : "Customize"}
+                {showDefaults ? "Save Settings" : "Customize"}
               </button>
             </div>
             
@@ -300,7 +295,9 @@ export function UploadScheduleModal({
             <div className="grid grid-cols-2 gap-4">
               {/* Account */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Account</Label>
+                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
+                  Account
+                </Label>
                 {showDefaults ? (
                   <Select
                     value={defaults.accountId}
@@ -326,33 +323,37 @@ export function UploadScheduleModal({
 
               {/* Timezone */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Timezone</Label>
+                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
+                  Timezone
+                </Label>
                 {showDefaults ? (
                   <Select
                     value={defaults.timezone}
                     onValueChange={(value) => updateDefault("timezone", value)}
                   >
                     <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEZONES.map((tz) => (
-                    <SelectItem key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <p className="text-sm text-gray-900">
                     {defaults.timezone.split("/").pop()?.replace("_", " ")}
                   </p>
                 )}
-            </div>
+              </div>
 
               {/* Language */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Language</Label>
+                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
+                  Language
+                </Label>
                 {showDefaults ? (
                   <Select
                     value={defaults.startingLanguage}
@@ -378,7 +379,9 @@ export function UploadScheduleModal({
 
               {/* Selections count */}
               <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">Output Languages</Label>
+                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
+                  Output Languages
+                </Label>
                 <p className="text-sm text-gray-900">
                   {defaults.languages.length} language{defaults.languages.length !== 1 ? "s" : ""} selected
                 </p>
@@ -644,21 +647,23 @@ export function UploadScheduleModal({
             </div>
           )}
 
-          {/* Warning callout about overwriting */}
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="flex gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-gray-700">
-                <p className="font-medium text-amber-800 mb-1">
-                  Important: This will replace existing sessions
-                </p>
-                <p className="text-amber-700">
-                  Uploading a schedule will overwrite <strong>all</strong> existing sessions for this event. 
-                  Locations with the same name will keep their current QR codes.
-                </p>
+          {/* Warning callout about overwriting - only show when there are existing sessions */}
+          {hasExistingSessions && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-gray-700">
+                  <p className="font-medium text-amber-800 mb-1">
+                    Important: This will replace existing sessions
+                  </p>
+                  <p className="text-amber-700">
+                    Uploading a schedule will overwrite <strong>all</strong> existing sessions for this event. 
+                    Locations with the same name will keep their current QR codes.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Info callout - matches ManualEventWizard pattern */}
           <div className="p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
@@ -677,22 +682,24 @@ export function UploadScheduleModal({
             </div>
           </div>
 
-          {/* Confirmation checkbox */}
-          <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-            <Checkbox
-              id="confirm-overwrite"
-              checked={confirmOverwrite}
-              onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
-              className="mt-0.5"
-            />
-            <label
-              htmlFor="confirm-overwrite"
-              className="text-sm text-gray-700 cursor-pointer leading-snug"
-            >
-              I understand that uploading this schedule will{" "}
-              <strong>replace all existing sessions</strong> for this event.
-            </label>
-          </div>
+          {/* Confirmation checkbox - only required when replacing existing sessions */}
+          {hasExistingSessions && (
+            <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <Checkbox
+                id="confirm-overwrite"
+                checked={confirmOverwrite}
+                onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
+                className="mt-0.5"
+              />
+              <label
+                htmlFor="confirm-overwrite"
+                className="text-sm text-gray-700 cursor-pointer leading-snug"
+              >
+                I understand that uploading this schedule will{" "}
+                <strong>replace all existing sessions</strong> for this event.
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t">
@@ -705,7 +712,7 @@ export function UploadScheduleModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isUploading || !selectedFile || !confirmOverwrite}
+            disabled={isUploading || !selectedFile || (hasExistingSessions && !confirmOverwrite)}
             className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
           >
             {isUploading ? (
