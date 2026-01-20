@@ -19,11 +19,11 @@ import {
 
 // Sample data - this would come from your API in a real app
 const data = [
-  { name: "Spanish", value: 380, color: "#118197" }, // brand-teal
-  { name: "Chinese", value: 250, color: "#28E6B6" }, // brand-green
-  { name: "Russian", value: 180, color: "#30A3B7" }, // lighter teal
-  { name: "Arabic", value: 150, color: "#4DEBB7" }, // lighter green
-  { name: "French", value: 120, color: "#0B5A6B" }, // darker teal
+  { name: "Spanish", value: 380, color: "#0063CC" }, // Brand Blue 500 (primary)
+  { name: "Chinese", value: 250, color: "#15B743" }, // Accent Green 500 (secondary)
+  { name: "Russian", value: 180, color: "#3396FF" }, // Brand Blue 300
+  { name: "Arabic", value: 150, color: "#48EA76" }, // Accent Green 300
+  { name: "French", value: 120, color: "#017CFF" }, // Brand Blue 400
 ];
 
 const COLORS = data.map((item) => item.color);

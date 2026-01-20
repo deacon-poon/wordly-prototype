@@ -4,7 +4,7 @@
  * This module provides a scalable form architecture that supports:
  * - Creating new events (wizard flow)
  * - Editing existing events
- * - Adding/editing locations
+ * - Adding/editing rooms
  * - Adding/editing sessions
  * 
  * All forms share the same context and types for consistency.
@@ -17,12 +17,12 @@ export * from "./types";
 export {
   EventFormProvider,
   useEventForm,
-  useStandaloneLocationForm,
+  useStandaloneRoomForm,
   useStandaloneSessionForm,
 } from "./EventFormContext";
 
 // Form Components
 export { EventDetailsForm } from "./EventDetailsForm";
-export { LocationForm, LocationListForm, LocationCard } from "./LocationForm";
+export { RoomForm, RoomListForm, RoomCard } from "./RoomForm";
 export { SessionForm, SessionListForm, SessionCard } from "./SessionForm";
 export { ScheduleBuilder } from "./ScheduleBuilder";

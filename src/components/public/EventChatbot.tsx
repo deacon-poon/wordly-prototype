@@ -13,7 +13,7 @@ interface SessionContext {
   summary: string;
   scheduledDate: string;
   scheduledStart: string;
-  locationName: string;
+  roomName: string;
 }
 
 interface EventChatbotProps {

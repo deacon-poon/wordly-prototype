@@ -24,8 +24,8 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-/** Location option for dropdown */
-interface LocationOption {
+/** Room option for dropdown */
+interface RoomOption {
   id: string;
   name: string;
 }
@@ -34,20 +34,20 @@ interface SessionPanelProps {
   mode: "add" | "edit";
   /** Required for edit mode */
   session?: Session;
-  /** Location details */
-  locationName: string;
-  locationId?: string;
+  /** Room details */
+  roomName: string;
+  roomId?: string;
   eventName: string;
   /** Default date for new sessions */
   defaultDate?: string;
   defaultTimezone?: string;
-  /** Available locations for move functionality */
-  locations?: LocationOption[];
+  /** Available rooms for move functionality */
+  rooms?: RoomOption[];
   /** Callbacks */
   onClose: () => void;
-  onSave: (session: Session | SessionFormData, isNew: boolean, newLocationId?: string) => void;
+  onSave: (session: Session | SessionFormData, isNew: boolean, newRoomId?: string) => void;
   onDelete?: (sessionId: string) => void;
-  onAddLocation?: () => void;
+  onAddRoom?: () => void;
 }
 
 // ============================================================================
@@ -61,19 +61,19 @@ interface SessionPanelProps {
 export function SessionPanel({
   mode,
   session,
-  locationName,
-  locationId,
+  roomName,
+  roomId,
   eventName,
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
-  locations,
+  rooms,
   onClose,
   onSave,
   onDelete,
-  onAddLocation,
+  onAddRoom,
 }: SessionPanelProps) {
-  // Track selected location for move functionality
-  const [selectedLocationId, setSelectedLocationId] = useState(locationId);
+  // Track selected room for move functionality
+  const [selectedRoomId, setSelectedRoomId] = useState(roomId);
   // Delete confirmation dialog state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   // Convert Session to SessionFormData for edit mode
@@ -145,7 +145,7 @@ export function SessionPanel({
 
   const isReadOnly = hasStarted();
 
-  // Reset form and location when session changes (edit mode)
+  // Reset form and room when session changes (edit mode)
   useEffect(() => {
     if (mode === "edit" && session) {
       updateSession({
@@ -158,12 +158,12 @@ export function SessionPanel({
         timezone: defaultTimezone,
         languages: ["en-US"],
       });
-      setSelectedLocationId(locationId);
+      setSelectedRoomId(roomId);
     } else if (mode === "add") {
       reset();
-      setSelectedLocationId(locationId);
+      setSelectedRoomId(roomId);
     }
-  }, [session, mode, locationId]);
+  }, [session, mode, roomId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,8 +179,8 @@ export function SessionPanel({
     setIsSaving(true);
 
     try {
-      // Check if location changed
-      const locationChanged = selectedLocationId && selectedLocationId !== locationId;
+      // Check if room changed
+      const roomChanged = selectedRoomId && selectedRoomId !== roomId;
       
       if (mode === "edit" && session) {
         // Convert presenters string back to array
@@ -198,10 +198,10 @@ export function SessionPanel({
           endTime: formData.endTime,
         };
 
-        onSave(updatedSession, false, locationChanged ? selectedLocationId : undefined);
+        onSave(updatedSession, false, roomChanged ? selectedRoomId : undefined);
       } else {
         // Add mode - pass the form data
-        onSave(formData, true, selectedLocationId);
+        onSave(formData, true, selectedRoomId);
       }
     } finally {
       setIsSaving(false);
@@ -225,7 +225,7 @@ export function SessionPanel({
           </div>
           <p className="text-sm text-gray-600 mt-0.5 flex items-center gap-1">
             <MapPin className="h-3 w-3" />
-            {locationName} · {eventName}
+            {roomName} · {eventName}
           </p>
         </div>
         <button
@@ -256,11 +256,11 @@ export function SessionPanel({
             errors={errors}
             mode={mode === "add" ? "create" : "edit"}
             readOnly={isReadOnly}
-            locationName={locationName}
-            locations={locations}
-            selectedLocationId={selectedLocationId}
-            onLocationChange={setSelectedLocationId}
-            onAddLocation={onAddLocation}
+            roomName={roomName}
+            rooms={rooms}
+            selectedRoomId={selectedRoomId}
+            onRoomChange={setSelectedRoomId}
+            onAddRoom={onAddRoom}
           />
         </div>
       </form>
@@ -292,7 +292,7 @@ export function SessionPanel({
             type="submit"
             form="session-form"
             disabled={isSaving || isReadOnly || !formData.title.trim()}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? (
               <>

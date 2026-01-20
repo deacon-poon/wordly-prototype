@@ -36,51 +36,51 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Location {
+interface Room {
   id: string;
   name: string;
   sessionCount: number;
-  locationSessionId: string;
+  roomSessionId: string;
   passcode: string;
   sessions: Session[];
 }
 
-interface LocationAccordionProps {
-  location: Location;
+interface RoomAccordionProps {
+  room: Room;
   defaultExpanded?: boolean;
   /** Event-level timezone - used for displaying session times */
   eventTimezone?: string;
-  onStartLocation?: (location: Location, e: React.MouseEvent) => void;
-  onLinksToJoin?: (location: Location, e: React.MouseEvent) => void;
+  onStartRoom?: (room: Room, e: React.MouseEvent) => void;
+  onLinksToJoin?: (room: Room, e: React.MouseEvent) => void;
   onEditSession?: (
     session: Session,
-    location: Location,
+    room: Room,
     e: React.MouseEvent
   ) => void;
-  onRenameLocation?: (location: Location) => void;
-  onDeleteLocation?: (location: Location) => void;
-  onAddSession?: (location: Location) => void;
+  onRenameRoom?: (room: Room) => void;
+  onDeleteRoom?: (room: Room) => void;
+  onAddSession?: (room: Room) => void;
   isPastEvent?: boolean;
   showCredentials?: boolean;
 }
 
-export function LocationAccordion({
-  location,
+export function RoomAccordion({
+  room,
   defaultExpanded = false,
   eventTimezone = "America/Los_Angeles",
-  onStartLocation,
+  onStartRoom,
   onLinksToJoin,
   onEditSession,
-  onRenameLocation,
-  onDeleteLocation,
+  onRenameRoom,
+  onDeleteRoom,
   onAddSession,
   isPastEvent = false,
   showCredentials = true,
-}: LocationAccordionProps) {
+}: RoomAccordionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
-  const hasLocationActions =
-    onRenameLocation || onDeleteLocation || onAddSession;
+  const hasRoomActions =
+    onRenameRoom || onDeleteRoom || onAddSession;
 
   return (
     <div
@@ -88,7 +88,7 @@ export function LocationAccordion({
         isExpanded ? "border-gray-200/60" : "hover:border-gray-200/60"
       }`}
     >
-      {/* Location Header - using div with role="button" to avoid nested button issue */}
+      {/* Room Header - using div with role="button" to avoid nested button issue */}
       <div className="w-full px-4 py-3 flex items-center text-left">
         {/* Clickable area for expand/collapse */}
         <div
@@ -111,11 +111,11 @@ export function LocationAccordion({
           {/* Center: Name + Count (grows) */}
           <div className="flex-1 flex items-center gap-2 min-w-0">
             <h4 className="font-semibold text-gray-900 truncate">
-              {location.name}
+              {room.name}
             </h4>
             <span className="text-sm text-gray-500 flex-shrink-0">
-              ({location.sessions.length}{" "}
-              {location.sessions.length === 1
+              ({room.sessions.length}{" "}
+              {room.sessions.length === 1
                 ? "presentation"
                 : "presentations"}
               )
@@ -131,35 +131,35 @@ export function LocationAccordion({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onLinksToJoin(location, e);
+                onLinksToJoin(room, e);
               }}
-              className="text-primary-teal-600 hover:text-primary-teal-700 hover:bg-primary-teal-50"
+              className="text-primary-teal-600 hover:text-accent-green-800 hover:bg-accent-green-50"
               title="Links to join"
             >
               <QrCode className="h-4 w-4 @md:mr-1.5" />
               <span className="hidden @md:inline">Links to join</span>
             </Button>
           )}
-          {onStartLocation && (
+          {onStartRoom && (
             <Button
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 if (!isPastEvent) {
-                  onStartLocation(location, e);
+                  onStartRoom(room, e);
                 }
               }}
               disabled={isPastEvent}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white disabled:opacity-50"
-              title={isPastEvent ? "This event has ended" : "Start Location"}
+              className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white disabled:opacity-50"
+              title={isPastEvent ? "This event has ended" : "Start Room"}
             >
               <Play className="h-4 w-4 @md:mr-1.5" />
-              <span className="hidden @md:inline">Start Location</span>
+              <span className="hidden @md:inline">Start Room</span>
             </Button>
           )}
 
           {/* More actions dropdown */}
-          {hasLocationActions && !isPastEvent && (
+          {hasRoomActions && !isPastEvent && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -173,26 +173,26 @@ export function LocationAccordion({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {onAddSession && (
-                  <DropdownMenuItem onClick={() => onAddSession(location)}>
+                  <DropdownMenuItem onClick={() => onAddSession(room)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Session
                   </DropdownMenuItem>
                 )}
-                {onRenameLocation && (
-                  <DropdownMenuItem onClick={() => onRenameLocation(location)}>
+                {onRenameRoom && (
+                  <DropdownMenuItem onClick={() => onRenameRoom(room)}>
                     <Pencil className="h-4 w-4 mr-2" />
-                    Rename Location
+                    Rename Room
                   </DropdownMenuItem>
                 )}
-                {onDeleteLocation && (
+                {onDeleteRoom && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => onDeleteLocation(location)}
+                      onClick={() => onDeleteRoom(room)}
                       className="text-red-600 focus:text-red-600"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Location
+                      Delete Room
                     </DropdownMenuItem>
                   </>
                 )}
@@ -231,13 +231,13 @@ export function LocationAccordion({
             <span>
               Session ID:{" "}
               <code className="font-mono text-gray-700">
-                {location.locationSessionId}
+                {room.roomSessionId}
               </code>
             </span>
             <span>
               Passcode:{" "}
               <code className="font-mono text-gray-700">
-                {location.passcode}
+                {room.passcode}
               </code>
             </span>
           </div>
@@ -248,17 +248,17 @@ export function LocationAccordion({
       {isExpanded && (
         <div className="border-t border-gray-200 divide-y divide-gray-100">
           {/* Empty state when no sessions */}
-          {location.sessions.length === 0 && (
+          {room.sessions.length === 0 && (
             <div className="px-4 py-6 text-center">
               <p className="text-sm text-gray-500 mb-3">
-                No sessions in this location yet.
+                No sessions in this room yet.
               </p>
               {onAddSession && !isPastEvent && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onAddSession(location)}
-                  className="text-primary-teal-600 border-primary-teal-600 hover:bg-primary-teal-50"
+                  onClick={() => onAddSession(room)}
+                  className="text-primary-blue-600 border-primary-blue-600 hover:bg-accent-green-50"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session
@@ -266,7 +266,7 @@ export function LocationAccordion({
               )}
             </div>
           )}
-          {location.sessions.map((session) => (
+          {room.sessions.map((session) => (
             <div
               key={session.id}
               className="px-4 py-3 hover:bg-gray-50 transition-colors group flex items-center"
@@ -279,13 +279,13 @@ export function LocationAccordion({
                 onClick={(e) => {
                   e.stopPropagation();
                   if (onEditSession && !isPastEvent) {
-                    onEditSession(session, location, e);
+                    onEditSession(session, room, e);
                   }
                 }}
                 disabled={isPastEvent || !onEditSession}
                 className={`flex-1 min-w-0 text-left ${
                   !isPastEvent && onEditSession
-                    ? "hover:text-primary-teal-700 cursor-pointer"
+                    ? "hover:text-accent-green-800 cursor-pointer"
                     : "cursor-default"
                 }`}
                 title={
@@ -311,11 +311,11 @@ export function LocationAccordion({
 
               {/* Right: Time badge + Edit button (aligns with action buttons above) */}
               <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-teal-50 border border-primary-teal-200 rounded-md">
-                  <span className="text-sm font-bold text-primary-teal-700 whitespace-nowrap">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-accent-green-50 border border-accent-green-200 rounded-md">
+                  <span className="text-sm font-bold text-accent-green-800 whitespace-nowrap">
                     {session.scheduledStart} – {session.endTime}
                   </span>
-                  <span className="text-xs font-medium text-primary-teal-600 bg-primary-teal-100 px-1.5 py-0.5 rounded">
+                  <span className="text-xs font-medium text-primary-teal-600 bg-accent-green-100 px-1.5 py-0.5 rounded">
                     {getTimezoneAbbr(session.timezone || eventTimezone)}
                   </span>
                 </div>
@@ -327,7 +327,7 @@ export function LocationAccordion({
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!isPastEvent) {
-                        onEditSession(session, location, e);
+                        onEditSession(session, room, e);
                       }
                     }}
                     disabled={isPastEvent}
@@ -349,15 +349,15 @@ export function LocationAccordion({
           ))}
 
           {/* Add Session button at bottom of list (always visible when expanded with sessions) */}
-          {location.sessions.length > 0 && onAddSession && !isPastEvent && (
+          {room.sessions.length > 0 && onAddSession && !isPastEvent && (
             <div className="px-4 py-3 border-t border-gray-100">
               <div className="flex items-center">
                 <div className="w-8 flex-shrink-0" />
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onAddSession(location)}
-                  className="text-primary-teal-600 hover:text-primary-teal-700 hover:bg-primary-teal-50 -ml-2"
+                  onClick={() => onAddSession(room)}
+                  className="text-primary-teal-600 hover:text-accent-green-800 hover:bg-accent-green-50 -ml-2"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session

@@ -95,7 +95,7 @@ export function ActivityChart() {
               size="sm"
               className={`h-8 text-xs ${
                 timeframe === "week"
-                  ? "bg-primary-teal-100 text-primary-teal-700 border-primary-teal-300"
+                  ? "bg-primary-navy-50 text-primary-navy-500 border-primary-navy-100"
                   : ""
               }`}
               onClick={() => setTimeframe("week")}
@@ -107,7 +107,7 @@ export function ActivityChart() {
               size="sm"
               className={`h-8 text-xs ${
                 timeframe === "month"
-                  ? "bg-primary-teal-100 text-primary-teal-700 border-primary-teal-300"
+                  ? "bg-primary-navy-50 text-primary-navy-500 border-primary-navy-100"
                   : ""
               }`}
               onClick={() => setTimeframe("month")}
@@ -119,7 +119,7 @@ export function ActivityChart() {
               size="sm"
               className={`h-8 text-xs ${
                 timeframe === "year"
-                  ? "bg-primary-teal-100 text-primary-teal-700 border-primary-teal-300"
+                  ? "bg-primary-navy-50 text-primary-navy-500 border-primary-navy-100"
                   : ""
               }`}
               onClick={() => setTimeframe("year")}
@@ -171,19 +171,19 @@ export function ActivityChart() {
                 name="Translation Sessions"
                 type="monotone"
                 dataKey="Translation Sessions"
-                stroke="#118197" // brand-teal
+                stroke="#0063CC" // brand-navy (primary)
                 strokeWidth={2}
-                dot={{ fill: "#118197", r: 4 }}
-                activeDot={{ r: 6, fill: "#118197", stroke: "#fff" }}
+                dot={{ fill: "#0063CC", r: 4 }}
+                activeDot={{ r: 6, fill: "#0063CC", stroke: "#fff" }}
               />
               <Line
                 name="Interpretation Sessions"
                 type="monotone"
                 dataKey="Interpretation Sessions"
-                stroke="#28E6B6" // brand-green
+                stroke="#15B743" // brand-green
                 strokeWidth={2}
-                dot={{ fill: "#28E6B6", r: 4 }}
-                activeDot={{ r: 6, fill: "#28E6B6", stroke: "#fff" }}
+                dot={{ fill: "#15B743", r: 4 }}
+                activeDot={{ r: 6, fill: "#15B743", stroke: "#fff" }}
               />
             </LineChart>
           </ResponsiveContainer>

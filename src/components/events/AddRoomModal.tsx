@@ -12,16 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, MapPin } from "lucide-react";
-import { useStandaloneLocationForm, LocationFormData } from "./forms";
+import { useStandaloneRoomForm, RoomFormData } from "./forms";
 
 // ============================================================================
 // Types
 // ============================================================================
 
-interface AddLocationModalProps {
+interface AddRoomModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (location: LocationFormData) => Promise<void>;
+  onSave: (room: RoomFormData) => Promise<void>;
   eventName?: string;
 }
 
@@ -30,17 +30,17 @@ interface AddLocationModalProps {
 // ============================================================================
 
 /**
- * Modal for adding a new location to an existing event.
- * Creates an empty location - sessions can be added after via "Add Session" or "Upload Schedule".
+ * Modal for adding a new room to an existing event.
+ * Creates an empty room - sessions can be added after via "Add Session" or "Upload Schedule".
  */
-export function AddLocationModal({
+export function AddRoomModal({
   open,
   onOpenChange,
   onSave,
   eventName,
-}: AddLocationModalProps) {
-  const { location, updateLocation, errors, validate, reset } =
-    useStandaloneLocationForm();
+}: AddRoomModalProps) {
+  const { room, updateRoom, errors, validate, reset } =
+    useStandaloneRoomForm();
   const [isSaving, setIsSaving] = React.useState(false);
 
   const handleSave = async () => {
@@ -48,11 +48,11 @@ export function AddLocationModal({
 
     setIsSaving(true);
     try {
-      await onSave(location);
+      await onSave(room);
       reset();
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to add location:", error);
+      console.error("Failed to add room:", error);
     } finally {
       setIsSaving(false);
     }
@@ -68,16 +68,16 @@ export function AddLocationModal({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
               <MapPin className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-gray-900">
-                Add Location
+                Add Room
               </DialogTitle>
               {eventName && (
                 <DialogDescription className="text-sm text-gray-600">
-                  Adding location to: {eventName}
+                  Adding room to: {eventName}
                 </DialogDescription>
               )}
             </div>
@@ -85,18 +85,18 @@ export function AddLocationModal({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {/* Location Name */}
+          {/* Room Name */}
           <div className="space-y-2">
             <Label
-              htmlFor="location-name"
+              htmlFor="room-name"
               className="text-sm font-semibold text-gray-900"
             >
-              Location Name *
+              Room Name *
             </Label>
             <Input
-              id="location-name"
-              value={location.name}
-              onChange={(e) => updateLocation({ name: e.target.value })}
+              id="room-name"
+              value={room.name}
+              onChange={(e) => updateRoom({ name: e.target.value })}
               placeholder="e.g., Main Auditorium, Workshop Room A"
               className={errors.name ? "border-red-500" : ""}
             />
@@ -108,7 +108,7 @@ export function AddLocationModal({
           {/* Hint */}
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
             <p className="text-sm text-gray-600">
-              After creating the location, you can add sessions individually or
+              After creating the room, you can add sessions individually or
               use &quot;Upload Schedule&quot; to bulk import.
             </p>
           </div>
@@ -120,8 +120,8 @@ export function AddLocationModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving || !location.name.trim()}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            disabled={isSaving || !room.name.trim()}
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? (
               <>
@@ -129,7 +129,7 @@ export function AddLocationModal({
                 Adding...
               </>
             ) : (
-              "Add Location"
+              "Add Room"
             )}
           </Button>
         </div>
@@ -139,35 +139,35 @@ export function AddLocationModal({
 }
 
 // ============================================================================
-// Edit Location Modal (Reuses the same form)
+// Edit Room Modal (Reuses the same form)
 // ============================================================================
 
-interface EditLocationModalProps {
+interface EditRoomModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (location: LocationFormData) => Promise<void>;
-  initialData: LocationFormData;
+  onSave: (room: RoomFormData) => Promise<void>;
+  initialData: RoomFormData;
   eventName?: string;
 }
 
 /**
- * Modal for editing an existing location.
+ * Modal for editing an existing room.
  */
-export function EditLocationModal({
+export function EditRoomModal({
   open,
   onOpenChange,
   onSave,
   initialData,
   eventName,
-}: EditLocationModalProps) {
-  const { location, updateLocation, errors, validate, reset } =
-    useStandaloneLocationForm(initialData);
+}: EditRoomModalProps) {
+  const { room, updateRoom, errors, validate, reset } =
+    useStandaloneRoomForm(initialData);
   const [isSaving, setIsSaving] = React.useState(false);
 
   // Reset form when modal opens with new data
   React.useEffect(() => {
     if (open && initialData) {
-      updateLocation(initialData);
+      updateRoom(initialData);
     }
   }, [open, initialData]);
 
@@ -176,10 +176,10 @@ export function EditLocationModal({
 
     setIsSaving(true);
     try {
-      await onSave(location);
+      await onSave(room);
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to update location:", error);
+      console.error("Failed to update room:", error);
     } finally {
       setIsSaving(false);
     }
@@ -195,16 +195,16 @@ export function EditLocationModal({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
               <MapPin className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-gray-900">
-                Edit Location
+                Edit Room
               </DialogTitle>
               {eventName && (
                 <DialogDescription className="text-sm text-gray-600">
-                  Editing location in: {eventName}
+                  Editing room in: {eventName}
                 </DialogDescription>
               )}
             </div>
@@ -212,18 +212,18 @@ export function EditLocationModal({
         </DialogHeader>
 
         <div className="py-4">
-          {/* Location Name */}
+          {/* Room Name */}
           <div className="space-y-2">
             <Label
-              htmlFor="edit-location-name"
+              htmlFor="edit-room-name"
               className="text-sm font-semibold text-gray-900"
             >
-              Location Name *
+              Room Name *
             </Label>
             <Input
-              id="edit-location-name"
-              value={location.name}
-              onChange={(e) => updateLocation({ name: e.target.value })}
+              id="edit-room-name"
+              value={room.name}
+              onChange={(e) => updateRoom({ name: e.target.value })}
               placeholder="e.g., Main Auditorium, Workshop Room A"
               className={errors.name ? "border-red-500" : ""}
             />
@@ -239,8 +239,8 @@ export function EditLocationModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isSaving || !location.name.trim()}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            disabled={isSaving || !room.name.trim()}
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? (
               <>

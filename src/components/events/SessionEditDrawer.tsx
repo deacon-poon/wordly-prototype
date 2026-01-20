@@ -222,7 +222,7 @@ export function SessionEditDrawer({
             <Button
               variant="ghost"
               size="icon"
-              className="text-primary-teal-600 hover:text-primary-teal-700"
+              className="text-primary-teal-600 hover:text-accent-green-800"
             >
               <Check className="h-4 w-4" />
             </Button>
@@ -265,7 +265,7 @@ export function SessionEditDrawer({
             <Button
               variant="ghost"
               size="icon"
-              className="text-primary-teal-600 hover:text-primary-teal-700"
+              className="text-primary-teal-600 hover:text-accent-green-800"
             >
               <Clock className="h-4 w-4" />
             </Button>
@@ -313,7 +313,7 @@ export function SessionEditDrawer({
             <Button
               variant="ghost"
               size="icon"
-              className="text-primary-teal-600 hover:text-primary-teal-700"
+              className="text-primary-teal-600 hover:text-accent-green-800"
             >
               <Clock className="h-4 w-4" />
             </Button>
@@ -490,7 +490,7 @@ export function SessionEditDrawer({
         </Button>
         <Button
           onClick={handleSave}
-          className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+          className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
         >
           Save Changes
         </Button>

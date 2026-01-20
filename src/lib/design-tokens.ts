@@ -13,33 +13,95 @@
 // ============================================================================
 
 export const colorTokens = {
-  // Primary Brand Colors
+  // Primary Brand Colors - 2026 Rebrand: Brand Blue 500 is PRIMARY, Accent Green 500 is SECONDARY
   primitives: {
     color: {
+      // NEW PRIMARY - Brand Blue palette
+      'primary-blue': {
+        'blue-25': '#F0F7FF',
+        'blue-50': '#D6E8FF',
+        'blue-100': '#B2D8FF',
+        'blue-200': '#75B8FF',
+        'blue-300': '#3396FF',
+        'blue-400': '#017CFF',
+        'blue-500': '#0063CC', // Base primary - Brand Blue 500
+        'blue-600': '#0051A8',
+        'blue-700': '#00458F',
+        'blue-800': '#002C5C',
+        'blue-900': '#001E3D',
+      },
+      // Action Teal palette - For buttons and interactive elements
+      'action-teal': {
+        'teal-50': '#DBF5F9',
+        'teal-100': '#BBEDFA',
+        'teal-200': '#84DFF0',
+        'teal-300': '#49CFE9',
+        'teal-400': '#1BC4E4',
+        'teal-500': '#169CB6',
+        'teal-600': '#128197', // Base action color
+        'teal-700': '#0F6D80',
+        'teal-800': '#0A4652',
+        'teal-900': '#072F37',
+      },
+      // NEW SECONDARY - Accent Green palette
+      'accent-green': {
+        'green-50': '#DAF8E5',
+        'green-100': '#BBF7CB',
+        'green-200': '#84F1A2',
+        'green-300': '#48EA76',
+        'green-400': '#1BE454',
+        'green-500': '#15B743', // Base secondary - Accent Green 500
+        'green-600': '#129737',
+        'green-700': '#0F802F',
+        'green-800': '#0A522E',
+        'green-900': '#063716',
+      },
+      // Legacy aliases for backward compatibility - maps to Brand Blue
       'primary-teal': {
-        'teal-50': '#e8f9fc',
-        'teal-100': '#bbedf7',
-        'teal-200': '#84def0',
-        'teal-300': '#56d2eb',
-        'teal-400': '#1bc3e4',
-        'teal-500': '#128197', // Base primary
-        'teal-600': '#0f6d80',
-        'teal-700': '#0d5d6d',
-        'teal-800': '#0a4652',
-        'teal-900': '#072f37',
+        'teal-50': '#D6E8FF',
+        'teal-100': '#B2D8FF',
+        'teal-200': '#75B8FF',
+        'teal-300': '#3396FF',
+        'teal-400': '#017CFF',
+        'teal-500': '#0063CC', // Now maps to Brand Blue 500
+        'teal-600': '#0051A8',
+        'teal-700': '#00458F',
+        'teal-800': '#002C5C',
+        'teal-900': '#001E3D',
+      },
+      'primary-navy': {
+        'navy-20': '#F0F7FF',
+        'navy-50': '#D6E8FF',
+        'navy-100': '#B2D8FF',
+        'navy-200': '#75B8FF',
+        'navy-300': '#3396FF',
+        'navy-400': '#017CFF',
+        'navy-500': '#0063CC',
+        'navy-600': '#0051A8',
+        'navy-700': '#00458F',
       },
       'secondary-navy': {
-        'navy-50': '#d4e1f7',
-        'navy-100': '#94b3eb',
-        'navy-200': '#5486de',
-        'navy-300': '#255dc1',
-        'navy-400': '#183e81',
-        'navy-500': '#0b1c3a', // Base secondary
-        'navy-600': '#0a1933',
-        'navy-700': '#030811',
+        'navy-20': '#F0F7FF',
+        'navy-50': '#D6E8FF',
+        'navy-100': '#B2D8FF',
+        'navy-200': '#75B8FF',
+        'navy-300': '#3396FF',
+        'navy-400': '#017CFF',
+        'navy-500': '#0063CC',
+        'navy-600': '#0051A8',
+        'navy-700': '#00458F',
       },
-      'accent-green': {
-        'green-500': '#28e6b6', // Base accent
+      'secondary-green': {
+        'green-50': '#DAF8E5',
+        'green-100': '#BBF7CB',
+        'green-200': '#84F1A2',
+        'green-300': '#48EA76',
+        'green-400': '#1BE454',
+        'green-500': '#15B743',
+        'green-600': '#129737',
+        'green-700': '#0F802F',
+        'green-800': '#0A522E',
+        'green-900': '#063716',
       },
       gray: {
         'gray-100': '#eef0f2',
@@ -194,11 +256,12 @@ export const dimensionTokens = {
 // ============================================================================
 
 export const semanticColors = {
-  // Brand
+  // Brand - 2026 Rebrand: Brand Blue 500 is PRIMARY, Accent Green 500 is SECONDARY
   brand: {
-    primary: colorTokens.primitives.color['primary-teal']['teal-500'],
-    secondary: colorTokens.primitives.color['secondary-navy']['navy-500'],
-    accent: colorTokens.primitives.color['accent-green']['green-500'],
+    primary: colorTokens.primitives.color['primary-blue']['blue-500'], // #0063CC - Brand Blue 500
+    secondary: colorTokens.primitives.color['accent-green']['green-500'], // #15B743 - Accent Green 500
+    accent: colorTokens.primitives.color['accent-green']['green-500'], // Same as secondary
+    action: colorTokens.primitives.color['action-teal']['teal-600'], // #128197 - Action Teal 600
   },
 
   // States

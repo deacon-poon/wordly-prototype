@@ -111,22 +111,54 @@ export interface AccessibleColorCombination {
 }
 
 // =======================================
-// ACCESSIBLE COMBINATION 1: WORDLY TEAL & MAGENTA
+// ACCESSIBLE COMBINATION 1: WORDLY NAVY & GREEN (NEW PRIMARY)
 // =======================================
-// Based on the brand colors #118197 (primary teal) and #E0007B (secondary magenta)
+// Based on the brand colors #0B1C3A (primary navy) and #28E6B6 (secondary green)
 
-// Primary: Wordly Teal palette
+// Primary: Wordly Navy palette
+const wordlyNavyPalette: ColorVariant[] = [
+  createVariant('Wordly Navy 20', '#E9F0FB'),
+  createVariant('Wordly Navy 50', '#D4E1F7'),
+  createVariant('Wordly Navy 100', '#94B3EB'),
+  createVariant('Wordly Navy 200', '#5486DE'),
+  createVariant('Wordly Navy 300', '#255DC1'),
+  createVariant('Wordly Navy 400', '#183E81'),
+  createVariant('Wordly Navy 500', '#0B1C3A'), // Brand Primary
+  createVariant('Wordly Navy 600', '#0A1933'),
+  createVariant('Wordly Navy 700', '#030811'),
+];
+
+// Secondary: Wordly Green palette
+const wordlyGreenPalette: ColorVariant[] = [
+  createVariant('Wordly Green 50', '#E8FCF7'),
+  createVariant('Wordly Green 100', '#C8F9EC'),
+  createVariant('Wordly Green 200', '#BAF7E8'),
+  createVariant('Wordly Green 300', '#8DF2D8'),
+  createVariant('Wordly Green 400', '#5FECC9'),
+  createVariant('Wordly Green 500', '#28E6B6'), // Brand Secondary
+  createVariant('Wordly Green 600', '#15B78E'),
+  createVariant('Wordly Green 700', '#10896A'),
+  createVariant('Wordly Green 800', '#0B5B47'),
+  createVariant('Wordly Green 900', '#052E23'),
+];
+
+// =======================================
+// LEGACY COMBINATION: WORDLY TEAL & MAGENTA (DEPRECATED)
+// =======================================
+// Based on the legacy brand colors #118197 (teal) and #E0007B (magenta)
+
+// Legacy: Wordly Teal palette (now maps to navy for backward compatibility)
 const wordlyTealPalette: ColorVariant[] = [
-  createVariant('Wordly Teal 50', '#E6F1F3'),
-  createVariant('Wordly Teal 100', '#CCE3E8'),
-  createVariant('Wordly Teal 200', '#99C7D0'),
-  createVariant('Wordly Teal 300', '#66ABB9'),
-  createVariant('Wordly Teal 400', '#338FA1'),
-  createVariant('Wordly Teal 500', '#118197'), // Brand Primary - Original
-  createVariant('Wordly Teal 600', '#0E6879'), // Darker for better AA compliance
-  createVariant('Wordly Teal 700', '#0B4F5B'), // WCAG AAA compliant
-  createVariant('Wordly Teal 800', '#07353D'),
-  createVariant('Wordly Teal 900', '#041A1E'),
+  createVariant('Wordly Teal 50', '#D4E1F7'), // Now maps to navy
+  createVariant('Wordly Teal 100', '#94B3EB'),
+  createVariant('Wordly Teal 200', '#5486DE'),
+  createVariant('Wordly Teal 300', '#255DC1'),
+  createVariant('Wordly Teal 400', '#183E81'),
+  createVariant('Wordly Teal 500', '#0B1C3A'), // Now maps to navy
+  createVariant('Wordly Teal 600', '#0A1933'),
+  createVariant('Wordly Teal 700', '#030811'),
+  createVariant('Wordly Teal 800', '#030811'),
+  createVariant('Wordly Teal 900', '#030811'),
 ];
 
 // Secondary: Wordly Magenta palette

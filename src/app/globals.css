@@ -12,17 +12,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
 
-    /* Primary brand colors - updated palette */
-    --primary: 194 74% 33%; /* Primary teal */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 0 0% 96.1%; /* Secondary navy */
-    --secondary-foreground: 0 0% 9%;
+    /* Primary brand colors - Brand Blue 500 as primary, Accent Green as secondary */
+    --primary: 210 100% 40%; /* Brand Blue 500 #0063CC - primary brand color */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 147 88% 33%; /* Accent Green 500 #15B743 - secondary brand color */
+    --secondary-foreground: 0 0% 100%;
 
     /* UI colors */
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%; /* Accent green */
-    --accent-foreground: 0 0% 9%;
+    --accent: 147 88% 33%; /* Accent green #15B743 */
+    --accent-foreground: 0 0% 100%;
 
     /* Semantic colors */
     --destructive: 0 84.2% 60.2%;
@@ -33,13 +33,13 @@
     /* UI elements */
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --ring: 210 100% 40%;
     --radius: 0.5rem;
 
-    /* Brand colors - Figma Variables Extracted */
-    --brand-primary-teal: 194 74% 33%; /* #128197 - from Figma variables */
-    --brand-secondary-navy: 220 84% 14%; /* #0b1c3a - from Figma variables */
-    --brand-accent-green: 158 74% 54%; /* #28e6b6 - from Figma variables */
+    /* Brand colors - Figma Variables Extracted (Rebrand 2026) */
+    --brand-primary-blue: 210 100% 40%; /* #0063CC - Brand Blue 500 from Figma variables */
+    --brand-secondary-green: 147 88% 33%; /* #15B743 - Accent Green 500 from Figma variables */
+    --action-teal: 190 81% 33%; /* #128197 - Action Teal 600 from Figma variables */
 
     /* Typography tokens - from Figma variables */
     --font-size-sm: 14px; /* font size/14 */
@@ -66,67 +66,84 @@
     --size-lg: 28px; /* height/28 */
     --stroke-thin: 1px; /* stroke weight/1 */
 
-    /* Primary Teal palette - Figma Source of Truth (Extracted) */
-    --primary-teal-25: 180 100% 98%;
-    --primary-teal-50: 190 78% 96%; /* #e8f9fc - from Figma variables */
-    --primary-teal-100: 190 78% 85%; /* #bbedf7 - from Figma variables */
-    --primary-teal-200: 190 84% 73%; /* #84def0 - from Figma variables */
-    --primary-teal-300: 190 84% 65%; /* #56d2eb - from Figma variables */
-    --primary-teal-400: 190 87% 52%; /* #1bc3e4 - from Figma variables */
-    --primary-teal-500: 194 74% 33%; /* #128197 - Base primary teal from Figma variables */
-    --primary-teal-600: 194 78% 29%; /* #0f6d80 - from Figma variables */
-    --primary-teal-700: 194 82% 22%; /* #0d5d6d - from Figma variables */
-    --primary-teal-800: 194 86% 19%; /* #0a4652 - from Figma variables */
-    --primary-teal-900: 194 90% 12%; /* #072f37 - from Figma variables */
+    /* Primary Brand Blue palette - Figma Source of Truth (NEW PRIMARY - 2026 Rebrand) */
+    --primary-blue-25: 210 100% 96%; /* #F0F7FF - from Figma brand-blue-25 */
+    --primary-blue-50: 210 100% 92%; /* #D6E8FF - from Figma brand-blue-50 */
+    --primary-blue-100: 210 100% 85%; /* #B2D8FF - from Figma brand-blue-100 */
+    --primary-blue-200: 210 100% 72%; /* #75B8FF - from Figma brand-blue-200 */
+    --primary-blue-300: 210 100% 60%; /* #3396FF - from Figma brand-blue-300 */
+    --primary-blue-400: 210 100% 50%; /* #017CFF - from Figma brand-blue-400 */
+    --primary-blue-500: 210 100% 40%; /* #0063CC - BASE PRIMARY from Figma brand-blue-500 */
+    --primary-blue-600: 210 100% 33%; /* #0051A8 - from Figma brand-blue-600 */
+    --primary-blue-700: 210 100% 28%; /* #00458F - from Figma brand-blue-700 */
+    --primary-blue-800: 210 100% 18%; /* #002C5C - from Figma brand-blue-800 */
+    --primary-blue-900: 210 100% 12%; /* #001E3D - from Figma brand-blue-900 */
 
-    /* Secondary Navy palette - Figma Source of Truth (Extracted) */
-    --secondary-navy-25: 220 50% 98%;
-    --secondary-navy-50: 223 59% 90%; /* #d4e1f7 - from Figma variables */
-    --secondary-navy-100: 223 59% 74%; /* #94b3eb - from Figma variables */
-    --secondary-navy-200: 223 70% 60%; /* #5486de - from Figma variables */
-    --secondary-navy-300: 225 70% 45%; /* #255dc1 - from Figma variables */
-    --secondary-navy-400: 225 66% 31%; /* #183e81 - from Figma variables */
-    --secondary-navy-500: 220 84% 14%; /* #0b1c3a - Base secondary navy from Figma variables */
-    --secondary-navy-600: 220 85% 13%; /* #0a1933 - from Figma variables */
-    --secondary-navy-700: 220 90% 5%; /* #030811 - from Figma variables */
-    --secondary-navy-800: 220 96% 8%;
-    --secondary-navy-900: 220 100% 6%;
+    /* Action Teal palette - For buttons and actions */
+    --action-teal-50: 190 77% 94%; /* #DBF5F9 - from Figma action-teal-50 */
+    --action-teal-100: 190 83% 87%; /* #BBEDFA - from Figma action-teal-100 */
+    --action-teal-200: 190 85% 75%; /* #84DFF0 - from Figma action-teal-200 */
+    --action-teal-300: 190 82% 63%; /* #49CFE9 - from Figma action-teal-300 */
+    --action-teal-400: 190 82% 52%; /* #1BC4E4 - from Figma action-teal-400 */
+    --action-teal-500: 190 81% 40%; /* #169CB6 - from Figma action-teal-500 */
+    --action-teal-600: 190 81% 33%; /* #128197 - BASE ACTION from Figma action-teal-600 */
+    --action-teal-700: 190 81% 28%; /* #0F6D80 - from Figma action-teal-700 */
+    --action-teal-800: 190 84% 18%; /* #0A4652 - from Figma action-teal-800 */
+    --action-teal-900: 190 85% 12%; /* #072F37 - from Figma action-teal-900 */
 
-    /* Accent Green palette - Figma Source of Truth (Extracted) */
-    --accent-green-50: 158 79% 96%; /* Calculated from base */
-    --accent-green-100: 158 74% 88%; /* Calculated from base */
-    --accent-green-200: 158 78% 85%; /* Calculated from base */
-    --accent-green-300: 158 82% 76%; /* Calculated from base */
-    --accent-green-400: 158 85% 67%; /* Calculated from base */
-    --accent-green-500: 158 74% 54%; /* #28e6b6 - Base accent green from Figma variables */
-    --accent-green-600: 158 79% 41%; /* Calculated from base */
-    --accent-green-700: 158 79% 31%; /* Calculated from base */
-    --accent-green-800: 158 82% 20%; /* Calculated from base */
-    --accent-green-900: 158 85% 11%; /* Calculated from base */
+    /* Accent Green palette - Figma Source of Truth (NEW SECONDARY - 2026 Rebrand) */
+    --accent-green-50: 147 84% 93%; /* #DAF8E5 - from Figma accent-green-50 */
+    --accent-green-100: 147 86% 85%; /* #BBF7CB - from Figma accent-green-100 (calculated) */
+    --accent-green-200: 147 87% 70%; /* #84F1A2 - from Figma accent-green-200 */
+    --accent-green-300: 147 88% 60%; /* #48EA76 - from Figma accent-green-300 */
+    --accent-green-400: 147 88% 50%; /* #1BE454 - from Figma accent-green-400 */
+    --accent-green-500: 147 88% 33%; /* #15B743 - BASE SECONDARY from Figma accent-green-500 */
+    --accent-green-600: 147 89% 27%; /* #129737 - from Figma accent-green-600 */
+    --accent-green-700: 147 90% 23%; /* #0F802F - from Figma accent-green-700 */
+    --accent-green-800: 147 91% 15%; /* #0A522E - from Figma accent-green-800 */
+    --accent-green-900: 147 93% 10%; /* #063716 - from Figma accent-green-900 */
 
-    /* Legacy Teal palette (deprecated - use primary-teal instead) */
-    --teal-50: 187 60% 94%;
-    --teal-100: 187 65% 85%;
-    --teal-200: 187 65% 74%;
-    --teal-300: 187 65% 58%;
-    --teal-400: 187 71% 45%;
-    --teal-500: 187 76% 33%;
-    --teal-600: 187 80% 26%;
-    --teal-700: 187 85% 20%;
-    --teal-800: 187 90% 14%;
-    --teal-900: 187 95% 8%;
+    /* Legacy aliases for backward compatibility - maps to new brand blue */
+    --primary-teal-50: var(--primary-blue-50);
+    --primary-teal-100: var(--primary-blue-100);
+    --primary-teal-200: var(--primary-blue-200);
+    --primary-teal-300: var(--primary-blue-300);
+    --primary-teal-400: var(--primary-blue-400);
+    --primary-teal-500: var(--primary-blue-500);
+    --primary-teal-600: var(--primary-blue-600);
+    --primary-teal-700: var(--primary-blue-700);
 
-    /* Legacy Pink palette (deprecated) */
-    --pink-50: 328 100% 94%;
-    --pink-100: 328 100% 86%;
-    --pink-200: 328 100% 76%;
-    --pink-300: 328 100% 67%;
-    --pink-400: 328 100% 57%;
-    --pink-500: 328 100% 44%;
-    --pink-600: 328 100% 35%;
-    --pink-700: 328 100% 26%;
-    --pink-800: 328 100% 17%;
-    --pink-900: 328 100% 8%;
+    /* Legacy navy aliases - maps to brand blue */
+    --primary-navy-50: var(--primary-blue-50);
+    --primary-navy-100: var(--primary-blue-100);
+    --primary-navy-200: var(--primary-blue-200);
+    --primary-navy-300: var(--primary-blue-300);
+    --primary-navy-400: var(--primary-blue-400);
+    --primary-navy-500: var(--primary-blue-500);
+    --primary-navy-600: var(--primary-blue-600);
+    --primary-navy-700: var(--primary-blue-700);
+
+    /* Legacy secondary-navy aliases - maps to brand blue */
+    --secondary-navy-50: var(--primary-blue-50);
+    --secondary-navy-100: var(--primary-blue-100);
+    --secondary-navy-200: var(--primary-blue-200);
+    --secondary-navy-300: var(--primary-blue-300);
+    --secondary-navy-400: var(--primary-blue-400);
+    --secondary-navy-500: var(--primary-blue-500);
+    --secondary-navy-600: var(--primary-blue-600);
+    --secondary-navy-700: var(--primary-blue-700);
+
+    /* Legacy secondary-green aliases - maps to accent green */
+    --secondary-green-50: var(--accent-green-50);
+    --secondary-green-100: var(--accent-green-100);
+    --secondary-green-200: var(--accent-green-200);
+    --secondary-green-300: var(--accent-green-300);
+    --secondary-green-400: var(--accent-green-400);
+    --secondary-green-500: var(--accent-green-500);
+    --secondary-green-600: var(--accent-green-600);
+    --secondary-green-700: var(--accent-green-700);
+    --secondary-green-800: var(--accent-green-800);
+    --secondary-green-900: var(--accent-green-900);
 
     /* Success Green palette - Figma Source of Truth */
     --green-50: 147 50% 94%; /* #E6F6EC - from Figma */
@@ -300,29 +317,56 @@
   }
 }
 
-/* Primary brand colors for direct access - Figma Variables Source */
+/* Primary brand colors for direct access - Figma Variables Source (2026 Rebrand) */
+/* NEW: Brand Blue 500 is primary, Accent Green 500 is secondary */
+.bg-brand-primary {
+  background-color: #0063CC; /* Brand Blue 500 - from Figma variables */
+}
+
+.text-brand-primary {
+  color: #0063CC; /* Brand Blue 500 - from Figma variables */
+}
+
+.bg-brand-secondary {
+  background-color: #15B743; /* Accent Green 500 - from Figma variables */
+}
+
+.text-brand-secondary {
+  color: #15B743; /* Accent Green 500 - from Figma variables */
+}
+
+/* Action colors */
+.bg-action-primary {
+  background-color: #128197; /* Action Teal 600 - for buttons/actions */
+}
+
+.text-action-primary {
+  color: #128197; /* Action Teal 600 - for buttons/actions */
+}
+
+/* Legacy aliases - map to new colors */
 .bg-brand-teal {
-  background-color: #128197; /* primitives/color/primary-teal/teal-500 from Figma */
+  background-color: #0063CC; /* now maps to Brand Blue 500 (primary) */
 }
 
 .text-brand-teal {
-  color: #128197; /* primitives/color/primary-teal/teal-500 from Figma */
+  color: #0063CC; /* now maps to Brand Blue 500 (primary) */
 }
 
 .bg-brand-green {
-  background-color: #28e6b6; /* primitives/color/accent-green/green-500 from Figma */
+  background-color: #15B743; /* Accent Green 500 (secondary) - from Figma */
 }
 
 .text-brand-green {
-  color: #28e6b6; /* primitives/color/accent-green/green-500 from Figma */
+  color: #15B743; /* Accent Green 500 (secondary) - from Figma */
 }
 
 .bg-brand-navy {
-  background-color: #0b1c3a; /* primitives/color/secondary-navy/navy-500 from Figma */
+  background-color: #0063CC; /* Brand Blue 500 (primary) - from Figma */
 }
 
 .text-brand-navy {
-  color: #0b1c3a; /* primitives/color/secondary-navy/navy-500 from Figma */
+  color: #0063CC; /* Brand Blue 500 (primary) - from Figma */
 }
 
 /* Figma design tokens utilities */

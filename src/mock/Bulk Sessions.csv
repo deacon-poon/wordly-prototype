@@ -1,4 +1,4 @@
-Location,Title,Presenter,Date,Start Time,End time,Timezone,Glossary,Account,Voice Pack,Language,Label
+Room,Title,Presenter,Date,Start Time,End time,Timezone,Glossary,Account,Voice Pack,Language,Label
 Main Stage,Example Session Title,John Doe,12/04/2025,1:00 PM,1:50 PM,America/Los_Angeles,,,,English (US),
 Main Stage,Example Session Title,John Doe,12/04/2025,2:00 PM,3:30 PM,America/Los_Angeles,,,,English (US),
 Main Stage,Example Session Title,John Doe,12/04/2025,3:00 PM,4:30 PM,America/Los_Angeles,,,,English (US),

@@ -37,11 +37,11 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Location {
+interface Room {
   id: string;
   name: string;
   sessionCount: number;
-  locationSessionId: string;
+  roomSessionId: string;
   passcode: string;
   sessions: Session[];
 }
@@ -55,11 +55,11 @@ interface Event {
   startDate: Date;
   endDate: Date;
   timezone: string; // Event timezone (e.g., "America/Los_Angeles")
-  locationCount: number;
+  roomCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  locations: Location[];
+  rooms: Room[];
 }
 
 // Helper functions
@@ -131,17 +131,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
       timezone: "America/Los_Angeles",
-      locationCount: 3,
+      roomCount: 3,
       sessionCount: 10,
       description:
         "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
       publicSummaryUrl: "/public/ai-ml-summit-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-001",
           name: "Main Auditorium",
           sessionCount: 5,
-          locationSessionId: "MAIN-1234",
+          roomSessionId: "AUDM-1234",
           passcode: "123456",
           sessions: [
             {
@@ -205,7 +205,7 @@ export default function EventsPage() {
           id: "loc-002",
           name: "Workshop Room A",
           sessionCount: 3,
-          locationSessionId: "HALL-5678",
+          roomSessionId: "WRKA-5678",
           passcode: "234567",
           sessions: [
             {
@@ -241,7 +241,7 @@ export default function EventsPage() {
           id: "loc-003",
           name: "Breakout Room B",
           sessionCount: 2,
-          locationSessionId: "WORK-1234",
+          roomSessionId: "BRKB-1234",
           passcode: "345678",
           sessions: [
             {
@@ -274,17 +274,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(7),
       endDate: getRelativeDate(8),
       timezone: "America/New_York",
-      locationCount: 4,
+      roomCount: 4,
       sessionCount: 18,
       description:
         "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
       publicSummaryUrl: "/public/cloud-devops-summit-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-004",
           name: "Cloud Theater",
           sessionCount: 5,
-          locationSessionId: "BREK-5678",
+          roomSessionId: "CLDT-5678",
           passcode: "456789",
           sessions: [
             {
@@ -338,7 +338,7 @@ export default function EventsPage() {
           id: "loc-005",
           name: "DevOps Workshop",
           sessionCount: 6,
-          locationSessionId: "EXPO-1234",
+          roomSessionId: "EXPO-1234",
           passcode: "567890",
           sessions: [
             {
@@ -401,7 +401,7 @@ export default function EventsPage() {
           id: "loc-006",
           name: "Container Lab",
           sessionCount: 4,
-          locationSessionId: "TECH-5678",
+          roomSessionId: "TECH-5678",
           passcode: "678901",
           sessions: [
             {
@@ -446,7 +446,7 @@ export default function EventsPage() {
           id: "loc-007",
           name: "Automation Studio",
           sessionCount: 3,
-          locationSessionId: "BIZZ-1234",
+          roomSessionId: "BIZZ-1234",
           passcode: "789012",
           sessions: [
             {
@@ -487,17 +487,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(20),
       endDate: getRelativeDate(21),
       timezone: "America/Los_Angeles",
-      locationCount: 2,
+      roomCount: 2,
       sessionCount: 8,
       description:
         "Explore the latest in design systems, UX research, and product design methodologies",
       publicSummaryUrl: "/public/design-ux-conf-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-008",
           name: "Design Theater",
           sessionCount: 5,
-          locationSessionId: "LEAD-5678",
+          roomSessionId: "LEAD-5678",
           passcode: "890123",
           sessions: [
             {
@@ -551,7 +551,7 @@ export default function EventsPage() {
           id: "loc-009",
           name: "UX Research Lab",
           sessionCount: 3,
-          locationSessionId: "AMPH-9012",
+          roomSessionId: "AMPH-9012",
           passcode: "901234",
           sessions: [
             {
@@ -592,17 +592,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(33),
       endDate: getRelativeDate(34),
       timezone: "America/Chicago",
-      locationCount: 2,
+      roomCount: 2,
       sessionCount: 10,
       description:
         "Comprehensive summit on blockchain technology, smart contracts, and decentralized applications",
       publicSummaryUrl: "/public/web3-blockchain-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-010",
           name: "Blockchain Hall",
           sessionCount: 6,
-          locationSessionId: "STGE-9012",
+          roomSessionId: "STGE-9012",
           passcode: "112233",
           sessions: [
             {
@@ -665,7 +665,7 @@ export default function EventsPage() {
           id: "loc-011",
           name: "DApp Workshop",
           sessionCount: 4,
-          locationSessionId: "AUDI-9012",
+          roomSessionId: "AUDI-9012",
           passcode: "223344",
           sessions: [
             {
@@ -715,17 +715,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(47),
       endDate: getRelativeDate(48),
       timezone: "America/Denver",
-      locationCount: 3,
+      roomCount: 3,
       sessionCount: 12,
       description:
         "Advanced forum on data science, machine learning operations, and business analytics",
       publicSummaryUrl: "/public/data-science-forum-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-012",
           name: "Data Theater",
           sessionCount: 5,
-          locationSessionId: "ROOM-9012",
+          roomSessionId: "ROOM-9012",
           passcode: "334455",
           sessions: [
             {
@@ -779,7 +779,7 @@ export default function EventsPage() {
           id: "loc-013",
           name: "Analytics Lab",
           sessionCount: 4,
-          locationSessionId: "CONF-1230",
+          roomSessionId: "CONF-1230",
           passcode: "445566",
           sessions: [
             {
@@ -824,7 +824,7 @@ export default function EventsPage() {
           id: "loc-014",
           name: "ML Workshop",
           sessionCount: 3,
-          locationSessionId: "MEET-4560",
+          roomSessionId: "MEET-4560",
           passcode: "556677",
           sessions: [
             {
@@ -866,17 +866,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(-36),
       endDate: getRelativeDate(-35),
       timezone: "America/Los_Angeles",
-      locationCount: 2,
+      roomCount: 2,
       sessionCount: 6,
       description:
         "Annual spring technology conference featuring software development trends and innovations",
       publicSummaryUrl: "/public/tech-conf-spring-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-015",
           name: "Main Stage",
           sessionCount: 4,
-          locationSessionId: "BALL-7890",
+          roomSessionId: "BALL-7890",
           passcode: "667788",
           sessions: [
             {
@@ -921,7 +921,7 @@ export default function EventsPage() {
           id: "loc-016",
           name: "Workshop Room",
           sessionCount: 2,
-          locationSessionId: "CENT-0120",
+          roomSessionId: "CENT-0120",
           passcode: "778899",
           sessions: [
             {
@@ -953,17 +953,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(-57),
       endDate: getRelativeDate(-56),
       timezone: "America/New_York",
-      locationCount: 3,
+      roomCount: 3,
       sessionCount: 12,
       description:
         "Summit focused on iOS, Android, and cross-platform mobile development",
       publicSummaryUrl: "/public/mobile-dev-summit-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-017",
           name: "iOS Hall",
           sessionCount: 4,
-          locationSessionId: "EXEC-1110",
+          roomSessionId: "EXEC-1110",
           passcode: "889900",
           sessions: [
             {
@@ -1008,7 +1008,7 @@ export default function EventsPage() {
           id: "loc-018",
           name: "Android Studio",
           sessionCount: 5,
-          locationSessionId: "PRES-2220",
+          roomSessionId: "PRES-2220",
           passcode: "990011",
           sessions: [
             {
@@ -1062,7 +1062,7 @@ export default function EventsPage() {
           id: "loc-019",
           name: "Cross-Platform Lab",
           sessionCount: 3,
-          locationSessionId: "VENT-3330",
+          roomSessionId: "VENT-3330",
           passcode: "101112",
           sessions: [
             {
@@ -1103,17 +1103,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(-93),
       endDate: getRelativeDate(-92),
       timezone: "America/Chicago",
-      locationCount: 2,
+      roomCount: 2,
       sessionCount: 8,
       description:
         "Annual conference on cybersecurity, threat detection, and enterprise security",
       publicSummaryUrl: "/public/cybersecurity-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-020",
           name: "Security Theater",
           sessionCount: 5,
-          locationSessionId: "THEA-4440",
+          roomSessionId: "THEA-4440",
           passcode: "131415",
           sessions: [
             {
@@ -1167,7 +1167,7 @@ export default function EventsPage() {
           id: "loc-021",
           name: "Penetration Testing Lab",
           sessionCount: 3,
-          locationSessionId: "GATH-5500",
+          roomSessionId: "GATH-5500",
           passcode: "161718",
           sessions: [
             {
@@ -1208,17 +1208,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(-128),
       endDate: getRelativeDate(-127),
       timezone: "America/Los_Angeles",
-      locationCount: 2,
+      roomCount: 2,
       sessionCount: 7,
       description:
         "Summit for product managers on strategy, roadmapping, and product-led growth",
       publicSummaryUrl: "/public/pm-summit-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-022",
           name: "Product Theater",
           sessionCount: 4,
-          locationSessionId: "SPAC-6600",
+          roomSessionId: "SPAC-6600",
           passcode: "192021",
           sessions: [
             {
@@ -1263,7 +1263,7 @@ export default function EventsPage() {
           id: "loc-023",
           name: "Strategy Workshop",
           sessionCount: 3,
-          locationSessionId: "LOBY-7700",
+          roomSessionId: "LOBY-7700",
           passcode: "222324",
           sessions: [
             {
@@ -1304,17 +1304,17 @@ export default function EventsPage() {
       startDate: getRelativeDate(-164),
       endDate: getRelativeDate(-163),
       timezone: "America/New_York",
-      locationCount: 3,
+      roomCount: 3,
       sessionCount: 11,
       description:
         "Conference dedicated to modern frontend development, frameworks, and tooling",
       publicSummaryUrl: "/public/frontend-conf-2024",
-      locations: [
+      rooms: [
         {
           id: "loc-024",
           name: "JavaScript Hall",
           sessionCount: 5,
-          locationSessionId: "AREA-8800",
+          roomSessionId: "AREA-8800",
           passcode: "252627",
           sessions: [
             {
@@ -1368,7 +1368,7 @@ export default function EventsPage() {
           id: "loc-025",
           name: "CSS & Design Workshop",
           sessionCount: 3,
-          locationSessionId: "ZOON-9900",
+          roomSessionId: "ZOON-9900",
           passcode: "282930",
           sessions: [
             {
@@ -1404,7 +1404,7 @@ export default function EventsPage() {
           id: "loc-026",
           name: "Performance Lab",
           sessionCount: 3,
-          locationSessionId: "WEBR-1100",
+          roomSessionId: "WEBR-1100",
           passcode: "313233",
           sessions: [
             {
@@ -1493,10 +1493,10 @@ export default function EventsPage() {
       startDate,
       endDate,
       timezone: data.eventDetails.timezone,
-      locationCount: 0,
+      roomCount: 0,
       sessionCount: 0,
       description: "", // Description field removed from create form
-      locations: [],
+      rooms: [],
     };
 
     // Add the new event to the list
@@ -1509,7 +1509,7 @@ export default function EventsPage() {
 
     toast.success(`Event "${data.eventDetails.name}" created`);
 
-    // Navigate to the new event detail page where user can add locations/sessions
+    // Navigate to the new event detail page where user can add rooms/sessions
     router.push(`/events/${newEventId}`);
   };
 
@@ -1604,7 +1604,7 @@ export default function EventsPage() {
               {event.dateRange}
             </span>
             <span className="text-gray-300">·</span>
-            <span>{event.locationCount} locations</span>
+            <span>{event.roomCount} rooms</span>
             <span className="text-gray-300">·</span>
             <span>{event.sessionCount} presentations</span>
           </div>
@@ -1641,7 +1641,7 @@ export default function EventsPage() {
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Manage and organize your events, locations, and presentations
+                Manage and organize your events, rooms, and presentations
               </p>
             </div>
             <Button
@@ -1757,7 +1757,7 @@ export default function EventsPage() {
         title="Delete Event"
         description={
           eventToDelete
-            ? `This will permanently delete "${eventToDelete.name}" and all its locations, sessions, and associated data. This action cannot be undone.`
+            ? `This will permanently delete "${eventToDelete.name}" and all its rooms, sessions, and associated data. This action cannot be undone.`
             : "This will permanently delete this event."
         }
         onConfirm={handleConfirmDeleteEvent}

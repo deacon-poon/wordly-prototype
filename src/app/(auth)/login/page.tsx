@@ -51,13 +51,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-teal-25 via-white to-accent-light-blue-25 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-blue-50 via-white to-accent-green-50 p-4">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,_hsl(var(--primary-teal-200))_1px,_transparent_0)] bg-[size:24px_24px] opacity-20"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,_hsl(var(--accent-green-300))_1px,_transparent_0)] bg-[size:24px_24px] opacity-20"></div>
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 relative z-10">
         {/* Subtle background gradient */}
-        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-primary-teal-100 via-primary-teal-50 to-transparent opacity-40 blur-3xl -mt-20"></div>
+        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-primary-blue-100 via-primary-blue-50 to-transparent opacity-40 blur-3xl -mt-20"></div>
 
         <div className="p-8 relative z-10">
           {/* Logo Section */}
@@ -120,7 +120,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearchSSO()}
-                  className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 h-12 rounded-lg focus-visible:ring-2 focus-visible:ring-primary-teal-500/50 focus:border-primary-teal-500"
+                  className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 h-12 rounded-lg focus-visible:ring-2 focus-visible:ring-primary-blue-500/50 focus:border-primary-blue-500"
                   disabled={isLoading}
                 />
               </div>
@@ -129,11 +129,11 @@ export default function LoginPage() {
                 onClick={handleSearchSSO}
                 disabled={!email.trim() || isLoading}
                 variant="outline"
-                className="w-full h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-primary-teal-600 rounded-lg"
+                className="w-full h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-primary-blue-600 rounded-lg"
               >
                 {isLoading ? (
                   <div className="flex items-center">
-                    <div className="w-4 h-4 border-2 border-primary-teal-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div className="w-4 h-4 border-2 border-primary-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
                     Searching...
                   </div>
                 ) : (
@@ -154,7 +154,7 @@ export default function LoginPage() {
                     <Button
                       key={index}
                       variant="outline"
-                      className="w-full h-auto p-4 justify-start text-left hover:bg-primary-teal-50 hover:border-primary-teal-200 rounded-lg"
+                      className="w-full h-auto p-4 justify-start text-left hover:bg-accent-green-50 hover:border-accent-green-300 rounded-lg"
                       onClick={() => {
                         // Handle SSO organization selection
                         window.location.href = `/auth/sso/${
@@ -164,7 +164,7 @@ export default function LoginPage() {
                     >
                       <div className="flex items-center w-full">
                         {result.type === "organization" ? (
-                          <Building2 className="w-5 h-5 text-primary-teal-600 mr-3" />
+                          <Building2 className="w-5 h-5 text-primary-blue-600 mr-3" />
                         ) : (
                           <Globe className="w-5 h-5 text-accent-green-600 mr-3" />
                         )}
@@ -193,7 +193,7 @@ export default function LoginPage() {
               Need help?{" "}
               <Link
                 href="/support"
-                className="text-primary-teal-600 hover:underline font-medium"
+                className="text-primary-blue-600 hover:underline font-medium"
               >
                 Contact Support
               </Link>

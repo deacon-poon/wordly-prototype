@@ -172,7 +172,7 @@ function validateSession(
     }
   }
 
-  // Check for overlapping sessions on the same date (within same location)
+  // Check for overlapping sessions on the same date (within same room)
   const sameDateSessions = allSessions.filter(
     (other) => other.id !== session.id && other.date === session.date
   );
@@ -342,7 +342,7 @@ interface SessionUploadReviewModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (sessions: UploadedSessionRow[]) => void;
-  locationName: string;
+  roomName: string;
   initialSessions?: UploadedSessionRow[];
   defaultTimezone?: string;
 }
@@ -355,7 +355,7 @@ export function SessionUploadReviewModal({
   open,
   onOpenChange,
   onSubmit,
-  locationName,
+  roomName,
   initialSessions,
   defaultTimezone = "America/Los_Angeles",
 }: SessionUploadReviewModalProps) {
@@ -590,16 +590,16 @@ export function SessionUploadReviewModal({
         <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
                 <MapPin className="h-5 w-5 text-primary-teal-600" />
               </div>
               <div>
                 <DialogTitle className="text-lg font-semibold text-gray-900">
-                  Review Sessions for {locationName}
+                  Review Sessions for {roomName}
                 </DialogTitle>
                 <p className="text-sm text-gray-600 mt-0.5">
                   Review and edit the parsed sessions before adding to the
-                  location
+                  room
                 </p>
               </div>
             </div>
@@ -837,7 +837,7 @@ export function SessionUploadReviewModal({
         <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between flex-shrink-0">
           <div className="text-sm text-gray-600">
             {sessions.length} sessions will be added to{" "}
-            <span className="font-medium">{locationName}</span>
+            <span className="font-medium">{roomName}</span>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -850,11 +850,11 @@ export function SessionUploadReviewModal({
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || invalidCount > 0}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700"
+              className="bg-primary-blue-600 hover:bg-primary-blue-700"
             >
               {isSubmitting
                 ? "Adding..."
-                : `Add Location with ${sessions.length} Sessions`}
+                : `Add Room with ${sessions.length} Sessions`}
             </Button>
           </div>
         </div>

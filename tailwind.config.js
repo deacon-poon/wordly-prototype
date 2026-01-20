@@ -32,76 +32,133 @@ module.exports = {
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         brand: {
-          "primary-teal": "#128197", // primitives/color/primary-teal/teal-500 - Figma variables
-          "secondary-navy": "#0b1c3a", // primitives/color/secondary-navy/navy-500 - Figma variables
-          "accent-green": "#28e6b6", // primitives/color/accent-green/green-500 - Figma variables
-          // Legacy colors (deprecated)
-          teal: "#118197",
-          pink: "#E0007B",
+          // NEW 2026 Rebrand: Brand Blue 500 is primary, Accent Green 500 is secondary
+          "primary": "#0063CC", // Brand Blue 500 - primary brand color from Figma
+          "secondary": "#15B743", // Accent Green 500 - secondary brand color from Figma
+          "action": "#128197", // Action Teal 600 - for buttons and actions from Figma
+          // Legacy aliases (map to new colors)
+          "primary-teal": "#0063CC", // Now maps to Brand Blue 500
+          "secondary-navy": "#0063CC", // Now maps to Brand Blue 500 (primary)
+          "accent-green": "#15B743", // Accent Green 500 (secondary)
+          teal: "#0063CC", // Legacy - maps to Brand Blue 500
+          pink: "#E0007B", // Deprecated
         },
-        // Primary Teal palette - Figma Variables Source of Truth
-        "primary-teal": {
-          25: "#F0FCFC",
-          50: "#e8f9fc", // primitives/color/primary-teal/teal-50 from Figma variables
-          100: "#bbedf7", // primitives/color/primary-teal/teal-100 from Figma variables
-          200: "#84def0", // primitives/color/primary-teal/teal-200 from Figma variables
-          300: "#56d2eb", // primitives/color/primary-teal/teal-300 from Figma variables
-          400: "#1bc3e4", // primitives/color/primary-teal/teal-400 from Figma variables
-          500: "#128197", // primitives/color/primary-teal/teal-500 from Figma variables
-          600: "#0f6d80", // primitives/color/primary-teal/teal-600 from Figma variables
-          700: "#0d5d6d", // primitives/color/primary-teal/teal-700 from Figma variables
-          800: "#0a4652", // primitives/color/primary-teal/teal-800 from Figma variables
-          900: "#072f37", // primitives/color/primary-teal/teal-900 from Figma variables
+        // Primary Brand Blue palette - Figma Variables Source of Truth (2026 Rebrand)
+        "primary-blue": {
+          25: "#F0F7FF", // brand-blue-25 from Figma
+          50: "#D6E8FF", // brand-blue-50 from Figma
+          100: "#B2D8FF", // brand-blue-100 from Figma
+          200: "#75B8FF", // brand-blue-200 from Figma
+          300: "#3396FF", // brand-blue-300 from Figma
+          400: "#017CFF", // brand-blue-400 from Figma
+          500: "#0063CC", // brand-blue-500 from Figma (BASE PRIMARY)
+          600: "#0051A8", // brand-blue-600 from Figma
+          700: "#00458F", // brand-blue-700 from Figma
+          800: "#002C5C", // brand-blue-800 from Figma
+          900: "#001E3D", // brand-blue-900 from Figma
         },
-        // Secondary Navy palette - Figma Variables Source of Truth
-        "secondary-navy": {
-          25: "#F4F6FA",
-          50: "#d4e1f7", // primitives/color/secondary-navy/navy-50 from Figma variables
-          100: "#94b3eb", // primitives/color/secondary-navy/navy-100 from Figma variables
-          200: "#5486de", // primitives/color/secondary-navy/navy-200 from Figma variables
-          300: "#255dc1", // primitives/color/secondary-navy/navy-300 from Figma variables
-          400: "#183e81", // primitives/color/secondary-navy/navy-400 from Figma variables
-          500: "#0b1c3a", // primitives/color/secondary-navy/navy-500 from Figma variables
-          600: "#0a1933", // primitives/color/secondary-navy/navy-600 from Figma variables
-          700: "#030811", // primitives/color/secondary-navy/navy-700 from Figma variables
-          800: "#050E1F",
-          900: "#030916",
+        // Action Teal palette - For buttons and interactive elements
+        "action-teal": {
+          50: "#DBF5F9", // action-teal-50 from Figma
+          100: "#BBEDFA", // action-teal-100 from Figma
+          200: "#84DFF0", // action-teal-200 from Figma
+          300: "#49CFE9", // action-teal-300 from Figma
+          400: "#1BC4E4", // action-teal-400 from Figma
+          500: "#169CB6", // action-teal-500 from Figma
+          600: "#128197", // action-teal-600 from Figma (BASE ACTION)
+          700: "#0F6D80", // action-teal-700 from Figma
+          800: "#0A4652", // action-teal-800 from Figma
+          900: "#072F37", // action-teal-900 from Figma
         },
-        // Accent Green palette - Figma Variables Source of Truth
+        // Accent Green palette - Figma Variables Source of Truth (2026 Rebrand)
         "accent-green": {
-          50: "#E8FCF7", // Calculated from base
-          100: "#C8F9EC", // Calculated from base
-          200: "#BAF7E8", // Calculated from base
-          300: "#8DF2D8", // Calculated from base
-          400: "#5FECC9", // Calculated from base
-          500: "#28e6b6", // primitives/color/accent-green/green-500 from Figma variables
-          600: "#15B78E", // Calculated from base
-          700: "#10896A", // Calculated from base
-          800: "#0B5B47", // Calculated from base
-          900: "#052E23", // Calculated from base
+          50: "#DAF8E5", // accent-green-50 from Figma
+          100: "#BBF7CB", // accent-green-100 from Figma (calculated)
+          200: "#84F1A2", // accent-green-200 from Figma
+          300: "#48EA76", // accent-green-300 from Figma
+          400: "#1BE454", // accent-green-400 from Figma
+          500: "#15B743", // accent-green-500 from Figma (BASE SECONDARY)
+          600: "#129737", // accent-green-600 from Figma
+          700: "#0F802F", // accent-green-700 from Figma
+          800: "#0A522E", // accent-green-800 from Figma
+          900: "#063716", // accent-green-900 from Figma
         },
-
-        // Legacy Extended brand teal palette (deprecated)
+        // Legacy secondary-green alias - maps to accent-green
+        "secondary-green": {
+          50: "#DAF8E5",
+          100: "#BBF7CB",
+          200: "#84F1A2",
+          300: "#48EA76",
+          400: "#1BE454",
+          500: "#15B743",
+          600: "#129737",
+          700: "#0F802F",
+          800: "#0A522E",
+          900: "#063716",
+        },
+        // Legacy aliases - map to new palettes for backward compatibility
+        "primary-teal": {
+          25: "#F0F7FF",
+          50: "#D6E8FF",
+          100: "#B2D8FF",
+          200: "#75B8FF",
+          300: "#3396FF",
+          400: "#017CFF",
+          500: "#0063CC",
+          600: "#0051A8",
+          700: "#00458F",
+          800: "#002C5C",
+          900: "#001E3D",
+        },
+        "primary-navy": {
+          20: "#F0F7FF",
+          25: "#F0F7FF",
+          50: "#D6E8FF",
+          100: "#B2D8FF",
+          200: "#75B8FF",
+          300: "#3396FF",
+          400: "#017CFF",
+          500: "#0063CC",
+          600: "#0051A8",
+          700: "#00458F",
+          800: "#002C5C",
+          900: "#001E3D",
+        },
+        "secondary-navy": {
+          20: "#F0F7FF",
+          25: "#F0F7FF",
+          50: "#D6E8FF",
+          100: "#B2D8FF",
+          200: "#75B8FF",
+          300: "#3396FF",
+          400: "#017CFF",
+          500: "#0063CC",
+          600: "#0051A8",
+          700: "#00458F",
+          800: "#002C5C",
+          900: "#001E3D",
+        },
+        // Legacy teal - now maps to Brand Blue
         teal: {
-          50: "#E6F4F7",
-          100: "#C5E8EE",
-          200: "#84DEF0",
-          300: "#5CB9CA",
-          400: "#30A3B7",
-          500: "#118197", // Legacy base teal
-          600: "#0C687A",
-          700: "#08505D",
-          800: "#063840",
-          900: "#021F24",
+          50: "#D6E8FF",
+          100: "#B2D8FF",
+          200: "#75B8FF",
+          300: "#3396FF",
+          400: "#017CFF",
+          500: "#0063CC",
+          600: "#0051A8",
+          700: "#00458F",
+          800: "#002C5C",
+          900: "#001E3D",
         },
-        // Legacy Extended brand pink palette (deprecated)
+        // Legacy pink palette (deprecated)
         pink: {
           50: "#FCE6F1",
           100: "#F9BFD9",
           200: "#F693C1",
           300: "#F367A9",
           400: "#F13B91",
-          500: "#E0007B", // Legacy base pink
+          500: "#E0007B",
           600: "#B30062",
           700: "#85004A",
           800: "#570031",

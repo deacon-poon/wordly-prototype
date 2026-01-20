@@ -24,7 +24,7 @@ interface AddSessionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (session: SessionFormData) => Promise<void>;
-  locationName: string;
+  roomName: string;
   eventName?: string;
   defaultDate?: string;
   defaultTimezone?: string;
@@ -35,7 +35,7 @@ interface AddSessionModalProps {
 // ============================================================================
 
 /**
- * Modal for adding a new session to an existing location.
+ * Modal for adding a new session to an existing room.
  * Uses the standalone session form hook for independent state management.
  * This demonstrates how the same SessionForm can be reused in different contexts.
  */
@@ -43,7 +43,7 @@ export function AddSessionModal({
   open,
   onOpenChange,
   onSave,
-  locationName,
+  roomName,
   eventName,
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
@@ -101,7 +101,7 @@ export function AddSessionModal({
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
               <Clock className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -110,7 +110,7 @@ export function AddSessionModal({
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600 flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {locationName}
+                {roomName}
                 {eventName && ` • ${eventName}`}
               </DialogDescription>
             </div>
@@ -123,7 +123,7 @@ export function AddSessionModal({
             onChange={updateSession}
             errors={errors}
             mode="create"
-            locationName={locationName}
+            roomName={roomName}
           />
         </div>
 
@@ -134,7 +134,7 @@ export function AddSessionModal({
           <Button
             onClick={handleSave}
             disabled={isSaving || !session.title.trim()}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? "Adding..." : "Add Session"}
           </Button>
@@ -153,7 +153,7 @@ interface EditSessionModalProps {
   onOpenChange: (open: boolean) => void;
   onSave: (session: SessionFormData) => Promise<void>;
   initialData: SessionFormData;
-  locationName: string;
+  roomName: string;
   eventName?: string;
   readOnly?: boolean;
 }
@@ -167,7 +167,7 @@ export function EditSessionModal({
   onOpenChange,
   onSave,
   initialData,
-  locationName,
+  roomName,
   eventName,
   readOnly = false,
 }: EditSessionModalProps) {
@@ -206,7 +206,7 @@ export function EditSessionModal({
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
               <Clock className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -215,7 +215,7 @@ export function EditSessionModal({
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600 flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {locationName}
+                {roomName}
                 {eventName && ` • ${eventName}`}
               </DialogDescription>
             </div>
@@ -235,7 +235,7 @@ export function EditSessionModal({
             errors={errors}
             mode="edit"
             readOnly={readOnly}
-            locationName={locationName}
+            roomName={roomName}
           />
         </div>
 
@@ -247,7 +247,7 @@ export function EditSessionModal({
             <Button
               onClick={handleSave}
               disabled={isSaving || !session.title.trim()}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+              className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
             >
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>

@@ -59,9 +59,9 @@ export async function parseScheduleFile(
             return title.trim() !== "";
           })
           .map((row, index) => {
-            // Handle column name variations
-            const location =
-              row["Location"] || row["location"] || row["Room"] || row["room"] || "Main Room";
+            // Handle column name variations (Room is primary, Location for backward compatibility)
+            const room =
+              row["Room"] || row["room"] || row["Location"] || row["location"] || "Main Room";
             const title =
               row["Title"] || row["title"] || row["Session Title"] || "";
             const presenter =
@@ -93,12 +93,12 @@ export async function parseScheduleFile(
             // Parse start time, and use explicit end time if provided, otherwise calculate from duration
             const { startTime, endTime } = parseTimeRange(startTimeRaw, endTimeRaw, duration);
 
-            console.log(`Row ${index + 1}:`, { title, date, startTime, endTime, location });
+            console.log(`Row ${index + 1}:`, { title, date, startTime, endTime, room });
 
             return {
               id: `session-${Date.now()}-${index}`,
               rowNumber: index + 1,
-              location,
+              room,
               title,
               presenter,
               date,

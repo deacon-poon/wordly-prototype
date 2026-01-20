@@ -32,7 +32,7 @@ import {
   Calendar,
 } from "lucide-react";
 import {
-  LocationFormData,
+  RoomFormData,
   SessionFormData,
   TIMEZONES,
   DEFAULT_SESSION,
@@ -47,28 +47,28 @@ import {
 // ============================================================================
 
 interface ScheduleBuilderProps {
-  /** Array of locations */
-  locations: LocationFormData[];
-  /** Sessions grouped by location ID */
-  sessionsByLocation: Record<string, SessionFormData[]>;
+  /** Array of rooms */
+  rooms: RoomFormData[];
+  /** Sessions grouped by room ID */
+  sessionsByRoom: Record<string, SessionFormData[]>;
   /** Event date range for validation */
   eventStartDate: string;
   eventEndDate: string;
   /** Default timezone for new sessions */
   defaultTimezone: string;
   /** Callbacks */
-  onAddLocation: () => void;
-  onUpdateLocation: (index: number, data: Partial<LocationFormData>) => void;
-  onRemoveLocation: (index: number) => void;
-  onAddSession: (locationIndex: number) => void;
+  onAddRoom: () => void;
+  onUpdateRoom: (index: number, data: Partial<RoomFormData>) => void;
+  onRemoveRoom: (index: number) => void;
+  onAddSession: (roomIndex: number) => void;
   onUpdateSession: (
-    locationIndex: number,
+    roomIndex: number,
     sessionIndex: number,
     data: Partial<SessionFormData>
   ) => void;
-  onRemoveSession: (locationIndex: number, sessionIndex: number) => void;
-  /** Get sessions for a location */
-  getSessionsForLocation: (locationIndex: number) => SessionFormData[];
+  onRemoveSession: (roomIndex: number, sessionIndex: number) => void;
+  /** Get sessions for a room */
+  getSessionsForRoom: (roomIndex: number) => SessionFormData[];
   /** Whether the form is read-only */
   readOnly?: boolean;
   /** External errors */
@@ -164,7 +164,7 @@ function SessionRow({
       <div className="space-y-3">
         {/* Row 1: Title & Presenters */}
         <div className="flex items-start gap-3">
-          <div className="w-7 h-7 rounded-full bg-primary-teal-100 text-primary-teal-700 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-6">
+          <div className="w-7 h-7 rounded-full bg-accent-green-100 text-accent-green-800 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-6">
             {index + 1}
           </div>
           <div className="flex-1 grid grid-cols-2 gap-3">
@@ -274,15 +274,15 @@ function SessionRow({
 }
 
 // ============================================================================
-// Location Card Component
+// Room Card Component
 // ============================================================================
 
-interface LocationCardProps {
-  location: LocationFormData;
+interface RoomCardProps {
+  room: RoomFormData;
   index: number;
   sessions: SessionFormData[];
-  onUpdateLocation: (data: Partial<LocationFormData>) => void;
-  onRemoveLocation: () => void;
+  onUpdateRoom: (data: Partial<RoomFormData>) => void;
+  onRemoveRoom: () => void;
   onAddSession: () => void;
   onUpdateSession: (
     sessionIndex: number,
@@ -298,12 +298,12 @@ interface LocationCardProps {
   defaultExpanded?: boolean;
 }
 
-function LocationCard({
-  location,
+function RoomCard({
+  room,
   index,
   sessions,
-  onUpdateLocation,
-  onRemoveLocation,
+  onUpdateRoom,
+  onRemoveRoom,
   onAddSession,
   onUpdateSession,
   onRemoveSession,
@@ -314,9 +314,9 @@ function LocationCard({
   canDelete = true,
   errors = {},
   defaultExpanded = true,
-}: LocationCardProps) {
+}: RoomCardProps) {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
-  const [isEditingName, setIsEditingName] = useState(!location.name);
+  const [isEditingName, setIsEditingName] = useState(!room.name);
 
   // Sort sessions by date and start time
   const sortedSessions = useMemo(() => {
@@ -327,7 +327,7 @@ function LocationCard({
     });
   }, [sessions]);
 
-  // Validate sessions for this location
+  // Validate sessions for this room
   const validation = useMemo(() => {
     return validateSchedule(sessions, eventStartDate, eventEndDate);
   }, [sessions, eventStartDate, eventEndDate]);
@@ -358,14 +358,14 @@ function LocationCard({
                 }`}
               />
 
-              {/* Location Icon */}
+              {/* Room Icon */}
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   hasErrors
                     ? "bg-red-100"
                     : hasWarnings
                     ? "bg-yellow-100"
-                    : "bg-primary-teal-100"
+                    : "bg-accent-green-100"
                 }`}
               >
                 <MapPin
@@ -379,21 +379,21 @@ function LocationCard({
                 />
               </div>
 
-              {/* Location Info */}
+              {/* Room Info */}
               <div className="flex-1 min-w-0">
                 {isEditingName && isOpen ? (
                   <Input
-                    value={location.name}
-                    onChange={(e) => onUpdateLocation({ name: e.target.value })}
+                    value={room.name}
+                    onChange={(e) => onUpdateRoom({ name: e.target.value })}
                     onBlur={() => {
-                      if (location.name.trim()) setIsEditingName(false);
+                      if (room.name.trim()) setIsEditingName(false);
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && location.name.trim()) {
+                      if (e.key === "Enter" && room.name.trim()) {
                         setIsEditingName(false);
                       }
                     }}
-                    placeholder="Enter location name"
+                    placeholder="Enter room name"
                     autoFocus
                     className="h-8 max-w-xs"
                     onClick={(e) => e.stopPropagation()}
@@ -409,7 +409,7 @@ function LocationCard({
                       }
                     }}
                   >
-                    {location.name || `Location ${index + 1}`}
+                    {room.name || `Room ${index + 1}`}
                   </h3>
                 )}
                 <div className="flex items-center gap-2 mt-1">
@@ -440,23 +440,23 @@ function LocationCard({
                 className="flex items-center gap-3"
                 onClick={(e) => e.stopPropagation()}
               >
-                {location.locationSessionId && (
+                {room.roomSessionId && (
                   <div className="text-right">
                     <span className="text-xs text-gray-400 block">
                       Session ID
                     </span>
                     <CopyButton
-                      value={location.locationSessionId}
+                      value={room.roomSessionId}
                       label="Session ID"
                     />
                   </div>
                 )}
-                {location.passcode && (
+                {room.passcode && (
                   <div className="text-right">
                     <span className="text-xs text-gray-400 block">
                       Passcode
                     </span>
-                    <CopyButton value={location.passcode} label="Passcode" />
+                    <CopyButton value={room.passcode} label="Passcode" />
                   </div>
                 )}
               </div>
@@ -469,7 +469,7 @@ function LocationCard({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRemoveLocation();
+                    onRemoveRoom();
                   }}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
@@ -497,7 +497,7 @@ function LocationCard({
                   variant="outline"
                   size="sm"
                   onClick={onAddSession}
-                  className="text-primary-teal-600 border-primary-teal-600 hover:bg-primary-teal-50"
+                  className="text-primary-blue-600 border-primary-blue-600 hover:bg-accent-green-50"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session
@@ -557,52 +557,52 @@ function LocationCard({
 // ============================================================================
 
 export function ScheduleBuilder({
-  locations,
-  sessionsByLocation,
+  rooms,
+  sessionsByRoom,
   eventStartDate,
   eventEndDate,
   defaultTimezone,
-  onAddLocation,
-  onUpdateLocation,
-  onRemoveLocation,
+  onAddRoom,
+  onUpdateRoom,
+  onRemoveRoom,
   onAddSession,
   onUpdateSession,
   onRemoveSession,
-  getSessionsForLocation,
+  getSessionsForRoom,
   readOnly = false,
   errors = {},
 }: ScheduleBuilderProps) {
   return (
     <div className="space-y-4">
       {/* Info text */}
-      <div className="p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
+      <div className="p-4 bg-accent-green-50 border border-accent-green-200 rounded-lg">
         <p className="text-sm text-primary-teal-800">
-          <strong>Build your schedule:</strong> Add locations where
-          presentations will take place, then add sessions to each location.
+          <strong>Build your schedule:</strong> Add rooms where
+          presentations will take place, then add sessions to each room.
           Sessions will be automatically ordered by time.
         </p>
       </div>
 
       {/* Global error */}
-      {errors.locations && (
+      {errors.rooms && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-700">
           <AlertCircle className="h-4 w-4" />
-          {errors.locations}
+          {errors.rooms}
         </div>
       )}
 
-      {/* Location Cards */}
+      {/* Room Cards */}
       <div className="space-y-4">
-        {locations.map((location, index) => {
-          const sessions = getSessionsForLocation(index);
+        {rooms.map((room, index) => {
+          const sessions = getSessionsForRoom(index);
           return (
-            <LocationCard
-              key={location.id || index}
-              location={location}
+            <RoomCard
+              key={room.id || index}
+              room={room}
               index={index}
               sessions={sessions}
-              onUpdateLocation={(data) => onUpdateLocation(index, data)}
-              onRemoveLocation={() => onRemoveLocation(index)}
+              onUpdateRoom={(data) => onUpdateRoom(index, data)}
+              onRemoveRoom={() => onRemoveRoom(index)}
               onAddSession={() => onAddSession(index)}
               onUpdateSession={(sessionIndex, data) =>
                 onUpdateSession(index, sessionIndex, data)
@@ -614,33 +614,33 @@ export function ScheduleBuilder({
               eventStartDate={eventStartDate}
               eventEndDate={eventEndDate}
               readOnly={readOnly}
-              canDelete={locations.length > 1}
+              canDelete={rooms.length > 1}
               errors={errors}
-              defaultExpanded={index === locations.length - 1}
+              defaultExpanded={index === rooms.length - 1}
             />
           );
         })}
       </div>
 
-      {/* Add Location Button */}
+      {/* Add Room Button */}
       {!readOnly && (
         <Button
           type="button"
           variant="outline"
-          onClick={onAddLocation}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-teal-400 hover:bg-primary-teal-50 text-gray-600 hover:text-primary-teal-700 py-6"
+          onClick={onAddRoom}
+          className="w-full border-dashed border-2 border-gray-300 hover:border-accent-green-400 hover:bg-accent-green-50 text-gray-600 hover:text-accent-green-700 py-6"
         >
           <Plus className="h-5 w-5 mr-2" />
-          Add Location
+          Add Room
         </Button>
       )}
 
       {/* Empty State */}
-      {locations.length === 0 && (
+      {rooms.length === 0 && (
         <div className="text-center py-12 text-gray-500">
           <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium">No locations added yet</p>
-          <p className="text-sm mt-1">Add at least one location to continue</p>
+          <p className="text-lg font-medium">No rooms added yet</p>
+          <p className="text-sm mt-1">Add at least one room to continue</p>
         </div>
       )}
     </div>

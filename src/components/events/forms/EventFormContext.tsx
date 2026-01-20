@@ -4,15 +4,15 @@ import React, { createContext, useContext, useReducer, ReactNode } from "react";
 import {
   EventFormState,
   EventDetailsFormData,
-  LocationFormData,
+  RoomFormData,
   SessionFormData,
   WizardStep,
   FormMode,
   DEFAULT_EVENT_DETAILS,
-  DEFAULT_LOCATION,
+  DEFAULT_ROOM,
   DEFAULT_SESSION,
   generateTempId,
-  generateLocationSessionId,
+  generateRoomSessionId,
   generatePasscode,
   generateMobileId,
 } from "./types";
@@ -28,27 +28,27 @@ type EventFormAction =
   | { type: "PREV_STEP" }
   | { type: "UPDATE_EVENT_DETAILS"; payload: Partial<EventDetailsFormData> }
   | { type: "SET_EVENT_DETAILS"; payload: EventDetailsFormData }
-  | { type: "ADD_LOCATION"; payload?: LocationFormData }
+  | { type: "ADD_ROOM"; payload?: RoomFormData }
   | {
-      type: "UPDATE_LOCATION";
-      payload: { index: number; data: Partial<LocationFormData> };
+      type: "UPDATE_ROOM";
+      payload: { index: number; data: Partial<RoomFormData> };
     }
-  | { type: "REMOVE_LOCATION"; payload: number }
+  | { type: "REMOVE_ROOM"; payload: number }
   | {
       type: "ADD_SESSION";
-      payload: { locationIndex: number; session?: SessionFormData };
+      payload: { roomIndex: number; session?: SessionFormData };
     }
   | {
       type: "UPDATE_SESSION";
       payload: {
-        locationIndex: number;
+        roomIndex: number;
         sessionIndex: number;
         data: Partial<SessionFormData>;
       };
     }
   | {
       type: "REMOVE_SESSION";
-      payload: { locationIndex: number; sessionIndex: number };
+      payload: { roomIndex: number; sessionIndex: number };
     }
   | { type: "SET_SUBMITTING"; payload: boolean }
   | { type: "SET_ERROR"; payload: { field: string; message: string } }
@@ -59,8 +59,8 @@ type EventFormAction =
       type: "LOAD_EVENT";
       payload: {
         eventDetails: EventDetailsFormData;
-        locations: LocationFormData[];
-        sessionsByLocation: Record<string, SessionFormData[]>;
+        rooms: RoomFormData[];
+        sessionsByRoom: Record<string, SessionFormData[]>;
       };
     };
 
@@ -88,8 +88,8 @@ const initialState: EventFormState = {
   mode: "create",
   currentStep: "details",
   eventDetails: DEFAULT_EVENT_DETAILS,
-  locations: [],
-  sessionsByLocation: {},
+  rooms: [],
+  sessionsByRoom: {},
   isSubmitting: false,
   errors: {},
 };
@@ -124,68 +124,66 @@ function eventFormReducer(
     case "SET_EVENT_DETAILS":
       return { ...state, eventDetails: action.payload };
 
-    case "ADD_LOCATION": {
+    case "ADD_ROOM": {
       const tempId = generateTempId();
-      const locationName =
-        action.payload?.name || `Location ${state.locations.length + 1}`;
-      const newLocation: LocationFormData = action.payload || {
-        ...DEFAULT_LOCATION,
+      const roomName =
+        action.payload?.name || `Room ${state.rooms.length + 1}`;
+      const newRoom: RoomFormData = action.payload || {
+        ...DEFAULT_ROOM,
         id: tempId,
-        name: locationName,
+        name: roomName,
       };
-      if (!newLocation.id) {
-        newLocation.id = tempId;
+      if (!newRoom.id) {
+        newRoom.id = tempId;
       }
-      // Auto-generate credentials for new locations
-      if (!newLocation.locationSessionId) {
-        newLocation.locationSessionId = generateLocationSessionId(
-          newLocation.name || locationName
-        );
+      // Auto-generate credentials for new rooms
+      if (!newRoom.roomSessionId) {
+        newRoom.roomSessionId = generateRoomSessionId();
       }
-      if (!newLocation.passcode) {
-        newLocation.passcode = generatePasscode();
+      if (!newRoom.passcode) {
+        newRoom.passcode = generatePasscode();
       }
-      if (!newLocation.mobileId) {
-        newLocation.mobileId = generateMobileId();
+      if (!newRoom.mobileId) {
+        newRoom.mobileId = generateMobileId();
       }
       return {
         ...state,
-        locations: [...state.locations, newLocation],
-        sessionsByLocation: {
-          ...state.sessionsByLocation,
-          [newLocation.id!]: [],
+        rooms: [...state.rooms, newRoom],
+        sessionsByRoom: {
+          ...state.sessionsByRoom,
+          [newRoom.id!]: [],
         },
       };
     }
 
-    case "UPDATE_LOCATION": {
-      const updatedLocations = [...state.locations];
-      updatedLocations[action.payload.index] = {
-        ...updatedLocations[action.payload.index],
+    case "UPDATE_ROOM": {
+      const updatedRooms = [...state.rooms];
+      updatedRooms[action.payload.index] = {
+        ...updatedRooms[action.payload.index],
         ...action.payload.data,
       };
-      return { ...state, locations: updatedLocations };
+      return { ...state, rooms: updatedRooms };
     }
 
-    case "REMOVE_LOCATION": {
-      const removedLocation = state.locations[action.payload];
-      const newLocations = state.locations.filter(
+    case "REMOVE_ROOM": {
+      const removedRoom = state.rooms[action.payload];
+      const newRooms = state.rooms.filter(
         (_, i) => i !== action.payload
       );
-      const newSessionsByLocation = { ...state.sessionsByLocation };
-      if (removedLocation?.id) {
-        delete newSessionsByLocation[removedLocation.id];
+      const newSessionsByRoom = { ...state.sessionsByRoom };
+      if (removedRoom?.id) {
+        delete newSessionsByRoom[removedRoom.id];
       }
       return {
         ...state,
-        locations: newLocations,
-        sessionsByLocation: newSessionsByLocation,
+        rooms: newRooms,
+        sessionsByRoom: newSessionsByRoom,
       };
     }
 
     case "ADD_SESSION": {
-      const location = state.locations[action.payload.locationIndex];
-      if (!location?.id) return state;
+      const room = state.rooms[action.payload.roomIndex];
+      if (!room?.id) return state;
 
       const newSession: SessionFormData = action.payload.session || {
         ...DEFAULT_SESSION,
@@ -196,46 +194,46 @@ function eventFormReducer(
         newSession.id = generateTempId();
       }
 
-      const currentSessions = state.sessionsByLocation[location.id] || [];
+      const currentSessions = state.sessionsByRoom[room.id] || [];
       return {
         ...state,
-        sessionsByLocation: {
-          ...state.sessionsByLocation,
-          [location.id]: [...currentSessions, newSession],
+        sessionsByRoom: {
+          ...state.sessionsByRoom,
+          [room.id]: [...currentSessions, newSession],
         },
       };
     }
 
     case "UPDATE_SESSION": {
-      const location = state.locations[action.payload.locationIndex];
-      if (!location?.id) return state;
+      const room = state.rooms[action.payload.roomIndex];
+      if (!room?.id) return state;
 
-      const sessions = [...(state.sessionsByLocation[location.id] || [])];
+      const sessions = [...(state.sessionsByRoom[room.id] || [])];
       sessions[action.payload.sessionIndex] = {
         ...sessions[action.payload.sessionIndex],
         ...action.payload.data,
       };
       return {
         ...state,
-        sessionsByLocation: {
-          ...state.sessionsByLocation,
-          [location.id]: sessions,
+        sessionsByRoom: {
+          ...state.sessionsByRoom,
+          [room.id]: sessions,
         },
       };
     }
 
     case "REMOVE_SESSION": {
-      const location = state.locations[action.payload.locationIndex];
-      if (!location?.id) return state;
+      const room = state.rooms[action.payload.roomIndex];
+      if (!room?.id) return state;
 
-      const sessions = (state.sessionsByLocation[location.id] || []).filter(
+      const sessions = (state.sessionsByRoom[room.id] || []).filter(
         (_, i) => i !== action.payload.sessionIndex
       );
       return {
         ...state,
-        sessionsByLocation: {
-          ...state.sessionsByLocation,
-          [location.id]: sessions,
+        sessionsByRoom: {
+          ...state.sessionsByRoom,
+          [room.id]: sessions,
         },
       };
     }
@@ -269,8 +267,8 @@ function eventFormReducer(
         ...state,
         mode: "edit",
         eventDetails: action.payload.eventDetails,
-        locations: action.payload.locations,
-        sessionsByLocation: action.payload.sessionsByLocation,
+        rooms: action.payload.rooms,
+        sessionsByRoom: action.payload.sessionsByRoom,
       };
 
     default:
@@ -291,22 +289,22 @@ interface EventFormContextValue {
   nextStep: () => void;
   prevStep: () => void;
   updateEventDetails: (data: Partial<EventDetailsFormData>) => void;
-  addLocation: (data?: LocationFormData) => void;
-  updateLocation: (index: number, data: Partial<LocationFormData>) => void;
-  removeLocation: (index: number) => void;
-  addSession: (locationIndex: number, session?: SessionFormData) => void;
+  addRoom: (data?: RoomFormData) => void;
+  updateRoom: (index: number, data: Partial<RoomFormData>) => void;
+  removeRoom: (index: number) => void;
+  addSession: (roomIndex: number, session?: SessionFormData) => void;
   updateSession: (
-    locationIndex: number,
+    roomIndex: number,
     sessionIndex: number,
     data: Partial<SessionFormData>
   ) => void;
-  removeSession: (locationIndex: number, sessionIndex: number) => void;
+  removeSession: (roomIndex: number, sessionIndex: number) => void;
   setSubmitting: (isSubmitting: boolean) => void;
   setError: (field: string, message: string) => void;
   clearError: (field: string) => void;
   clearAllErrors: () => void;
   resetForm: () => void;
-  getSessionsForLocation: (locationIndex: number) => SessionFormData[];
+  getSessionsForRoom: (roomIndex: number) => SessionFormData[];
   canProceed: () => boolean;
   isFirstStep: boolean;
   isLastStep: boolean;
@@ -322,23 +320,23 @@ interface EventFormProviderProps {
   children: ReactNode;
   initialMode?: FormMode;
   initialEventDetails?: EventDetailsFormData;
-  initialLocations?: LocationFormData[];
-  initialSessionsByLocation?: Record<string, SessionFormData[]>;
+  initialRooms?: RoomFormData[];
+  initialSessionsByRoom?: Record<string, SessionFormData[]>;
 }
 
 export function EventFormProvider({
   children,
   initialMode = "create",
   initialEventDetails,
-  initialLocations,
-  initialSessionsByLocation,
+  initialRooms,
+  initialSessionsByRoom,
 }: EventFormProviderProps) {
   const [state, dispatch] = useReducer(eventFormReducer, {
     ...initialState,
     mode: initialMode,
     eventDetails: initialEventDetails || DEFAULT_EVENT_DETAILS,
-    locations: initialLocations || [],
-    sessionsByLocation: initialSessionsByLocation || {},
+    rooms: initialRooms || [],
+    sessionsByRoom: initialSessionsByRoom || {},
   });
 
   const value: EventFormContextValue = {
@@ -353,23 +351,23 @@ export function EventFormProvider({
     updateEventDetails: (data) =>
       dispatch({ type: "UPDATE_EVENT_DETAILS", payload: data }),
 
-    addLocation: (data) => dispatch({ type: "ADD_LOCATION", payload: data }),
-    updateLocation: (index, data) =>
-      dispatch({ type: "UPDATE_LOCATION", payload: { index, data } }),
-    removeLocation: (index) =>
-      dispatch({ type: "REMOVE_LOCATION", payload: index }),
+    addRoom: (data) => dispatch({ type: "ADD_ROOM", payload: data }),
+    updateRoom: (index, data) =>
+      dispatch({ type: "UPDATE_ROOM", payload: { index, data } }),
+    removeRoom: (index) =>
+      dispatch({ type: "REMOVE_ROOM", payload: index }),
 
-    addSession: (locationIndex, session) =>
-      dispatch({ type: "ADD_SESSION", payload: { locationIndex, session } }),
-    updateSession: (locationIndex, sessionIndex, data) =>
+    addSession: (roomIndex, session) =>
+      dispatch({ type: "ADD_SESSION", payload: { roomIndex, session } }),
+    updateSession: (roomIndex, sessionIndex, data) =>
       dispatch({
         type: "UPDATE_SESSION",
-        payload: { locationIndex, sessionIndex, data },
+        payload: { roomIndex, sessionIndex, data },
       }),
-    removeSession: (locationIndex, sessionIndex) =>
+    removeSession: (roomIndex, sessionIndex) =>
       dispatch({
         type: "REMOVE_SESSION",
-        payload: { locationIndex, sessionIndex },
+        payload: { roomIndex, sessionIndex },
       }),
 
     setSubmitting: (isSubmitting) =>
@@ -380,9 +378,9 @@ export function EventFormProvider({
     clearAllErrors: () => dispatch({ type: "CLEAR_ALL_ERRORS" }),
     resetForm: () => dispatch({ type: "RESET_FORM" }),
 
-    getSessionsForLocation: (locationIndex) => {
-      const location = state.locations[locationIndex];
-      return location?.id ? state.sessionsByLocation[location.id] || [] : [];
+    getSessionsForRoom: (roomIndex) => {
+      const room = state.rooms[roomIndex];
+      return room?.id ? state.sessionsByRoom[room.id] || [] : [];
     },
 
     canProceed: () => {
@@ -390,10 +388,10 @@ export function EventFormProvider({
         case "details":
           return !!state.eventDetails.name.trim();
         case "schedule":
-          // At least one location is required, and all locations must have names
+          // At least one room is required, and all rooms must have names
           return (
-            state.locations.length > 0 &&
-            state.locations.every((l) => l.name.trim())
+            state.rooms.length > 0 &&
+            state.rooms.every((r) => r.name.trim())
           );
         case "review":
           return true;
@@ -429,31 +427,31 @@ export function useEventForm(): EventFormContextValue {
 // Standalone Hook (for forms used outside the wizard)
 // ============================================================================
 
-export function useStandaloneLocationForm(initialData?: LocationFormData) {
-  const [location, setLocation] = React.useState<LocationFormData>(
-    initialData || { ...DEFAULT_LOCATION, id: generateTempId() }
+export function useStandaloneRoomForm(initialData?: RoomFormData) {
+  const [room, setRoom] = React.useState<RoomFormData>(
+    initialData || { ...DEFAULT_ROOM, id: generateTempId() }
   );
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
-  const updateLocation = (data: Partial<LocationFormData>) => {
-    setLocation((prev) => ({ ...prev, ...data }));
+  const updateRoom = (data: Partial<RoomFormData>) => {
+    setRoom((prev) => ({ ...prev, ...data }));
   };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!location.name.trim()) {
-      newErrors.name = "Location name is required";
+    if (!room.name.trim()) {
+      newErrors.name = "Room name is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const reset = () => {
-    setLocation({ ...DEFAULT_LOCATION, id: generateTempId() });
+    setRoom({ ...DEFAULT_ROOM, id: generateTempId() });
     setErrors({});
   };
 
-  return { location, updateLocation, errors, validate, reset };
+  return { room, updateRoom, errors, validate, reset };
 }
 
 export function useStandaloneSessionForm(

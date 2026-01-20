@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, use } from "react";
+import React, { useState, useMemo, useEffect, use, useRef, useCallback } from "react";
 import {
   Calendar,
   Check,
@@ -30,11 +30,11 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { WaysToJoinModal } from "@/components/WaysToJoinModal";
-import { LocationAccordion } from "@/components/events/LocationAccordion";
+import { RoomAccordion } from "@/components/events/RoomAccordion";
 import {
-  AddLocationModal,
-  EditLocationModal,
-} from "@/components/events/AddLocationModal";
+  AddRoomModal,
+  EditRoomModal,
+} from "@/components/events/AddRoomModal";
 import { SessionPanel } from "@/components/events/SessionPanel";
 import {
   UploadScheduleModal,
@@ -45,7 +45,7 @@ import {
   type UploadedSession,
 } from "@/components/events/BulkUploadReviewModal";
 import type {
-  LocationFormData,
+  RoomFormData,
   SessionFormData,
 } from "@/components/events/forms";
 import { parseScheduleFile } from "@/lib/utils/parseSchedule";
@@ -61,11 +61,11 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Location {
+interface Room {
   id: string;
   name: string;
   sessionCount: number;
-  locationSessionId: string;
+  roomSessionId: string;
   passcode: string;
   sessions: Session[];
 }
@@ -79,11 +79,11 @@ interface Event {
   startDate: Date;
   endDate: Date;
   timezone: string; // Event timezone (e.g., "America/Los_Angeles")
-  locationCount: number;
+  roomCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  locations: Location[];
+  rooms: Room[];
 }
 
 // Helper functions
@@ -142,8 +142,8 @@ function isSessionToday(sessionDate: string): boolean {
   return sessionDate === today;
 }
 
-function hasSessionsToday(location: Location): boolean {
-  return location.sessions.some((session) =>
+function hasSessionsToday(room: Room): boolean {
+  return room.sessions.some((session) =>
     isSessionToday(session.scheduledDate)
   );
 }
@@ -219,10 +219,10 @@ function getMockEventData(eventId: string): Event {
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
       timezone: "America/Los_Angeles",
-      locationCount: 0,
+      roomCount: 0,
       sessionCount: 0,
-      description: "Add locations and sessions to get started",
-      locations: [],
+      description: "Add rooms and sessions to get started",
+      rooms: [],
     };
   }
 
@@ -236,18 +236,18 @@ function getMockEventData(eventId: string): Event {
     startDate: eventData.startDate || getRelativeDate(0),
     endDate: eventData.endDate || getRelativeDate(1),
     timezone: eventData.timezone || "America/Los_Angeles",
-    locationCount: 3,
+    roomCount: 3,
     sessionCount: 12,
     description:
       eventData.description ||
       "A comprehensive conference featuring industry experts",
     publicSummaryUrl: eventData.publicSummaryUrl,
-    locations: [
+    rooms: [
       {
         id: "loc-001",
         name: "Main Auditorium",
         sessionCount: 5,
-        locationSessionId: "MAIN-1234",
+        roomSessionId: "AUDM-1234",
         passcode: "123456",
         sessions: [
           {
@@ -301,7 +301,7 @@ function getMockEventData(eventId: string): Event {
         id: "loc-002",
         name: "Workshop Room A",
         sessionCount: 4,
-        locationSessionId: "WORK-5678",
+        roomSessionId: "WRKA-5678",
         passcode: "234567",
         sessions: [
           {
@@ -346,7 +346,7 @@ function getMockEventData(eventId: string): Event {
         id: "loc-003",
         name: "Breakout Room B",
         sessionCount: 3,
-        locationSessionId: "BREK-1234",
+        roomSessionId: "BRKB-1234",
         passcode: "345678",
         sessions: [
           {
@@ -391,11 +391,11 @@ export default function EventDetailPage({
   const resolvedParams = use(params);
   const [selectedTab, setSelectedTab] = useState<
     "active" | "upcoming" | "past" | "all"
-  >("active");
+  >("all");
   const [waysToJoinModal, setWaysToJoinModal] = useState<{
-    location: Location | null;
+    room: Room | null;
     eventName: string | null;
-  }>({ location: null, eventName: null });
+  }>({ room: null, eventName: null });
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
 
   // Session panel state (unified for add/edit)
@@ -403,16 +403,16 @@ export default function EventDetailPage({
     isOpen: boolean;
     mode: "add" | "edit";
     session?: Session;
-    locationId: string;
-    locationName: string;
+    roomId: string;
+    roomName: string;
   } | null>(null);
 
-  // Add Location modal
-  const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
-  const [editLocationContext, setEditLocationContext] = useState<{
-    location: Location;
+  // Add Room modal
+  const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
+  const [editRoomContext, setEditRoomContext] = useState<{
+    room: Room;
   } | null>(null);
-  const [isEditLocationModalOpen, setIsEditLocationModalOpen] = useState(false);
+  const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
 
   // Event name editing
   const [isEditingEventName, setIsEditingEventName] = useState(false);
@@ -422,6 +422,13 @@ export default function EventDetailPage({
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isBulkReviewModalOpen, setIsBulkReviewModalOpen] = useState(false);
   const [parsedSessions, setParsedSessions] = useState<UploadedSession[]>([]);
+
+  // Smart sticky header state
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const lastScrollY = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
   // Generate mock event data based on the event ID
   // In production, this would be fetched from an API
@@ -441,22 +448,69 @@ export default function EventDetailPage({
     }
   }, [event]);
 
+  // Smart sticky header: hide on scroll down, show on scroll up
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const currentScrollY = container.scrollTop;
+    const headerHeight = headerRef.current?.offsetHeight || 0;
+
+    // Only start hiding after scrolling past the header
+    if (currentScrollY < headerHeight) {
+      setIsHeaderVisible(true);
+      lastScrollY.current = currentScrollY;
+      return;
+    }
+
+    // Determine scroll direction
+    const isScrollingDown = currentScrollY > lastScrollY.current;
+    const scrollDelta = Math.abs(currentScrollY - lastScrollY.current);
+
+    // Only react to meaningful scroll (not tiny movements)
+    if (scrollDelta > 5) {
+      setIsHeaderVisible(!isScrollingDown);
+      lastScrollY.current = currentScrollY;
+    }
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // Measure header height on mount and window resize
+  useEffect(() => {
+    const measureHeader = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+
+    measureHeader();
+    window.addEventListener("resize", measureHeader);
+    return () => window.removeEventListener("resize", measureHeader);
+  }, []);
+
   const eventStatus = getEventStatus(event.startDate, event.endDate);
   const isPastEvent = eventStatus === "past";
 
-  // Group all sessions by date across all locations
+  // Group all sessions by date across all rooms
   const sessionsByDate = useMemo(() => {
     const grouped: Record<
       string,
-      Array<{ location: Location; session: Session }>
+      Array<{ room: Room; session: Session }>
     > = {};
 
-    event.locations.forEach((location) => {
-      location.sessions.forEach((session) => {
+    event.rooms.forEach((room) => {
+      room.sessions.forEach((session) => {
         if (!grouped[session.scheduledDate]) {
           grouped[session.scheduledDate] = [];
         }
-        grouped[session.scheduledDate].push({ location, session });
+        grouped[session.scheduledDate].push({ room, session });
       });
     });
 
@@ -468,7 +522,7 @@ export default function EventDetailPage({
     });
 
     return grouped;
-  }, [event.locations]);
+  }, [event.rooms]);
 
   // Filter dates based on selected tab
   const filteredDates = useMemo(() => {
@@ -513,32 +567,32 @@ export default function EventDetailPage({
     setExpandedDates(newExpanded);
   };
 
-  const handleStartLocation = (
-    location: Location,
+  const handleStartRoom = (
+    room: Room,
     eventName: string,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
     // Open Join web app directly (presenter entry point)
-    const joinUrl = `https://join.wordly.ai/${location.locationSessionId}`;
+    const joinUrl = `https://join.wordly.ai/${room.roomSessionId}`;
     window.open(joinUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleWaysToJoin = (
-    location: Location,
+    room: Room,
     eventName: string,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
     setWaysToJoinModal({
-      location,
+      room,
       eventName,
     });
   };
 
   const handleEditSession = (
     session: Session,
-    location: Location,
+    room: Room,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
@@ -546,17 +600,17 @@ export default function EventDetailPage({
       isOpen: true,
       mode: "edit",
       session,
-      locationId: location.id,
-      locationName: location.name,
+      roomId: room.id,
+      roomName: room.name,
     });
   };
 
-  const handleAddSession = (location: Location) => {
+  const handleAddSession = (room: Room) => {
     setSessionPanelState({
       isOpen: true,
       mode: "add",
-      locationId: location.id,
-      locationName: location.name,
+      roomId: room.id,
+      roomName: room.name,
     });
   };
 
@@ -567,7 +621,7 @@ export default function EventDetailPage({
   const handleSaveSession = (
     sessionData: Session | SessionFormData,
     isNew: boolean,
-    newLocationId?: string
+    newRoomId?: string
   ) => {
     if (isNew) {
       // Adding new session
@@ -585,68 +639,68 @@ export default function EventDetailPage({
         status: "pending",
       };
 
-      // Add to selected location (which may be different from the one panel was opened from)
-      const targetLocationId = newLocationId || sessionPanelState?.locationId;
+      // Add to selected room (which may be different from the one panel was opened from)
+      const targetRoomId = newRoomId || sessionPanelState?.roomId;
       
       setEvent((prev) => ({
         ...prev,
         sessionCount: prev.sessionCount + 1,
-        locations: prev.locations.map((loc) =>
-          loc.id === targetLocationId
+        rooms: prev.rooms.map((rm) =>
+          rm.id === targetRoomId
             ? {
-                ...loc,
-                sessions: [...loc.sessions, newSession],
-                sessionCount: loc.sessionCount + 1,
+                ...rm,
+                sessions: [...rm.sessions, newSession],
+                sessionCount: rm.sessionCount + 1,
               }
-            : loc
+            : rm
         ),
       }));
       toast.success(`Session "${formData.title}" added successfully`);
     } else {
       // Editing existing session
       const updatedSession = sessionData as Session;
-      const originalLocationId = sessionPanelState?.locationId;
+      const originalRoomId = sessionPanelState?.roomId;
       
-      // Check if session is being moved to a different location
-      if (newLocationId && newLocationId !== originalLocationId) {
-        // Move session to new location
+      // Check if session is being moved to a different room
+      if (newRoomId && newRoomId !== originalRoomId) {
+        // Move session to new room
         setEvent((prev) => ({
           ...prev,
-          locations: prev.locations.map((loc) => {
-            if (loc.id === originalLocationId) {
-              // Remove from original location
+          rooms: prev.rooms.map((rm) => {
+            if (rm.id === originalRoomId) {
+              // Remove from original room
               return {
-                ...loc,
-                sessions: loc.sessions.filter((s) => s.id !== updatedSession.id),
-                sessionCount: loc.sessionCount - 1,
+                ...rm,
+                sessions: rm.sessions.filter((s) => s.id !== updatedSession.id),
+                sessionCount: rm.sessionCount - 1,
               };
             }
-            if (loc.id === newLocationId) {
-              // Add to new location
+            if (rm.id === newRoomId) {
+              // Add to new room
               return {
-                ...loc,
-                sessions: [...loc.sessions, updatedSession],
-                sessionCount: loc.sessionCount + 1,
+                ...rm,
+                sessions: [...rm.sessions, updatedSession],
+                sessionCount: rm.sessionCount + 1,
               };
             }
-            return loc;
+            return rm;
           }),
         }));
-        const newLocationName = event.locations.find((l) => l.id === newLocationId)?.name;
-        toast.success(`Session moved to "${newLocationName}"`);
+        const newRoomName = event.rooms.find((r) => r.id === newRoomId)?.name;
+        toast.success(`Session moved to "${newRoomName}"`);
       } else {
-        // Update in same location
+        // Update in same room
         setEvent((prev) => ({
           ...prev,
-          locations: prev.locations.map((loc) =>
-            loc.id === originalLocationId
+          rooms: prev.rooms.map((rm) =>
+            rm.id === originalRoomId
               ? {
-                  ...loc,
-                  sessions: loc.sessions.map((s) =>
+                  ...rm,
+                  sessions: rm.sessions.map((s) =>
                     s.id === updatedSession.id ? updatedSession : s
                   ),
                 }
-              : loc
+              : rm
           ),
         }));
         toast.success("Session updated successfully");
@@ -657,20 +711,20 @@ export default function EventDetailPage({
   };
 
   const handleDeleteSession = (sessionId: string) => {
-    const locationId = sessionPanelState?.locationId;
-    if (!locationId) return;
+    const roomId = sessionPanelState?.roomId;
+    if (!roomId) return;
 
     setEvent((prev) => ({
       ...prev,
       sessionCount: prev.sessionCount - 1,
-      locations: prev.locations.map((loc) =>
-        loc.id === locationId
+      rooms: prev.rooms.map((rm) =>
+        rm.id === roomId
           ? {
-              ...loc,
-              sessions: loc.sessions.filter((s) => s.id !== sessionId),
-              sessionCount: loc.sessionCount - 1,
+              ...rm,
+              sessions: rm.sessions.filter((s) => s.id !== sessionId),
+              sessionCount: rm.sessionCount - 1,
             }
-          : loc
+          : rm
       ),
     }));
 
@@ -684,19 +738,19 @@ export default function EventDetailPage({
 
     // Header
     csvRows.push(
-      "Event,Location,Session ID,Passcode,Presentation Title,Presenters,Date,Start Time,End Time,Present URL"
+      "Event,Room,Session ID,Passcode,Presentation Title,Presenters,Date,Start Time,End Time,Present URL"
     );
 
-    // Data rows for each location and presentation
-    event.locations.forEach((location) => {
-      const presentUrl = `https://present.wordly.ai/${location.locationSessionId}`;
+    // Data rows for each room and presentation
+    event.rooms.forEach((room) => {
+      const presentUrl = `https://present.wordly.ai/${room.roomSessionId}`;
 
-      location.sessions.forEach((session) => {
+      room.sessions.forEach((session) => {
         const row = [
           `"${event.name}"`,
-          `"${location.name}"`,
-          location.locationSessionId,
-          location.passcode,
+          `"${room.name}"`,
+          room.roomSessionId,
+          room.passcode,
           `"${session.title}"`,
           `"${session.presenters.join(", ")}"`,
           session.scheduledDate,
@@ -765,30 +819,30 @@ export default function EventDetailPage({
     console.log("Sessions data:", sessions);
     
     // Process the reviewed sessions and add them to the event
-    const locationMap = new Map<
+    const roomMap = new Map<
       string,
-      { sessions: Session[]; locationId: string; existingLocationId?: string }
+      { sessions: Session[]; roomId: string; existingRoomId?: string }
     >();
 
-    // Check if locations already exist
-    const existingLocations = new Map(
-      event.locations.map((loc) => [loc.name.toLowerCase(), loc.id])
+    // Check if rooms already exist
+    const existingRooms = new Map(
+      event.rooms.map((rm) => [rm.name.toLowerCase(), rm.id])
     );
 
     sessions.forEach((session, index) => {
-      const locationName = session.location;
-      const locationKey = locationName.toLowerCase();
+      const roomName = session.room;
+      const roomKey = roomName.toLowerCase();
 
-      if (!locationMap.has(locationName)) {
-        locationMap.set(locationName, {
+      if (!roomMap.has(roomName)) {
+        roomMap.set(roomName, {
           sessions: [],
-          locationId: `loc-${Date.now()}-${index}`,
-          existingLocationId: existingLocations.get(locationKey),
+          roomId: `loc-${Date.now()}-${index}`,
+          existingRoomId: existingRooms.get(roomKey),
         });
       }
 
-      const loc = locationMap.get(locationName)!;
-      loc.sessions.push({
+      const rm = roomMap.get(roomName)!;
+      rm.sessions.push({
         id: `ses-${Date.now()}-${index}`,
         title: session.title,
         presenters: session.presenter.split(",").map((p) => p.trim()),
@@ -799,38 +853,37 @@ export default function EventDetailPage({
       });
     });
 
-    // Update event with new locations and sessions
+    // Update event with new rooms and sessions
     setEvent((prev) => {
-      const updatedLocations = [...prev.locations];
+      const updatedRooms = [...prev.rooms];
 
-      locationMap.forEach((data, name) => {
-        if (data.existingLocationId) {
-          // Add sessions to existing location
-          const locIndex = updatedLocations.findIndex(
-            (loc) => loc.id === data.existingLocationId
+      roomMap.forEach((data, name) => {
+        if (data.existingRoomId) {
+          // Add sessions to existing room
+          const roomIndex = updatedRooms.findIndex(
+            (rm) => rm.id === data.existingRoomId
           );
-          if (locIndex !== -1) {
-            updatedLocations[locIndex] = {
-              ...updatedLocations[locIndex],
+          if (roomIndex !== -1) {
+            updatedRooms[roomIndex] = {
+              ...updatedRooms[roomIndex],
               sessions: [
-                ...updatedLocations[locIndex].sessions,
+                ...updatedRooms[roomIndex].sessions,
                 ...data.sessions,
               ],
               sessionCount:
-                updatedLocations[locIndex].sessions.length +
+                updatedRooms[roomIndex].sessions.length +
                 data.sessions.length,
             };
           }
         } else {
-          // Create new location
-          updatedLocations.push({
-            id: data.locationId,
+          // Create new room
+          updatedRooms.push({
+            id: data.roomId,
             name,
             sessionCount: data.sessions.length,
-            locationSessionId: `LOC-${Math.random()
-              .toString(36)
-              .substring(2, 6)
-              .toUpperCase()}`,
+            roomSessionId: `${Array.from({ length: 4 }, () =>
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)]
+            ).join("")}-${Math.floor(1000 + Math.random() * 9000)}`,
             passcode: Math.random().toString().substring(2, 8),
             sessions: data.sessions,
           });
@@ -838,8 +891,8 @@ export default function EventDetailPage({
       });
 
       // Expand date range to include new sessions (but never shrink it)
-      const allDates = updatedLocations.flatMap((loc) =>
-        loc.sessions.map((s) => new Date(s.scheduledDate))
+      const allDates = updatedRooms.flatMap((rm) =>
+        rm.sessions.map((s) => new Date(s.scheduledDate))
       );
       
       // Get today's date (at midnight) for comparison
@@ -865,10 +918,10 @@ export default function EventDetailPage({
 
       const updated = {
         ...prev,
-        locations: updatedLocations,
-        locationCount: updatedLocations.length,
-        sessionCount: updatedLocations.reduce(
-          (sum, loc) => sum + loc.sessions.length,
+        rooms: updatedRooms,
+        roomCount: updatedRooms.length,
+        sessionCount: updatedRooms.reduce(
+          (sum, rm) => sum + rm.sessions.length,
           0
         ),
         startDate,
@@ -876,24 +929,24 @@ export default function EventDetailPage({
         dateRange: formatDateRange(startDate, endDate),
       };
       console.log("Updated event state:", updated);
-      console.log("Updated locations:", updated.locations);
+      console.log("Updated rooms:", updated.rooms);
       return updated;
     });
 
-    const newLocationsCount = Array.from(locationMap.values()).filter(
-      (data) => !data.existingLocationId
+    const newRoomsCount = Array.from(roomMap.values()).filter(
+      (data) => !data.existingRoomId
     ).length;
     const totalSessions = sessions.length;
 
-    console.log("Location map:", Array.from(locationMap.entries()));
-    console.log("New locations count:", newLocationsCount);
+    console.log("Room map:", Array.from(roomMap.entries()));
+    console.log("New rooms count:", newRoomsCount);
     console.log("Total sessions:", totalSessions);
 
     toast.success(
       `Imported ${totalSessions} session${totalSessions > 1 ? "s" : ""}${
-        newLocationsCount > 0
-          ? ` across ${newLocationsCount} new location${
-              newLocationsCount > 1 ? "s" : ""
+        newRoomsCount > 0
+          ? ` across ${newRoomsCount} new room${
+              newRoomsCount > 1 ? "s" : ""
             }`
           : ""
       }`
@@ -902,9 +955,15 @@ export default function EventDetailPage({
   };
 
   const mainContent = (
-    <div className="h-full overflow-y-auto bg-white @container">
-      {/* Page header */}
-      <div>
+    <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-white @container">
+      {/* Smart sticky header - hides on scroll down, shows on scroll up */}
+      <div
+        ref={headerRef}
+        className={cn(
+          "sticky top-0 z-20 bg-white border-b border-gray-100 transition-transform duration-300 ease-out",
+          isHeaderVisible ? "translate-y-0" : "-translate-y-full"
+        )}
+      >
         <div className="px-6 py-5">
           {/* Row 1: Title (editable) + Add Location */}
           <div className="flex items-center justify-between gap-3 mb-1">
@@ -972,15 +1031,15 @@ export default function EventDetailPage({
                 </div>
               )}
             </div>
-            {/* Add Location button - primary action */}
+            {/* Add Room button - primary action */}
             <Button
-              onClick={() => setIsAddLocationModalOpen(true)}
+              onClick={() => setIsAddRoomModalOpen(true)}
               disabled={isPastEvent}
               className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white flex-shrink-0"
-              title={isPastEvent ? "Cannot add to past events" : "Add Location"}
+              title={isPastEvent ? "Cannot add to past events" : "Add Room"}
             >
               <Plus className="h-4 w-4 @sm:mr-2" />
-              <span className="hidden @sm:inline">Add Location</span>
+              <span className="hidden @sm:inline">Add Room</span>
             </Button>
           </div>
 
@@ -991,7 +1050,7 @@ export default function EventDetailPage({
               {event.dateRange}
             </span>
             <span className="text-gray-300 hidden @sm:inline">·</span>
-            <span>{event.locationCount} locations</span>
+            <span>{event.roomCount} rooms</span>
             <span className="text-gray-300">·</span>
             <span>{event.sessionCount} presentations</span>
             {event.publicSummaryUrl && (
@@ -1027,8 +1086,8 @@ export default function EventDetailPage({
 
             {/* Actions - responsive based on container width */}
             <div className="flex flex-wrap items-center gap-2">
-              {/* Only show bulk download when there are locations with sessions */}
-              {event.locations.some((loc) => loc.sessions.length > 0) && (
+              {/* Only show bulk download when there are rooms with sessions */}
+              {event.rooms.some((rm) => rm.sessions.length > 0) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -1065,64 +1124,64 @@ export default function EventDetailPage({
 
       {/* Schedule grouped by date */}
       <div className="px-6 pb-6 pt-4 space-y-4">
-        {/* Show locations without sessions */}
-        {event.locations.filter((loc) => loc.sessions.length === 0).length >
+        {/* Show rooms without sessions */}
+        {event.rooms.filter((rm) => rm.sessions.length === 0).length >
           0 && (
           <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-amber-400" />
               <h3 className="text-sm font-semibold text-amber-800">
-                Locations awaiting sessions
+                Rooms awaiting sessions
               </h3>
               <span className="text-xs text-amber-600">
                 (
                 {
-                  event.locations.filter((loc) => loc.sessions.length === 0)
+                  event.rooms.filter((rm) => rm.sessions.length === 0)
                     .length
                 }{" "}
-                {event.locations.filter((loc) => loc.sessions.length === 0)
+                {event.rooms.filter((rm) => rm.sessions.length === 0)
                   .length === 1
-                  ? "location"
-                  : "locations"}
+                  ? "room"
+                  : "rooms"}
                 )
               </span>
             </div>
             <p className="text-xs text-amber-700 ml-4">
-              These locations don&apos;t have any sessions scheduled yet. Add
+              These rooms don&apos;t have any sessions scheduled yet. Add
               sessions to schedule them on specific dates.
             </p>
-            {event.locations
-              .filter((loc) => loc.sessions.length === 0)
-              .map((location) => (
-                <LocationAccordion
-                  key={location.id}
-                  location={location}
+            {event.rooms
+              .filter((rm) => rm.sessions.length === 0)
+              .map((room) => (
+                <RoomAccordion
+                  key={room.id}
+                  room={room}
                   defaultExpanded={true}
                   eventTimezone={event.timezone}
-                  onStartLocation={(location, e) =>
-                    handleStartLocation(location, event.name, e)
+                  onStartRoom={(room, e) =>
+                    handleStartRoom(room, event.name, e)
                   }
-                  onLinksToJoin={(location, e) =>
-                    handleWaysToJoin(location, event.name, e)
+                  onLinksToJoin={(room, e) =>
+                    handleWaysToJoin(room, event.name, e)
                   }
-                  onRenameLocation={(location) => {
-                    setEditLocationContext({ location });
-                    setIsEditLocationModalOpen(true);
+                  onRenameRoom={(room) => {
+                    setEditRoomContext({ room });
+                    setIsEditRoomModalOpen(true);
                   }}
-                  onDeleteLocation={(location) => {
+                  onDeleteRoom={(room) => {
                     if (
                       confirm(
-                        `Are you sure you want to delete "${location.name}"?`
+                        `Are you sure you want to delete "${room.name}"?`
                       )
                     ) {
                       setEvent((prev) => ({
                         ...prev,
-                        locations: prev.locations.filter(
-                          (l) => l.id !== location.id
+                        rooms: prev.rooms.filter(
+                          (r) => r.id !== room.id
                         ),
-                        locationCount: prev.locationCount - 1,
+                        roomCount: prev.roomCount - 1,
                       }));
-                      toast.success(`Location "${location.name}" deleted`);
+                      toast.success(`Room "${room.name}" deleted`);
                     }
                   }}
                   onAddSession={handleAddSession}
@@ -1134,18 +1193,18 @@ export default function EventDetailPage({
         )}
 
         {filteredDates.length === 0 &&
-        event.locations.filter((loc) => loc.sessions.length === 0).length ===
+        event.rooms.filter((rm) => rm.sessions.length === 0).length ===
           0 ? (
           <Card className="p-8 text-center">
-            {/* New event - no locations at all */}
-            {event.locations.length === 0 ? (
+            {/* New event - no rooms at all */}
+            {event.rooms.length === 0 ? (
               <div className="space-y-2">
                 <p className="text-gray-700 font-medium">
                   This is a new event
                 </p>
                 <p className="text-gray-600">
-                  Click <span className="font-medium">Add Location</span> to add
-                  locations one at a time, or{" "}
+                  Click <span className="font-medium">Add Room</span> to add
+                  rooms one at a time, or{" "}
                   <span className="font-medium">Upload Schedule</span> to bulk
                   import from a spreadsheet.
                 </p>
@@ -1164,22 +1223,22 @@ export default function EventDetailPage({
           filteredDates.map((date) => {
             const sessionsForDate = sessionsByDate[date];
 
-            // Group sessions by location for this date
-            const locationSessionsMap = sessionsForDate.reduce(
-              (acc, { location, session }) => {
-                if (!acc[location.id]) {
-                  acc[location.id] = {
-                    location,
+            // Group sessions by room for this date
+            const roomSessionsMap = sessionsForDate.reduce(
+              (acc, { room, session }) => {
+                if (!acc[room.id]) {
+                  acc[room.id] = {
+                    room,
                     sessions: [],
                   };
                 }
-                acc[location.id].sessions.push(session);
+                acc[room.id].sessions.push(session);
                 return acc;
               },
-              {} as Record<string, { location: Location; sessions: Session[] }>
+              {} as Record<string, { room: Room; sessions: Session[] }>
             );
 
-            const locationsList = Object.values(locationSessionsMap);
+            const roomsList = Object.values(roomSessionsMap);
 
             const isDateExpanded = expandedDates.has(date);
 
@@ -1212,8 +1271,8 @@ export default function EventDetailPage({
                       {sessionsForDate.length === 1
                         ? "presentation"
                         : "presentations"}
-                      , {locationsList.length}{" "}
-                      {locationsList.length === 1 ? "location" : "locations"})
+                      , {roomsList.length}{" "}
+                      {roomsList.length === 1 ? "room" : "rooms"})
                     </span>
                   </div>
 
@@ -1227,43 +1286,43 @@ export default function EventDetailPage({
                   </div>
                 </button>
 
-                {/* Locations for this date */}
+                {/* Rooms for this date */}
                 {isDateExpanded && (
                   <div className="px-4 pb-4 pt-2 space-y-3">
-                    {locationsList.map(({ location, sessions }) => {
-                      // Create a modified location object with only sessions for this date
-                      const locationWithDateSessions = {
-                        ...location,
+                    {roomsList.map(({ room, sessions }) => {
+                      // Create a modified room object with only sessions for this date
+                      const roomWithDateSessions = {
+                        ...room,
                         sessions: sessions,
                       };
 
                       return (
-                        <LocationAccordion
-                          key={location.id}
-                          location={locationWithDateSessions}
+                        <RoomAccordion
+                          key={room.id}
+                          room={roomWithDateSessions}
                           defaultExpanded={true}
                           eventTimezone={event.timezone}
-                          onStartLocation={(location, e) =>
-                            handleStartLocation(location, event.name, e)
+                          onStartRoom={(room, e) =>
+                            handleStartRoom(room, event.name, e)
                           }
-                          onLinksToJoin={(location, e) =>
-                            handleWaysToJoin(location, event.name, e)
+                          onLinksToJoin={(room, e) =>
+                            handleWaysToJoin(room, event.name, e)
                           }
-                          onEditSession={(session, location, e) =>
-                            handleEditSession(session, location, e)
+                          onEditSession={(session, room, e) =>
+                            handleEditSession(session, room, e)
                           }
-                          onRenameLocation={(location) => {
-                            setEditLocationContext({ location });
-                            setIsEditLocationModalOpen(true);
+                          onRenameRoom={(room) => {
+                            setEditRoomContext({ room });
+                            setIsEditRoomModalOpen(true);
                           }}
-                          onDeleteLocation={(location) => {
+                          onDeleteRoom={(room) => {
                             // In production, show confirmation dialog then call API
                             if (
                               confirm(
-                                `Delete location "${location.name}"? This will also delete all sessions in this location.`
+                                `Delete room "${room.name}"? This will also delete all sessions in this room.`
                               )
                             ) {
-                              console.log("Delete location:", location.id);
+                              console.log("Delete room:", room.id);
                             }
                           }}
                           onAddSession={handleAddSession}
@@ -1281,76 +1340,86 @@ export default function EventDetailPage({
       </div>
 
       {/* Ways to Join Modal */}
-      {waysToJoinModal.location && waysToJoinModal.eventName && (
+      {waysToJoinModal.room && waysToJoinModal.eventName && (
         <WaysToJoinModal
-          open={!!waysToJoinModal.location}
+          open={!!waysToJoinModal.room}
           onOpenChange={(open) => {
             if (!open) {
-              setWaysToJoinModal({ location: null, eventName: null });
+              setWaysToJoinModal({ room: null, eventName: null });
             }
           }}
-          roomSessionId={waysToJoinModal.location.locationSessionId}
-          roomName={waysToJoinModal.location.name}
+          roomSessionId={waysToJoinModal.room.roomSessionId}
+          roomName={waysToJoinModal.room.name}
           eventName={waysToJoinModal.eventName}
-          passcode={waysToJoinModal.location.passcode}
+          passcode={waysToJoinModal.room.passcode}
         />
       )}
 
-      {/* Add Location Modal */}
-      <AddLocationModal
-        open={isAddLocationModalOpen}
-        onOpenChange={setIsAddLocationModalOpen}
+      {/* Add Room Modal */}
+      <AddRoomModal
+        open={isAddRoomModalOpen}
+        onOpenChange={setIsAddRoomModalOpen}
         eventName={event.name}
-        onSave={async (locationData: LocationFormData) => {
-          // Create a new empty location with generated IDs
-          const newLocation: Location = {
+        onSave={async (roomData: RoomFormData) => {
+          // Create a new empty room with generated IDs
+          const newRoom: Room = {
             id: `loc-${Date.now()}`,
-            name: locationData.name,
+            name: roomData.name,
             sessionCount: 0,
-            locationSessionId:
-              locationData.locationSessionId ||
-              `LOC-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+            roomSessionId:
+              roomData.roomSessionId ||
+              `${Array.from({ length: 4 }, () =>
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)]
+              ).join("")}-${Math.floor(1000 + Math.random() * 9000)}`,
             passcode:
-              locationData.passcode || Math.random().toString().substring(2, 8),
+              roomData.passcode || Math.random().toString().substring(2, 8),
             sessions: [],
           };
 
-          // Update event state with new location
+          // Update event state with new room
           setEvent((prev) => ({
             ...prev,
-            locations: [...prev.locations, newLocation],
-            locationCount: prev.locationCount + 1,
+            rooms: [...prev.rooms, newRoom],
+            roomCount: prev.roomCount + 1,
           }));
 
-          toast.success(`Location "${locationData.name}" added successfully`);
-          setIsAddLocationModalOpen(false);
+          toast.success(`Room "${roomData.name}" added. Add sessions to schedule it.`);
+          setIsAddRoomModalOpen(false);
+
+          // Open the session panel to encourage adding a session immediately
+          setSessionPanelState({
+            isOpen: true,
+            mode: "add",
+            roomId: newRoom.id,
+            roomName: newRoom.name,
+          });
         }}
       />
 
-      {/* Edit Location Modal */}
-      {editLocationContext && (
-        <EditLocationModal
-          open={isEditLocationModalOpen}
-          onOpenChange={setIsEditLocationModalOpen}
+      {/* Edit Room Modal */}
+      {editRoomContext && (
+        <EditRoomModal
+          open={isEditRoomModalOpen}
+          onOpenChange={setIsEditRoomModalOpen}
           eventName={event.name}
           initialData={{
-            id: editLocationContext.location.id,
-            name: editLocationContext.location.name,
+            id: editRoomContext.room.id,
+            name: editRoomContext.room.name,
           }}
-          onSave={async (locationData: LocationFormData) => {
-            // Update the location in state
+          onSave={async (roomData: RoomFormData) => {
+            // Update the room in state
             setEvent((prev) => ({
               ...prev,
-              locations: prev.locations.map((loc) =>
-                loc.id === editLocationContext.location.id
-                  ? { ...loc, name: locationData.name }
-                  : loc
+              rooms: prev.rooms.map((rm) =>
+                rm.id === editRoomContext.room.id
+                  ? { ...rm, name: roomData.name }
+                  : rm
               ),
             }));
 
-            toast.success("Location renamed successfully");
-            setIsEditLocationModalOpen(false);
-            setEditLocationContext(null);
+            toast.success("Room renamed successfully");
+            setIsEditRoomModalOpen(false);
+            setEditRoomContext(null);
           }}
         />
       )}
@@ -1385,15 +1454,15 @@ export default function EventDetailPage({
             <SessionPanel
               mode={sessionPanelState.mode}
               session={sessionPanelState.session}
-              locationName={sessionPanelState.locationName}
-              locationId={sessionPanelState.locationId}
+              roomName={sessionPanelState.roomName}
+              roomId={sessionPanelState.roomId}
               eventName={event.name}
               defaultDate={event.startDate.toISOString().split("T")[0]}
-              locations={event.locations.map((loc) => ({ id: loc.id, name: loc.name }))}
+              rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
               onClose={handleCloseSessionPanel}
               onSave={handleSaveSession}
               onDelete={handleDeleteSession}
-              onAddLocation={() => setIsAddLocationModalOpen(true)}
+              onAddRoom={() => setIsAddRoomModalOpen(true)}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

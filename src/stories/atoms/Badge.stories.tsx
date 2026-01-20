@@ -22,15 +22,15 @@ const Badge: React.FC<BadgeProps> = ({
   size = "default",
   className = "",
 }) => {
-  // Define styles for different variants
+  // Define styles for different variants - Updated to Brand Blue/Accent Green (2026 Rebrand)
   const variantStyles = {
-    default: "bg-[#118197] text-white border-transparent",
+    default: "bg-[#0063CC] text-white border-transparent", // Brand Blue 500 (primary)
     secondary: "bg-gray-200 text-gray-800 border-transparent",
     destructive: "bg-[#E62D21] text-white border-transparent",
     success: "bg-[#0C9A4E] text-white border-transparent",
     outline: "bg-transparent border-gray-300 text-gray-800",
-    teal: "bg-[#118197] text-white border-transparent",
-    accent: "bg-[#28E6B6] text-gray-900 border-transparent",
+    teal: "bg-[#0063CC] text-white border-transparent", // Now maps to Brand Blue 500
+    accent: "bg-[#15B743] text-white border-transparent", // Accent Green 500
   };
 
   // Define styles for different sizes
@@ -62,13 +62,13 @@ const meta: Meta<typeof Badge> = {
 
 Small status indicators and labels for categorization, status display, and visual emphasis following Wordly's design system.
 
-## Brand Color Strategy (70-20-10 Principle)
-- **70% Teal** (#118197): Primary brand color for default and teal variants
-- **20% Navy** (#0C2A3A): Secondary brand color for supporting elements
-- **10% Accent Green** (#28E6B6): Brand accent for highlights and visual interest
+## Brand Color Strategy (70-20-10 Principle) - 2026 Rebrand
+- **70% Brand Blue** (#0063CC): Primary brand color for default and main variants
+- **20% Accent Green** (#15B743): Secondary brand color for accents and highlights
+- **10% Supporting colors**: For functional states and categorization
 
 ## Badge Variants
-- **Default/Teal**: Primary brand badges using our main teal color
+- **Default/Teal**: Primary brand badges using Brand Blue 500
 - **Accent**: Brand accent green for special highlights and visual interest
 - **Success**: Functional green for positive status indicators (different from accent)
 - **Destructive**: Red for warnings, errors, or negative status

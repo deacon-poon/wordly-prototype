@@ -6,17 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Trash2, Plus, GripVertical } from "lucide-react";
-import { LocationFormData, FormMode } from "./types";
+import { RoomFormData, FormMode } from "./types";
 
 // ============================================================================
-// Single Location Form Props
+// Single Room Form Props
 // ============================================================================
 
-interface LocationFormProps {
+interface RoomFormProps {
   /** Form data */
-  data: LocationFormData;
+  data: RoomFormData;
   /** Callback when any field changes */
-  onChange: (data: Partial<LocationFormData>) => void;
+  onChange: (data: Partial<RoomFormData>) => void;
   /** Validation errors */
   errors?: Record<string, string>;
   /** Form mode (create or edit) */
@@ -25,7 +25,7 @@ interface LocationFormProps {
   readOnly?: boolean;
   /** Whether to show the full form or a compact version */
   compact?: boolean;
-  /** Location index (for display purposes) */
+  /** Room index (for display purposes) */
   index?: number;
   /** Callback when delete is requested */
   onDelete?: () => void;
@@ -34,9 +34,9 @@ interface LocationFormProps {
 }
 
 /**
- * Single location form - can be used standalone or as part of a list
+ * Single room form - can be used standalone or as part of a list
  */
-export function LocationForm({
+export function RoomForm({
   data,
   onChange,
   errors = {},
@@ -46,19 +46,19 @@ export function LocationForm({
   index,
   onDelete,
   canDelete = true,
-}: LocationFormProps) {
+}: RoomFormProps) {
   return (
     <div className="space-y-4">
-      {/* Location Name */}
+      {/* Room Name */}
       <div className="space-y-2">
         <Label
-          htmlFor={`location-name-${index || 0}`}
+          htmlFor={`room-name-${index || 0}`}
           className="text-sm font-semibold text-gray-900"
         >
-          Location Name *
+          Room Name *
         </Label>
         <Input
-          id={`location-name-${index || 0}`}
+          id={`room-name-${index || 0}`}
           value={data.name}
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="e.g., Main Auditorium, Workshop Room A"
@@ -79,7 +79,7 @@ export function LocationForm({
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            Remove Location
+            Remove Room
           </Button>
         </div>
       )}
@@ -88,67 +88,67 @@ export function LocationForm({
 }
 
 // ============================================================================
-// Location List Form Props (for wizard multi-location editing)
+// Room List Form Props (for wizard multi-room editing)
 // ============================================================================
 
-interface LocationListFormProps {
-  /** Array of location data */
-  locations: LocationFormData[];
-  /** Callback when a location changes */
-  onUpdateLocation: (index: number, data: Partial<LocationFormData>) => void;
-  /** Callback to add a new location */
-  onAddLocation: () => void;
-  /** Callback to remove a location */
-  onRemoveLocation: (index: number) => void;
-  /** Errors by location index: { "0.name": "error message" } */
+interface RoomListFormProps {
+  /** Array of room data */
+  rooms: RoomFormData[];
+  /** Callback when a room changes */
+  onUpdateRoom: (index: number, data: Partial<RoomFormData>) => void;
+  /** Callback to add a new room */
+  onAddRoom: () => void;
+  /** Callback to remove a room */
+  onRemoveRoom: (index: number) => void;
+  /** Errors by room index: { "0.name": "error message" } */
   errors?: Record<string, string>;
   /** Whether the form is read-only */
   readOnly?: boolean;
-  /** Minimum number of locations required */
-  minLocations?: number;
+  /** Minimum number of rooms required */
+  minRooms?: number;
 }
 
 /**
- * Location list form - used in wizard for managing multiple locations
+ * Room list form - used in wizard for managing multiple rooms
  */
-export function LocationListForm({
-  locations,
-  onUpdateLocation,
-  onAddLocation,
-  onRemoveLocation,
+export function RoomListForm({
+  rooms,
+  onUpdateRoom,
+  onAddRoom,
+  onRemoveRoom,
   errors = {},
   readOnly = false,
-  minLocations = 1,
-}: LocationListFormProps) {
-  const getLocationErrors = (index: number): Record<string, string> => {
-    const locationErrors: Record<string, string> = {};
+  minRooms = 1,
+}: RoomListFormProps) {
+  const getRoomErrors = (index: number): Record<string, string> => {
+    const roomErrors: Record<string, string> = {};
     Object.entries(errors).forEach(([key, value]) => {
       if (key.startsWith(`${index}.`)) {
-        locationErrors[key.replace(`${index}.`, "")] = value;
+        roomErrors[key.replace(`${index}.`, "")] = value;
       }
     });
-    return locationErrors;
+    return roomErrors;
   };
 
   return (
     <div className="space-y-4">
       {/* Info text */}
       <p className="text-sm text-gray-600">
-        Add the physical locations where presentations will take place. Each
-        location will have its own Session ID and QR code.
+        Add the physical rooms where presentations will take place. Each
+        room will have its own Session ID and QR code.
       </p>
 
-      {/* Location cards */}
+      {/* Room cards */}
       <div className="space-y-4">
-        {locations.map((location, index) => (
-          <Card key={location.id || index} className="p-4 border-gray-200">
+        {rooms.map((room, index) => (
+          <Card key={room.id || index} className="p-4 border-gray-200">
             <div className="flex items-start gap-3">
               {/* Drag handle (future: implement drag-to-reorder) */}
               <div className="pt-2 text-gray-400 cursor-grab">
                 <GripVertical className="h-5 w-5" />
               </div>
 
-              {/* Location icon */}
+              {/* Room icon */}
               <div className="pt-2">
                 <MapPin className="h-5 w-5 text-primary-teal-600" />
               </div>
@@ -157,14 +157,14 @@ export function LocationListForm({
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-semibold text-gray-900">
-                    Location {index + 1}
+                    Room {index + 1}
                   </h4>
-                  {locations.length > minLocations && !readOnly && (
+                  {rooms.length > minRooms && !readOnly && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => onRemoveLocation(index)}
+                      onClick={() => onRemoveRoom(index)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -172,10 +172,10 @@ export function LocationListForm({
                   )}
                 </div>
 
-                <LocationForm
-                  data={location}
-                  onChange={(data) => onUpdateLocation(index, data)}
-                  errors={getLocationErrors(index)}
+                <RoomForm
+                  data={room}
+                  onChange={(data) => onUpdateRoom(index, data)}
+                  errors={getRoomErrors(index)}
                   readOnly={readOnly}
                   compact={true}
                   index={index}
@@ -186,25 +186,25 @@ export function LocationListForm({
         ))}
       </div>
 
-      {/* Add location button */}
+      {/* Add room button */}
       {!readOnly && (
         <Button
           type="button"
           variant="outline"
-          onClick={onAddLocation}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-teal-400 hover:bg-primary-teal-50 text-gray-600 hover:text-primary-teal-700"
+          onClick={onAddRoom}
+          className="w-full border-dashed border-2 border-gray-300 hover:border-accent-green-400 hover:bg-accent-green-50 text-gray-600 hover:text-accent-green-800"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Another Location
+          Add Another Room
         </Button>
       )}
 
       {/* Empty state */}
-      {locations.length === 0 && (
+      {rooms.length === 0 && (
         <div className="text-center py-8 text-gray-500">
           <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-          <p>No locations added yet.</p>
-          <p className="text-sm">Add at least one location to continue.</p>
+          <p>No rooms added yet.</p>
+          <p className="text-sm">Add at least one room to continue.</p>
         </div>
       )}
     </div>
@@ -212,11 +212,11 @@ export function LocationListForm({
 }
 
 // ============================================================================
-// Location Card (read-only display with actions)
+// Room Card (read-only display with actions)
 // ============================================================================
 
-interface LocationCardProps {
-  location: LocationFormData;
+interface RoomCardProps {
+  room: RoomFormData;
   index: number;
   sessionCount?: number;
   onEdit?: () => void;
@@ -225,23 +225,23 @@ interface LocationCardProps {
 }
 
 /**
- * Location card - read-only display used in review step or event detail
+ * Room card - read-only display used in review step or event detail
  */
-export function LocationCard({
-  location,
+export function RoomCard({
+  room,
   index,
   sessionCount = 0,
   onEdit,
   onDelete,
   onAddSession,
-}: LocationCardProps) {
+}: RoomCardProps) {
   return (
     <Card className="p-4 border-gray-200 hover:border-gray-300 transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <MapPin className="h-5 w-5 text-primary-teal-600" />
           <div>
-            <h4 className="font-semibold text-gray-900">{location.name}</h4>
+            <h4 className="font-semibold text-gray-900">{room.name}</h4>
             <p className="text-xs text-gray-500 mt-1">
               {sessionCount} {sessionCount === 1 ? "session" : "sessions"}
             </p>
@@ -254,7 +254,7 @@ export function LocationCard({
               variant="outline"
               size="sm"
               onClick={onAddSession}
-              className="text-primary-teal-600 border-primary-teal-600"
+              className="text-primary-blue-600 border-primary-blue-600"
             >
               <Plus className="h-4 w-4 mr-1" />
               Add Session

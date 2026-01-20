@@ -57,11 +57,11 @@ interface SessionSummary {
     text: string;
     speaker: string;
   };
-  locationName?: string;
+  roomName?: string;
   hasCompleted?: boolean; // Whether the session has run and has a summary
 }
 
-interface Location {
+interface Room {
   id: string;
   name: string;
   sessions: SessionSummary[];
@@ -73,9 +73,9 @@ interface PublicEvent {
   name: string;
   dateRange: string;
   description: string;
-  locationCount: number;
+  roomCount: number;
   sessionCount: number;
-  locations: Location[];
+  rooms: Room[];
 }
 
 // Helper functions
@@ -131,14 +131,14 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-// Flatten all sessions from locations into a single chronological list
-function getAllSessions(locations: Location[]): SessionSummary[] {
+// Flatten all sessions from rooms into a single chronological list
+function getAllSessions(rooms: Room[]): SessionSummary[] {
   const sessions: SessionSummary[] = [];
-  locations.forEach((location) => {
-    location.sessions.forEach((session) => {
+  rooms.forEach((room) => {
+    room.sessions.forEach((session) => {
       sessions.push({
         ...session,
-        locationName: location.name,
+        roomName: room.name,
       });
     });
   });
@@ -197,9 +197,9 @@ function getMockEventData(eventSlug: string): PublicEvent {
       .split(",")[1]
       .trim()} - ${formatSessionDate(dayAfterStr).split(",")[1].trim()}`,
     description: baseEvent.description!,
-    locationCount: 3,
+    roomCount: 3,
     sessionCount: 9,
-    locations: [
+    rooms: [
       {
         id: "loc-001",
         name: "Main Hall",
@@ -1035,8 +1035,8 @@ export default function PublicSummaryPage({
 
   // Get all sessions flattened and sorted chronologically
   const allSessions = useMemo(
-    () => getAllSessions(event.locations),
-    [event.locations]
+    () => getAllSessions(event.rooms),
+    [event.rooms]
   );
 
   // Get unique dates and tags for filters
@@ -1300,7 +1300,7 @@ export default function PublicSummaryPage({
           summary: session.summary,
           scheduledDate: session.scheduledDate,
           scheduledStart: session.scheduledStart,
-          locationName: session.locationName || "",
+          roomName: session.roomName || "",
         }))}
       />
     </div>

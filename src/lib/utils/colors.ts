@@ -105,20 +105,75 @@ export function getTextColorClass(colorName: string): string {
 
 /**
  * Color palette mapping objects for the Wordly design system
+ * 2026 Rebrand: Brand Blue 500 is PRIMARY, Accent Green 500 is SECONDARY
  */
 export const brandColors = {
-  teal: {
-    50: 'teal-50',
-    100: 'teal-100',
-    200: 'teal-200',
-    300: 'teal-300',
-    400: 'teal-400',
-    500: 'teal-500',
-    600: 'teal-600',
-    700: 'teal-700',
-    800: 'teal-800',
-    900: 'teal-900',
+  // Primary brand color - Brand Blue
+  blue: {
+    25: 'primary-blue-25',
+    50: 'primary-blue-50',
+    100: 'primary-blue-100',
+    200: 'primary-blue-200',
+    300: 'primary-blue-300',
+    400: 'primary-blue-400',
+    500: 'primary-blue-500',
+    600: 'primary-blue-600',
+    700: 'primary-blue-700',
+    800: 'primary-blue-800',
+    900: 'primary-blue-900',
   },
+  // Action Teal - For buttons and interactive elements
+  actionTeal: {
+    50: 'action-teal-50',
+    100: 'action-teal-100',
+    200: 'action-teal-200',
+    300: 'action-teal-300',
+    400: 'action-teal-400',
+    500: 'action-teal-500',
+    600: 'action-teal-600',
+    700: 'action-teal-700',
+    800: 'action-teal-800',
+    900: 'action-teal-900',
+  },
+  // Secondary brand color - Accent Green
+  green: {
+    50: 'accent-green-50',
+    100: 'accent-green-100',
+    200: 'accent-green-200',
+    300: 'accent-green-300',
+    400: 'accent-green-400',
+    500: 'accent-green-500',
+    600: 'accent-green-600',
+    700: 'accent-green-700',
+    800: 'accent-green-800',
+    900: 'accent-green-900',
+  },
+  // Legacy teal (now maps to Brand Blue) - for backward compatibility
+  teal: {
+    50: 'primary-blue-50',
+    100: 'primary-blue-100',
+    200: 'primary-blue-200',
+    300: 'primary-blue-300',
+    400: 'primary-blue-400',
+    500: 'primary-blue-500',
+    600: 'primary-blue-600',
+    700: 'primary-blue-700',
+    800: 'primary-blue-800',
+    900: 'primary-blue-900',
+  },
+  // Legacy navy (now maps to Brand Blue) - for backward compatibility
+  navy: {
+    20: 'primary-blue-25',
+    50: 'primary-blue-50',
+    100: 'primary-blue-100',
+    200: 'primary-blue-200',
+    300: 'primary-blue-300',
+    400: 'primary-blue-400',
+    500: 'primary-blue-500',
+    600: 'primary-blue-600',
+    700: 'primary-blue-700',
+  },
+  // Legacy pink (deprecated)
   pink: {
     50: 'pink-50',
     100: 'pink-100',

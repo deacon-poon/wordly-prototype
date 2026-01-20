@@ -78,15 +78,13 @@ type Story = StoryObj<typeof StoryComponent>;
  * # Wordly Color Palette
  *
  * This is the comprehensive color palette for the Wordly design system.
- * It includes the primary brand colors (teal, navy, and accent green), along with a complete
- * semantic color system for different UI states and informational needs, plus a gray scale for UI elements.
+ * It uses Navy (blue) as the PRIMARY brand color and Green as the SECONDARY/accent color.
  *
- * Each color has 10 shades, labeled from 50 (lightest) to 900 (darkest).
+ * Each color has shades labeled from 50 (lightest) to 900 (darkest).
  *
  * ## Brand Colors
- * - **Primary Teal (#128197)**: Main brand color for primary actions and navigation
- * - **Secondary Navy (#0B1C3A)**: Secondary brand color for depth and contrast
- * - **Accent Green (#28E6B6)**: Accent color for highlights and interactive elements
+ * - **Primary Navy (#0B1C3A)**: Main brand color for primary actions and navigation
+ * - **Secondary Green (#28E6B6)**: Accent color for highlights and interactive elements
  *
  * ## Semantic Color System
  * - **Informational Blue (#2563EB)**: For links, informational messages, help text, and info states
@@ -96,8 +94,8 @@ type Story = StoryObj<typeof StoryComponent>;
  * - **Neutral Gray (#646E78)**: For UI elements, borders, disabled states, and placeholders
  *
  * ## Color Usage Priority
- * 1. **Informational Blue** - Primary choice for links and informational content
- * 2. **Brand colors** - For brand-specific elements and primary actions
+ * 1. **Primary Navy** - Main brand color for buttons, headers, and key UI elements
+ * 2. **Secondary Green** - Accent highlights and secondary actions
  * 3. **Semantic colors** - For specific UI states and feedback
  * 4. **Neutral Gray** - For UI elements and disabled states
  *
@@ -116,36 +114,35 @@ export const AllColors: Story = {
         <h2 className="text-2xl font-bold mb-4">Brand Colors</h2>
         <div className="space-y-10">
           <ColorSet
-            title="Primary Teal Palette"
+            title="Primary Navy Palette"
             description="Primary brand color used for navigation, primary buttons, and key UI elements."
             colors={[
-              { name: "Teal 50", value: "#E6F4F7" },
-              { name: "Teal 100", value: "#C5E8EE" },
-              { name: "Teal 200", value: "#84DEF0" },
-              { name: "Teal 300", value: "#5CB9CA" },
-              { name: "Teal 400", value: "#30A3B7" },
-              { name: "Teal 500", value: "#118197" },
-              { name: "Teal 600", value: "#0C687A" },
-              { name: "Teal 700", value: "#08505D" },
-              { name: "Teal 800", value: "#063840" },
-              { name: "Teal 900", value: "#021F24" },
+              { name: "Navy 20", value: "#E9F0FB" },
+              { name: "Navy 50", value: "#D4E1F7" },
+              { name: "Navy 100", value: "#94B3EB" },
+              { name: "Navy 200", value: "#5486DE" },
+              { name: "Navy 300", value: "#255DC1" },
+              { name: "Navy 400", value: "#183E81" },
+              { name: "Navy 500", value: "#0B1C3A" },
+              { name: "Navy 600", value: "#0A1933" },
+              { name: "Navy 700", value: "#030811" },
             ]}
           />
 
           <ColorSet
-            title="Secondary Navy Palette"
-            description="Secondary brand color used for depth, contrast, and supporting elements."
+            title="Secondary Green Palette"
+            description="Secondary/accent brand color used for highlights and interactive elements."
             colors={[
-              { name: "Navy 50", value: "#E8EDF5" },
-              { name: "Navy 100", value: "#C5D3E8" },
-              { name: "Navy 200", value: "#9BB4D9" },
-              { name: "Navy 300", value: "#6688C4" },
-              { name: "Navy 400", value: "#3A5FAF" },
-              { name: "Navy 500", value: "#0B1C3A" },
-              { name: "Navy 600", value: "#091731" },
-              { name: "Navy 700", value: "#071228" },
-              { name: "Navy 800", value: "#050E1F" },
-              { name: "Navy 900", value: "#030916" },
+              { name: "Green 50", value: "#E8FCF7" },
+              { name: "Green 100", value: "#C8F9EC" },
+              { name: "Green 200", value: "#BAF7E8" },
+              { name: "Green 300", value: "#8DF2D8" },
+              { name: "Green 400", value: "#5FECC9" },
+              { name: "Green 500", value: "#28E6B6" },
+              { name: "Green 600", value: "#15B78E" },
+              { name: "Green 700", value: "#10896A" },
+              { name: "Green 800", value: "#0B5B47" },
+              { name: "Green 900", value: "#052E23" },
             ]}
           />
 

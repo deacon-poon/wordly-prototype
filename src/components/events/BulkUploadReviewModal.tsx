@@ -52,7 +52,7 @@ import { TIMEZONES, LANGUAGES } from "./forms/types";
 export interface UploadedSession {
   id: string;
   rowNumber: number;
-  location: string; // Required - groups sessions by location
+  room: string; // Required - groups sessions by room
   title: string;
   presenter: string;
   date: string;
@@ -147,10 +147,10 @@ function validateSession(
   const errors: SessionValidationError[] = [];
 
   // Check for empty required fields
-  if (!session.location?.trim()) {
+  if (!session.room?.trim()) {
     errors.push({
-      field: "location",
-      message: "Location is required",
+      field: "room",
+      message: "Room is required",
       type: "error",
     });
   }
@@ -209,16 +209,16 @@ function validateSession(
     }
   }
 
-  // Get sessions in the SAME LOCATION on the same date for conflict checking
-  const sameLocationSessions = allSessions.filter(
+  // Get sessions in the SAME ROOM on the same date for conflict checking
+  const sameRoomSessions = allSessions.filter(
     (other) =>
       other.id !== session.id &&
-      other.location === session.location &&
+      other.room === session.room &&
       other.date === session.date
   );
 
-  // Check for exact time conflicts within same location
-  const conflictingSessions = sameLocationSessions.filter(
+  // Check for exact time conflicts within same room
+  const conflictingSessions = sameRoomSessions.filter(
     (other) => other.startTime === session.startTime
   );
 
@@ -232,12 +232,12 @@ function validateSession(
     });
   }
 
-  // Check for overlapping sessions within same location
+  // Check for overlapping sessions within same room
   if (session.startTime && session.endTime) {
     const sessionStart = parseTimeToMinutes(session.startTime);
     const sessionEnd = parseTimeToMinutes(session.endTime);
 
-    const overlapping = sameLocationSessions.filter((other) => {
+    const overlapping = sameRoomSessions.filter((other) => {
       if (!other.startTime || !other.endTime) return false;
 
       const otherStart = parseTimeToMinutes(other.startTime);
@@ -258,19 +258,19 @@ function validateSession(
     }
 
     // Check for large gaps between sessions (warning only)
-    // Find the next session in the same location
-    const sortedLocationSessions = [...sameLocationSessions, session]
+    // Find the next session in the same room
+    const sortedRoomSessions = [...sameRoomSessions, session]
       .filter((s) => s.startTime && s.endTime)
       .sort(
         (a, b) =>
           parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime)
       );
 
-    const sessionIndex = sortedLocationSessions.findIndex(
+    const sessionIndex = sortedRoomSessions.findIndex(
       (s) => s.id === session.id
     );
     if (sessionIndex > 0) {
-      const prevSession = sortedLocationSessions[sessionIndex - 1];
+      const prevSession = sortedRoomSessions[sessionIndex - 1];
       const prevEnd = parseTimeToMinutes(prevSession.endTime);
       const gap = sessionStart - prevEnd;
 
@@ -346,80 +346,80 @@ function validateAllSessions(sessions: UploadedSession[]): UploadedSession[] {
 function generateMockUploadData(): UploadedSession[] {
   const baseDate = "2025-12-18";
 
-  // Create sessions with locations - some conflicts within same location
+  // Create sessions with rooms - some conflicts within same room
   const mockData = [
     // Main Auditorium - has time conflicts at 1:00 PM
     {
-      location: "Main Auditorium",
+      room: "Main Auditorium",
       startTime: "09:00",
       endTime: "10:00",
       title: "Opening Keynote",
     },
     {
-      location: "Main Auditorium",
+      room: "Main Auditorium",
       startTime: "10:30",
       endTime: "11:30",
       title: "Product Roadmap",
     },
     {
-      location: "Main Auditorium",
+      room: "Main Auditorium",
       startTime: "13:00",
       endTime: "14:00",
       title: "Customer Success Stories",
     },
     {
-      location: "Main Auditorium",
+      room: "Main Auditorium",
       startTime: "13:00",
       endTime: "14:30",
       title: "Conflicting Session",
     }, // CONFLICT
     {
-      location: "Main Auditorium",
+      room: "Main Auditorium",
       startTime: "15:00",
       endTime: "16:00",
       title: "Closing Remarks",
     },
     // Breakout Room A - valid sessions
     {
-      location: "Breakout Room A",
+      room: "Breakout Room A",
       startTime: "09:00",
       endTime: "10:30",
       title: "Technical Workshop",
     },
     {
-      location: "Breakout Room A",
+      room: "Breakout Room A",
       startTime: "11:00",
       endTime: "12:00",
       title: "Hands-on Lab",
     },
     {
-      location: "Breakout Room A",
+      room: "Breakout Room A",
       startTime: "14:00",
       endTime: "15:30",
       title: "Advanced Topics",
     },
     // Breakout Room B - has an overlap
     {
-      location: "Breakout Room B",
+      room: "Breakout Room B",
       startTime: "09:30",
       endTime: "11:00",
       title: "Design Thinking",
     },
     {
-      location: "Breakout Room B",
+      room: "Breakout Room B",
       startTime: "10:30",
       endTime: "12:00",
       title: "Overlapping Workshop",
     }, // OVERLAP
     {
-      location: "Breakout Room B",
+      room: "Breakout Room B",
       startTime: "13:00",
       endTime: "14:00",
       title: "UX Best Practices",
     },
     // Next day session
     {
-      location: "Main Auditorium",
+      room: "Main Auditorium",
       startTime: "09:00",
       endTime: "10:00",
       title: "Day 2 Opening",
@@ -430,7 +430,7 @@ function generateMockUploadData(): UploadedSession[] {
   const sessions: UploadedSession[] = mockData.map((item, index) => ({
     id: `session-${index + 1}`,
     rowNumber: index + 1,
-    location: item.location,
+    room: item.room,
     title: item.title,
     presenter: "John Doe",
     date: item.date || baseDate,
@@ -508,14 +508,14 @@ export function BulkUploadReviewModal({
       filtered = filtered.filter((s) => !s.isValid);
     }
 
-    // Filter by search query (includes location)
+    // Filter by search query (includes room)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (s) =>
           s.title.toLowerCase().includes(query) ||
           s.presenter.toLowerCase().includes(query) ||
-          s.location.toLowerCase().includes(query)
+          s.room.toLowerCase().includes(query)
       );
     }
 
@@ -824,7 +824,7 @@ export function BulkUploadReviewModal({
                   <TableHead className="w-12 text-center">#</TableHead>
                   <TableHead className="w-16 text-center">Status</TableHead>
                   <TableHead className="w-20">Actions</TableHead>
-                  <TableHead className="min-w-[140px]">Location</TableHead>
+                  <TableHead className="min-w-[140px]">Room</TableHead>
                   <TableHead className="min-w-[180px]">Title</TableHead>
                   <TableHead className="min-w-[130px]">Presenter</TableHead>
                   <TableHead className="w-32">Date</TableHead>
@@ -907,9 +907,9 @@ export function BulkUploadReviewModal({
                         </div>
                       </TableCell>
 
-                      {/* Location */}
+                      {/* Room */}
                       <TableCell>
-                        {renderEditableCell(session, "location", "text")}
+                        {renderEditableCell(session, "room", "text")}
                       </TableCell>
 
                       {/* Title */}
@@ -1031,7 +1031,7 @@ export function BulkUploadReviewModal({
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || invalidCount > 0}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700"
+              className="bg-primary-blue-600 hover:bg-primary-blue-700"
             >
               {isSubmitting ? (
                 <>

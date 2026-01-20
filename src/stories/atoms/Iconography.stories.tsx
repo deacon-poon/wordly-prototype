@@ -973,10 +973,10 @@ export const AllIcons: Story = {
 <Star size={24} />
 
 // With custom props
-<Star 
-  size={32} 
-  color="#128197" 
-  strokeWidth={2} 
+<Star
+  size={32}
+  color="#0B1C3A"
+  strokeWidth={2}
 />`}</code>
             </pre>
           </div>

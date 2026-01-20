@@ -504,7 +504,7 @@ export function EventSettingsModal({
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? "Creating..." : "Create"}
           </Button>

@@ -55,8 +55,8 @@ import { cn } from "@/lib/utils";
 // Single Session Form Props
 // ============================================================================
 
-/** Location option for dropdown */
-interface LocationOption {
+/** Room option for dropdown */
+interface RoomOption {
   id: string;
   name: string;
 }
@@ -80,16 +80,16 @@ interface SessionFormProps {
   onDelete?: () => void;
   /** Whether delete is allowed */
   canDelete?: boolean;
-  /** Location name (for context display) - used when locations not provided */
-  locationName?: string;
-  /** Available locations for dropdown */
-  locations?: LocationOption[];
-  /** Currently selected location ID */
-  selectedLocationId?: string;
-  /** Callback when location is changed */
-  onLocationChange?: (locationId: string) => void;
-  /** Callback to add a new location */
-  onAddLocation?: () => void;
+  /** Room name (for context display) - used when rooms not provided */
+  roomName?: string;
+  /** Available rooms for dropdown */
+  rooms?: RoomOption[];
+  /** Currently selected room ID */
+  selectedRoomId?: string;
+  /** Callback when room is changed */
+  onRoomChange?: (roomId: string) => void;
+  /** Callback to add a new room */
+  onAddRoom?: () => void;
 }
 
 /**
@@ -105,11 +105,11 @@ export function SessionForm({
   index,
   onDelete,
   canDelete = true,
-  locationName,
-  locations,
-  selectedLocationId,
-  onLocationChange,
-  onAddLocation,
+  roomName,
+  rooms,
+  selectedRoomId,
+  onRoomChange,
+  onAddRoom,
 }: SessionFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -143,17 +143,17 @@ export function SessionForm({
         {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
       </div>
 
-      {/* Location - editable dropdown if locations provided, read-only otherwise */}
-      {(locations && locations.length > 0) ? (
+      {/* Room - editable dropdown if rooms provided, read-only otherwise */}
+      {(rooms && rooms.length > 0) ? (
         <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-900">Location</Label>
+          <Label className="text-sm font-semibold text-gray-900">Room</Label>
           <Select
-            value={selectedLocationId}
+            value={selectedRoomId}
             onValueChange={(value) => {
-              if (value === "__add_new__" && onAddLocation) {
-                onAddLocation();
-              } else if (onLocationChange) {
-                onLocationChange(value);
+              if (value === "__add_new__" && onAddRoom) {
+                onAddRoom();
+              } else if (onRoomChange) {
+                onRoomChange(value);
               }
             }}
             disabled={readOnly}
@@ -161,22 +161,22 @@ export function SessionForm({
             <SelectTrigger>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-gray-400" />
-                <SelectValue placeholder="Select location" />
+                <SelectValue placeholder="Select room" />
               </div>
             </SelectTrigger>
             <SelectContent>
-              {locations.map((loc) => (
-                <SelectItem key={loc.id} value={loc.id}>
-                  {loc.name}
+              {rooms.map((rm) => (
+                <SelectItem key={rm.id} value={rm.id}>
+                  {rm.name}
                 </SelectItem>
               ))}
-              {onAddLocation && (
+              {onAddRoom && (
                 <>
                   <div className="border-t my-1" />
                   <SelectItem value="__add_new__" className="text-primary-teal-600">
                     <span className="flex items-center gap-2">
                       <Plus className="h-4 w-4" />
-                      Add New Location
+                      Add New Room
                     </span>
                   </SelectItem>
                 </>
@@ -184,12 +184,12 @@ export function SessionForm({
             </SelectContent>
           </Select>
         </div>
-      ) : locationName ? (
+      ) : roomName ? (
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">Location</Label>
+          <Label className="text-sm font-medium text-gray-700">Room</Label>
           <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 flex items-center gap-2">
             <MapPin className="h-4 w-4 text-gray-400" />
-            {locationName}
+            {roomName}
           </div>
         </div>
       ) : null}
@@ -658,7 +658,7 @@ export function SessionForm({
 }
 
 // ============================================================================
-// Session List Form Props (for wizard multi-session editing per location)
+// Session List Form Props (for wizard multi-session editing per room)
 // ============================================================================
 
 interface SessionListFormProps {
@@ -674,14 +674,14 @@ interface SessionListFormProps {
   errors?: Record<string, string>;
   /** Whether the form is read-only */
   readOnly?: boolean;
-  /** Location name for context */
-  locationName: string;
+  /** Room name for context */
+  roomName: string;
   /** Default timezone for new sessions */
   defaultTimezone?: string;
 }
 
 /**
- * Session list form - used in wizard for managing multiple sessions per location
+ * Session list form - used in wizard for managing multiple sessions per room
  */
 export function SessionListForm({
   sessions,
@@ -690,7 +690,7 @@ export function SessionListForm({
   onRemoveSession,
   errors = {},
   readOnly = false,
-  locationName,
+  roomName,
 }: SessionListFormProps) {
   const getSessionErrors = (index: number): Record<string, string> => {
     const sessionErrors: Record<string, string> = {};
@@ -704,11 +704,11 @@ export function SessionListForm({
 
   return (
     <div className="space-y-4">
-      {/* Location context */}
+      {/* Room context */}
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
         <Clock className="h-4 w-4 text-primary-teal-600" />
         <span>
-          Sessions for: <strong>{locationName}</strong>
+          Sessions for: <strong>{roomName}</strong>
         </span>
       </div>
 
@@ -766,7 +766,7 @@ export function SessionListForm({
           type="button"
           variant="outline"
           onClick={onAddSession}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-teal-400 hover:bg-primary-teal-50 text-gray-600 hover:text-primary-teal-700"
+          className="w-full border-dashed border-2 border-gray-300 hover:border-accent-green-400 hover:bg-accent-green-50 text-gray-600 hover:text-accent-green-800"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Session
@@ -820,7 +820,7 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
         </div>
       </div>
       <div className="flex items-center gap-3 ml-4">
-        <div className="flex items-center gap-1.5 text-sm font-medium text-primary-teal-700 bg-primary-teal-50 px-2 py-1 rounded">
+        <div className="flex items-center gap-1.5 text-sm font-medium text-accent-green-800 bg-accent-green-50 px-2 py-1 rounded">
           <span>
             {session.scheduledStart} – {session.endTime}
           </span>

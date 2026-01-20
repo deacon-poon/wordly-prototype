@@ -49,7 +49,7 @@ interface SessionDetail {
     text: string;
     speaker: string;
   };
-  locationName?: string;
+  roomName?: string;
   // AI-enhanced fields
   aiInsights: {
     sentiment:
@@ -409,7 +409,7 @@ export default function SessionDetailPage({
       summary: session.summary,
       scheduledDate: session.scheduledDate,
       scheduledStart: session.scheduledStart,
-      locationName: session.locationName || "",
+      roomName: session.roomName || "",
     },
   ];
 

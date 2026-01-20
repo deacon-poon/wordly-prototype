@@ -149,7 +149,6 @@ export function PresentationEditDrawer({
         errors={errors}
         mode="edit"
         readOnly={isReadOnly}
-        locationName={locationName}
       />
 
       {/* Footer Actions */}
@@ -160,7 +159,7 @@ export function PresentationEditDrawer({
         <Button
           type="submit"
           disabled={isSaving || isReadOnly}
-          className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+          className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
         >
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>

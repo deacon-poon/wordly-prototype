@@ -48,26 +48,26 @@ export function EventCreationChoiceModal({
         <div className="px-6 pb-6 space-y-4">
           {/* Option 1: Spreadsheet Upload */}
           <Card
-            className="relative p-5 border-2 border-gray-200 hover:border-primary-teal-400 hover:bg-primary-teal-50/30 cursor-pointer transition-all group"
+            className="relative p-5 border-2 border-gray-200 hover:border-accent-green-400 hover:bg-accent-green-50/30 cursor-pointer transition-all group"
             onClick={() => {
               onOpenChange(false);
               onChooseSpreadsheet();
             }}
           >
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-accent-green-100 flex items-center justify-center">
                 <FileSpreadsheet className="h-6 w-6 text-primary-teal-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
                   Create from Spreadsheet
-                  <span className="text-xs font-normal px-2 py-0.5 bg-primary-teal-100 text-primary-teal-700 rounded-full">
+                  <span className="text-xs font-normal px-2 py-0.5 bg-accent-green-100 text-accent-green-800 rounded-full">
                     Recommended
                   </span>
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
                   Upload a CSV or Excel file with your complete event schedule.
-                  Locations and sessions will be created automatically.
+                  Rooms and sessions will be created automatically.
                 </p>
                 <ul className="space-y-1.5">
                   <li className="flex items-center gap-2 text-xs text-gray-500">
@@ -92,7 +92,7 @@ export function EventCreationChoiceModal({
 
           {/* Option 2: Manual Creation */}
           <Card
-            className="relative p-5 border-2 border-gray-200 hover:border-primary-teal-400 hover:bg-primary-teal-50/30 cursor-pointer transition-all group"
+            className="relative p-5 border-2 border-gray-200 hover:border-accent-green-400 hover:bg-accent-green-50/30 cursor-pointer transition-all group"
             onClick={() => {
               onOpenChange(false);
               onChooseManual();

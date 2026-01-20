@@ -13,11 +13,11 @@ interface Session {
   status: "pending" | "active" | "completed" | "skipped";
 }
 
-interface Location {
+interface Room {
   id: string;
   name: string;
   sessionCount: number;
-  locationSessionId: string;
+  roomSessionId: string;
   passcode: string;
   sessions: Session[];
 }
@@ -29,11 +29,11 @@ interface Event {
   startDate: string; // ISO string for serialization
   endDate: string; // ISO string for serialization
   timezone: string; // Event timezone (e.g., "America/Los_Angeles")
-  locationCount: number;
+  roomCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  locations: Location[];
+  rooms: Room[];
 }
 
 const STORAGE_KEY = "wordly_events";
@@ -95,11 +95,11 @@ export function serializeEvent(event: {
   startDate: Date;
   endDate: Date;
   timezone: string;
-  locationCount: number;
+  roomCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  locations: Location[];
+  rooms: Room[];
 }): Event {
   return {
     ...event,
@@ -118,11 +118,11 @@ export function deserializeEvent(event: Event): {
   startDate: Date;
   endDate: Date;
   timezone: string;
-  locationCount: number;
+  roomCount: number;
   sessionCount: number;
   description: string;
   publicSummaryUrl?: string;
-  locations: Location[];
+  rooms: Room[];
 } {
   return {
     ...event,

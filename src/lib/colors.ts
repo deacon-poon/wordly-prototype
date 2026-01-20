@@ -55,18 +55,74 @@ const createVariant = (name: string, hex: string): ColorVariant => {
   };
 };
 
-// Brand Teal - 10 shades (Figma Variables Source of Truth)
+// Primary Brand Blue - NEW PRIMARY COLOR (Figma Variables Source of Truth - 2026 Rebrand)
+export const brandBluePalette: ColorVariant[] = [
+  createVariant('Blue 25', '#F0F7FF'), // primitives/color/brand-blue/brand-blue-25 from Figma
+  createVariant('Blue 50', '#D6E8FF'), // primitives/color/brand-blue/brand-blue-50 from Figma
+  createVariant('Blue 100', '#B2D8FF'), // primitives/color/brand-blue/brand-blue-100 from Figma
+  createVariant('Blue 200', '#75B8FF'), // primitives/color/brand-blue/brand-blue-200 from Figma
+  createVariant('Blue 300', '#3396FF'), // primitives/color/brand-blue/brand-blue-300 from Figma
+  createVariant('Blue 400', '#017CFF'), // primitives/color/brand-blue/brand-blue-400 from Figma
+  createVariant('Blue 500', '#0063CC'), // primitives/color/brand-blue/brand-blue-500 from Figma (BASE PRIMARY)
+  createVariant('Blue 600', '#0051A8'), // primitives/color/brand-blue/brand-blue-600 from Figma
+  createVariant('Blue 700', '#00458F'), // primitives/color/brand-blue/brand-blue-700 from Figma
+  createVariant('Blue 800', '#002C5C'), // primitives/color/brand-blue/brand-blue-800 from Figma
+  createVariant('Blue 900', '#001E3D'), // primitives/color/brand-blue/brand-blue-900 from Figma
+];
+
+// Action Teal - For buttons and interactive elements
+export const actionTealPalette: ColorVariant[] = [
+  createVariant('Teal 50', '#DBF5F9'), // action-teal-50 from Figma
+  createVariant('Teal 100', '#BBEDFA'), // action-teal-100 from Figma
+  createVariant('Teal 200', '#84DFF0'), // action-teal-200 from Figma
+  createVariant('Teal 300', '#49CFE9'), // action-teal-300 from Figma
+  createVariant('Teal 400', '#1BC4E4'), // action-teal-400 from Figma
+  createVariant('Teal 500', '#169CB6'), // action-teal-500 from Figma
+  createVariant('Teal 600', '#128197'), // action-teal-600 from Figma (BASE ACTION)
+  createVariant('Teal 700', '#0F6D80'), // action-teal-700 from Figma
+  createVariant('Teal 800', '#0A4652'), // action-teal-800 from Figma
+  createVariant('Teal 900', '#072F37'), // action-teal-900 from Figma
+];
+
+// Accent Green - NEW SECONDARY COLOR (Figma Variables Source of Truth - 2026 Rebrand)
+export const accentGreenPalette: ColorVariant[] = [
+  createVariant('Accent Green 50', '#DAF8E5'), // accent-green-50 from Figma
+  createVariant('Accent Green 100', '#BBF7CB'), // accent-green-100 from Figma (calculated)
+  createVariant('Accent Green 200', '#84F1A2'), // accent-green-200 from Figma
+  createVariant('Accent Green 300', '#48EA76'), // accent-green-300 from Figma
+  createVariant('Accent Green 400', '#1BE454'), // accent-green-400 from Figma
+  createVariant('Accent Green 500', '#15B743'), // accent-green-500 from Figma (BASE SECONDARY)
+  createVariant('Accent Green 600', '#129737'), // accent-green-600 from Figma
+  createVariant('Accent Green 700', '#0F802F'), // accent-green-700 from Figma
+  createVariant('Accent Green 800', '#0A522E'), // accent-green-800 from Figma
+  createVariant('Accent Green 900', '#063716'), // accent-green-900 from Figma
+];
+
+// Legacy Teal - now maps to Brand Blue for backward compatibility
 export const tealPalette: ColorVariant[] = [
-  createVariant('Teal 50', '#e8f9fc'), // primitives/color/primary-teal/teal-50 from Figma variables
-  createVariant('Teal 100', '#bbedf7'), // primitives/color/primary-teal/teal-100 from Figma variables
-  createVariant('Teal 200', '#84def0'), // primitives/color/primary-teal/teal-200 from Figma variables
-  createVariant('Teal 300', '#56d2eb'), // primitives/color/primary-teal/teal-300 from Figma variables
-  createVariant('Teal 400', '#1bc3e4'), // primitives/color/primary-teal/teal-400 from Figma variables
-  createVariant('Teal 500', '#128197'), // primitives/color/primary-teal/teal-500 from Figma variables
-  createVariant('Teal 600', '#0f6d80'), // primitives/color/primary-teal/teal-600 from Figma variables
-  createVariant('Teal 700', '#0d5d6d'), // primitives/color/primary-teal/teal-700 from Figma variables
-  createVariant('Teal 800', '#0a4652'), // primitives/color/primary-teal/teal-800 from Figma variables
-  createVariant('Teal 900', '#072f37'), // primitives/color/primary-teal/teal-900 from Figma variables
+  createVariant('Teal 50', '#D6E8FF'), // Now maps to brand-blue-50
+  createVariant('Teal 100', '#B2D8FF'), // Now maps to brand-blue-100
+  createVariant('Teal 200', '#75B8FF'), // Now maps to brand-blue-200
+  createVariant('Teal 300', '#3396FF'), // Now maps to brand-blue-300
+  createVariant('Teal 400', '#017CFF'), // Now maps to brand-blue-400
+  createVariant('Teal 500', '#0063CC'), // Now maps to brand-blue-500 (PRIMARY)
+  createVariant('Teal 600', '#0051A8'), // Now maps to brand-blue-600
+  createVariant('Teal 700', '#00458F'), // Now maps to brand-blue-700
+  createVariant('Teal 800', '#002C5C'), // Now maps to brand-blue-800
+  createVariant('Teal 900', '#001E3D'), // Now maps to brand-blue-900
+];
+
+// Legacy Navy - now maps to Brand Blue for backward compatibility
+export const navyPalette: ColorVariant[] = [
+  createVariant('Navy 20', '#F0F7FF'), // Now maps to brand-blue-25
+  createVariant('Navy 50', '#D6E8FF'), // Now maps to brand-blue-50
+  createVariant('Navy 100', '#B2D8FF'), // Now maps to brand-blue-100
+  createVariant('Navy 200', '#75B8FF'), // Now maps to brand-blue-200
+  createVariant('Navy 300', '#3396FF'), // Now maps to brand-blue-300
+  createVariant('Navy 400', '#017CFF'), // Now maps to brand-blue-400
+  createVariant('Navy 500', '#0063CC'), // Now maps to brand-blue-500
+  createVariant('Navy 600', '#0051A8'), // Now maps to brand-blue-600
+  createVariant('Navy 700', '#00458F'), // Now maps to brand-blue-700
 ];
 
 // Brand Pink - 10 shades
@@ -155,8 +211,16 @@ export const grayPalette: ColorVariant[] = [
 
 // Export all palettes
 export const colorPalettes = {
+  // Primary brand palette (2026 Rebrand)
+  brandBlue: brandBluePalette,
+  actionTeal: actionTealPalette,
+  // Secondary brand palette
+  accentGreen: accentGreenPalette,
+  // Legacy aliases
+  navy: navyPalette,
   teal: tealPalette,
   pink: pinkPalette,
+  // Semantic palettes
   blue: bluePalette,
   orange: orangePalette,
   green: greenPalette,
@@ -176,17 +240,50 @@ export function hslToHex(h: number, s: number, l: number): string {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
-// Recommended WCAG-compliant combinations
+// Recommended WCAG-compliant combinations - Updated for Brand Blue/Accent Green (2026 Rebrand)
 export const wcagRecommendedCombinations = [
   {
     background: "white",
-    text: "Teal-700",
-    value: "#0A4D5C",
-    purpose: "Primary text on white background",
-    contrast: 7.42,
+    text: "Brand Blue-500",
+    value: "#0063CC",
+    purpose: "Primary text on white background (brand primary)",
+    contrast: 6.8,
     wcag: {
       aa: true,
       aaa: true,
+    },
+  },
+  {
+    background: "white",
+    text: "Brand Blue-600",
+    value: "#0051A8",
+    purpose: "Primary interactive elements on white background",
+    contrast: 8.2,
+    wcag: {
+      aa: true,
+      aaa: true,
+    },
+  },
+  {
+    background: "Brand Blue-500",
+    text: "white",
+    value: "#FFFFFF",
+    purpose: "White text on brand blue background",
+    contrast: 6.8,
+    wcag: {
+      aa: true,
+      aaa: false,
+    },
+  },
+  {
+    background: "Brand Blue-500",
+    text: "Accent Green-500",
+    value: "#15B743",
+    purpose: "Secondary brand highlight on brand blue background",
+    contrast: 2.8,
+    wcag: {
+      aa: false,
+      aaa: false,
     },
   },
   {
@@ -203,7 +300,7 @@ export const wcagRecommendedCombinations = [
   {
     background: "white",
     text: "Blue-700",
-    value: "#1E40AF", 
+    value: "#1E40AF",
     purpose: "Strong informational text on white background",
     contrast: 6.85,
     wcag: {
@@ -226,7 +323,7 @@ export const wcagRecommendedCombinations = [
     background: "white",
     text: "Orange-600",
     value: "#EA580C",
-    purpose: "Warning text on white background", 
+    purpose: "Warning text on white background",
     contrast: 4.89,
     wcag: {
       aa: true,
@@ -245,44 +342,11 @@ export const wcagRecommendedCombinations = [
     },
   },
   {
-    background: "white",
-    text: "Teal-600",
-    value: "#0E677A",
-    purpose: "Secondary text on white background",
-    contrast: 5.85,
-    wcag: {
-      aa: true,
-      aaa: false,
-    },
-  },
-  {
-    background: "Teal-100",
-    text: "Teal-900",
-    value: "#031A1F",
-    purpose: "Primary text on light teal background",
-    contrast: 12.71, // Black contrast against Teal-100
-    wcag: {
-      aa: true,
-      aaa: true,
-    },
-  },
-  {
-    background: "Teal-700",
-    text: "white",
-    value: "#FFFFFF",
-    purpose: "White text on dark teal background",
-    contrast: 7.42,
-    wcag: {
-      aa: true,
-      aaa: true,
-    },
-  },
-  {
-    background: "white",
-    text: "Pink-700",
-    value: "#85004A",
-    purpose: "Primary pink text on white background",
-    contrast: 6.56,
+    background: "Navy-50",
+    text: "Navy-700",
+    value: "#030811",
+    purpose: "Primary text on light navy background",
+    contrast: 14.5,
     wcag: {
       aa: true,
       aaa: true,

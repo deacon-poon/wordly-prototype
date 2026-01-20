@@ -44,7 +44,7 @@ export function ProgressChart() {
               >
                 <Cell
                   key="cell-0"
-                  fill="#118197" // brand-teal
+                  fill="#0063CC" // Brand Blue 500 (primary)
                 />
                 <Cell
                   key="cell-1"

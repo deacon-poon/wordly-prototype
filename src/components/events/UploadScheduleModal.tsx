@@ -139,7 +139,7 @@ export function UploadScheduleModal({
 
   const handleDownloadTemplate = () => {
     // Generate CSV template with headers and example row
-    const headers = ["Location", "Title", "Presenter", "Date", "Start Time", "End Time", "Timezone", "Glossary", "Account", "Voice Pack", "Language", "Label"];
+    const headers = ["Room", "Title", "Presenter", "Date", "Start Time", "End Time", "Timezone", "Glossary", "Account", "Voice Pack", "Language", "Label"];
     const exampleRow = ["Main Stage", "Example Session Title", "John Doe", "12/04/2025", "1:00 PM", "1:50 PM", "America/Los_Angeles", "", "", "", "English (US)", ""];
     
     const csvContent = [
@@ -199,7 +199,7 @@ export function UploadScheduleModal({
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
               <FileSpreadsheet className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -207,7 +207,7 @@ export function UploadScheduleModal({
                 Upload Schedule
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600">
-                Import locations and sessions from a spreadsheet
+                Import rooms and sessions from a spreadsheet
               </DialogDescription>
             </div>
           </div>
@@ -222,7 +222,7 @@ export function UploadScheduleModal({
               </Label>
               <button
                 onClick={handleDownloadTemplate}
-                className="text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 underline transition-colors"
+                className="text-sm font-medium text-primary-teal-600 hover:text-accent-green-800 underline transition-colors"
               >
                 Download template
               </button>
@@ -242,9 +242,9 @@ export function UploadScheduleModal({
 
             {/* File upload display or button */}
             {selectedFile ? (
-              <div className="flex items-center justify-between p-3 border border-primary-teal-300 rounded-lg bg-primary-teal-50/50">
+              <div className="flex items-center justify-between p-3 border border-primary-teal-300 rounded-lg bg-accent-green-50/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-primary-teal-100 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded bg-accent-green-100 flex items-center justify-center">
                     <FileSpreadsheet className="h-4 w-4 text-primary-teal-600" />
                   </div>
                   <div>
@@ -290,7 +290,7 @@ export function UploadScheduleModal({
               <button
                 type="button"
                 onClick={() => setShowDefaults(!showDefaults)}
-                className="text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 underline transition-colors"
+                className="text-sm font-medium text-primary-teal-600 hover:text-accent-green-800 underline transition-colors"
               >
                 {showDefaults ? "Save Settings" : "Customize"}
               </button>
@@ -669,7 +669,7 @@ export function UploadScheduleModal({
                   </p>
                   <p className="text-amber-700">
                     Uploading a schedule will overwrite <strong>all</strong> existing sessions for this event. 
-                    Locations with the same name will keep their current QR codes.
+                    Rooms with the same name will keep their current QR codes.
                   </p>
                 </div>
               </div>
@@ -677,7 +677,7 @@ export function UploadScheduleModal({
           )}
 
           {/* Info callout - matches ManualEventWizard pattern */}
-          <div className="p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
+          <div className="p-4 bg-accent-green-50 border border-accent-green-200 rounded-lg">
             <div className="flex gap-3">
               <Info className="h-5 w-5 text-primary-teal-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-gray-700">
@@ -687,7 +687,7 @@ export function UploadScheduleModal({
                 <ul className="space-y-1 text-gray-600">
                   <li>• All sessions will inherit the defaults above</li>
                   <li>• Values in your spreadsheet override these defaults</li>
-                  <li>• Locations are created automatically from your data</li>
+                  <li>• Rooms are created automatically from your data</li>
                 </ul>
               </div>
             </div>
@@ -724,7 +724,7 @@ export function UploadScheduleModal({
           <Button
             onClick={handleSubmit}
             disabled={isUploading || !selectedFile || (hasExistingSessions && !confirmOverwrite)}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isUploading ? (
               <>

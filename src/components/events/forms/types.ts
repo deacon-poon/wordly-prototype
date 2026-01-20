@@ -16,13 +16,13 @@ export interface Session {
   endTime: string;
   timezone: string;
   status: "pending" | "active" | "completed" | "skipped";
-  // Future: eventId, locationId, previousSessionId, nextSessionId, chainStatus
+  // Future: eventId, roomId, previousSessionId, nextSessionId, chainStatus
 }
 
-export interface Location {
+export interface Room {
   id: string;
   name: string;
-  locationSessionId: string;
+  roomSessionId: string;
   passcode: string;
   mobileId?: string;
   sessions: Session[];
@@ -46,7 +46,7 @@ export interface Event {
   endDate: string; // ISO date string
   timezone: string;
   defaults: EventDefaults;
-  locations: Location[];
+  rooms: Room[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -70,11 +70,11 @@ export interface EventDetailsFormData {
   timezone: string;
 }
 
-export interface LocationFormData {
+export interface RoomFormData {
   id?: string; // Present when editing, absent when creating
   name: string;
   // Auto-generated credentials (displayed after creation, placeholders before)
-  locationSessionId?: string;
+  roomSessionId?: string;
   passcode?: string;
   mobileId?: string;
 }
@@ -112,8 +112,8 @@ export interface EventFormState {
   mode: FormMode;
   currentStep: WizardStep;
   eventDetails: EventDetailsFormData;
-  locations: LocationFormData[];
-  sessionsByLocation: Record<string, SessionFormData[]>; // locationId/tempId -> sessions
+  rooms: RoomFormData[];
+  sessionsByRoom: Record<string, SessionFormData[]>; // roomId/tempId -> sessions
   isSubmitting: boolean;
   errors: Record<string, string>;
 }
@@ -129,9 +129,9 @@ export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
   timezone: "America/Los_Angeles", // Default to Pacific Time
 };
 
-export const DEFAULT_LOCATION: LocationFormData = {
+export const DEFAULT_ROOM: RoomFormData = {
   name: "",
-  locationSessionId: undefined,
+  roomSessionId: undefined,
   passcode: undefined,
   mobileId: undefined,
 };
@@ -268,15 +268,14 @@ export function formatPresenters(presenters: string[]): string {
 }
 
 /**
- * Generate a location session ID (e.g., "MAIN-1234")
+ * Generate a room session ID in format "ABCD-1234" (4 letters + 4 digits)
  */
-export function generateLocationSessionId(locationName: string): string {
-  const prefix = locationName
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 4)
-    .padEnd(4, "X");
-  const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+export function generateRoomSessionId(): string {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const prefix = Array.from({ length: 4 }, () =>
+    letters[Math.floor(Math.random() * letters.length)]
+  ).join("");
+  const suffix = Math.floor(1000 + Math.random() * 9000).toString();
   return `${prefix}-${suffix}`;
 }
 
@@ -305,14 +304,14 @@ export interface ScheduleValidationResult {
 
 export interface ScheduleError {
   type: "overlap" | "invalid_time" | "outside_event";
-  locationIndex: number;
+  roomIndex: number;
   sessionIndex: number;
   message: string;
 }
 
 export interface ScheduleWarning {
   type: "short_duration" | "large_gap" | "outside_hours";
-  locationIndex: number;
+  roomIndex: number;
   sessionIndex: number;
   message: string;
 }
@@ -339,7 +338,7 @@ export function validateSchedule(
     if (session.scheduledDate < eventStartDate || session.scheduledDate > eventEndDate) {
       errors.push({
         type: "outside_event",
-        locationIndex: 0,
+        roomIndex: 0,
         sessionIndex: originalIndex,
         message: `Session "${session.title || "Untitled"}" is outside the event date range`,
       });
@@ -349,7 +348,7 @@ export function validateSchedule(
     if (session.endTime <= session.scheduledStart) {
       errors.push({
         type: "invalid_time",
-        locationIndex: 0,
+        roomIndex: 0,
         sessionIndex: originalIndex,
         message: `Session "${session.title || "Untitled"}" end time must be after start time`,
       });
@@ -364,7 +363,7 @@ export function validateSchedule(
       ) {
         errors.push({
           type: "overlap",
-          locationIndex: 0,
+          roomIndex: 0,
           sessionIndex: originalIndex,
           message: `Session "${session.title || "Untitled"}" overlaps with "${nextSession.title || "Untitled"}"`,
         });
@@ -381,7 +380,7 @@ export function validateSchedule(
     if (duration > 0 && duration < 5) {
       warnings.push({
         type: "short_duration",
-        locationIndex: 0,
+        roomIndex: 0,
         sessionIndex: originalIndex,
         message: `Session "${session.title || "Untitled"}" is very short (${duration} minutes)`,
       });

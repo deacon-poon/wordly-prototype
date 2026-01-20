@@ -15,9 +15,10 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
-        // Brand specific variants
-        teal: "border-transparent bg-[hsl(var(--teal-500))] text-white",
-        pink: "border-transparent bg-[hsl(var(--pink-500))] text-white",
+        // Brand specific variants - Brand Blue 500 as primary
+        teal: "border-transparent bg-primary-blue-500 text-white", // Legacy name, now uses Brand Blue
+        navy: "border-transparent bg-primary-blue-500 text-white", // Brand Blue (primary)
+        accent: "border-transparent bg-accent-green-500 text-white", // Accent Green (secondary)
       },
       // Add size variants
       size: {

@@ -154,19 +154,19 @@ export function SessionsBarChart() {
               <Bar
                 dataKey="Translation"
                 name="Translation"
-                fill="#118197" // brand-teal
+                fill="#0063CC" // brand-navy (primary)
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 dataKey="Interpretation"
                 name="Interpretation"
-                fill="#28E6B6" // brand-green
+                fill="#15B743" // brand-green (secondary)
                 radius={[4, 4, 0, 0]}
               />
               <Bar
                 dataKey="Transcription"
                 name="Transcription"
-                fill="#30A3B7" // lighter teal
+                fill="#255DC1" // lighter navy
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

@@ -28,13 +28,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const variantStyles = {
-      default: "bg-[#118197] text-white hover:bg-[#0C687A]",
+      default: "bg-[#0063CC] text-white hover:bg-[#017CFF]", // Brand Blue 500 primary
       destructive: "bg-[#E62D21] text-white hover:bg-[#B8221A]",
       outline:
         "border border-gray-300 bg-transparent hover:bg-gray-100 text-gray-800",
       secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
       ghost: "bg-transparent hover:bg-gray-100 text-gray-800",
-      link: "bg-transparent underline-offset-4 hover:underline text-[#118197] p-0 h-auto",
+      link: "bg-transparent underline-offset-4 hover:underline text-[#0063CC] p-0 h-auto", // Navy link
       success: "bg-[#0C9A4E] hover:bg-[#0A7B3F] text-white",
     };
 
@@ -73,9 +73,9 @@ const meta: Meta<typeof Button> = {
 Interactive buttons for user actions, following Wordly's design system and brand color strategy.
 
 ## Brand Color Strategy (70-20-10 Principle)
-- **70% Teal** (#118197): Primary brand color for main actions and affirmative buttons
-- **20% Navy** (#0C2A3A): Secondary brand color for supporting elements
-- **10% Accent Green** (#28E6B6): Accent color for highlights and visual interest (not for buttons)
+- **70% Navy** (#0063CC): Primary brand color for main actions and affirmative buttons
+- **20% Green** (#15B743): Secondary brand color for accents and highlights
+- **10% Supporting colors**: For functional states and specific contexts
 
 ## Button Variants
 - **Default**: Primary teal for main actions (CTA, submit, confirm)

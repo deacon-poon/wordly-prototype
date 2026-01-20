@@ -34,7 +34,7 @@ interface ManualEventWizardProps {
  * Simplified event creation modal.
  *
  * Per design sync feedback: User sets event defaults here, then lands on the
- * blank event detail page where they can add locations/sessions manually
+ * blank event detail page where they can add rooms/sessions manually
  * or use bulk upload. This avoids duplicating UX between the wizard and
  * the event detail page.
  */
@@ -105,7 +105,7 @@ export function ManualEventWizard({
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary-teal-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
               <Calendar className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -128,7 +128,7 @@ export function ManualEventWizard({
           />
 
           {/* Info callout about next steps */}
-          <div className="mt-6 p-4 bg-primary-teal-50 border border-primary-teal-200 rounded-lg">
+          <div className="mt-6 p-4 bg-accent-green-50 border border-accent-green-200 rounded-lg">
             <div className="flex gap-3">
               <Info className="h-5 w-5 text-primary-teal-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-gray-700">
@@ -140,7 +140,7 @@ export function ManualEventWizard({
                   detail page where you can:
                 </p>
                 <ul className="mt-2 space-y-1 list-disc list-inside text-gray-600">
-                  <li>Add locations and sessions manually</li>
+                  <li>Add rooms and sessions manually</li>
                   <li>Upload a spreadsheet to bulk-add sessions</li>
                   <li>Configure additional settings</li>
                 </ul>
@@ -160,7 +160,7 @@ export function ManualEventWizard({
           <Button
             onClick={handleCreate}
             disabled={isSubmitting || !eventDetails.name.trim()}
-            className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+            className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSubmitting ? "Creating..." : "Create Event"}
           </Button>
