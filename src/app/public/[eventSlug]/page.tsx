@@ -1052,9 +1052,9 @@ export default function PublicSummaryPage({
       const matchesSearch =
         searchQuery === "" ||
         session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.tldr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.keyTakeaways.some((t) =>
+        session.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.tldr?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        session.keyTakeaways?.some((t) =>
           t.toLowerCase().includes(searchQuery.toLowerCase())
         ) ||
         session.presenters.some((p) =>
