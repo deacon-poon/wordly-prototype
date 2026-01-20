@@ -129,7 +129,7 @@ export default function LoginPage() {
                 onClick={handleSearchSSO}
                 disabled={!email.trim() || isLoading}
                 variant="outline"
-                className="w-full h-12 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-primary-blue-600 rounded-lg"
+                className="w-full h-12 rounded-lg"
               >
                 {isLoading ? (
                   <div className="flex items-center">
@@ -154,7 +154,7 @@ export default function LoginPage() {
                     <Button
                       key={index}
                       variant="outline"
-                      className="w-full h-auto p-4 justify-start text-left hover:bg-accent-green-50 hover:border-accent-green-300 rounded-lg"
+                      className="w-full h-auto p-4 justify-start text-left rounded-lg"
                       onClick={() => {
                         // Handle SSO organization selection
                         window.location.href = `/auth/sso/${

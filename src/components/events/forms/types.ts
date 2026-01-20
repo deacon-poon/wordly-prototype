@@ -58,14 +58,15 @@ export interface Event {
 /**
  * Event details form data - simplified per Dec 31 design sync.
  * Event-level defaults have been eliminated; sessions inherit from account-level session defaults.
- * Description removed - events only need name and dates.
+ * Description removed - events only need name and timezone.
  * Timezone added per Jan 2026 design sync (Graham/Justin) - event-level timezone
  * that sessions inherit by default.
+ *
+ * Note: Start and end dates are now inferred from the sessions within the event.
+ * The event date range is derived dynamically from the earliest to latest session date.
  */
 export interface EventDetailsFormData {
   name: string;
-  startDate: string;
-  endDate: string;
   /** Event timezone - all session times are displayed/interpreted in this timezone */
   timezone: string;
 }
@@ -124,8 +125,6 @@ export interface EventFormState {
 
 export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
   name: "",
-  startDate: new Date().toISOString().split("T")[0],
-  endDate: new Date().toISOString().split("T")[0],
   timezone: "America/Los_Angeles", // Default to Pacific Time
 };
 

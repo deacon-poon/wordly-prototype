@@ -366,7 +366,7 @@ export function SessionJoinModalCompact({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Listen/Translate */}
-                <Card className="border-accent-green-200 bg-accent-green-50/30 hover:bg-accent-green-50/50 transition-colors cursor-pointer">
+                <Card className="border-primary-blue-200 bg-primary-blue-50/30 hover:bg-primary-blue-50/50 transition-colors cursor-pointer">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden">
@@ -399,7 +399,7 @@ export function SessionJoinModalCompact({
                       <Button
                         onClick={() => onJoinAsAttendee("qr-options")}
                         variant="outline"
-                        className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="w-full border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         QR Code Options
@@ -409,7 +409,7 @@ export function SessionJoinModalCompact({
                 </Card>
 
                 {/* Public Display */}
-                <Card className="border-accent-green-200 bg-accent-green-50/30 hover:bg-accent-green-50/50 transition-colors cursor-pointer">
+                <Card className="border-primary-blue-200 bg-primary-blue-50/30 hover:bg-primary-blue-50/50 transition-colors cursor-pointer">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden">
@@ -435,7 +435,7 @@ export function SessionJoinModalCompact({
                       <Button
                         onClick={() => onJoinAsAttendee("big-screen")}
                         variant="outline"
-                        className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="w-full border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         Open Public Display
@@ -443,7 +443,7 @@ export function SessionJoinModalCompact({
                       <Button
                         onClick={() => onJoinAsAttendee("public-monitor")}
                         variant="outline"
-                        className="w-full border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="w-full border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         Monitor Setup

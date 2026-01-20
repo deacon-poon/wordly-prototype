@@ -21,8 +21,8 @@
     /* UI colors */
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 147 88% 33%; /* Accent green #15B743 */
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 100% 92%; /* Brand Blue 50 #D6E8FF - changed from green to blue for UI consistency */
+    --accent-foreground: 210 100% 18%; /* Brand Blue 800 for text on accent backgrounds */
 
     /* Semantic colors */
     --destructive: 0 84.2% 60.2%;
@@ -285,6 +285,13 @@
   * {
     @apply border-border;
   }
+
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;

@@ -68,7 +68,7 @@ export function AddRoomModal({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-primary-blue-100 flex items-center justify-center">
               <MapPin className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -195,7 +195,7 @@ export function EditRoomModal({
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-primary-blue-100 flex items-center justify-center">
               <MapPin className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>

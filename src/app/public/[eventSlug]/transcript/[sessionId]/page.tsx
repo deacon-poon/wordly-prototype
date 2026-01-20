@@ -243,7 +243,7 @@ function getMockTranscriptData(
     scheduledStart: "9:00 AM",
     endTime: "10:30 AM",
     stageName: "Main Hall",
-    eventName: "AI & Machine Learning Summit 2024",
+    eventName: "AI & Machine Learning Summit 2026",
     eventSlug: eventSlug,
     summary:
       "Dr. Chen opened the conference with a compelling vision of technology's trajectory over the next decade. She emphasized three key themes: the democratization of AI tools, the shift toward sustainable computing, and the growing importance of human-AI collaboration. The keynote highlighted how organizations must adapt their strategies to leverage emerging technologies while maintaining ethical considerations.",

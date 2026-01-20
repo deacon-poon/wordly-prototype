@@ -192,7 +192,7 @@ export function RoomListForm({
           type="button"
           variant="outline"
           onClick={onAddRoom}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-accent-green-400 hover:bg-accent-green-50 text-gray-600 hover:text-accent-green-800"
+          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-gray-600 hover:text-primary-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Another Room

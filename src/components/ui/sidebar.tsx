@@ -104,11 +104,11 @@ function SidebarTrigger({ className, ...props }: SidebarTriggerProps) {
     <Button
       variant="ghost"
       size="icon"
-      className={cn("h-9 w-9 p-0 hover:bg-primary-teal-50", className)}
+      className={cn("h-9 w-9 p-0 hover:bg-primary-blue-50", className)}
       onClick={handleClick}
       {...props}
     >
-      <PanelLeft className="h-4 w-4 text-secondary-navy-600 hover:text-primary-teal-600 transition-colors" />
+      <PanelLeft className="h-4 w-4 text-gray-600 hover:text-primary-blue-600 transition-colors" />
       <span className="sr-only">Toggle sidebar</span>
     </Button>
   );
@@ -236,7 +236,7 @@ function SidebarSection({
   return (
     <div className={cn("px-3 py-3", className)} {...props}>
       {title && !isCollapsed && (
-        <h3 className="px-2 mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+        <h3 className="px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-primary-blue-800">
           {title}
         </h3>
       )}
@@ -265,21 +265,19 @@ function SidebarItem({
   return (
     <div
       className={cn(
-        "flex cursor-pointer items-center rounded-md px-3 py-3 transition-all duration-200 ease-in-out",
-        // Base styling for inactive items
-        !isActive && "text-secondary-navy-600",
-        // Hover state: Only apply light teal hover to inactive items with subtle green accent
+        "flex cursor-pointer items-center rounded-md px-3 py-3 transition-all duration-200 ease-in-out group",
+        // Hover state: Light blue hover with subtle elevation using box-shadow (no layout shift)
         !isActive &&
-          "hover:bg-primary-teal-50 hover:shadow-[0_2px_8px_rgba(18,129,151,0.2)] hover:scale-[1.01]",
-        // Active items get a subtle darker hover instead
+          "hover:bg-primary-blue-50 hover:shadow-[0_0_0_1px_hsl(var(--primary-blue-200)),0_1px_2px_0_rgb(0_0_0_/0.05)]",
+        // Active items get a subtle brightness increase
         isActive &&
-          "hover:brightness-110 transition-all duration-200 ease-in-out",
+          "hover:brightness-105 transition-all duration-200 ease-in-out",
         // Active state: Different styling based on variant
         isActive
           ? variant === "organization"
-            ? "bg-gradient-to-r from-primary-teal-500 to-accent-green-600 text-white shadow-[0_2px_8px_rgba(18,129,151,0.4)] font-medium" // Gradient with accent green for organization section
-            : "bg-primary-teal-600 text-white font-medium" // Strong primary teal background
-          : "text-secondary-navy-600", // 20% rule for secondary text
+            ? "bg-gradient-to-r from-primary-blue-500 to-primary-blue-700 text-white shadow-md font-medium" // Blue gradient for organization
+            : "bg-primary-blue-600 text-white font-medium shadow-md" // Brand Blue for default active items
+          : "", // No base styling for inactive
         className
       )}
       {...props}
@@ -287,11 +285,11 @@ function SidebarItem({
       {icon && (
         <div
           className={cn(
-            "mr-3 flex h-5 w-5 items-center justify-center transition-colors duration-300",
-            // Base styling: Active gets white icons, inactive gets navy
-            isActive ? "text-white" : "text-secondary-navy-500",
-            // Individual hover for icons only on inactive items
-            !isActive && "hover:text-primary-teal-600"
+            "mr-3 flex h-5 w-5 items-center justify-center transition-colors duration-200",
+            // Active: white icons
+            isActive
+              ? "text-white"
+              : "text-primary-blue-600 group-hover:text-primary-blue-700" // Blue icons for inactive, darker on hover
           )}
         >
           {icon}
@@ -300,11 +298,11 @@ function SidebarItem({
       {!isCollapsed && (
         <span
           className={cn(
-            "text-sm font-medium transition-colors duration-300",
-            // Base styling: Active gets white text, inactive gets navy
-            isActive ? "text-white" : "text-secondary-navy-600",
-            // Individual hover for text only on inactive items
-            !isActive && "hover:text-primary-teal-700"
+            "text-sm font-medium transition-colors duration-200",
+            // Active: white text
+            isActive
+              ? "text-white"
+              : "text-gray-700 group-hover:text-primary-blue-800" // Keep current label color, darker blue on hover
           )}
         >
           {title}

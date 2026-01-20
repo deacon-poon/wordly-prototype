@@ -133,17 +133,31 @@ export function SessionPanel({
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Check if session has started (read-only if yes) - only for edit mode
-  const hasStarted = () => {
-    if (mode !== "edit" || !session) return false;
+  // Check session status for edit restrictions
+  // Active sessions: only end time can be edited
+  // Completed sessions: fully read-only
+  const getSessionEditStatus = () => {
+    if (mode !== "edit" || !session) {
+      return { isActive: false, isCompleted: false };
+    }
+
     const now = new Date();
-    const sessionDateTime = new Date(
+    const sessionStart = new Date(
       `${session.scheduledDate}T${session.scheduledStart}`
     );
-    return now >= sessionDateTime;
+    const sessionEnd = new Date(
+      `${session.scheduledDate}T${session.endTime}`
+    );
+
+    const isActive = now >= sessionStart && now < sessionEnd;
+    const isCompleted = now >= sessionEnd || session.status === "completed";
+
+    return { isActive, isCompleted };
   };
 
-  const isReadOnly = hasStarted();
+  const { isActive, isCompleted } = getSessionEditStatus();
+  // Active sessions allow end time editing only; completed sessions are fully read-only
+  const isReadOnly = isCompleted;
 
   // Reset form and room when session changes (edit mode)
   useEffect(() => {
@@ -168,7 +182,8 @@ export function SessionPanel({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isReadOnly) {
+    // Completed sessions cannot be edited at all
+    if (isCompleted) {
       return;
     }
 
@@ -243,10 +258,14 @@ export function SessionPanel({
         className="flex-1 overflow-y-auto min-h-0"
       >
         <div className="p-6 space-y-6">
-          {isReadOnly && (
+          {isActive && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+              <strong>Session in progress:</strong> Only the end time can be modified while the session is active.
+            </div>
+          )}
+          {isCompleted && (
             <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700">
-              <strong>Read-only:</strong> This session has already started and
-              cannot be edited.
+              <strong>Read-only:</strong> This session has completed and cannot be edited.
             </div>
           )}
 
@@ -256,6 +275,7 @@ export function SessionPanel({
             errors={errors}
             mode={mode === "add" ? "create" : "edit"}
             readOnly={isReadOnly}
+            activeSessionMode={isActive}
             roomName={roomName}
             rooms={rooms}
             selectedRoomId={selectedRoomId}
@@ -291,7 +311,7 @@ export function SessionPanel({
           <Button
             type="submit"
             form="session-form"
-            disabled={isSaving || isReadOnly || !formData.title.trim()}
+            disabled={isSaving || isCompleted || !formData.title.trim()}
             className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? (

@@ -84,7 +84,7 @@ function ProgressiveMethodItem({
         "border rounded-lg",
         variant === "presenter"
           ? "border-primary-teal-200 bg-primary-teal-50/30 hover:bg-primary-teal-50/50 hover:border-primary-teal-300"
-          : "border-accent-green-200 bg-accent-green-50/30 hover:bg-accent-green-50/50 hover:border-accent-green-300",
+          : "border-primary-blue-200 bg-primary-blue-50/30 hover:bg-primary-blue-50/50 hover:border-primary-blue-300",
         isExpanded && "ring-2 ring-offset-1 shadow-lg",
         variant === "presenter" && isExpanded && "ring-primary-teal-200",
         variant === "attendee" && isExpanded && "ring-accent-green-200"
@@ -123,7 +123,7 @@ function ProgressiveMethodItem({
                     "focus:outline-none focus:ring-2 focus:ring-offset-1",
                     variant === "presenter"
                       ? "text-primary-teal-600 hover:text-primary-teal-700 focus:ring-primary-teal-200"
-                      : "text-accent-green-600 hover:text-accent-green-700 focus:ring-accent-green-200"
+                      : "text-primary-blue-600 hover:text-primary-blue-700 focus:ring-primary-blue-200"
                   )}
                   aria-label={isExpanded ? "Hide options" : "Show options"}
                 >
@@ -556,7 +556,7 @@ export function SessionJoinModalProgressive({
                           navigator.clipboard.writeText(url);
                           // TODO: Show toast notification
                         }}
-                        className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
+                        className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
                         size="sm"
                       >
                         <Copy className="w-4 h-4 mr-2" />
@@ -571,7 +571,7 @@ export function SessionJoinModalProgressive({
                           // TODO: Show toast notification
                         }}
                         variant="outline"
-                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         <Copy className="w-4 h-4 mr-2" />
@@ -580,7 +580,7 @@ export function SessionJoinModalProgressive({
                       <Button
                         onClick={() => onJoinAsAttendee("download-qr")}
                         variant="outline"
-                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         <Download className="w-4 h-4 mr-2" />
@@ -589,7 +589,7 @@ export function SessionJoinModalProgressive({
                       <Button
                         onClick={() => onJoinAsAttendee("print-qr")}
                         variant="outline"
-                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         <Printer className="w-4 h-4 mr-2" />
@@ -612,7 +612,7 @@ export function SessionJoinModalProgressive({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <Button
                         onClick={() => onJoinAsAttendee("big-screen")}
-                        className="bg-accent-green-600 hover:bg-accent-green-700 text-white"
+                        className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
                         size="sm"
                       >
                         Open
@@ -625,7 +625,7 @@ export function SessionJoinModalProgressive({
                           navigator.clipboard.writeText(url);
                         }}
                         variant="outline"
-                        className="border-accent-green-300 text-accent-green-700 hover:bg-accent-green-50"
+                        className="border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-50"
                         size="sm"
                       >
                         Copy link
@@ -636,7 +636,7 @@ export function SessionJoinModalProgressive({
                     <div className="space-y-2">
                       {/* Public Display Setup */}
                       <Collapsible>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-blue-200 rounded hover:bg-primary-blue-50">
                           <span className="text-sm text-gray-900 font-medium">
                             How to set up public display
                           </span>
@@ -650,7 +650,7 @@ export function SessionJoinModalProgressive({
                           <Button
                             variant="link"
                             size="sm"
-                            className="p-0 h-auto font-normal text-accent-green-700 hover:text-accent-green-800 underline"
+                            className="p-0 h-auto font-normal text-primary-blue-700 hover:text-primary-blue-800 underline"
                             onClick={() =>
                               window.open(
                                 "https://help.wordly.ai/public-display",
@@ -665,7 +665,7 @@ export function SessionJoinModalProgressive({
 
                       {/* Subtitles Setup */}
                       <Collapsible>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-blue-200 rounded hover:bg-primary-blue-50">
                           <span className="text-sm text-gray-900 font-medium">
                             How to set up subtitles
                           </span>
@@ -679,7 +679,7 @@ export function SessionJoinModalProgressive({
                           <Button
                             variant="link"
                             size="sm"
-                            className="p-0 h-auto font-normal text-accent-green-700 hover:text-accent-green-800 underline"
+                            className="p-0 h-auto font-normal text-primary-blue-700 hover:text-primary-blue-800 underline"
                             onClick={() =>
                               window.open(
                                 "https://help.wordly.ai/subtitles",
@@ -707,7 +707,7 @@ export function SessionJoinModalProgressive({
                     {/* FAQ-style accordion sections */}
                     <div className="space-y-2">
                       <Collapsible>
-                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-accent-green-200 rounded hover:bg-accent-green-50">
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 text-left bg-white border border-primary-blue-200 rounded hover:bg-primary-blue-50">
                           <span className="text-sm text-gray-900 font-medium">
                             iFrame (for captions with a livestream)
                           </span>
@@ -721,7 +721,7 @@ export function SessionJoinModalProgressive({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full justify-start border-accent-green-300 text-accent-green-700 hover:bg-accent-green-100 bg-white"
+                            className="w-full justify-start border-primary-blue-300 text-primary-blue-700 hover:bg-primary-blue-100 bg-white"
                             onClick={() => onJoinAsAttendee("iframe")}
                           >
                             Use an iFrame

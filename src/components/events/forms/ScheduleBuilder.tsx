@@ -41,6 +41,7 @@ import {
   ScheduleError,
   ScheduleWarning,
 } from "./types";
+import { TimeInput } from "@/components/ui/datetime-picker";
 
 // ============================================================================
 // Props
@@ -164,7 +165,7 @@ function SessionRow({
       <div className="space-y-3">
         {/* Row 1: Title & Presenters */}
         <div className="flex items-start gap-3">
-          <div className="w-7 h-7 rounded-full bg-accent-green-100 text-accent-green-800 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-6">
+          <div className="w-7 h-7 rounded-full bg-primary-blue-100 text-primary-blue-800 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-6">
             {index + 1}
           </div>
           <div className="flex-1 grid grid-cols-2 gap-3">
@@ -223,24 +224,20 @@ function SessionRow({
               <Label className="text-xs text-gray-500 mb-1 block">
                 Start Time
               </Label>
-              <Input
-                type="time"
+              <TimeInput
                 value={session.scheduledStart}
-                onChange={(e) => onUpdate({ scheduledStart: e.target.value })}
+                onChange={(time) => onUpdate({ scheduledStart: time })}
                 disabled={readOnly}
-                className="h-9"
               />
             </div>
             <div>
               <Label className="text-xs text-gray-500 mb-1 block">
                 End Time
               </Label>
-              <Input
-                type="time"
+              <TimeInput
                 value={session.endTime}
-                onChange={(e) => onUpdate({ endTime: e.target.value })}
+                onChange={(time) => onUpdate({ endTime: time })}
                 disabled={readOnly}
-                className="h-9"
               />
             </div>
             <div className="flex items-end">
@@ -365,7 +362,7 @@ function RoomCard({
                     ? "bg-red-100"
                     : hasWarnings
                     ? "bg-yellow-100"
-                    : "bg-accent-green-100"
+                    : "bg-primary-blue-100"
                 }`}
               >
                 <MapPin
@@ -497,7 +494,7 @@ function RoomCard({
                   variant="outline"
                   size="sm"
                   onClick={onAddSession}
-                  className="text-primary-blue-600 border-primary-blue-600 hover:bg-accent-green-50"
+                  className="text-primary-blue-600 border-primary-blue-600 hover:bg-primary-blue-50"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session
@@ -575,7 +572,7 @@ export function ScheduleBuilder({
   return (
     <div className="space-y-4">
       {/* Info text */}
-      <div className="p-4 bg-accent-green-50 border border-accent-green-200 rounded-lg">
+      <div className="p-4 bg-primary-blue-50 border border-primary-blue-200 rounded-lg">
         <p className="text-sm text-primary-teal-800">
           <strong>Build your schedule:</strong> Add rooms where
           presentations will take place, then add sessions to each room.
@@ -628,7 +625,7 @@ export function ScheduleBuilder({
           type="button"
           variant="outline"
           onClick={onAddRoom}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-accent-green-400 hover:bg-accent-green-50 text-gray-600 hover:text-accent-green-700 py-6"
+          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-gray-600 hover:text-primary-blue-700 py-6"
         >
           <Plus className="h-5 w-5 mr-2" />
           Add Room

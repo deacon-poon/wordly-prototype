@@ -6,6 +6,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+// Blue-based interaction system: All hover states use Brand Blue variants
+// - Light backgrounds (50) for subtle hover states
+// - Darker text (700-800) for emphasis on hover
+// - Border transitions (200 -> 300) for outlined elements
+// This ensures consistent, predictable blue theming across the entire UI
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
@@ -15,10 +20,10 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background hover:bg-primary-blue-50 hover:text-primary-blue-800 hover:border-primary-blue-300",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-primary-blue-100 text-primary-blue-800 hover:bg-primary-blue-200 hover:text-primary-blue-900",
+        ghost: "hover:bg-primary-blue-50 hover:text-primary-blue-700",
         link: "text-primary underline-offset-4 hover:underline",
         success: "bg-[#0C9A4E] text-white hover:bg-[#0A7B3F]",
       },

@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
@@ -29,10 +30,11 @@ import {
   Upload,
   X,
   FileSpreadsheet,
-  ChevronDown,
+  ChevronRight,
   Sparkles,
   Settings2,
   AlertTriangle,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -93,7 +95,7 @@ export function UploadScheduleModal({
 }: UploadScheduleModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [showDefaults, setShowDefaults] = useState(false);
+  const [showAdvancedDefaults, setShowAdvancedDefaults] = useState(false);
   const [confirmOverwrite, setConfirmOverwrite] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -141,12 +143,12 @@ export function UploadScheduleModal({
     // Generate CSV template with headers and example row
     const headers = ["Room", "Title", "Presenter", "Date", "Start Time", "End Time", "Timezone", "Glossary", "Account", "Voice Pack", "Language", "Label"];
     const exampleRow = ["Main Stage", "Example Session Title", "John Doe", "12/04/2025", "1:00 PM", "1:50 PM", "America/Los_Angeles", "", "", "", "English (US)", ""];
-    
+
     const csvContent = [
       headers.join(","),
       exampleRow.join(",")
     ].join("\n");
-    
+
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -182,7 +184,7 @@ export function UploadScheduleModal({
   const handleReset = () => {
     setSelectedFile(null);
     setDefaults(WORKSPACE_SESSION_DEFAULTS);
-    setShowDefaults(false);
+    setShowAdvancedDefaults(false);
     setConfirmOverwrite(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -196,11 +198,11 @@ export function UploadScheduleModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
-              <FileSpreadsheet className="h-5 w-5 text-primary-teal-600" />
+            <div className="w-10 h-10 rounded-lg bg-primary-blue-50 flex items-center justify-center">
+              <FileSpreadsheet className="h-5 w-5 text-primary-blue-600" />
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-gray-900">
@@ -213,8 +215,10 @@ export function UploadScheduleModal({
           </div>
         </DialogHeader>
 
-        <div className="py-4 space-y-6">
-          {/* File Upload Section */}
+        <div className="py-4 space-y-5">
+          {/* ─────────────────────────────────────────────────────────────────
+              SECTION 1: Schedule File Upload
+          ───────────────────────────────────────────────────────────────── */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold text-gray-900">
@@ -222,14 +226,12 @@ export function UploadScheduleModal({
               </Label>
               <button
                 onClick={handleDownloadTemplate}
-                className="text-sm font-medium text-primary-teal-600 hover:text-accent-green-800 underline transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-blue-600 hover:text-primary-blue-700 transition-colors"
               >
+                <Download className="h-3.5 w-3.5" />
                 Download template
               </button>
             </div>
-            <p className="text-sm text-gray-600">
-              Upload a CSV or Excel file containing your event schedule.
-            </p>
 
             {/* File input (hidden) */}
             <input
@@ -242,17 +244,17 @@ export function UploadScheduleModal({
 
             {/* File upload display or button */}
             {selectedFile ? (
-              <div className="flex items-center justify-between p-3 border border-primary-teal-300 rounded-lg bg-accent-green-50/50">
+              <div className="flex items-center justify-between p-3 border border-primary-blue-200 rounded-lg bg-primary-blue-50/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded bg-accent-green-100 flex items-center justify-center">
-                    <FileSpreadsheet className="h-4 w-4 text-primary-teal-600" />
+                  <div className="w-9 h-9 rounded-lg bg-primary-blue-100 flex items-center justify-center">
+                    <FileSpreadsheet className="h-4 w-4 text-primary-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
                       {selectedFile.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {(selectedFile.size / 1024).toFixed(2)} KB
+                      {(selectedFile.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
                 </div>
@@ -263,86 +265,58 @@ export function UploadScheduleModal({
                       fileInputRef.current.value = "";
                     }
                   }}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                  className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
             ) : (
-              <Button
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-primary-blue-400 hover:text-primary-blue-600 hover:bg-primary-blue-50/30 transition-all"
               >
-                <Upload className="h-4 w-4 mr-2" />
-                Select File
-              </Button>
+                <Upload className="h-4 w-4" />
+                Select CSV or Excel file
+              </button>
             )}
           </div>
 
-          {/* Session Defaults - Key settings always visible */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold text-gray-900">
-                Session Defaults
-              </Label>
-              <button
-                type="button"
-                onClick={() => setShowDefaults(!showDefaults)}
-                className="text-sm font-medium text-primary-teal-600 hover:text-accent-green-800 underline transition-colors"
-              >
-                {showDefaults ? "Save Settings" : "Customize"}
-              </button>
-            </div>
-            
-            <p className="text-sm text-gray-600">
-              {showDefaults
-                ? "Edit these fields to change the default values for this upload only."
-                : "These settings are pulled from your workspace defaults and will apply to all uploaded sessions."}
-            </p>
-
-            {/* Key defaults - always visible */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Account */}
-              <div className="space-y-1.5">
-                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
-                  Account
-                </Label>
-                {showDefaults ? (
-                  <Select
-                    value={defaults.accountId}
-                    onValueChange={(value) => updateDefault("accountId", value)}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ACCOUNTS.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="text-sm text-gray-900">
-                    {ACCOUNTS.find((a) => a.id === defaults.accountId)?.name || "Default"}
-                  </p>
-                )}
+          {/* ─────────────────────────────────────────────────────────────────
+              SECTION 2: Session Defaults (Matches SessionForm structure)
+          ───────────────────────────────────────────────────────────────── */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/50 overflow-hidden">
+            {/* Section Header */}
+            <div className="px-4 py-3 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Settings2 className="h-4 w-4 text-gray-500" />
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Session Defaults
+                  </h3>
+                </div>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                  From workspace settings
+                </span>
               </div>
+              <p className="mt-1 text-xs text-gray-500">
+                These settings apply to all uploaded sessions unless overridden in your spreadsheet.
+              </p>
+            </div>
 
-              {/* Timezone */}
-              <div className="space-y-1.5">
-                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
-                  Timezone
-                </Label>
-                {showDefaults ? (
+            {/* Primary Defaults - Always visible (matches SessionForm) */}
+            <div className="p-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Timezone */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-semibold text-gray-900">
+                    Timezone
+                  </Label>
                   <Select
                     value={defaults.timezone}
                     onValueChange={(value) => updateDefault("timezone", value)}
                   >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -353,366 +327,411 @@ export function UploadScheduleModal({
                       ))}
                     </SelectContent>
                   </Select>
-                ) : (
-                  <p className="text-sm text-gray-900">
-                    {defaults.timezone.split("/").pop()?.replace("_", " ")}
-                  </p>
-                )}
-              </div>
+                </div>
 
-              {/* Language */}
-              <div className="space-y-1.5">
-                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
-                  Language
-                </Label>
-                {showDefaults ? (
+                {/* Glossary */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-semibold text-gray-900">
+                    Glossary
+                  </Label>
                   <Select
-                    value={defaults.startingLanguage}
-                    onValueChange={(value) => updateDefault("startingLanguage", value)}
+                    value={defaults.glossaryId}
+                    onValueChange={(value) => updateDefault("glossaryId", value)}
                   >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
-                      {LANGUAGES.map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.name}
+                      {GLOSSARIES.map((glossary) => (
+                        <SelectItem key={glossary.id} value={glossary.id}>
+                          {glossary.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                ) : (
-                  <p className="text-sm text-gray-900">
-                    {LANGUAGES.find((l) => l.code === defaults.startingLanguage)?.name}
-                  </p>
+                </div>
+              </div>
+
+              {/* Advanced Settings Accordion - matches SessionForm structure */}
+              <div
+                className={cn(
+                  "rounded-lg border overflow-hidden transition-all duration-200",
+                  showAdvancedDefaults ? "border-gray-300 bg-white" : "border-gray-200"
                 )}
-              </div>
+              >
+                {/* Accordion Header */}
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedDefaults(!showAdvancedDefaults)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-4 py-3 transition-colors",
+                    showAdvancedDefaults
+                      ? "bg-gray-50 border-b border-gray-200"
+                      : "bg-white hover:bg-gray-50"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "p-1.5 rounded-md transition-colors",
+                      showAdvancedDefaults ? "bg-primary-teal-100" : "bg-gray-100"
+                    )}>
+                      <Settings2 className={cn(
+                        "h-4 w-4 transition-colors",
+                        showAdvancedDefaults ? "text-primary-teal-600" : "text-gray-500"
+                      )} />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-sm font-medium text-gray-900">
+                        Advanced Settings
+                      </span>
+                      <p className="text-xs text-gray-500">
+                        Language, output, access & audio options
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    className={cn(
+                      "h-5 w-5 text-gray-400 transition-transform duration-200",
+                      showAdvancedDefaults && "rotate-90"
+                    )}
+                  />
+                </button>
 
-              {/* Selections count */}
-              <div className="space-y-1.5">
-                <Label className={showDefaults ? "text-sm font-medium text-gray-700" : "text-xs text-gray-500"}>
-                  Output Languages
-                </Label>
-                <p className="text-sm text-gray-900">
-                  {defaults.languages.length} language{defaults.languages.length !== 1 ? "s" : ""} selected
-                </p>
-              </div>
-            </div>
-          </div>
+                {/* Accordion Content */}
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-300 ease-in-out",
+                    showAdvancedDefaults ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  <div className="p-4 space-y-6 bg-white">
+                  {/* Info banner */}
+                  <div className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <Info className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-gray-600">
+                      These settings inherit from your Session Defaults. Override only if needed.
+                    </p>
+                  </div>
 
-          {/* Expanded Session Defaults - Additional settings */}
-          {showDefaults && (
-            <div className="pt-4 border-t border-gray-100">
-              {/* ─── Language & Translation ─────────────────────────────── */}
-              <div className="mb-6">
-                <h4 className="text-xs font-semibold text-primary-teal-600 uppercase tracking-wide mb-4">
-                  Language & Translation
-                </h4>
-
-                <div className="space-y-4">
-                  {/* Auto Select */}
+                  {/* Account */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="default-autoselect"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Auto Select
+                    <Label className="text-sm font-medium text-gray-700">
+                      Account
                     </Label>
                     <Select
-                      value={defaults.autoSelect ? "enabled" : "disabled"}
-                      onValueChange={(value) =>
-                        updateDefault("autoSelect", value === "enabled")
-                      }
+                      value={defaults.accountId}
+                      onValueChange={(value) => updateDefault("accountId", value)}
                     >
-                      <SelectTrigger id="default-autoselect">
-                        <SelectValue />
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Select account" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="enabled">Enabled</SelectItem>
-                        <SelectItem value="disabled">Disabled</SelectItem>
+                        {ACCOUNTS.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Selections (Output Languages) */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Selections
-                    </Label>
-                    <div className="p-3 border border-gray-200 rounded-lg bg-white min-h-[42px]">
-                      <div className="flex flex-wrap gap-2">
-                        {defaults.languages.map((langCode) => {
-                          const lang = LANGUAGES.find(
-                            (l) => l.code === langCode
-                          );
-                          return (
-                            <span
-                              key={langCode}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:border-gray-400 transition-colors"
-                            >
-                              <Sparkles className="h-3 w-3 text-primary-teal-500" />
-                              {lang?.name || langCode}
-                              <button
-                                type="button"
-                                onClick={() => handleLanguageToggle(langCode)}
-                                className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </span>
-                          );
-                        })}
-                        {defaults.languages.length === 0 && (
-                          <span className="text-sm text-gray-400 italic">
-                            No languages selected
-                          </span>
+                  {/* ─── Language & Translation ─────────────────────────────── */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-primary-teal-600 uppercase tracking-wide mb-4">
+                      Language & Translation
+                    </h4>
+
+                    <div className="space-y-4">
+                      {/* Starting Language */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Language
+                        </Label>
+                        <Select
+                          value={defaults.startingLanguage}
+                          onValueChange={(value) => updateDefault("startingLanguage", value)}
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {LANGUAGES.map((lang) => (
+                              <SelectItem key={lang.code} value={lang.code}>
+                                <span className="flex items-center gap-2">
+                                  <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                                  {lang.name}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Auto Select */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Auto Select
+                        </Label>
+                        <Select
+                          value={defaults.autoSelect ? "enabled" : "disabled"}
+                          onValueChange={(value) =>
+                            updateDefault("autoSelect", value === "enabled")
+                          }
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="enabled">Enabled</SelectItem>
+                            <SelectItem value="disabled">Disabled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Selections (Output Languages) */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Selections
+                        </Label>
+                        <div className="p-3 border border-gray-200 rounded-lg bg-white min-h-[42px]">
+                          <div className="flex flex-wrap gap-2">
+                            {defaults.languages.map((langCode) => {
+                              const lang = LANGUAGES.find((l) => l.code === langCode);
+                              return (
+                                <span
+                                  key={langCode}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:border-gray-400 transition-colors"
+                                >
+                                  <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                                  {lang?.name || langCode}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleLanguageToggle(langCode)}
+                                    className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              );
+                            })}
+                            {defaults.languages.length === 0 && (
+                              <span className="text-sm text-gray-400 italic">
+                                No languages selected
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {/* Add language dropdown */}
+                        {defaults.languages.length < 8 && (
+                          <Select
+                            value={undefined}
+                            onValueChange={(value) => {
+                              if (value && !defaults.languages.includes(value)) {
+                                handleLanguageToggle(value);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-full bg-white">
+                              <SelectValue placeholder="Add language..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LANGUAGES.filter(
+                                (l) => !defaults.languages.includes(l.code)
+                              ).map((lang) => (
+                                <SelectItem key={lang.code} value={lang.code}>
+                                  <span className="flex items-center gap-2">
+                                    <Sparkles className="h-3 w-3 text-primary-teal-500" />
+                                    {lang.name}
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         )}
                       </div>
                     </div>
-                    {defaults.languages.length < 8 && (
-                      <Select
-                        value={undefined}
-                        onValueChange={(value) => {
-                          if (value && !defaults.languages.includes(value)) {
-                            handleLanguageToggle(value);
+                  </div>
+
+                  {/* ─── Output Settings ────────────────────────────────────── */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-primary-teal-600 uppercase tracking-wide mb-4">
+                      Output Settings
+                    </h4>
+
+                    <div className="space-y-4">
+                      {/* Transcript */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Transcript
+                        </Label>
+                        <Select
+                          value={defaults.transcriptSetting}
+                          onValueChange={(value: "save" | "save-workspace" | "none") =>
+                            updateDefault("transcriptSetting", value)
                           }
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Add language..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LANGUAGES.filter(
-                            (l) => !defaults.languages.includes(l.code)
-                          ).map((lang) => (
-                            <SelectItem key={lang.code} value={lang.code}>
-                              <span className="flex items-center gap-2">
-                                <Sparkles className="h-3 w-3 text-primary-teal-500" />
-                                {lang.name}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TRANSCRIPT_SETTINGS.map((setting) => (
+                              <SelectItem key={setting.value} value={setting.value}>
+                                {setting.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                  {/* Glossary */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="default-glossary"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Glossary
-                    </Label>
-                    <Select
-                      value={defaults.glossaryId}
-                      onValueChange={(value) =>
-                        updateDefault("glossaryId", value)
-                      }
-                    >
-                      <SelectTrigger id="default-glossary">
-                        <SelectValue placeholder="None" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {GLOSSARIES.map((glossary) => (
-                          <SelectItem key={glossary.id} value={glossary.id}>
-                            {glossary.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* ─── Output Settings ────────────────────────────────────── */}
-              <div className="mb-6">
-                <h4 className="text-xs font-semibold text-primary-teal-600 uppercase tracking-wide mb-4">
-                  Output Settings
-                </h4>
-
-                <div className="space-y-4">
-                  {/* Transcript */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="default-transcript"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Transcript
-                    </Label>
-                    <Select
-                      value={defaults.transcriptSetting}
-                      onValueChange={(value: "save" | "save-workspace" | "none") =>
-                        updateDefault("transcriptSetting", value)
-                      }
-                    >
-                      <SelectTrigger id="default-transcript">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TRANSCRIPT_SETTINGS.map((setting) => (
-                          <SelectItem key={setting.value} value={setting.value}>
-                            {setting.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Voice Pack */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="default-voice-pack"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Voice Pack
-                    </Label>
-                    <Select
-                      value={defaults.voicePack}
-                      onValueChange={(value) =>
-                        updateDefault("voicePack", value)
-                      }
-                    >
-                      <SelectTrigger id="default-voice-pack">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {VOICE_PACKS.map((pack) => (
-                          <SelectItem key={pack.id} value={pack.id}>
-                            {pack.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* ─── Access & Audio ─────────────────────────────────────── */}
-              <div className="mb-6">
-                <h4 className="text-xs font-semibold text-primary-teal-600 uppercase tracking-wide mb-4">
-                  Access & Audio
-                </h4>
-
-                <div className="space-y-4">
-                  {/* Access */}
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="default-access"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Access
-                    </Label>
-                    <Select
-                      value={defaults.accessType}
-                      onValueChange={(value: "open" | "passcode") =>
-                        updateDefault("accessType", value)
-                      }
-                    >
-                      <SelectTrigger id="default-access">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ACCESS_TYPES.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Floor Audio */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Label
-                        htmlFor="default-floor-audio"
-                        className="text-sm font-medium text-gray-700 cursor-pointer"
-                      >
-                        Floor audio
-                      </Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            Enable floor audio to capture ambient sound in the
-                            room. Useful for Q&A sessions or audience
-                            participation.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
+                      {/* Voice Pack */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Voice Pack
+                        </Label>
+                        <Select
+                          value={defaults.voicePack}
+                          onValueChange={(value) =>
+                            updateDefault("voicePack", value)
+                          }
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VOICE_PACKS.map((pack) => (
+                              <SelectItem key={pack.id} value={pack.id}>
+                                {pack.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <Checkbox
-                      id="default-floor-audio"
-                      checked={defaults.floorAudio}
-                      onCheckedChange={(checked) =>
-                        updateDefault("floorAudio", checked === true)
-                      }
-                    />
+                  </div>
+
+                  {/* ─── Access & Audio ─────────────────────────────────────── */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-primary-teal-600 uppercase tracking-wide mb-4">
+                      Access & Audio
+                    </h4>
+
+                    <div className="space-y-4">
+                      {/* Access */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Access
+                        </Label>
+                        <Select
+                          value={defaults.accessType}
+                          onValueChange={(value: "open" | "passcode") =>
+                            updateDefault("accessType", value)
+                          }
+                        >
+                          <SelectTrigger className="bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ACCESS_TYPES.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Floor Audio */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor="default-floor-audio"
+                            className="text-sm font-medium text-gray-700 cursor-pointer"
+                          >
+                            Floor audio
+                          </Label>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs text-xs">
+                                Enable floor audio to capture ambient sound in the
+                                room. Useful for Q&A sessions or audience participation.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <Checkbox
+                          id="default-floor-audio"
+                          checked={defaults.floorAudio}
+                          onCheckedChange={(checked) =>
+                            updateDefault("floorAudio", checked === true)
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Warning callout about overwriting - only show when there are existing sessions */}
-          {hasExistingSessions && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-gray-700">
-                  <p className="font-medium text-amber-800 mb-1">
-                    Important: This will replace existing sessions
-                  </p>
-                  <p className="text-amber-700">
-                    Uploading a schedule will overwrite <strong>all</strong> existing sessions for this event. 
-                    Rooms with the same name will keep their current QR codes.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Info callout - matches ManualEventWizard pattern */}
-          <div className="p-4 bg-accent-green-50 border border-accent-green-200 rounded-lg">
-            <div className="flex gap-3">
-              <Info className="h-5 w-5 text-primary-teal-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-gray-700">
-                <p className="font-medium text-gray-900 mb-1">
-                  How it works
-                </p>
-                <ul className="space-y-1 text-gray-600">
-                  <li>• All sessions will inherit the defaults above</li>
-                  <li>• Values in your spreadsheet override these defaults</li>
-                  <li>• Rooms are created automatically from your data</li>
-                </ul>
               </div>
             </div>
           </div>
 
-          {/* Confirmation checkbox - only required when replacing existing sessions */}
-          {hasExistingSessions && (
-            <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <Checkbox
-                id="confirm-overwrite"
-                checked={confirmOverwrite}
-                onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
-                className="mt-0.5"
-              />
-              <label
-                htmlFor="confirm-overwrite"
-                className="text-sm text-gray-700 cursor-pointer leading-snug"
-              >
-                I understand that uploading this schedule will{" "}
-                <strong>replace all existing sessions</strong> for this event.
-              </label>
+          {/* ─────────────────────────────────────────────────────────────────
+              SECTION 3: How it works (info callout)
+          ───────────────────────────────────────────────────────────────── */}
+          <div className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <Info className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-gray-600 space-y-1">
+              <p className="font-medium text-gray-700">How it works</p>
+              <ul className="space-y-0.5 text-gray-500">
+                <li>• Sessions inherit the defaults above unless overridden</li>
+                <li>• Rooms are created automatically from your file</li>
+                <li>• You can review and edit before saving</li>
+              </ul>
             </div>
+          </div>
+
+          {/* ─────────────────────────────────────────────────────────────────
+              SECTION 4: Warning (only when replacing existing sessions)
+          ───────────────────────────────────────────────────────────────── */}
+          {hasExistingSessions && (
+            <>
+              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <p className="font-medium text-amber-800">
+                    This will replace existing sessions
+                  </p>
+                  <p className="text-amber-700 mt-0.5">
+                    All current sessions will be overwritten. Rooms with the same name keep their QR codes.
+                  </p>
+                </div>
+              </div>
+
+              {/* Confirmation checkbox */}
+              <div className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <Checkbox
+                  id="confirm-overwrite"
+                  checked={confirmOverwrite}
+                  onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
+                  className="mt-0.5"
+                />
+                <label
+                  htmlFor="confirm-overwrite"
+                  className="text-xs text-gray-600 cursor-pointer leading-relaxed"
+                >
+                  I understand that uploading this schedule will{" "}
+                  <strong className="text-gray-700">replace all existing sessions</strong> for this event.
+                </label>
+              </div>
+            </>
           )}
         </div>
 
+        {/* ─────────────────────────────────────────────────────────────────
+            Footer Actions
+        ───────────────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t">
           <Button
             variant="outline"

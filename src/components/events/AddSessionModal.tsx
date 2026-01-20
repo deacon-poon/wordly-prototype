@@ -101,7 +101,7 @@ export function AddSessionModal({
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-primary-blue-100 flex items-center justify-center">
               <Clock className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -206,7 +206,7 @@ export function EditSessionModal({
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-primary-blue-100 flex items-center justify-center">
               <Clock className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>

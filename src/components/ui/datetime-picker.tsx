@@ -3,7 +3,7 @@
 import * as React from "react";
 import { format, parse, isValid } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
-import { CalendarIcon, Clock, Globe } from "lucide-react";
+import { CalendarIcon, ChevronDown, Clock, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -135,8 +135,32 @@ export function TimezoneSelector({
 }
 
 // ============================================================================
-// TimeInput Component
+// TimeInput Component - with 15-minute increment presets
 // ============================================================================
+
+// Generate time options in 15-minute increments
+const generateTimeOptions = (): string[] => {
+  const options: string[] = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 15) {
+      const h = hour.toString().padStart(2, "0");
+      const m = minute.toString().padStart(2, "0");
+      options.push(`${h}:${m}`);
+    }
+  }
+  return options;
+};
+
+const TIME_OPTIONS = generateTimeOptions();
+
+// Format time for display (12-hour format with AM/PM)
+const formatTimeDisplay = (time: string): string => {
+  if (!time) return "";
+  const [hours, minutes] = time.split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHour = hours % 12 || 12;
+  return `${displayHour}:${minutes.toString().padStart(2, "0")} ${period}`;
+};
 
 interface TimeInputProps {
   value: string; // HH:mm format
@@ -144,31 +168,225 @@ interface TimeInputProps {
   disabled?: boolean;
   className?: string;
   label?: string;
+  /** Error message to display */
+  error?: string;
 }
 
-function TimeInput({
+export function TimeInput({
   value,
   onChange,
   disabled = false,
   className,
   label,
+  error,
 }: TimeInputProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState(value);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Sync input value when prop changes
+  React.useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  // Scroll to selected time when dropdown opens
+  React.useEffect(() => {
+    if (isOpen && scrollRef.current && value) {
+      // Find the closest 15-minute option
+      const [hours, minutes] = value.split(":").map(Number);
+      const roundedMinutes = Math.round(minutes / 15) * 15;
+      const targetTime = `${hours.toString().padStart(2, "0")}:${(roundedMinutes % 60).toString().padStart(2, "0")}`;
+
+      const targetIndex = TIME_OPTIONS.findIndex((t) => t === targetTime);
+      if (targetIndex !== -1 && scrollRef.current) {
+        const itemHeight = 32; // Approximate height of each item (py-1.5 + text)
+        scrollRef.current.scrollTop = Math.max(0, targetIndex * itemHeight - 100);
+      }
+    }
+  }, [isOpen, value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+
+    // Validate and update if valid time format
+    if (/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(newValue)) {
+      onChange(newValue);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // On blur, try to parse and normalize the input
+    if (inputValue) {
+      // Try to parse various formats
+      let normalized = inputValue;
+
+      // Handle formats like "9:00" -> "09:00"
+      const match = inputValue.match(/^(\d{1,2}):(\d{2})$/);
+      if (match) {
+        const hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+          normalized = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+          setInputValue(normalized);
+          onChange(normalized);
+          return;
+        }
+      }
+
+      // Reset to last valid value if invalid
+      setInputValue(value);
+    }
+  };
+
+  const handleSelectTime = (time: string) => {
+    setInputValue(time);
+    onChange(time);
+    setIsOpen(false);
+  };
+
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
         <Label className="text-sm font-medium text-gray-700">{label}</Label>
       )}
-      <div className="relative">
-        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input
-          type="time"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          className="pl-10"
-        />
-      </div>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <div className="relative">
+            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
+            <Input
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              onFocus={() => setIsOpen(true)}
+              disabled={disabled}
+              placeholder="HH:MM"
+              className={cn(
+                "pl-10 pr-3",
+                error && "border-red-500"
+              )}
+            />
+          </div>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-[120px] p-0"
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <div
+            ref={scrollRef}
+            className="max-h-[280px] overflow-y-auto py-1"
+          >
+            {TIME_OPTIONS.map((time) => {
+              const isSelected = time === value;
+              return (
+                <button
+                  key={time}
+                  type="button"
+                  onClick={() => handleSelectTime(time)}
+                  className={cn(
+                    "w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
+                    isSelected && "bg-primary-blue-50 text-primary-blue-700 font-medium"
+                  )}
+                >
+                  {formatTimeDisplay(time)}
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
+  );
+}
+
+// ============================================================================
+// CompactTimeSelect - Smaller time picker for inline use
+// ============================================================================
+
+interface CompactTimeSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  error?: boolean;
+}
+
+function CompactTimeSelect({
+  value,
+  onChange,
+  disabled = false,
+  error = false,
+}: CompactTimeSelectProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Scroll to selected time when dropdown opens
+  React.useEffect(() => {
+    if (isOpen && scrollRef.current && value) {
+      const [hours, minutes] = value.split(":").map(Number);
+      const roundedMinutes = Math.round(minutes / 15) * 15;
+      const targetTime = `${hours.toString().padStart(2, "0")}:${(roundedMinutes % 60).toString().padStart(2, "0")}`;
+
+      const targetIndex = TIME_OPTIONS.findIndex((t) => t === targetTime);
+      if (targetIndex !== -1 && scrollRef.current) {
+        const itemHeight = 32; // Approximate height of each item (py-1.5 + text)
+        scrollRef.current.scrollTop = Math.max(0, targetIndex * itemHeight - 100);
+      }
+    }
+  }, [isOpen, value]);
+
+  const handleSelectTime = (time: string) => {
+    onChange(time);
+    setIsOpen(false);
+  };
+
+  const displayValue = value ? formatTimeDisplay(value) : "Select";
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          disabled={disabled}
+          className={cn(
+            "w-[100px] justify-between text-left font-normal px-3",
+            !value && "text-gray-500",
+            error && "border-red-500"
+          )}
+        >
+          <span className="truncate">{displayValue}</span>
+          <ChevronDown className="h-3 w-3 opacity-50 flex-shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[120px] p-0"
+        align="start"
+      >
+        <div
+          ref={scrollRef}
+          className="max-h-[280px] overflow-y-auto py-1"
+        >
+          {TIME_OPTIONS.map((time) => {
+            const isSelected = time === value;
+            return (
+              <button
+                key={time}
+                type="button"
+                onClick={() => handleSelectTime(time)}
+                className={cn(
+                  "w-full px-3 py-1.5 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
+                  isSelected && "bg-primary-blue-50 text-primary-blue-700 font-medium"
+                )}
+              >
+                {formatTimeDisplay(time)}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -278,24 +496,22 @@ export function DateTimePicker({
           </PopoverContent>
         </Popover>
 
-        {/* Time range */}
+        {/* Time range - using compact time selects */}
         <div className="flex items-center gap-1">
-          <Input
-            type="time"
+          <CompactTimeSelect
             value={value.startTime}
-            onChange={(e) => onChange({ startTime: e.target.value })}
+            onChange={(startTime) => onChange({ startTime })}
             disabled={disabled}
-            className={cn("w-[110px]", errors.startTime && "border-red-500")}
+            error={!!errors.startTime}
           />
           {showEndTime && (
             <>
               <span className="text-gray-400">–</span>
-              <Input
-                type="time"
+              <CompactTimeSelect
                 value={value.endTime}
-                onChange={(e) => onChange({ endTime: e.target.value })}
+                onChange={(endTime) => onChange({ endTime })}
                 disabled={disabled}
-                className={cn("w-[110px]", errors.endTime && "border-red-500")}
+                error={!!errors.endTime}
               />
             </>
           )}

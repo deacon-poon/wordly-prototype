@@ -55,15 +55,6 @@ export function ManualEventWizard({
     if (!eventDetails.name.trim()) {
       newErrors.name = "Event name is required";
     }
-    if (!eventDetails.startDate) {
-      newErrors.startDate = "Start date is required";
-    }
-    if (!eventDetails.endDate) {
-      newErrors.endDate = "End date is required";
-    }
-    if (eventDetails.startDate > eventDetails.endDate) {
-      newErrors.endDate = "End date must be after start date";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -92,12 +83,6 @@ export function ManualEventWizard({
     if (data.name !== undefined && errors.name) {
       setErrors((prev) => ({ ...prev, name: "" }));
     }
-    if (data.startDate !== undefined && errors.startDate) {
-      setErrors((prev) => ({ ...prev, startDate: "" }));
-    }
-    if (data.endDate !== undefined && errors.endDate) {
-      setErrors((prev) => ({ ...prev, endDate: "" }));
-    }
   };
 
   return (
@@ -105,7 +90,7 @@ export function ManualEventWizard({
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-green-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-primary-blue-100 flex items-center justify-center">
               <Calendar className="h-5 w-5 text-primary-teal-600" />
             </div>
             <div>
@@ -128,7 +113,7 @@ export function ManualEventWizard({
           />
 
           {/* Info callout about next steps */}
-          <div className="mt-6 p-4 bg-accent-green-50 border border-accent-green-200 rounded-lg">
+          <div className="mt-6 p-4 bg-primary-blue-50 border border-primary-blue-200 rounded-lg">
             <div className="flex gap-3">
               <Info className="h-5 w-5 text-primary-teal-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-gray-700">

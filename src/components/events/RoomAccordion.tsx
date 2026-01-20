@@ -84,8 +84,8 @@ export function RoomAccordion({
 
   return (
     <div
-      className={`relative transition-all duration-200 rounded-lg bg-white border border-gray-100 ${
-        isExpanded ? "border-gray-200/60" : "hover:border-gray-200/60"
+      className={`relative transition-all duration-200 rounded-lg bg-white border border-gray-200 ${
+        isExpanded ? "shadow-sm" : "hover:shadow-sm"
       }`}
     >
       {/* Room Header - using div with role="button" to avoid nested button issue */}
@@ -133,7 +133,7 @@ export function RoomAccordion({
                 e.stopPropagation();
                 onLinksToJoin(room, e);
               }}
-              className="text-primary-teal-600 hover:text-accent-green-800 hover:bg-accent-green-50"
+              className="text-primary-teal-600 hover:text-primary-blue-700 hover:bg-primary-blue-50"
               title="Links to join"
             >
               <QrCode className="h-4 w-4 @md:mr-1.5" />
@@ -258,7 +258,7 @@ export function RoomAccordion({
                   variant="outline"
                   size="sm"
                   onClick={() => onAddSession(room)}
-                  className="text-primary-blue-600 border-primary-blue-600 hover:bg-accent-green-50"
+                  className="text-primary-blue-600 border-primary-blue-600 hover:bg-primary-blue-50"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session
@@ -285,7 +285,7 @@ export function RoomAccordion({
                 disabled={isPastEvent || !onEditSession}
                 className={`flex-1 min-w-0 text-left ${
                   !isPastEvent && onEditSession
-                    ? "hover:text-accent-green-800 cursor-pointer"
+                    ? "hover:text-primary-blue-700 cursor-pointer"
                     : "cursor-default"
                 }`}
                 title={
@@ -311,11 +311,11 @@ export function RoomAccordion({
 
               {/* Right: Time badge + Edit button (aligns with action buttons above) */}
               <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-accent-green-50 border border-accent-green-200 rounded-md">
-                  <span className="text-sm font-bold text-accent-green-800 whitespace-nowrap">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue-50 border border-primary-blue-200 rounded-md">
+                  <span className="text-sm font-bold text-primary-blue-800 whitespace-nowrap">
                     {session.scheduledStart} – {session.endTime}
                   </span>
-                  <span className="text-xs font-medium text-primary-teal-600 bg-accent-green-100 px-1.5 py-0.5 rounded">
+                  <span className="text-xs font-medium text-primary-teal-600 bg-primary-blue-100 px-1.5 py-0.5 rounded">
                     {getTimezoneAbbr(session.timezone || eventTimezone)}
                   </span>
                 </div>
@@ -357,7 +357,7 @@ export function RoomAccordion({
                   variant="ghost"
                   size="sm"
                   onClick={() => onAddSession(room)}
-                  className="text-primary-teal-600 hover:text-accent-green-800 hover:bg-accent-green-50 -ml-2"
+                  className="text-primary-teal-600 hover:text-primary-blue-700 hover:bg-primary-blue-50 -ml-2"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session

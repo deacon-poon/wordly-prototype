@@ -11,6 +11,7 @@ import {
   Trash2,
   AlertTriangle,
   Edit2,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -109,8 +110,8 @@ const formatDateRange = (startDate: Date, endDate: Date): string => {
 
 export default function EventsPage() {
   const router = useRouter();
-  const [statusFilter, setStatusFilter] = useState<EventStatus | "all">(
-    "active"
+  const [statusFilter, setStatusFilter] = useState<"today" | "future" | "past" | "all">(
+    "all"
   );
   // Event creation modal
   const [isManualWizardOpen, setIsManualWizardOpen] = useState(false);
@@ -126,7 +127,7 @@ export default function EventsPage() {
     // ACTIVE EVENT (happening now)
     {
       id: "evt-001",
-      name: "AI & Machine Learning Summit 2024",
+      name: "AI & Machine Learning Summit 2026",
       dateRange: formatDateRange(getRelativeDate(0), getRelativeDate(1)),
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
@@ -135,7 +136,7 @@ export default function EventsPage() {
       sessionCount: 10,
       description:
         "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
-      publicSummaryUrl: "/public/ai-ml-summit-2024",
+      publicSummaryUrl: "/public/ai-ml-summit-2026",
       rooms: [
         {
           id: "loc-001",
@@ -278,7 +279,7 @@ export default function EventsPage() {
       sessionCount: 18,
       description:
         "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
-      publicSummaryUrl: "/public/cloud-devops-summit-2024",
+      publicSummaryUrl: "/public/cloud-devops-summit-2026",
       rooms: [
         {
           id: "loc-004",
@@ -491,7 +492,7 @@ export default function EventsPage() {
       sessionCount: 8,
       description:
         "Explore the latest in design systems, UX research, and product design methodologies",
-      publicSummaryUrl: "/public/design-ux-conf-2024",
+      publicSummaryUrl: "/public/design-ux-conf-2026",
       rooms: [
         {
           id: "loc-008",
@@ -596,7 +597,7 @@ export default function EventsPage() {
       sessionCount: 10,
       description:
         "Comprehensive summit on blockchain technology, smart contracts, and decentralized applications",
-      publicSummaryUrl: "/public/web3-blockchain-2024",
+      publicSummaryUrl: "/public/web3-blockchain-2026",
       rooms: [
         {
           id: "loc-010",
@@ -719,7 +720,7 @@ export default function EventsPage() {
       sessionCount: 12,
       description:
         "Advanced forum on data science, machine learning operations, and business analytics",
-      publicSummaryUrl: "/public/data-science-forum-2024",
+      publicSummaryUrl: "/public/data-science-forum-2026",
       rooms: [
         {
           id: "loc-012",
@@ -861,7 +862,7 @@ export default function EventsPage() {
     // PAST EVENTS
     {
       id: "evt-006",
-      name: "Tech Conference 2024 Spring Edition",
+      name: "Tech Conference 2026 Spring Edition",
       dateRange: formatDateRange(getRelativeDate(-36), getRelativeDate(-35)),
       startDate: getRelativeDate(-36),
       endDate: getRelativeDate(-35),
@@ -870,7 +871,7 @@ export default function EventsPage() {
       sessionCount: 6,
       description:
         "Annual spring technology conference featuring software development trends and innovations",
-      publicSummaryUrl: "/public/tech-conf-spring-2024",
+      publicSummaryUrl: "/public/tech-conf-spring-2026",
       rooms: [
         {
           id: "loc-015",
@@ -881,7 +882,7 @@ export default function EventsPage() {
           sessions: [
             {
               id: "ses-059",
-              title: "State of Software Development 2024",
+              title: "State of Software Development 2026",
               presenters: ["John Peterson"],
               scheduledDate: "2025-11-17",
               scheduledStart: "09:00",
@@ -948,7 +949,7 @@ export default function EventsPage() {
     },
     {
       id: "evt-007",
-      name: "Mobile Development Summit 2024",
+      name: "Mobile Development Summit 2026",
       dateRange: formatDateRange(getRelativeDate(-57), getRelativeDate(-56)),
       startDate: getRelativeDate(-57),
       endDate: getRelativeDate(-56),
@@ -957,7 +958,7 @@ export default function EventsPage() {
       sessionCount: 12,
       description:
         "Summit focused on iOS, Android, and cross-platform mobile development",
-      publicSummaryUrl: "/public/mobile-dev-summit-2024",
+      publicSummaryUrl: "/public/mobile-dev-summit-2026",
       rooms: [
         {
           id: "loc-017",
@@ -1098,7 +1099,7 @@ export default function EventsPage() {
     },
     {
       id: "evt-008",
-      name: "Cybersecurity Conference 2024",
+      name: "Cybersecurity Conference 2026",
       dateRange: formatDateRange(getRelativeDate(-93), getRelativeDate(-92)),
       startDate: getRelativeDate(-93),
       endDate: getRelativeDate(-92),
@@ -1107,7 +1108,7 @@ export default function EventsPage() {
       sessionCount: 8,
       description:
         "Annual conference on cybersecurity, threat detection, and enterprise security",
-      publicSummaryUrl: "/public/cybersecurity-2024",
+      publicSummaryUrl: "/public/cybersecurity-2026",
       rooms: [
         {
           id: "loc-020",
@@ -1203,7 +1204,7 @@ export default function EventsPage() {
     },
     {
       id: "evt-009",
-      name: "Product Management Summit 2024",
+      name: "Product Management Summit 2026",
       dateRange: formatDateRange(getRelativeDate(-128), getRelativeDate(-127)),
       startDate: getRelativeDate(-128),
       endDate: getRelativeDate(-127),
@@ -1212,7 +1213,7 @@ export default function EventsPage() {
       sessionCount: 7,
       description:
         "Summit for product managers on strategy, roadmapping, and product-led growth",
-      publicSummaryUrl: "/public/pm-summit-2024",
+      publicSummaryUrl: "/public/pm-summit-2026",
       rooms: [
         {
           id: "loc-022",
@@ -1308,7 +1309,7 @@ export default function EventsPage() {
       sessionCount: 11,
       description:
         "Conference dedicated to modern frontend development, frameworks, and tooling",
-      publicSummaryUrl: "/public/frontend-conf-2024",
+      publicSummaryUrl: "/public/frontend-conf-2026",
       rooms: [
         {
           id: "loc-024",
@@ -1440,31 +1441,48 @@ export default function EventsPage() {
     },
   ]);
 
+  // Helper to categorize events by Today/Future/Past
+  const categorizeEvent = (event: Event): "today" | "future" | "past" => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = new Date(
+      event.startDate.getFullYear(),
+      event.startDate.getMonth(),
+      event.startDate.getDate()
+    );
+    const end = new Date(
+      event.endDate.getFullYear(),
+      event.endDate.getMonth(),
+      event.endDate.getDate()
+    );
+
+    // Event is "today" if today falls within the event's date range
+    if (today >= start && today <= end) {
+      return "today";
+    } else if (today < start) {
+      return "future";
+    } else {
+      return "past";
+    }
+  };
+
   const filteredEvents = useMemo(() => {
     if (statusFilter === "all") return events;
-    return events.filter(
-      (event) => getEventStatus(event.startDate, event.endDate) === statusFilter
-    );
+    return events.filter((event) => categorizeEvent(event) === statusFilter);
   }, [events, statusFilter]);
 
   const groupedEvents = useMemo(() => {
     return {
-      active: events.filter(
-        (e) => getEventStatus(e.startDate, e.endDate) === "active"
-      ),
-      upcoming: events.filter(
-        (e) => getEventStatus(e.startDate, e.endDate) === "upcoming"
-      ),
-      past: events.filter(
-        (e) => getEventStatus(e.startDate, e.endDate) === "past"
-      ),
+      today: events.filter((e) => categorizeEvent(e) === "today"),
+      future: events.filter((e) => categorizeEvent(e) === "future"),
+      past: events.filter((e) => categorizeEvent(e) === "past"),
       all: events,
     };
   }, [events]);
 
   const statusCounts = {
-    active: groupedEvents.active.length,
-    upcoming: groupedEvents.upcoming.length,
+    today: groupedEvents.today.length,
+    future: groupedEvents.future.length,
     past: groupedEvents.past.length,
     all: events.length,
   };
@@ -1480,18 +1498,18 @@ export default function EventsPage() {
     // Create a new event ID
     const newEventId = `evt-${Date.now()}`;
 
-    // Parse dates from the form data as LOCAL dates (not UTC)
-    // Adding T00:00:00 ensures the date is interpreted in local timezone
-    const startDate = new Date(data.eventDetails.startDate + "T00:00:00");
-    const endDate = new Date(data.eventDetails.endDate + "T00:00:00");
+    // Start and end dates are now derived from sessions
+    // For new events with no sessions, default to today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     // Create the new event object
     const newEvent: Event = {
       id: newEventId,
       name: data.eventDetails.name,
-      dateRange: formatDateRange(startDate, endDate),
-      startDate,
-      endDate,
+      dateRange: formatDateRange(today, today),
+      startDate: today,
+      endDate: today,
       timezone: data.eventDetails.timezone,
       roomCount: 0,
       sessionCount: 0,
@@ -1550,52 +1568,88 @@ export default function EventsPage() {
   };
 
   const EventCard = ({ event }: { event: Event }) => {
-    const eventStatus = getEventStatus(event.startDate, event.endDate);
+    const eventCategory = categorizeEvent(event);
+
+    // Status badge configuration - "Today" shows as active/happening now
+    const statusConfig = {
+      today: {
+        label: "Today",
+        bg: "bg-accent-green-100",
+        text: "text-accent-green-700",
+        dot: "bg-accent-green-500",
+        animate: true,
+      },
+      future: {
+        label: "Future",
+        bg: "bg-primary-blue-100",
+        text: "text-primary-blue-700",
+        dot: "bg-primary-blue-500",
+        animate: false,
+      },
+      past: {
+        label: "Past",
+        bg: "bg-gray-100",
+        text: "text-gray-600",
+        dot: "bg-gray-400",
+        animate: false,
+      },
+    };
+
+    const status = statusConfig[eventCategory];
 
     return (
       <div
-        className="rounded-lg border border-gray-200 bg-white hover:border-primary-teal-300 hover:shadow-md transition-all cursor-pointer"
+        className="group rounded-xl border border-gray-200 bg-white shadow-sm hover:border-primary-teal-300 hover:shadow-lg transition-all cursor-pointer"
         onClick={() => router.push(`/events/${event.id}`)}
       >
-        <div className="px-4 py-4">
-          {/* Header with title and actions */}
+        <div className="px-5 py-4">
+          {/* Header with title, status badge on right, and actions */}
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h2 className="text-lg font-semibold text-gray-900">
-            {event.name}
-          </h2>
+            <h2 className="text-lg font-semibold text-gray-900 truncate min-w-0 flex-1">
+              {event.name}
+            </h2>
 
-            {/* Actions menu - vertical dots to match event detail pattern */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex-shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/events/${event.id}`);
-                  }}
-                >
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Edit Event
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={(e) => handleDeleteEventClick(event, e as any)}
-                  className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Event
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Status badge - moved to the right */}
+              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${status.dot} ${status.animate ? "animate-pulse" : ""}`} />
+                {status.label}
+              </span>
+              {/* Actions menu - vertical dots to match event detail pattern */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/events/${event.id}`);
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Edit Event
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => handleDeleteEventClick(event, e as any)}
+                    className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Event
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {/* Chevron indicator - shows this is navigable */}
+              <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-primary-teal-500 transition-colors" />
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-2">
@@ -1610,9 +1664,9 @@ export default function EventsPage() {
           </div>
 
           {event.description && (
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {event.description}
-          </p>
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {event.description}
+            </p>
           )}
 
           {event.publicSummaryUrl && (
@@ -1633,9 +1687,9 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-white">
-      {/* Page header */}
-      <div>
+    <div className="h-full overflow-y-auto bg-gray-50">
+      {/* Page header - white header to contrast with gray content area */}
+      <div className="bg-white border-b border-gray-200">
         <div className="px-6 py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -1659,8 +1713,8 @@ export default function EventsPage() {
             onValueChange={(value: any) => setStatusFilter(value)}
           >
             <TabsList>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+              <TabsTrigger value="today">Today</TabsTrigger>
+              <TabsTrigger value="future">Future</TabsTrigger>
               <TabsTrigger value="past">Past</TabsTrigger>
               <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
@@ -1668,33 +1722,33 @@ export default function EventsPage() {
         </div>
       </div>
 
-      <div className="px-6 pb-6 space-y-6">
-        {statusFilter === "all" && groupedEvents.active.length > 0 && (
+      <div className="px-6 py-6 space-y-6">
+        {statusFilter === "all" && groupedEvents.today.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
               <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                Active Now ({groupedEvents.active.length})
+                Today ({groupedEvents.today.length})
               </h3>
             </div>
             <div className="space-y-4">
-              {groupedEvents.active.map((event) => (
+              {groupedEvents.today.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
           </div>
         )}
 
-        {statusFilter === "all" && groupedEvents.upcoming.length > 0 && (
+        {statusFilter === "all" && groupedEvents.future.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
               <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
               <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                Upcoming ({groupedEvents.upcoming.length})
+                Future ({groupedEvents.future.length})
               </h3>
             </div>
             <div className="space-y-4">
-              {groupedEvents.upcoming.map((event) => (
+              {groupedEvents.future.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
@@ -1728,8 +1782,8 @@ export default function EventsPage() {
         {filteredEvents.length === 0 && (
           <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
             <p className="text-gray-600 text-lg">
-              {statusFilter === "active" && "No active events"}
-              {statusFilter === "upcoming" && "No upcoming events"}
+              {statusFilter === "today" && "No events happening today"}
+              {statusFilter === "future" && "No future events"}
               {statusFilter === "past" && "No past events"}
               {statusFilter === "all" && "No events found"}
             </p>

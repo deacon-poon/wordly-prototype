@@ -29,7 +29,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="">
-      <SidebarHeader className="flex items-center justify-start px-4">
+      <SidebarHeader className="flex items-center justify-center px-4 h-16">
         <div className="flex items-center">
           <Image
             src="/logo/wordly-logo-primary-with-radius-border.png"
@@ -38,7 +38,7 @@ export function AppSidebar() {
             height={36}
           />
           {!isCollapsed && (
-            <span className="text-xl font-bold text-primary-teal-600 ml-2">
+            <span className="text-xl font-bold text-primary-blue-700 ml-2">
               wordly
             </span>
           )}
@@ -48,19 +48,19 @@ export function AppSidebar() {
         <NavWorkspace pathname={pathname} />
       </SidebarNav>
       <SidebarFooter className="p-0 m-0 mt-2">
-        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary-teal-25 to-secondary-navy-25 hover:bg-gradient-to-r hover:from-primary-teal-50 hover:to-secondary-navy-50 rounded-lg transition-colors">
+        <div className="flex items-center gap-3 p-4 bg-primary-blue-50 hover:bg-primary-blue-100 rounded-lg transition-colors">
           <Avatar className="h-8 w-8">
             <AvatarImage src="/placeholder-user.jpg" alt={user?.displayName} />
-            <AvatarFallback className="bg-primary-teal-100 text-secondary-navy-700">
+            <AvatarFallback className="bg-primary-blue-200 text-primary-blue-800">
               {user?.displayName?.charAt(0)}
             </AvatarFallback>
           </Avatar>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-secondary-navy-700">
+              <span className="text-sm font-semibold text-primary-blue-800">
                 {user?.displayName}
               </span>
-              <span className="text-xs text-secondary-navy-500">
+              <span className="text-xs text-gray-600">
                 {user?.email}
               </span>
             </div>

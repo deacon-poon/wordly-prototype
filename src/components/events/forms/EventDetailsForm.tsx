@@ -57,49 +57,6 @@ export function EventDetailsForm({
         {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
       </div>
 
-      {/* Date Range */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label
-            htmlFor="start-date"
-            className="text-sm font-semibold text-gray-900"
-          >
-            Start Date *
-          </Label>
-          <Input
-            id="start-date"
-            type="date"
-            value={data.startDate}
-            onChange={(e) => onChange({ startDate: e.target.value })}
-            disabled={readOnly}
-            className={errors.startDate ? "border-red-500" : ""}
-          />
-          {errors.startDate && (
-            <p className="text-sm text-red-500">{errors.startDate}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label
-            htmlFor="end-date"
-            className="text-sm font-semibold text-gray-900"
-          >
-            End Date *
-          </Label>
-          <Input
-            id="end-date"
-            type="date"
-            value={data.endDate}
-            onChange={(e) => onChange({ endDate: e.target.value })}
-            disabled={readOnly}
-            min={data.startDate}
-            className={errors.endDate ? "border-red-500" : ""}
-          />
-          {errors.endDate && (
-            <p className="text-sm text-red-500">{errors.endDate}</p>
-          )}
-        </div>
-      </div>
-
       {/* Event Timezone */}
       <div className="space-y-2">
         <Label className="text-sm font-semibold text-gray-900">

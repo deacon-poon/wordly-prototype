@@ -188,7 +188,7 @@ function eventFormReducer(
       const newSession: SessionFormData = action.payload.session || {
         ...DEFAULT_SESSION,
         id: generateTempId(),
-        scheduledDate: state.eventDetails.startDate,
+        scheduledDate: new Date().toISOString().split("T")[0],
       };
       if (!newSession.id) {
         newSession.id = generateTempId();

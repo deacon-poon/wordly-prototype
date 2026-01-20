@@ -306,7 +306,7 @@ function getMockSessionData(
 
   return {
     session,
-    event: { name: "AI & Machine Learning Summit 2024", slug: eventSlug },
+    event: { name: "AI & Machine Learning Summit 2026", slug: eventSlug },
     relatedSessions,
   };
 }

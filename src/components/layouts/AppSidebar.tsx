@@ -45,7 +45,7 @@ export function AppSidebar() {
   // Desktop sidebar
   const DesktopSidebar = (
     <Sidebar className="flex flex-col h-screen z-30">
-      <SidebarHeader className="flex items-center justify-start px-4 pt-3">
+      <SidebarHeader className="flex items-center justify-start px-4 pt-6 pb-2">
         <Image
           src="/logo/wordly-logo-rebrand-blue.svg"
           alt="Wordly Logo"

@@ -34,10 +34,18 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
 
     const items = [{ label: activeWorkspace, href: "/", active: false }];
 
+    // Check if this is an event detail page (e.g., /events/evt001)
+    const isEventDetailPage = segments[0] === "events" && segments.length >= 2;
+
     let currentPath = "";
 
     segments.forEach((segment, index) => {
       currentPath += `/${segment}`;
+
+      // Skip event ID segments - the event name is shown in the page header
+      if (segments[0] === "events" && index === 1) {
+        return;
+      }
 
       // Format the segment label
       let label = segment.charAt(0).toUpperCase() + segment.slice(1);
@@ -72,10 +80,14 @@ export function AppHeader({ title = "Dashboard" }: AppHeaderProps) {
         }
       }
 
+      // Mark as active if it's the last segment, or if this is "events" on an event detail page
+      const isActive = index === segments.length - 1 ||
+        (isEventDetailPage && segment === "events" && index === 0);
+
       items.push({
         label,
         href: currentPath,
-        active: index === segments.length - 1,
+        active: isActive,
       });
     });
 

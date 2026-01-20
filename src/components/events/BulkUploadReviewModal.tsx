@@ -458,6 +458,8 @@ interface BulkUploadReviewModalProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (sessions: UploadedSession[]) => void;
   initialSessions?: UploadedSession[];
+  /** Event name to display in the modal header for context */
+  eventName?: string;
 }
 
 // ============================================================================
@@ -469,6 +471,7 @@ export function BulkUploadReviewModal({
   onOpenChange,
   onSubmit,
   initialSessions,
+  eventName,
 }: BulkUploadReviewModalProps) {
   // State
   const [sessions, setSessions] = useState<UploadedSession[]>([]);
@@ -754,9 +757,16 @@ export function BulkUploadReviewModal({
         {/* Header */}
         <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-semibold text-gray-900">
-              Review Uploaded Sessions
-            </DialogTitle>
+            <div>
+              <DialogTitle className="text-lg font-semibold text-gray-900">
+                Review Uploaded Sessions
+              </DialogTitle>
+              {eventName && (
+                <p className="text-sm text-gray-500 mt-0.5">
+                  for {eventName}
+                </p>
+              )}
+            </div>
             {/* Stats */}
             <div className="flex items-center gap-3 text-sm">
               <span className="flex items-center gap-1 text-green-600">

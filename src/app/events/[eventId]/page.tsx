@@ -179,13 +179,13 @@ function getMockEventData(eventId: string): Event {
   // Map of event IDs to event data (demo events)
   const eventDataMap: Record<string, Partial<Event>> = {
     "evt-001": {
-      name: "AI & Machine Learning Summit 2024",
+      name: "AI & Machine Learning Summit 2026",
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
       timezone: "America/Los_Angeles",
       description:
         "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
-      publicSummaryUrl: "/public/ai-ml-summit-2024",
+      publicSummaryUrl: "/public/ai-ml-summit-2026",
     },
     "evt-002": {
       name: "Cloud Infrastructure & DevOps Summit",
@@ -194,10 +194,10 @@ function getMockEventData(eventId: string): Event {
       timezone: "America/New_York",
       description:
         "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
-      publicSummaryUrl: "/public/cloud-devops-summit-2024",
+      publicSummaryUrl: "/public/cloud-devops-summit-2026",
     },
     "evt-003": {
-      name: "Frontend Development Conference 2024",
+      name: "Frontend Development Conference 2026",
       startDate: getRelativeDate(14),
       endDate: getRelativeDate(15),
       timezone: "America/Los_Angeles",
@@ -207,8 +207,11 @@ function getMockEventData(eventId: string): Event {
   };
 
   const eventData = eventDataMap[eventId];
-  const today = new Date().toISOString().split("T")[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+  // Use the event's start date for session scheduling (not current date)
+  // This ensures future events show sessions on their actual scheduled dates
+  const eventStartDate = eventData?.startDate || getRelativeDate(0);
+  const eventDay1 = eventStartDate.toISOString().split("T")[0];
+  const eventDay2 = new Date(eventStartDate.getTime() + 86400000).toISOString().split("T")[0];
 
   // For new events (not in our mock data), return an empty event
   if (!eventData) {
@@ -254,7 +257,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-001",
             title: "Opening Keynote: The Future of Technology",
             presenters: ["Dr. Sarah Chen", "John Smith"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -263,7 +266,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-002",
             title: "Scalable Architecture Patterns",
             presenters: ["Mike Rodriguez"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "11:00",
             endTime: "12:00",
             status: "pending",
@@ -272,7 +275,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-003",
             title: "Security Best Practices",
             presenters: ["Alex Thompson"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "13:30",
             endTime: "14:30",
             status: "pending",
@@ -281,7 +284,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-004",
             title: "Building Modern Applications",
             presenters: ["Jennifer Wu"],
-            scheduledDate: tomorrow,
+            scheduledDate: eventDay2,
             scheduledStart: "09:00",
             endTime: "10:30",
             status: "pending",
@@ -290,7 +293,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-005",
             title: "Performance Optimization Techniques",
             presenters: ["Robert Kim", "Dr. Lisa Wang"],
-            scheduledDate: tomorrow,
+            scheduledDate: eventDay2,
             scheduledStart: "11:00",
             endTime: "12:30",
             status: "pending",
@@ -308,7 +311,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-006",
             title: "Hands-on Workshop: Advanced Techniques",
             presenters: ["Lisa Park", "David Martinez"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "09:00",
             endTime: "11:00",
             status: "pending",
@@ -317,7 +320,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-007",
             title: "Interactive Coding Session",
             presenters: ["Emily Zhang"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "11:30",
             endTime: "13:00",
             status: "pending",
@@ -326,7 +329,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-008",
             title: "Deep Dive: Technical Patterns",
             presenters: ["Tom Anderson"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "14:00",
             endTime: "15:30",
             status: "pending",
@@ -335,7 +338,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-009",
             title: "Real-world Case Studies",
             presenters: ["Rachel Green", "Bob Johnson"],
-            scheduledDate: tomorrow,
+            scheduledDate: eventDay2,
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -353,7 +356,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-010",
             title: "Panel Discussion: Industry Trends",
             presenters: ["Multiple Speakers"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "10:00",
             endTime: "11:30",
             status: "pending",
@@ -362,7 +365,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-011",
             title: "Networking Session",
             presenters: ["Event Staff"],
-            scheduledDate: today,
+            scheduledDate: eventDay1,
             scheduledStart: "12:00",
             endTime: "13:30",
             status: "pending",
@@ -371,7 +374,7 @@ function getMockEventData(eventId: string): Event {
             id: "ses-012",
             title: "Closing Remarks",
             presenters: ["Conference Host"],
-            scheduledDate: tomorrow,
+            scheduledDate: eventDay2,
             scheduledStart: "16:00",
             endTime: "17:00",
             status: "pending",
@@ -389,8 +392,9 @@ export default function EventDetailPage({
   params: Promise<{ eventId: string }>;
 }) {
   const resolvedParams = use(params);
+  // Default to "all" so newly added sessions are always visible
   const [selectedTab, setSelectedTab] = useState<
-    "active" | "upcoming" | "past" | "all"
+    "now" | "upcoming" | "past" | "all"
   >("all");
   const [waysToJoinModal, setWaysToJoinModal] = useState<{
     room: Room | null;
@@ -495,6 +499,16 @@ export default function EventDetailPage({
     return () => window.removeEventListener("resize", measureHeader);
   }, []);
 
+  // Reset header visibility and scroll position when panel opens/closes
+  useEffect(() => {
+    setIsHeaderVisible(true);
+    lastScrollY.current = 0;
+    // Reset scroll position to top when panel state changes
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [sessionPanelState?.isOpen]);
+
   const eventStatus = getEventStatus(event.startDate, event.endDate);
   const isPastEvent = eventStatus === "past";
 
@@ -525,6 +539,9 @@ export default function EventDetailPage({
   }, [event.rooms]);
 
   // Filter dates based on selected tab
+  // "Now" = today's date (sessions happening now/today)
+  // "Upcoming" = future dates
+  // "Past" = past dates
   const filteredDates = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
     const allDates = Object.keys(sessionsByDate).sort();
@@ -533,23 +550,34 @@ export default function EventDetailPage({
       return allDates;
     }
 
-    if (selectedTab === "active") {
-      // Show only today's date
+    if (selectedTab === "now") {
+      // Show only today's date (sessions happening now/today)
       return allDates.filter((date) => date === today);
     }
 
     if (selectedTab === "upcoming") {
-      // Show future dates
+      // Show future dates (sessions scheduled for future)
       return allDates.filter((date) => date > today);
     }
 
     if (selectedTab === "past") {
-      // Show past dates
+      // Show past dates (sessions that already happened)
       return allDates.filter((date) => date < today);
     }
 
     return allDates;
   }, [sessionsByDate, selectedTab]);
+
+  // Compute the most recent session date for defaulting new sessions
+  // Falls back to today's date if no sessions exist
+  const mostRecentSessionDate = useMemo(() => {
+    const allDates = Object.keys(sessionsByDate);
+    if (allDates.length === 0) {
+      return new Date().toISOString().split("T")[0];
+    }
+    // Return the most recent (max) date
+    return allDates.sort().pop()!;
+  }, [sessionsByDate]);
 
   // Auto-expand today's date on mount
   React.useEffect(() => {
@@ -955,17 +983,17 @@ export default function EventDetailPage({
   };
 
   const mainContent = (
-    <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-white @container">
+    <>
       {/* Smart sticky header - hides on scroll down, shows on scroll up */}
       <div
         ref={headerRef}
         className={cn(
-          "sticky top-0 z-20 bg-white border-b border-gray-100 transition-transform duration-300 ease-out",
+          "sticky top-0 z-20 bg-white border-b border-gray-200 transition-transform duration-300 ease-out",
           isHeaderVisible ? "translate-y-0" : "-translate-y-full"
         )}
       >
         <div className="px-6 py-5">
-          {/* Row 1: Title (editable) + Add Location */}
+          {/* Row 1: Title (editable) + Add Room */}
           <div className="flex items-center justify-between gap-3 mb-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {isEditingEventName ? (
@@ -1077,7 +1105,7 @@ export default function EventDetailPage({
               className="flex-shrink-0"
             >
               <TabsList>
-                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="now">Now</TabsTrigger>
                 <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
                 <TabsTrigger value="past">Past</TabsTrigger>
                 <TabsTrigger value="all">All</TabsTrigger>
@@ -1156,7 +1184,7 @@ export default function EventDetailPage({
                 <RoomAccordion
                   key={room.id}
                   room={room}
-                  defaultExpanded={true}
+                  defaultExpanded={false}
                   eventTimezone={event.timezone}
                   onStartRoom={(room, e) =>
                     handleStartRoom(room, event.name, e)
@@ -1211,7 +1239,7 @@ export default function EventDetailPage({
               </div>
             ) : (
               <p className="text-gray-600">
-                {selectedTab === "active" && "No sessions scheduled for today"}
+                {selectedTab === "now" && "No sessions happening now"}
                 {selectedTab === "upcoming" && "No upcoming sessions"}
                 {selectedTab === "past" && "No past sessions"}
                 {selectedTab === "all" && "No sessions found"}
@@ -1300,7 +1328,7 @@ export default function EventDetailPage({
                         <RoomAccordion
                           key={room.id}
                           room={roomWithDateSessions}
-                          defaultExpanded={true}
+                          defaultExpanded={false}
                           eventTimezone={event.timezone}
                           onStartRoom={(room, e) =>
                             handleStartRoom(room, event.name, e)
@@ -1438,8 +1466,9 @@ export default function EventDetailPage({
         onOpenChange={setIsBulkReviewModalOpen}
         onSubmit={handleBulkReviewSubmit}
         initialSessions={parsedSessions}
+        eventName={event.name}
       />
-    </div>
+    </>
   );
 
   return (
@@ -1447,7 +1476,9 @@ export default function EventDetailPage({
       {sessionPanelState?.isOpen ? (
         <ResizablePanelGroup direction="horizontal" className="h-full">
           <ResizablePanel defaultSize={65} minSize={50}>
-            {mainContent}
+            <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-white @container">
+              {mainContent}
+            </div>
           </ResizablePanel>
           <ResizableHandle className="w-px bg-transparent hover:bg-gray-300 transition-colors" />
           <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
@@ -1457,7 +1488,7 @@ export default function EventDetailPage({
               roomName={sessionPanelState.roomName}
               roomId={sessionPanelState.roomId}
               eventName={event.name}
-              defaultDate={event.startDate.toISOString().split("T")[0]}
+              defaultDate={mostRecentSessionDate}
               rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
               onClose={handleCloseSessionPanel}
               onSave={handleSaveSession}
@@ -1467,7 +1498,9 @@ export default function EventDetailPage({
           </ResizablePanel>
         </ResizablePanelGroup>
       ) : (
-        mainContent
+        <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-white @container">
+          {mainContent}
+        </div>
       )}
     </div>
   );

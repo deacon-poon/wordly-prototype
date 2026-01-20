@@ -163,18 +163,18 @@ function getMockEventData(eventSlug: string): PublicEvent {
   const dayAfterStr = dayAfter.toISOString().split("T")[0];
 
   const eventData: Record<string, Partial<PublicEvent>> = {
-    "ai-ml-summit-2024": {
-      name: "AI & Machine Learning Summit 2024",
+    "ai-ml-summit-2026": {
+      name: "AI & Machine Learning Summit 2026",
       description:
         "Live conference on the latest advances in AI, machine learning, and deep learning technologies. Industry leaders and researchers share insights on the future of artificial intelligence.",
     },
-    "cloud-devops-summit-2024": {
-      name: "Cloud & DevOps Summit 2024",
+    "cloud-devops-summit-2026": {
+      name: "Cloud & DevOps Summit 2026",
       description:
         "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices. Learn from practitioners building scalable infrastructure.",
     },
-    "design-ux-conf-2024": {
-      name: "Design & UX Conference 2024",
+    "design-ux-conf-2026": {
+      name: "Design & UX Conference 2026",
       description:
         "Explore the latest in design systems, UX research, and product design methodologies from top design leaders.",
     },
