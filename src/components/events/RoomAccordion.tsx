@@ -24,6 +24,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getTimezoneAbbr } from "@/components/ui/datetime-picker";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Session {
   id: string;
@@ -141,21 +146,29 @@ export function RoomAccordion({
             </Button>
           )}
           {onStartRoom && (
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!isPastEvent) {
-                  onStartRoom(room, e);
-                }
-              }}
-              disabled={isPastEvent}
-              className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white disabled:opacity-50"
-              title={isPastEvent ? "This event has ended" : "Start Room"}
-            >
-              <Play className="h-4 w-4 @md:mr-1.5" />
-              <span className="hidden @md:inline">Start Room</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isPastEvent) {
+                      onStartRoom(room, e);
+                    }
+                  }}
+                  disabled={isPastEvent}
+                  className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white disabled:opacity-50"
+                >
+                  <Play className="h-4 w-4 @md:mr-1.5" />
+                  <span className="hidden @md:inline">Start Room</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px]">
+                {isPastEvent
+                  ? "This event has ended"
+                  : "Sessions will play one after another automatically"}
+              </TooltipContent>
+            </Tooltip>
           )}
 
           {/* More actions dropdown */}
