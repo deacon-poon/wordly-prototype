@@ -36,7 +36,6 @@ interface SessionDetail {
   id: string;
   title: string;
   presenters: string[];
-  presenterBios?: { name: string; bio: string }[];
   scheduledDate: string;
   scheduledStart: string;
   endTime: string;
@@ -127,12 +126,6 @@ function getMockSessionData(
       id: "ses-001",
       title: "Opening Keynote: The Future of Technology",
       presenters: ["Dr. Sarah Chen"],
-      presenterBios: [
-        {
-          name: "Dr. Sarah Chen",
-          bio: "Chief AI Officer at TechCorp and former Stanford professor. Author of 'AI in the Enterprise' and advisor to Fortune 500 companies on digital transformation.",
-        },
-      ],
       scheduledDate: todayStr,
       scheduledStart: "9:00 AM",
       endTime: "10:30 AM",
@@ -203,16 +196,6 @@ function getMockSessionData(
       id: "ses-002",
       title: "Building Scalable Systems for the Modern Era",
       presenters: ["Michael Roberts", "Lisa Park"],
-      presenterBios: [
-        {
-          name: "Michael Roberts",
-          bio: "Principal Engineer at CloudScale Inc. 15+ years building distributed systems at Netflix and Amazon.",
-        },
-        {
-          name: "Lisa Park",
-          bio: "VP of Engineering at DataFlow. Led the migration of a 10M user platform to microservices.",
-        },
-      ],
       scheduledDate: todayStr,
       scheduledStart: "11:00 AM",
       endTime: "12:00 PM",
@@ -684,27 +667,6 @@ export default function SessionDetailPage({
                 ))}
               </ul>
             </InsightSection>
-
-            {/* Speaker Info */}
-            {session.presenterBios && session.presenterBios.length > 0 && (
-              <InsightSection
-                icon={<User className="h-5 w-5" />}
-                title="About the Speaker"
-              >
-                <div className="space-y-4">
-                  {session.presenterBios.map((presenter, index) => (
-                    <div key={index}>
-                      <h4 className="font-semibold text-gray-900 mb-1">
-                        {presenter.name}
-                      </h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        {presenter.bio}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </InsightSection>
-            )}
 
             {/* Related Sessions */}
             <InsightSection
