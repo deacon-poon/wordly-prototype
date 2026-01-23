@@ -501,6 +501,12 @@ export function BulkUploadReviewModal({
 
   // Filtered and sorted sessions
   // Invalid sessions are surfaced at the top, valid at the bottom (per existing portal UX)
+  //
+  // IMPORTANT FOR DEVELOPERS: Row order should remain stable when editing.
+  // When a user edits a row (e.g., changes the time), the row should stay in its
+  // current position and NOT be re-sorted based on the new values. This matches
+  // the Portal's behavior and avoids user confusion. Sorting is based on rowNumber
+  // (original upload order) within each validity group, not on field values.
   const filteredSessions = useMemo(() => {
     let filtered = sessions;
 
