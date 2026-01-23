@@ -15,6 +15,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  Info,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -227,19 +228,27 @@ export function RoomAccordion({
         <div className="px-4 pb-3 flex items-center">
           {/* Spacer matching icon column */}
           <div className="w-8 flex-shrink-0" />
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>
-              Session ID:{" "}
-              <code className="font-mono text-gray-700">
-                {room.roomSessionId}
-              </code>
-            </span>
-            <span>
-              Passcode:{" "}
-              <code className="font-mono text-gray-700">
-                {room.passcode}
-              </code>
-            </span>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span>
+                Session ID:{" "}
+                <code className="font-mono text-gray-700">
+                  {room.roomSessionId}
+                </code>
+              </span>
+              <span>
+                Passcode:{" "}
+                <code className="font-mono text-gray-700">
+                  {room.passcode}
+                </code>
+              </span>
+            </div>
+            {room.sessions.length > 1 && !isPastEvent && (
+              <div className="flex items-center gap-1.5 text-xs text-primary-teal-600">
+                <Info className="h-3 w-3" />
+                <span>Sessions will run sequentially — each session starts automatically when the previous one ends</span>
+              </div>
+            )}
           </div>
         </div>
       )}
