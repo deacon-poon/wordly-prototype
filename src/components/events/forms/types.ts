@@ -61,6 +61,8 @@ export interface Event {
  * Description removed - events only need name and timezone.
  * Timezone added per Jan 2026 design sync (Graham/Justin) - event-level timezone
  * that sessions inherit by default.
+ * Account added per Jan 2026 design sync - one account per event policy.
+ * All sessions in an event use the same account for billing/minutes.
  *
  * Note: Start and end dates are now inferred from the sessions within the event.
  * The event date range is derived dynamically from the earliest to latest session date.
@@ -69,6 +71,8 @@ export interface EventDetailsFormData {
   name: string;
   /** Event timezone - all session times are displayed/interpreted in this timezone */
   timezone: string;
+  /** Account ID for billing - one account per event */
+  accountId: string;
 }
 
 export interface RoomFormData {
@@ -126,6 +130,7 @@ export interface EventFormState {
 export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
   name: "",
   timezone: "America/Los_Angeles", // Default to Pacific Time
+  accountId: "acc-default", // Default account
 };
 
 export const DEFAULT_ROOM: RoomFormData = {

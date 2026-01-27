@@ -409,31 +409,9 @@ export function SessionForm({
                   </p>
                 </div>
 
-                {/* Account */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`session-account-${index || 0}`}
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Account
-                  </Label>
-                  <Select
-                    value={data.accountId}
-                    onValueChange={(value) => onChange({ accountId: value })}
-                    disabled={isFieldDisabled}
-                  >
-                    <SelectTrigger id={`session-account-${index || 0}`}>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ACCOUNTS.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Account field removed - One account per event policy
+                    Account is now set at the event level, not per session.
+                    See event header for account display. */}
 
                 {/* ─── Language & Translation ─────────────────────────────── */}
                 <div>

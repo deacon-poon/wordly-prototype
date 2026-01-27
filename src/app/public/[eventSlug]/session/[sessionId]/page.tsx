@@ -26,10 +26,24 @@ import {
   Zap,
   Users,
   TrendingUp,
+  Link2,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { EventChatbot } from "@/components/public/EventChatbot";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 // Data interfaces
 interface SessionDetail {
@@ -59,7 +73,7 @@ interface SessionDetail {
       | "Educational";
     audienceLevel: "Beginner" | "Intermediate" | "Advanced" | "All Levels";
     keyTopics: string[];
-    questionsAnswered: string[];
+    questionsAnswered: { question: string; answer: string }[];
     suggestedFollowUp: string[];
     actionItems: string[];
     keyTerms: { term: string; definition: string }[];
@@ -155,10 +169,27 @@ function getMockSessionData(
           "Enterprise Strategy",
         ],
         questionsAnswered: [
-          "How will AI change the workplace by 2030?",
-          "What skills will knowledge workers need in the AI era?",
-          "How can organizations prepare for AI-driven transformation?",
-          "What role does ethics play in AI adoption?",
+          {
+            question: "How will AI change the workplace by 2030?",
+            answer:
+              "AI assistants will become standard tools for knowledge workers, fundamentally changing problem-solving approaches and enabling new forms of human-AI collaboration.",
+          },
+          {
+            question: "What skills will knowledge workers need in the AI era?",
+            answer:
+              "Critical thinking, AI literacy, prompt engineering, and the ability to validate and refine AI outputs will be essential skills alongside domain expertise.",
+          },
+          {
+            question:
+              "How can organizations prepare for AI-driven transformation?",
+            answer:
+              "Start with quick-win pilot projects, create cross-functional AI task forces, and develop clear AI ethics frameworks while auditing workflows for automation opportunities.",
+          },
+          {
+            question: "What role does ethics play in AI adoption?",
+            answer:
+              "Ethics is foundational—organizations must balance AI's capabilities with responsibility, ensuring transparency, fairness, and accountability in AI-driven decisions.",
+          },
         ],
         suggestedFollowUp: [
           "How to start an AI pilot program in my organization?",
@@ -225,10 +256,26 @@ function getMockSessionData(
           "Resilience Patterns",
         ],
         questionsAnswered: [
-          "When should we move from monolith to microservices?",
-          "How do we handle failures in distributed systems?",
-          "What patterns work best for high-traffic applications?",
-          "How do we manage data consistency across services?",
+          {
+            question: "When should we move from monolith to microservices?",
+            answer:
+              "When your team has outgrown the monolith, experiencing deployment bottlenecks and needing independent scaling. Start with a modular monolith first.",
+          },
+          {
+            question: "How do we handle failures in distributed systems?",
+            answer:
+              "Implement circuit breakers, bulkhead patterns, and graceful degradation. Design for failure and ensure the system can continue operating when components fail.",
+          },
+          {
+            question: "What patterns work best for high-traffic applications?",
+            answer:
+              "Event-driven architecture with asynchronous messaging, horizontal scaling, caching strategies, and load balancing across service instances.",
+          },
+          {
+            question: "How do we manage data consistency across services?",
+            answer:
+              "Embrace eventual consistency with saga patterns, use event sourcing for audit trails, and carefully define service boundaries around data ownership.",
+          },
         ],
         suggestedFollowUp: [
           "What monitoring tools work best for microservices?",
@@ -300,11 +347,13 @@ function InsightSection({
   title,
   children,
   className,
+  action,
 }: {
   icon: React.ReactNode;
   title: string;
   children: React.ReactNode;
   className?: string;
+  action?: React.ReactNode;
 }) {
   return (
     <div
@@ -314,9 +363,12 @@ function InsightSection({
       )}
     >
       <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-        <div className="flex items-center gap-2">
-          <span className="text-primary-teal-600">{icon}</span>
-          <h3 className="font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-primary-teal-600">{icon}</span>
+            <h3 className="font-semibold text-gray-900">{title}</h3>
+          </div>
+          {action}
         </div>
       </div>
       <div className="p-5">{children}</div>
@@ -326,9 +378,9 @@ function InsightSection({
 
 // Share dropdown
 function ShareButton({ session }: { session: SessionDetail }) {
-  const [copied, setCopied] = useState(false);
+  const [copiedType, setCopiedType] = useState<"summary" | "link" | null>(null);
 
-  const handleCopy = async () => {
+  const handleCopySummary = async () => {
     const textToCopy = `${session.title}\n\n📌 TL;DR: ${
       session.tldr
     }\n\n🎯 Key Takeaways:\n${session.keyTakeaways
@@ -339,19 +391,44 @@ function ShareButton({ session }: { session: SessionDetail }) {
         : ""
     }`;
     await navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedType("summary");
+    setTimeout(() => setCopiedType(null), 2000);
+  };
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopiedType("link");
+    setTimeout(() => setCopiedType(null), 2000);
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
-      {copied ? (
-        <Check className="h-4 w-4 text-green-600" />
-      ) : (
-        <Copy className="h-4 w-4" />
-      )}
-      {copied ? "Copied!" : "Copy Summary"}
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          {copiedType ? (
+            <Check className="h-4 w-4 text-green-600" />
+          ) : (
+            <Share2 className="h-4 w-4" />
+          )}
+          {copiedType === "summary"
+            ? "Summary Copied!"
+            : copiedType === "link"
+            ? "Link Copied!"
+            : "Share"}
+          <ChevronDown className="h-3 w-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleCopySummary}>
+          <Copy className="h-4 w-4 mr-2" />
+          Copy summary
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleCopyLink}>
+          <Link2 className="h-4 w-4 mr-2" />
+          Copy link
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -431,25 +508,30 @@ export default function SessionDetailPage({
       {/* Session Hero */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-8">
-          {/* Badges */}
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-gray-600 bg-gray-100">
-              <Clock className="h-3.5 w-3.5" />
-              {session.duration}
-            </span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium border",
-                sentimentStyle.bg
-              )}
-            >
-              {sentimentStyle.icon}
-              {session.aiInsights.sentiment}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-gray-600 bg-gray-100">
-              <Users className="h-3.5 w-3.5" />
-              {session.aiInsights.audienceLevel}
-            </span>
+          {/* Top row: Badges + Share button */}
+          <div className="flex items-start justify-between gap-4 mb-4">
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-gray-600 bg-gray-100">
+                <Clock className="h-3.5 w-3.5" />
+                {session.duration}
+              </span>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium border",
+                  sentimentStyle.bg
+                )}
+              >
+                {sentimentStyle.icon}
+                {session.aiInsights.sentiment}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-gray-600 bg-gray-100">
+                <Users className="h-3.5 w-3.5" />
+                {session.aiInsights.audienceLevel}
+              </span>
+            </div>
+            {/* Share button */}
+            <ShareButton session={session} />
           </div>
 
           {/* Title */}
@@ -483,7 +565,7 @@ export default function SessionDetailPage({
           </div>
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2">
             {session.tags.map((tag) => (
               <span
                 key={tag}
@@ -492,11 +574,6 @@ export default function SessionDetailPage({
                 {tag}
               </span>
             ))}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <ShareButton session={session} />
           </div>
         </div>
       </div>
@@ -632,22 +709,27 @@ export default function SessionDetailPage({
               </Button>
             </div>
 
-            {/* Questions Answered */}
+            {/* FAQ */}
             <InsightSection
               icon={<HelpCircle className="h-5 w-5" />}
-              title="Questions Answered"
+              title="FAQ"
             >
-              <ul className="space-y-2">
-                {session.aiInsights.questionsAnswered.map((question, index) => (
-                  <li
+              <Accordion type="single" collapsible className="w-full">
+                {session.aiInsights.questionsAnswered.map((faq, index) => (
+                  <AccordionItem
                     key={index}
-                    className="text-sm text-gray-700 flex items-start gap-2"
+                    value={`faq-${index}`}
+                    className="border-gray-200"
                   >
-                    <span className="text-primary-teal-500 mt-1">•</span>
-                    {question}
-                  </li>
+                    <AccordionTrigger className="text-sm font-medium text-gray-900 hover:no-underline py-3">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm text-gray-600">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </ul>
+              </Accordion>
             </InsightSection>
 
             {/* Suggested Follow-up */}

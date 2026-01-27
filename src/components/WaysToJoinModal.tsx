@@ -33,6 +33,8 @@ interface WaysToJoinModalProps {
   roomSessionId: string;
   eventName: string;
   passcode?: string;
+  /** Callback to download all sessions info (CSV/PDF) */
+  onDownloadAllSessions?: () => void;
 }
 
 interface AccordionItemProps {
@@ -102,6 +104,7 @@ export function WaysToJoinModal({
   roomSessionId,
   eventName,
   passcode = "327269",
+  onDownloadAllSessions,
 }: WaysToJoinModalProps) {
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
 
@@ -167,14 +170,27 @@ export function WaysToJoinModal({
               </a>
             </p>
           </DialogHeader>
-          <div className="flex items-center justify-end gap-4 mt-2 text-sm text-gray-500">
-            <span>
-              Session Name: <span className="font-medium">{roomName}</span>
-            </span>
-            <span>
-              Session ID:{" "}
-              <span className="font-mono font-medium">{roomSessionId}</span>
-            </span>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span>
+                Session Name: <span className="font-medium">{roomName}</span>
+              </span>
+              <span>
+                Session ID:{" "}
+                <span className="font-mono font-medium">{roomSessionId}</span>
+              </span>
+            </div>
+            {onDownloadAllSessions && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onDownloadAllSessions}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Download All Sessions
+              </Button>
+            )}
           </div>
         </div>
 

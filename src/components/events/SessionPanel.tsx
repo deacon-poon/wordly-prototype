@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { ChevronLeft, Loader2, Plus, Edit2, MapPin, Trash2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Loader2, Plus, Edit2, MapPin, Trash2, AlertTriangle, Clock } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -43,6 +43,11 @@ interface SessionPanelProps {
   defaultTimezone?: string;
   /** Available rooms for move functionality */
   rooms?: RoomOption[];
+  /** Account minutes info for alert */
+  accountMinutes?: {
+    total: number;
+    used: number;
+  };
   /** Callbacks */
   onClose: () => void;
   onSave: (session: Session | SessionFormData, isNew: boolean, newRoomId?: string) => void;
@@ -67,6 +72,7 @@ export function SessionPanel({
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
   rooms,
+  accountMinutes,
   onClose,
   onSave,
   onDelete,
@@ -158,6 +164,48 @@ export function SessionPanel({
   const { isActive, isCompleted } = getSessionEditStatus();
   // Active sessions allow end time editing only; completed sessions are fully read-only
   const isReadOnly = isCompleted;
+
+  // Calculate session duration in minutes
+  const calculateSessionDuration = (start: string, end: string): number => {
+    const [startHours, startMins] = start.split(":").map(Number);
+    const [endHours, endMins] = end.split(":").map(Number);
+    const startTotal = startHours * 60 + startMins;
+    const endTotal = endHours * 60 + endMins;
+    return endTotal - startTotal;
+  };
+
+  // Check if adding this session would exceed available minutes
+  const getMinutesAlert = () => {
+    if (!accountMinutes) return null;
+
+    const sessionDuration = calculateSessionDuration(
+      formData.scheduledStart,
+      formData.endTime
+    );
+
+    if (sessionDuration <= 0) return null;
+
+    const availableMinutes = accountMinutes.total - accountMinutes.used;
+
+    if (sessionDuration > availableMinutes) {
+      return {
+        type: "error" as const,
+        message: `This session (${sessionDuration} min) would exceed available minutes. Available: ${availableMinutes.toLocaleString()} min of ${accountMinutes.total.toLocaleString()} min total.`,
+      };
+    }
+
+    // Warning if session uses more than 80% of remaining minutes
+    if (sessionDuration > availableMinutes * 0.8) {
+      return {
+        type: "warning" as const,
+        message: `This session (${sessionDuration} min) will use most of your remaining minutes. Available: ${availableMinutes.toLocaleString()} min.`,
+      };
+    }
+
+    return null;
+  };
+
+  const minutesAlert = getMinutesAlert();
 
   // Reset form and room when session changes (edit mode)
   useEffect(() => {
@@ -266,6 +314,18 @@ export function SessionPanel({
           {isCompleted && (
             <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700">
               <strong>Read-only:</strong> This session has completed and cannot be edited.
+            </div>
+          )}
+          {minutesAlert && (
+            <div
+              className={`p-3 rounded-lg text-sm flex items-start gap-2 ${
+                minutesAlert.type === "error"
+                  ? "bg-red-50 border border-red-200 text-red-800"
+                  : "bg-amber-50 border border-amber-200 text-amber-800"
+              }`}
+            >
+              <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{minutesAlert.message}</span>
             </div>
           )}
 

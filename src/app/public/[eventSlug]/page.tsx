@@ -25,6 +25,7 @@ import {
   List,
   LayoutGrid,
   ArrowRight,
+  Link2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +36,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EventChatbot } from "@/components/public/EventChatbot";
 import { cn } from "@/lib/utils";
 
@@ -508,15 +515,20 @@ function TopicTag({
 }
 
 // Share dropdown component
-function ShareButton({ session }: { session: SessionSummary }) {
-  const [copied, setCopied] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+function ShareButton({
+  session,
+  eventSlug,
+}: {
+  session: SessionSummary;
+  eventSlug: string;
+}) {
+  const [copiedType, setCopiedType] = useState<"summary" | "link" | null>(null);
 
-  const handleCopy = async () => {
+  const handleCopySummary = async () => {
     const textToCopy = `${session.title}\n\n📌 TL;DR: ${
       session.tldr
     }\n\n🎯 Key Takeaways:\n${session.keyTakeaways
-      .map((t) => `• ${t}`)
+      ?.map((t) => `• ${t}`)
       .join("\n")}${
       session.notableQuote
         ? `\n\n💬 "${session.notableQuote.text}" — ${session.notableQuote.speaker}`
@@ -524,45 +536,42 @@ function ShareButton({ session }: { session: SessionSummary }) {
     }`;
 
     await navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedType("summary");
+    setTimeout(() => setCopiedType(null), 2000);
+  };
+
+  const handleCopyLink = async () => {
+    const sessionUrl = `${window.location.origin}/public/${eventSlug}/session/${session.id}`;
+    await navigator.clipboard.writeText(sessionUrl);
+    setCopiedType("link");
+    setTimeout(() => setCopiedType(null), 2000);
   };
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-        title="Share"
-      >
-        <Share2 className="h-4 w-4" />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]">
-            <button
-              onClick={() => {
-                handleCopy();
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-              {copied ? "Copied!" : "Copy summary"}
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+          title="Share"
+        >
+          {copiedType ? (
+            <Check className="h-4 w-4 text-green-600" />
+          ) : (
+            <Share2 className="h-4 w-4" />
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleCopySummary}>
+          <Copy className="h-4 w-4 mr-2" />
+          {copiedType === "summary" ? "Summary Copied!" : "Copy summary"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleCopyLink}>
+          <Link2 className="h-4 w-4 mr-2" />
+          {copiedType === "link" ? "Link Copied!" : "Copy link"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -820,7 +829,7 @@ function SummaryCard({
           </div>
 
           {/* Share button - only for completed sessions */}
-          {isCompleted && <ShareButton session={session} />}
+          {isCompleted && <ShareButton session={session} eventSlug={eventSlug} />}
         </div>
 
         {/* Topic tags - only for completed sessions */}

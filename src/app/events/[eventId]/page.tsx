@@ -84,6 +84,12 @@ interface Event {
   description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
+  // Account and billing info (one account per event)
+  account: {
+    id: string;
+    name: string;
+  };
+  totalMinutes: number; // Total minutes allocated/used for this event
 }
 
 // Helper functions
@@ -226,6 +232,11 @@ function getMockEventData(eventId: string): Event {
       sessionCount: 0,
       description: "Add rooms and sessions to get started",
       rooms: [],
+      account: {
+        id: "acc-001",
+        name: "Deacon Poon (2a4...)",
+      },
+      totalMinutes: 0,
     };
   }
 
@@ -382,6 +393,11 @@ function getMockEventData(eventId: string): Event {
         ],
       },
     ],
+    account: {
+      id: "acc-001",
+      name: "Deacon Poon (2a4...)",
+    },
+    totalMinutes: 1500, // 25 hours allocated for this event
   };
 }
 
@@ -1380,6 +1396,34 @@ export default function EventDetailPage({
           roomName={waysToJoinModal.room.name}
           eventName={waysToJoinModal.eventName}
           passcode={waysToJoinModal.room.passcode}
+          onDownloadAllSessions={() => {
+            // Download all sessions as CSV
+            const headers = [
+              "Room",
+              "Session ID",
+              "Passcode",
+              "Attendee Link",
+              "Presenter Link",
+            ];
+            const rows = event.rooms.map((room) => [
+              room.name,
+              room.roomSessionId,
+              room.passcode || "",
+              `https://join.wordly.ai/${room.roomSessionId}`,
+              `https://present.wordly.ai/${room.roomSessionId}`,
+            ]);
+            const csvContent = [
+              headers.join(","),
+              ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+            ].join("\n");
+            const blob = new Blob([csvContent], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${event.name.replace(/[^a-z0-9]/gi, "_")}_sessions.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
         />
       )}
 
@@ -1467,6 +1511,20 @@ export default function EventDetailPage({
         onSubmit={handleBulkReviewSubmit}
         initialSessions={parsedSessions}
         eventName={event.name}
+        accountMinutes={{
+          total: event.totalMinutes,
+          used: event.rooms.reduce(
+            (acc, room) =>
+              acc +
+              room.sessions.reduce((sessionAcc, session) => {
+                const [startH, startM] = session.scheduledStart.split(":").map(Number);
+                const [endH, endM] = session.endTime.split(":").map(Number);
+                const duration = (endH * 60 + endM) - (startH * 60 + startM);
+                return sessionAcc + Math.max(0, duration);
+              }, 0),
+            0
+          ),
+        }}
       />
     </>
   );
@@ -1490,6 +1548,20 @@ export default function EventDetailPage({
               eventName={event.name}
               defaultDate={mostRecentSessionDate}
               rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
+              accountMinutes={{
+                total: event.totalMinutes,
+                used: event.rooms.reduce(
+                  (acc, room) =>
+                    acc +
+                    room.sessions.reduce((sessionAcc, session) => {
+                      const [startH, startM] = session.scheduledStart.split(":").map(Number);
+                      const [endH, endM] = session.endTime.split(":").map(Number);
+                      const duration = (endH * 60 + endM) - (startH * 60 + startM);
+                      return sessionAcc + Math.max(0, duration);
+                    }, 0),
+                  0
+                ),
+              }}
               onClose={handleCloseSessionPanel}
               onSave={handleSaveSession}
               onDelete={handleDeleteSession}

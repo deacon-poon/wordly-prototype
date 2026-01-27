@@ -460,6 +460,11 @@ interface BulkUploadReviewModalProps {
   initialSessions?: UploadedSession[];
   /** Event name to display in the modal header for context */
   eventName?: string;
+  /** Account minutes info for alert when exceeding available minutes */
+  accountMinutes?: {
+    total: number;
+    used: number;
+  };
 }
 
 // ============================================================================
@@ -472,6 +477,7 @@ export function BulkUploadReviewModal({
   onSubmit,
   initialSessions,
   eventName,
+  accountMinutes,
 }: BulkUploadReviewModalProps) {
   // State
   const [sessions, setSessions] = useState<UploadedSession[]>([]);
@@ -543,6 +549,37 @@ export function BulkUploadReviewModal({
   // Stats
   const validCount = sessions.filter((s) => s.isValid).length;
   const invalidCount = sessions.filter((s) => !s.isValid).length;
+
+  // Calculate total minutes for valid sessions in the upload
+  const uploadTotalMinutes = useMemo(() => {
+    return sessions
+      .filter((s) => s.isValid)
+      .reduce((acc, s) => acc + (s.duration > 0 ? s.duration : 0), 0);
+  }, [sessions]);
+
+  // Check if upload would exceed available minutes
+  const minutesAlert = useMemo(() => {
+    if (!accountMinutes) return null;
+
+    const availableMinutes = accountMinutes.total - accountMinutes.used;
+
+    if (uploadTotalMinutes > availableMinutes) {
+      return {
+        type: "error" as const,
+        message: `This upload (${uploadTotalMinutes.toLocaleString()} min) would exceed available minutes. Available: ${availableMinutes.toLocaleString()} min of ${accountMinutes.total.toLocaleString()} min total.`,
+      };
+    }
+
+    // Warning if upload uses more than 80% of remaining minutes
+    if (uploadTotalMinutes > availableMinutes * 0.8) {
+      return {
+        type: "warning" as const,
+        message: `This upload (${uploadTotalMinutes.toLocaleString()} min) will use most of your remaining minutes. Available: ${availableMinutes.toLocaleString()} min.`,
+      };
+    }
+
+    return null;
+  }, [accountMinutes, uploadTotalMinutes]);
 
   // Update a session field
   const updateSession = useCallback(
@@ -785,6 +822,20 @@ export function BulkUploadReviewModal({
               </span>
             </div>
           </div>
+
+          {/* Minutes Alert */}
+          {minutesAlert && (
+            <div
+              className={`mt-3 p-3 rounded-lg text-sm flex items-start gap-2 ${
+                minutesAlert.type === "error"
+                  ? "bg-red-50 border border-red-200 text-red-800"
+                  : "bg-amber-50 border border-amber-200 text-amber-800"
+              }`}
+            >
+              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>{minutesAlert.message}</span>
+            </div>
+          )}
 
           {/* Filters */}
           <div className="flex items-center gap-4 mt-4">

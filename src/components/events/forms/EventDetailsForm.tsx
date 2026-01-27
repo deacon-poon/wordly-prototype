@@ -3,8 +3,15 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { TimezoneSelector } from "@/components/ui/datetime-picker";
-import { EventDetailsFormData, FormMode } from "./types";
+import { EventDetailsFormData, FormMode, ACCOUNTS } from "./types";
 
 // ============================================================================
 // Props
@@ -72,6 +79,33 @@ export function EventDetailsForm({
         />
         {errors.timezone && (
           <p className="text-sm text-red-500">{errors.timezone}</p>
+        )}
+      </div>
+
+      {/* Account - One account per event */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold text-gray-900">Account *</Label>
+        <p className="text-xs text-gray-500 mb-1.5">
+          All sessions in this event will be billed to this account
+        </p>
+        <Select
+          value={data.accountId}
+          onValueChange={(value) => onChange({ accountId: value })}
+          disabled={readOnly}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select account" />
+          </SelectTrigger>
+          <SelectContent>
+            {ACCOUNTS.map((account) => (
+              <SelectItem key={account.id} value={account.id}>
+                {account.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.accountId && (
+          <p className="text-sm text-red-500">{errors.accountId}</p>
         )}
       </div>
     </div>
