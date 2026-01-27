@@ -82,10 +82,12 @@ export function RoomAccordion({
   isPastEvent = false,
   showCredentials = true,
 }: RoomAccordionProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  // Auto-expand if room has no sessions (so user can see "Add Session" button)
+  const [isExpanded, setIsExpanded] = useState(
+    defaultExpanded || room.sessions.length === 0
+  );
 
-  const hasRoomActions =
-    onRenameRoom || onDeleteRoom || onAddSession;
+  const hasRoomActions = onRenameRoom || onDeleteRoom || onAddSession;
 
   return (
     <div
