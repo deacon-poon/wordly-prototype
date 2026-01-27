@@ -34,6 +34,12 @@ interface Event {
   description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
+  // Account and billing info (one account per event)
+  account?: {
+    id: string;
+    name: string;
+  };
+  totalMinutes?: number; // Total minutes allocated/used for this event
 }
 
 const STORAGE_KEY = "wordly_events";
@@ -100,6 +106,11 @@ export function serializeEvent(event: {
   description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
+  account?: {
+    id: string;
+    name: string;
+  };
+  totalMinutes?: number;
 }): Event {
   return {
     ...event,
@@ -123,10 +134,18 @@ export function deserializeEvent(event: Event): {
   description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
+  account: {
+    id: string;
+    name: string;
+  };
+  totalMinutes: number;
 } {
   return {
     ...event,
     startDate: new Date(event.startDate),
     endDate: new Date(event.endDate),
+    // Provide defaults for account and totalMinutes if not present (for backwards compatibility)
+    account: event.account || { id: "acc-default", name: "Default Account" },
+    totalMinutes: event.totalMinutes ?? 600,
   };
 }
