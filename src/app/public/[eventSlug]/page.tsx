@@ -851,7 +851,7 @@ function SummaryCard({
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="h-4 w-4 text-primary-teal-600" />
                 <span className="text-xs font-bold text-primary-teal-700 uppercase tracking-wider">
-                  TL;DR
+                  In One Sentence
                 </span>
               </div>
               <p className="text-gray-800 font-medium leading-relaxed">
@@ -922,12 +922,13 @@ function SummaryCard({
             )}
 
             {/* Actions row */}
-            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-sm font-medium text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
               >
-                {isExpanded ? "Show less" : "Read full summary"}
+                <FileText className="h-4 w-4" />
+                {isExpanded ? "Hide full summary" : "Read full summary"}
                 <ChevronDown
                   className={cn(
                     "h-4 w-4 transition-transform",
@@ -938,7 +939,7 @@ function SummaryCard({
 
               <Link
                 href={`/public/${eventSlug}/session/${session.id}`}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-teal-600 hover:text-primary-teal-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium text-white bg-primary-teal-600 hover:bg-primary-teal-700 rounded-md transition-colors shadow-sm"
               >
                 View full insights
                 <ArrowRight className="h-4 w-4" />

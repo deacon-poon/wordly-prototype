@@ -1158,7 +1158,7 @@ export default function EventDetailPage({
               >
                 <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
                 <span className="hidden @md:inline">
-                  {event.sessionCount > 0 ? "Replace Schedule" : "Upload Schedule"}
+                  {event.sessionCount > 0 ? "Upload Replacement Schedule" : "Upload Schedule"}
                 </span>
               </Button>
             </div>

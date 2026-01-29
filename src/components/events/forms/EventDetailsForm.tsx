@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { TimezoneSelector } from "@/components/ui/datetime-picker";
 import { EventDetailsFormData, FormMode, ACCOUNTS } from "./types";
+import { cn } from "@/lib/utils";
 
 // ============================================================================
 // Props
@@ -51,7 +52,7 @@ export function EventDetailsForm({
           htmlFor="event-name"
           className="text-sm font-semibold text-gray-900"
         >
-          Event Name *
+          Event Name <span className="text-red-500">*</span>
         </Label>
         <Input
           id="event-name"
@@ -59,32 +60,44 @@ export function EventDetailsForm({
           onChange={(e) => onChange({ name: e.target.value })}
           placeholder="Enter event name"
           disabled={readOnly}
-          className={errors.name ? "border-red-500" : ""}
+          className={cn(
+            errors.name && "border-red-500 focus-visible:ring-red-500"
+          )}
         />
-        {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+        {errors.name && (
+          <p className="text-sm text-red-500 flex items-center gap-1">
+            {errors.name}
+          </p>
+        )}
       </div>
 
       {/* Event Timezone */}
       <div className="space-y-2">
         <Label className="text-sm font-semibold text-gray-900">
-          Event Timezone *
+          Event Timezone <span className="text-red-500">*</span>
         </Label>
         <p className="text-xs text-gray-500 mb-1.5">
           All session times will be displayed in this timezone
         </p>
-        <TimezoneSelector
-          value={data.timezone}
-          onChange={(timezone) => onChange({ timezone })}
-          disabled={readOnly}
-        />
+        <div className={cn(errors.timezone && "[&>button]:border-red-500")}>
+          <TimezoneSelector
+            value={data.timezone}
+            onChange={(timezone) => onChange({ timezone })}
+            disabled={readOnly}
+          />
+        </div>
         {errors.timezone && (
-          <p className="text-sm text-red-500">{errors.timezone}</p>
+          <p className="text-sm text-red-500 flex items-center gap-1">
+            {errors.timezone}
+          </p>
         )}
       </div>
 
       {/* Account - One account per event */}
       <div className="space-y-2">
-        <Label className="text-sm font-semibold text-gray-900">Account *</Label>
+        <Label className="text-sm font-semibold text-gray-900">
+          Account <span className="text-red-500">*</span>
+        </Label>
         <p className="text-xs text-gray-500 mb-1.5">
           All sessions in this event will be billed to this account
         </p>
@@ -93,7 +106,11 @@ export function EventDetailsForm({
           onValueChange={(value) => onChange({ accountId: value })}
           disabled={readOnly}
         >
-          <SelectTrigger>
+          <SelectTrigger
+            className={cn(
+              errors.accountId && "border-red-500 focus:ring-red-500"
+            )}
+          >
             <SelectValue placeholder="Select account" />
           </SelectTrigger>
           <SelectContent>
@@ -105,7 +122,9 @@ export function EventDetailsForm({
           </SelectContent>
         </Select>
         {errors.accountId && (
-          <p className="text-sm text-red-500">{errors.accountId}</p>
+          <p className="text-sm text-red-500 flex items-center gap-1">
+            {errors.accountId}
+          </p>
         )}
       </div>
     </div>

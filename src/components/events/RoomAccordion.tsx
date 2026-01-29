@@ -91,7 +91,7 @@ export function RoomAccordion({
 
   return (
     <div
-      className={`relative transition-all duration-200 rounded-lg bg-white border border-gray-200 ${
+      className={`relative transition-all duration-200 rounded-lg bg-white border border-gray-200 @container ${
         isExpanded ? "shadow-sm" : "hover:shadow-sm"
       }`}
     >
@@ -116,22 +116,24 @@ export function RoomAccordion({
           </div>
 
           {/* Center: Name + Count (grows) */}
-          <div className="flex-1 flex items-center gap-2 min-w-0">
-            <h4 className="font-semibold text-gray-900 truncate">
-              {room.name}
-            </h4>
-            <span className="text-sm text-gray-500 flex-shrink-0">
-              ({room.sessions.length}{" "}
-              {room.sessions.length === 1
-                ? "presentation"
-                : "presentations"}
-              )
-            </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-semibold text-gray-900 truncate max-w-[200px] @lg:max-w-none">
+                {room.name}
+              </h4>
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                ({room.sessions.length}{" "}
+                {room.sessions.length === 1
+                  ? "presentation"
+                  : "presentations"}
+                )
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Right: Actions - NOT inside the clickable area */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 @sm:gap-2 flex-shrink-0">
           {onLinksToJoin && (
             <Button
               variant="ghost"
@@ -140,11 +142,11 @@ export function RoomAccordion({
                 e.stopPropagation();
                 onLinksToJoin(room, e);
               }}
-              className="text-primary-teal-600 hover:text-primary-blue-700 hover:bg-primary-blue-50"
+              className="text-primary-teal-600 hover:text-primary-blue-700 hover:bg-primary-blue-50 px-2 @lg:px-3"
               title="Links to join"
             >
-              <QrCode className="h-4 w-4 @md:mr-1.5" />
-              <span className="hidden @md:inline">Links to join</span>
+              <QrCode className="h-4 w-4 @lg:mr-1.5" />
+              <span className="hidden @lg:inline">Links to join</span>
             </Button>
           )}
           {onStartRoom && (
@@ -159,10 +161,10 @@ export function RoomAccordion({
                     }
                   }}
                   disabled={isPastEvent}
-                  className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white disabled:opacity-50"
+                  className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white disabled:opacity-50 px-2 @lg:px-3"
                 >
-                  <Play className="h-4 w-4 @md:mr-1.5" />
-                  <span className="hidden @md:inline">Start Room</span>
+                  <Play className="h-4 w-4 @lg:mr-1.5" />
+                  <span className="hidden @lg:inline">Start Room</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[220px]">

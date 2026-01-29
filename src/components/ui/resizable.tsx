@@ -37,6 +37,12 @@ const ResizableHandle = ({
         <GripVertical className="h-2.5 w-2.5 text-gray-400" />
       </div>
     )}
+    {/* Small persistent drag handle indicator */}
+    {!withHandle && (
+      <div className="z-10 flex h-6 w-4 items-center justify-center rounded-sm border border-gray-200 bg-white shadow-sm opacity-60 group-hover:opacity-100 group-hover:border-gray-300 transition-all duration-200 ease-out">
+        <GripVertical className="h-3.5 w-3.5 text-gray-400 group-hover:text-gray-500" />
+      </div>
+    )}
   </ResizablePrimitive.PanelResizeHandle>
 );
 

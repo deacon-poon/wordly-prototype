@@ -583,12 +583,12 @@ export default function SessionDetailPage({
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* TL;DR */}
+            {/* In One Sentence */}
             <div className="bg-gradient-to-r from-primary-teal-50 to-primary-teal-50/30 rounded-xl p-6 border border-primary-teal-100">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="h-5 w-5 text-primary-teal-600" />
                 <span className="text-sm font-bold text-primary-teal-700 uppercase tracking-wider">
-                  TL;DR
+                  In One Sentence
                 </span>
               </div>
               <p className="text-lg text-gray-800 font-medium leading-relaxed">
@@ -709,10 +709,10 @@ export default function SessionDetailPage({
               </Button>
             </div>
 
-            {/* FAQ */}
+            {/* Q&A */}
             <InsightSection
               icon={<HelpCircle className="h-5 w-5" />}
-              title="FAQ"
+              title="Q&A"
             >
               <Accordion type="single" collapsible className="w-full">
                 {session.aiInsights.questionsAnswered.map((faq, index) => (
