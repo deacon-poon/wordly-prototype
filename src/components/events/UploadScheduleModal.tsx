@@ -208,7 +208,7 @@ export function UploadScheduleModal({
               <DialogTitle className="text-lg font-semibold text-gray-900">
                 Upload Schedule
               </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600">
+              <DialogDescription className="text-sm text-muted-foreground">
                 Import rooms and sessions from a spreadsheet
               </DialogDescription>
             </div>
@@ -253,7 +253,7 @@ export function UploadScheduleModal({
                     <p className="text-sm font-medium text-gray-900">
                       {selectedFile.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {(selectedFile.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -265,7 +265,7 @@ export function UploadScheduleModal({
                       fileInputRef.current.value = "";
                     }
                   }}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-colors"
+                  className="p-1.5 text-gray-400 hover:text-muted-foreground hover:bg-white rounded-lg transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -274,7 +274,7 @@ export function UploadScheduleModal({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-primary-blue-400 hover:text-primary-blue-600 hover:bg-primary-blue-50/30 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-muted-foreground hover:border-primary-blue-400 hover:text-primary-blue-600 hover:bg-primary-blue-50/30 transition-all"
               >
                 <Upload className="h-4 w-4" />
                 Select CSV or Excel file
@@ -290,16 +290,16 @@ export function UploadScheduleModal({
             <div className="px-4 py-3 border-b border-gray-200 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Settings2 className="h-4 w-4 text-gray-500" />
+                  <Settings2 className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold text-gray-900">
                     Session Defaults
                   </h3>
                 </div>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                <span className="text-xs text-muted-foreground bg-gray-100 px-2 py-0.5 rounded">
                   From workspace settings
                 </span>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 These settings apply to all uploaded sessions unless overridden in your spreadsheet.
               </p>
             </div>
@@ -377,14 +377,14 @@ export function UploadScheduleModal({
                     )}>
                       <Settings2 className={cn(
                         "h-4 w-4 transition-colors",
-                        showAdvancedDefaults ? "text-primary-teal-600" : "text-gray-500"
+                        showAdvancedDefaults ? "text-primary-teal-600" : "text-muted-foreground"
                       )} />
                     </div>
                     <div className="text-left">
                       <span className="text-sm font-medium text-gray-900">
                         Advanced Settings
                       </span>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         Language, output, access & audio options
                       </p>
                     </div>
@@ -408,7 +408,7 @@ export function UploadScheduleModal({
                   {/* Info banner */}
                   <div className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <Info className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-muted-foreground">
                       These settings inherit from your Session Defaults. Override only if needed.
                     </p>
                   </div>
@@ -507,7 +507,7 @@ export function UploadScheduleModal({
                                   <button
                                     type="button"
                                     onClick={() => handleLanguageToggle(langCode)}
-                                    className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
+                                    className="ml-0.5 text-gray-400 hover:text-muted-foreground rounded-full hover:bg-gray-100 p-0.5"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -682,9 +682,9 @@ export function UploadScheduleModal({
           ───────────────────────────────────────────────────────────────── */}
           <div className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <Info className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-gray-600 space-y-1">
+            <div className="text-xs text-muted-foreground space-y-1">
               <p className="font-medium text-gray-700">How it works</p>
-              <ul className="space-y-0.5 text-gray-500">
+              <ul className="space-y-0.5 text-muted-foreground">
                 <li>• Sessions inherit the defaults above unless overridden</li>
                 <li>• Rooms are created automatically from your file</li>
                 <li>• You can review and edit before saving</li>
@@ -719,7 +719,7 @@ export function UploadScheduleModal({
                 />
                 <label
                   htmlFor="confirm-overwrite"
-                  className="text-xs text-gray-600 cursor-pointer leading-relaxed"
+                  className="text-xs text-muted-foreground cursor-pointer leading-relaxed"
                 >
                   I understand that uploading this schedule will{" "}
                   <strong className="text-gray-700">replace all existing sessions</strong> for this event.

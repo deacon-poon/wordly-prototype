@@ -161,7 +161,7 @@ export function EventSettingsModal({
           <DialogTitle className="text-xl font-semibold text-gray-900">
             Standard Settings
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600">
+          <DialogDescription className="text-sm text-muted-foreground">
             By default, all links for this event will use these settings, but
             you can change them on a per-room basis afterward if you need to.
           </DialogDescription>
@@ -435,7 +435,7 @@ export function EventSettingsModal({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsAddingLanguage(false)}
-                  className="text-gray-600"
+                  className="text-muted-foreground"
                 >
                   Cancel
                 </Button>

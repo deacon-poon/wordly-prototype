@@ -41,7 +41,6 @@ export interface EventDefaults {
 export interface Event {
   id: string;
   name: string;
-  description?: string;
   startDate: string; // ISO date string
   endDate: string; // ISO date string
   timezone: string;

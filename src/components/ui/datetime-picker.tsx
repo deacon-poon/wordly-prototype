@@ -21,11 +21,59 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTimezoneSelect, type ITimezoneOption } from "react-timezone-select";
 
 // ============================================================================
-// Timezone Data
+// Timezone Data (powered by react-timezone-select)
 // ============================================================================
 
+/**
+ * Build simplified labels: "(GMT-08:00) Pacific Standard Time"
+ * Uses Intl API for accurate offset + long timezone name.
+ */
+function buildSimplifiedLabel(tzValue: string): string {
+  try {
+    const now = new Date();
+    const offsetFormatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: tzValue,
+      timeZoneName: "longOffset",
+    });
+    const offsetParts = offsetFormatter.formatToParts(now);
+    const gmtPart =
+      offsetParts.find((p) => p.type === "timeZoneName")?.value || "GMT";
+
+    const longFormatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: tzValue,
+      timeZoneName: "long",
+    });
+    const longParts = longFormatter.formatToParts(now);
+    const longName =
+      longParts.find((p) => p.type === "timeZoneName")?.value || tzValue;
+
+    return `(${gmtPart}) ${longName}`;
+  } catch {
+    return tzValue;
+  }
+}
+
+// Hook to get enriched timezone options with simplified labels
+function useTimezoneOptions() {
+  const result = useTimezoneSelect({ labelStyle: "altName" });
+
+  // Override labels with simplified format
+  const options = React.useMemo(
+    () =>
+      result.options.map((opt) => ({
+        ...opt,
+        label: buildSimplifiedLabel(opt.value),
+      })),
+    [result.options]
+  );
+
+  return { ...result, options };
+}
+
+// Legacy TIMEZONES array for components that import it directly (e.g. dropdowns in upload modals)
 export const TIMEZONES = [
   { value: "America/New_York", label: "Eastern Time (ET)", abbr: "ET" },
   { value: "America/Chicago", label: "Central Time (CT)", abbr: "CT" },
@@ -64,7 +112,7 @@ export function getTimezoneAbbr(timezone: string): string {
 }
 
 // ============================================================================
-// TimezoneSelector Component
+// TimezoneSelector Component (uses react-timezone-select for enriched options)
 // ============================================================================
 
 interface TimezoneSelectorProps {
@@ -85,6 +133,10 @@ export function TimezoneSelector({
   showLabel = false,
   compact = false,
 }: TimezoneSelectorProps) {
+  const { options, parseTimezone } = useTimezoneOptions();
+  const selectedTz = value ? parseTimezone(value) : null;
+  const displayAbbrev = selectedTz?.abbrev || getTimezoneAbbr(value);
+
   // Compact mode - small inline selector showing abbreviation
   if (compact) {
     return (
@@ -96,10 +148,10 @@ export function TimezoneSelector({
             className
           )}
         >
-          <SelectValue>{getTimezoneAbbr(value)}</SelectValue>
+          <SelectValue>{displayAbbrev}</SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">
-          {TIMEZONES.map((tz) => (
+          {options.map((tz) => (
             <SelectItem key={tz.value} value={tz.value}>
               {tz.label}
             </SelectItem>
@@ -109,7 +161,7 @@ export function TimezoneSelector({
     );
   }
 
-  // Standard mode
+  // Standard mode - abbreviation on trigger, rich labels in dropdown
   return (
     <div className={cn("space-y-1.5", className)}>
       {showLabel && (
@@ -119,11 +171,11 @@ export function TimezoneSelector({
         <SelectTrigger className="w-full">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-gray-400" />
-            <SelectValue placeholder="Select timezone" />
+            <span>{displayAbbrev}</span>
           </div>
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">
-          {TIMEZONES.map((tz) => (
+          {options.map((tz) => (
             <SelectItem key={tz.value} value={tz.value}>
               {tz.label}
             </SelectItem>

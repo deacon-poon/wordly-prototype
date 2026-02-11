@@ -259,7 +259,7 @@ export function SessionForm({
               disabled={isFieldDisabled}
               className={errors.presenters ? "border-red-500" : ""}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Separate multiple presenters with commas
             </p>
             {errors.presenters && (
@@ -372,14 +372,14 @@ export function SessionForm({
                 )}>
                   <Settings2 className={cn(
                     "h-4 w-4 transition-colors",
-                    showAdvanced ? "text-primary-teal-600" : "text-gray-500"
+                    showAdvanced ? "text-primary-teal-600" : "text-muted-foreground"
                   )} />
                 </div>
                 <div className="text-left">
                   <span className="text-sm font-medium text-gray-900">
                     Advanced Settings
                   </span>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Language, output, access & audio options
                   </p>
                 </div>
@@ -404,7 +404,7 @@ export function SessionForm({
                 {/* Info banner */}
                 <div className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <Info className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-muted-foreground">
                     These settings inherit from your Session Defaults. Override only if needed for this specific session.
                   </p>
                 </div>
@@ -498,7 +498,7 @@ export function SessionForm({
                                   <button
                                     type="button"
                                     onClick={() => handleLanguageToggle(langCode)}
-                                    className="ml-0.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 p-0.5"
+                                    className="ml-0.5 text-gray-400 hover:text-muted-foreground rounded-full hover:bg-gray-100 p-0.5"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -765,7 +765,7 @@ export function SessionListForm({
   return (
     <div className="space-y-4">
       {/* Room context */}
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
         <Clock className="h-4 w-4 text-primary-teal-600" />
         <span>
           Sessions for: <strong>{roomName}</strong>
@@ -826,7 +826,7 @@ export function SessionListForm({
           type="button"
           variant="outline"
           onClick={onAddSession}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-gray-600 hover:text-primary-blue-700"
+          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-muted-foreground hover:text-primary-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Session
@@ -835,7 +835,7 @@ export function SessionListForm({
 
       {/* Empty state */}
       {sessions.length === 0 && (
-        <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+        <div className="text-center py-6 text-muted-foreground bg-gray-50 rounded-lg border border-dashed border-gray-300">
           <Clock className="h-10 w-10 mx-auto mb-2 text-gray-300" />
           <p className="text-sm">No sessions added yet.</p>
           <p className="text-xs">You can add sessions now or later.</p>
@@ -868,7 +868,7 @@ export function SessionCard({ session, onEdit, onDelete }: SessionCardProps) {
     <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors">
       <div className="flex-1 min-w-0">
         <h5 className="font-medium text-gray-900 truncate">{session.title}</h5>
-        <div className="flex items-center gap-2 text-xs text-gray-600">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             {presenters.length > 1 ? (
               <Users className="h-3 w-3" />

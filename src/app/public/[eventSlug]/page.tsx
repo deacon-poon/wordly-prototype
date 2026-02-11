@@ -79,7 +79,6 @@ interface PublicEvent {
   slug: string;
   name: string;
   dateRange: string;
-  description: string;
   roomCount: number;
   sessionCount: number;
   rooms: Room[];
@@ -172,18 +171,12 @@ function getMockEventData(eventSlug: string): PublicEvent {
   const eventData: Record<string, Partial<PublicEvent>> = {
     "ai-ml-summit-2026": {
       name: "AI & Machine Learning Summit 2026",
-      description:
-        "Live conference on the latest advances in AI, machine learning, and deep learning technologies. Industry leaders and researchers share insights on the future of artificial intelligence.",
     },
     "cloud-devops-summit-2026": {
       name: "Cloud & DevOps Summit 2026",
-      description:
-        "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices. Learn from practitioners building scalable infrastructure.",
     },
     "design-ux-conf-2026": {
       name: "Design & UX Conference 2026",
-      description:
-        "Explore the latest in design systems, UX research, and product design methodologies from top design leaders.",
     },
   };
 
@@ -192,8 +185,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" "),
-    description:
-      "A comprehensive conference featuring industry experts and thought leaders.",
   };
 
   return {
@@ -203,7 +194,6 @@ function getMockEventData(eventSlug: string): PublicEvent {
     dateRange: `${formatSessionDate(todayStr)
       .split(",")[1]
       .trim()} - ${formatSessionDate(dayAfterStr).split(",")[1].trim()}`,
-    description: baseEvent.description!,
     roomCount: 3,
     sessionCount: 9,
     rooms: [
@@ -1137,7 +1127,6 @@ export default function PublicSummaryPage({
               <span>{allSessions.length} Presentations</span>
             </div>
           </div>
-          <p className="text-gray-600 max-w-3xl">{event.description}</p>
         </div>
       </div>
 
@@ -1303,7 +1292,7 @@ export default function PublicSummaryPage({
       {/* AI Chatbot */}
       <EventChatbot
         eventName={event.name}
-        eventDescription={event.description}
+        eventDescription=""
         sessions={allSessions.map((session) => ({
           title: session.title,
           presenters: session.presenters,

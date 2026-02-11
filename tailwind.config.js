@@ -280,6 +280,22 @@ module.exports = {
       fontFamily: {
         sans: ["var(--font-roboto)", ...fontFamily.sans],
       },
+      // Font sizes aligned with Figma primitives/font/scale
+      // Figma base is 16px (scale/300-16)
+      fontSize: {
+        '2xs': ['8px', { lineHeight: '1.25' }],    // scale/100-8
+        'xs': ['12px', { lineHeight: '1.25' }],    // scale/200-12
+        'sm': ['14px', { lineHeight: '1.4' }],     // scale/250-14
+        'base': ['16px', { lineHeight: '1.5' }],   // scale/300-16 - Figma base
+        'md': ['18px', { lineHeight: '1.5' }],     // scale/350-18
+        'lg': ['20px', { lineHeight: '1.5' }],     // scale/400-20
+        'xl': ['24px', { lineHeight: '1.4' }],     // scale/500-24
+        '2xl': ['32px', { lineHeight: '1.3' }],    // scale/600-32
+        '3xl': ['36px', { lineHeight: '1.3' }],    // scale/700-36
+        '4xl': ['48px', { lineHeight: '1.2' }],    // scale/800-48
+        '5xl': ['64px', { lineHeight: '1.1' }],    // scale/900-64
+        '6xl': ['80px', { lineHeight: '1.1' }],    // scale/1000-80
+      },
     },
   },
   plugins: [

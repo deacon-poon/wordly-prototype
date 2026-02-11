@@ -286,7 +286,7 @@ export function SessionPanel({
               {mode === "add" ? "Add Session" : "Edit Session"}
             </h2>
           </div>
-          <p className="text-sm text-gray-600 mt-0.5 flex items-center gap-1">
+          <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1">
             <MapPin className="h-3 w-3" />
             {roomName} · {eventName}
           </p>
@@ -295,7 +295,7 @@ export function SessionPanel({
           onClick={onClose}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
-          <ChevronLeft className="h-5 w-5 text-gray-600" />
+          <ChevronLeft className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
 

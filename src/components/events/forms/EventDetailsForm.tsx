@@ -76,7 +76,7 @@ export function EventDetailsForm({
         <Label className="text-sm font-semibold text-gray-900">
           Event Timezone <span className="text-red-500">*</span>
         </Label>
-        <p className="text-xs text-gray-500 mb-1.5">
+        <p className="text-xs text-muted-foreground mb-1.5">
           All session times will be displayed in this timezone
         </p>
         <div className={cn(errors.timezone && "[&>button]:border-red-500")}>
@@ -98,7 +98,7 @@ export function EventDetailsForm({
         <Label className="text-sm font-semibold text-gray-900">
           Account <span className="text-red-500">*</span>
         </Label>
-        <p className="text-xs text-gray-500 mb-1.5">
+        <p className="text-xs text-muted-foreground mb-1.5">
           All sessions in this event will be billed to this account
         </p>
         <Select

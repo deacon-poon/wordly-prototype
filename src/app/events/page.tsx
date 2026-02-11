@@ -58,7 +58,6 @@ interface Event {
   timezone: string; // Event timezone (e.g., "America/Los_Angeles")
   roomCount: number;
   sessionCount: number;
-  description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
 }
@@ -134,8 +133,6 @@ export default function EventsPage() {
       timezone: "America/Los_Angeles",
       roomCount: 3,
       sessionCount: 10,
-      description:
-        "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
       publicSummaryUrl: "/public/ai-ml-summit-2026",
       rooms: [
         {
@@ -277,8 +274,6 @@ export default function EventsPage() {
       timezone: "America/New_York",
       roomCount: 4,
       sessionCount: 18,
-      description:
-        "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
       publicSummaryUrl: "/public/cloud-devops-summit-2026",
       rooms: [
         {
@@ -490,8 +485,6 @@ export default function EventsPage() {
       timezone: "America/Los_Angeles",
       roomCount: 2,
       sessionCount: 8,
-      description:
-        "Explore the latest in design systems, UX research, and product design methodologies",
       publicSummaryUrl: "/public/design-ux-conf-2026",
       rooms: [
         {
@@ -595,8 +588,6 @@ export default function EventsPage() {
       timezone: "America/Chicago",
       roomCount: 2,
       sessionCount: 10,
-      description:
-        "Comprehensive summit on blockchain technology, smart contracts, and decentralized applications",
       publicSummaryUrl: "/public/web3-blockchain-2026",
       rooms: [
         {
@@ -718,8 +709,6 @@ export default function EventsPage() {
       timezone: "America/Denver",
       roomCount: 3,
       sessionCount: 12,
-      description:
-        "Advanced forum on data science, machine learning operations, and business analytics",
       publicSummaryUrl: "/public/data-science-forum-2026",
       rooms: [
         {
@@ -869,8 +858,6 @@ export default function EventsPage() {
       timezone: "America/Los_Angeles",
       roomCount: 2,
       sessionCount: 6,
-      description:
-        "Annual spring technology conference featuring software development trends and innovations",
       publicSummaryUrl: "/public/tech-conf-spring-2026",
       rooms: [
         {
@@ -956,8 +943,6 @@ export default function EventsPage() {
       timezone: "America/New_York",
       roomCount: 3,
       sessionCount: 12,
-      description:
-        "Summit focused on iOS, Android, and cross-platform mobile development",
       publicSummaryUrl: "/public/mobile-dev-summit-2026",
       rooms: [
         {
@@ -1106,8 +1091,6 @@ export default function EventsPage() {
       timezone: "America/Chicago",
       roomCount: 2,
       sessionCount: 8,
-      description:
-        "Annual conference on cybersecurity, threat detection, and enterprise security",
       publicSummaryUrl: "/public/cybersecurity-2026",
       rooms: [
         {
@@ -1211,8 +1194,6 @@ export default function EventsPage() {
       timezone: "America/Los_Angeles",
       roomCount: 2,
       sessionCount: 7,
-      description:
-        "Summit for product managers on strategy, roadmapping, and product-led growth",
       publicSummaryUrl: "/public/pm-summit-2026",
       rooms: [
         {
@@ -1307,8 +1288,6 @@ export default function EventsPage() {
       timezone: "America/New_York",
       roomCount: 3,
       sessionCount: 11,
-      description:
-        "Conference dedicated to modern frontend development, frameworks, and tooling",
       publicSummaryUrl: "/public/frontend-conf-2026",
       rooms: [
         {
@@ -1439,6 +1418,18 @@ export default function EventsPage() {
         },
       ],
     },
+    // EMPTY EVENT (no sessions yet)
+    {
+      id: "evt-011",
+      name: "Q3 Planning Workshop",
+      dateRange: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      timezone: "America/Los_Angeles",
+      roomCount: 0,
+      sessionCount: 0,
+      rooms: [],
+    },
   ]);
 
   // Helper to categorize events by Today/Future/Past
@@ -1513,7 +1504,6 @@ export default function EventsPage() {
       timezone: data.eventDetails.timezone,
       roomCount: 0,
       sessionCount: 0,
-      description: "", // Description field removed from create form
       rooms: [],
     };
 
@@ -1610,11 +1600,13 @@ export default function EventsPage() {
             </h2>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Status badge - moved to the right */}
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${status.dot} ${status.animate ? "animate-pulse" : ""}`} />
-                {status.label}
-              </span>
+              {/* Status badge - moved to the right, hidden for events with no sessions */}
+              {event.sessionCount > 0 && (
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${status.dot} ${status.animate ? "animate-pulse" : ""}`} />
+                  {status.label}
+                </span>
+              )}
               {/* Actions menu - vertical dots to match event detail pattern */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -1655,7 +1647,7 @@ export default function EventsPage() {
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-2">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4 text-gray-400" />
-              {event.dateRange}
+              {event.sessionCount > 0 ? event.dateRange : <span className="text-gray-500 italic">No sessions scheduled</span>}
             </span>
             <span className="text-gray-300">·</span>
             <span>{event.roomCount} rooms</span>
@@ -1663,11 +1655,6 @@ export default function EventsPage() {
             <span>{event.sessionCount} presentations</span>
           </div>
 
-          {event.description && (
-            <p className="text-sm text-gray-600 line-clamp-2">
-              {event.description}
-            </p>
-          )}
 
           {event.publicSummaryUrl && (
             <a
@@ -1700,7 +1687,7 @@ export default function EventsPage() {
             </div>
             <Button
               onClick={handleAddEvent}
-              className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white shadow-sm"
+              className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white shadow-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Event

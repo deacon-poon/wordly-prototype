@@ -11,6 +11,7 @@ import {
   FileSpreadsheet,
   Plus,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/eventStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -81,7 +83,6 @@ interface Event {
   timezone: string; // Event timezone (e.g., "America/Los_Angeles")
   roomCount: number;
   sessionCount: number;
-  description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
   // Account and billing info (one account per event)
@@ -189,8 +190,6 @@ function getMockEventData(eventId: string): Event {
       startDate: getRelativeDate(0),
       endDate: getRelativeDate(1),
       timezone: "America/Los_Angeles",
-      description:
-        "Live conference on the latest advances in AI, machine learning, and deep learning technologies",
       publicSummaryUrl: "/public/ai-ml-summit-2026",
     },
     "evt-002": {
@@ -198,8 +197,6 @@ function getMockEventData(eventId: string): Event {
       startDate: getRelativeDate(7),
       endDate: getRelativeDate(8),
       timezone: "America/New_York",
-      description:
-        "Two-day summit focused on cloud architecture, Kubernetes, and modern DevOps practices",
       publicSummaryUrl: "/public/cloud-devops-summit-2026",
     },
     "evt-003": {
@@ -207,8 +204,6 @@ function getMockEventData(eventId: string): Event {
       startDate: getRelativeDate(14),
       endDate: getRelativeDate(15),
       timezone: "America/Los_Angeles",
-      description:
-        "Explore the latest in frontend technologies, React, Vue, and modern web development",
     },
   };
 
@@ -230,7 +225,6 @@ function getMockEventData(eventId: string): Event {
       timezone: "America/Los_Angeles",
       roomCount: 0,
       sessionCount: 0,
-      description: "Add rooms and sessions to get started",
       rooms: [],
       account: {
         id: "acc-001",
@@ -252,9 +246,6 @@ function getMockEventData(eventId: string): Event {
     timezone: eventData.timezone || "America/Los_Angeles",
     roomCount: 3,
     sessionCount: 12,
-    description:
-      eventData.description ||
-      "A comprehensive conference featuring industry experts",
     publicSummaryUrl: eventData.publicSummaryUrl,
     rooms: [
       {
@@ -433,6 +424,8 @@ export default function EventDetailPage({
     room: Room;
   } | null>(null);
   const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
+  const [isDeleteRoomDialogOpen, setIsDeleteRoomDialogOpen] = useState(false);
 
   // Event name editing
   const [isEditingEventName, setIsEditingEventName] = useState(false);
@@ -1213,20 +1206,8 @@ export default function EventDetailPage({
                     setIsEditRoomModalOpen(true);
                   }}
                   onDeleteRoom={(room) => {
-                    if (
-                      confirm(
-                        `Are you sure you want to delete "${room.name}"?`
-                      )
-                    ) {
-                      setEvent((prev) => ({
-                        ...prev,
-                        rooms: prev.rooms.filter(
-                          (r) => r.id !== room.id
-                        ),
-                        roomCount: prev.roomCount - 1,
-                      }));
-                      toast.success(`Room "${room.name}" deleted`);
-                    }
+                    setRoomToDelete(room);
+                    setIsDeleteRoomDialogOpen(true);
                   }}
                   onAddSession={handleAddSession}
                   isPastEvent={isPastEvent}
@@ -1255,10 +1236,10 @@ export default function EventDetailPage({
               </div>
             ) : (
               <p className="text-gray-600">
-                {selectedTab === "now" && "No sessions happening now"}
-                {selectedTab === "upcoming" && "No upcoming sessions"}
-                {selectedTab === "past" && "No past sessions"}
-                {selectedTab === "all" && "No sessions found"}
+                {selectedTab === "now" && "There are no sessions happening right now. Select the filter above for All to see all sessions."}
+                {selectedTab === "upcoming" && "There are no upcoming sessions. Select the filter above for All to see all sessions."}
+                {selectedTab === "past" && "There are no sessions in the past. Select the filter above for All to see all sessions."}
+                {selectedTab === "all" && "No sessions found. Add a room and session to get started."}
               </p>
             )}
           </Card>
@@ -1360,14 +1341,8 @@ export default function EventDetailPage({
                             setIsEditRoomModalOpen(true);
                           }}
                           onDeleteRoom={(room) => {
-                            // In production, show confirmation dialog then call API
-                            if (
-                              confirm(
-                                `Delete room "${room.name}"? This will also delete all sessions in this room.`
-                              )
-                            ) {
-                              console.log("Delete room:", room.id);
-                            }
+                            setRoomToDelete(room);
+                            setIsDeleteRoomDialogOpen(true);
                           }}
                           onAddSession={handleAddSession}
                           isPastEvent={isPastEvent}
@@ -1495,6 +1470,33 @@ export default function EventDetailPage({
           }}
         />
       )}
+
+      {/* Delete Room Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDeleteRoomDialogOpen}
+        onOpenChange={setIsDeleteRoomDialogOpen}
+        title="Delete Room"
+        description={
+          roomToDelete
+            ? `Are you sure you want to delete "${roomToDelete.name}"? This will permanently remove the room and all its sessions. This action cannot be undone.`
+            : ""
+        }
+        onConfirm={() => {
+          if (!roomToDelete) return;
+          setEvent((prev) => ({
+            ...prev,
+            rooms: prev.rooms.filter((r) => r.id !== roomToDelete.id),
+            roomCount: prev.roomCount - 1,
+          }));
+          toast.success(`Room "${roomToDelete.name}" deleted`);
+          setIsDeleteRoomDialogOpen(false);
+          setRoomToDelete(null);
+        }}
+        confirmText="Delete Room"
+        cancelText="Cancel"
+        variant="destructive"
+        icon={<AlertTriangle className="h-12 w-12" />}
+      />
 
       {/* Upload Schedule Modal */}
       <UploadScheduleModal

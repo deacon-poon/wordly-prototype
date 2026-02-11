@@ -31,7 +31,6 @@ interface Event {
   timezone: string; // Event timezone (e.g., "America/Los_Angeles")
   roomCount: number;
   sessionCount: number;
-  description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
   // Account and billing info (one account per event)
@@ -103,7 +102,6 @@ export function serializeEvent(event: {
   timezone: string;
   roomCount: number;
   sessionCount: number;
-  description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
   account?: {
@@ -131,7 +129,6 @@ export function deserializeEvent(event: Event): {
   timezone: string;
   roomCount: number;
   sessionCount: number;
-  description: string;
   publicSummaryUrl?: string;
   rooms: Room[];
   account: {

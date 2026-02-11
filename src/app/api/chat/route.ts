@@ -12,7 +12,6 @@ export async function POST(req: Request) {
 You have access to the session summaries and can answer questions about the presentations, speakers, and topics covered.
 
 Here is the event information:
-${eventContext?.description || ""}
 
 Here are the session summaries you can reference:
 ${

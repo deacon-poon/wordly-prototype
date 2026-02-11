@@ -96,25 +96,25 @@ export function ConfirmationDialog({
           </div>
         )}
 
-        <div className="flex justify-start mt-6 border-t pt-4">
-          <Button
-            variant={variant === "destructive" ? "destructive" : "default"}
-            onClick={handleConfirm}
-            className={`mr-2 ${
-              variant === "destructive"
-                ? ""
-                : "bg-brand-teal hover:bg-brand-teal/90"
-            }`}
-            disabled={isLoading || (!!validationText && !isValid)}
-          >
-            {isLoading ? "Processing..." : confirmText}
-          </Button>
+        <div className="flex justify-end mt-6 border-t pt-4 gap-2">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
             {cancelText}
+          </Button>
+          <Button
+            variant={variant === "destructive" ? "destructive" : "default"}
+            onClick={handleConfirm}
+            className={
+              variant === "destructive"
+                ? ""
+                : "bg-brand-teal hover:bg-brand-teal/90"
+            }
+            disabled={isLoading || (!!validationText && !isValid)}
+          >
+            {isLoading ? "Processing..." : confirmText}
           </Button>
         </div>
       </DialogContent>

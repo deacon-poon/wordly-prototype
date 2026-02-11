@@ -204,23 +204,61 @@ export const colorTokens = {
 // ============================================================================
 
 export const typographyTokens = {
+  // Font scale aligned with Figma primitives/font/scale
   fontSize: {
+    '2xs': '8px',   // scale/100-8
+    'xs': '12px',   // scale/200-12
+    'sm': '14px',   // scale/250-14
+    'base': '16px', // scale/300-16 - Figma base
+    'md': '18px',   // scale/350-18
+    'lg': '20px',   // scale/400-20
+    'xl': '24px',   // scale/500-24
+    '2xl': '32px',  // scale/600-32
+    '3xl': '36px',  // scale/700-36
+    '4xl': '48px',  // scale/800-48
+    '5xl': '64px',  // scale/900-64
+    '6xl': '80px',  // scale/1000-80
+    // Numeric aliases for backward compatibility
+    8: '8px',
+    12: '12px',
     14: '14px',
+    16: '16px',
     18: '18px',
+    20: '20px',
+    22: '22px',   // scale/450-22
     24: '24px',
+    32: '32px',
+    36: '36px',
+    48: '48px',
+    64: '64px',
+    80: '80px',
   },
   fontWeight: {
-    400: '400', // Regular
-    500: '500', // Medium
-    600: '600', // Semi-bold
-    700: '700', // Bold
+    light: '300',    // primitives/font/weight/light
+    regular: '400',  // primitives/font/weight/regular
+    medium: '500',   // primitives/font/weight/medium
+    semibold: '600', // primitives/font/weight/semibold
+    bold: '700',     // primitives/font/weight/bold
+    // Numeric aliases
+    300: '300',
+    400: '400',
+    500: '500',
+    600: '600',
+    700: '700',
   },
   fontFamily: {
-    'Font 3': 'Roboto',
+    primary: 'Roboto', // primitives/font/family/primary
+    'Font 3': 'Roboto', // legacy alias
   },
   lineHeight: {
+    tight: '1.25',
+    normal: '1.5',
+    relaxed: '1.75',
+    // Pixel values for specific use cases
     12: '12px',
     16: '16px',
+    20: '20px',
+    24: '24px',
     32: '32px',
   },
 } as const;

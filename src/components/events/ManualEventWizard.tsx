@@ -150,7 +150,7 @@ export function ManualEventWizard({
               <DialogTitle className="text-lg font-semibold text-gray-900">
                 Create Event
               </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600">
+              <DialogDescription className="text-sm text-muted-foreground">
                 Set up your event details and defaults
               </DialogDescription>
             </div>
@@ -177,7 +177,7 @@ export function ManualEventWizard({
                   After creating the event, you&apos;ll be taken to the event
                   detail page where you can:
                 </p>
-                <ul className="mt-2 space-y-1 list-disc list-inside text-gray-600">
+                <ul className="mt-2 space-y-1 list-disc list-inside text-muted-foreground">
                   <li>Add rooms and sessions manually</li>
                   <li>Upload a spreadsheet to bulk-add sessions</li>
                   <li>Configure additional settings</li>

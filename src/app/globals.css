@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Figma Design Tokens - Auto-generated from Figma Variables */
+/* Run `npm run tokens:generate` to regenerate after Figma changes */
+@import "../styles/generated/figma-tokens.css";
+
 @layer base {
   :root {
     /* Base system colors */
@@ -41,18 +45,28 @@
     --brand-secondary-green: 147 88% 33%; /* #15B743 - Accent Green 500 from Figma variables */
     --action-teal: 190 81% 33%; /* #128197 - Action Teal 600 from Figma variables */
 
-    /* Typography tokens - from Figma variables */
-    --font-size-sm: 14px; /* font size/14 */
-    --font-size-base: 18px; /* font size/18 */
-    --font-size-lg: 24px; /* font size/24 */
-    --font-weight-regular: 400; /* font weight/400 */
-    --font-weight-medium: 500; /* font weight/500 */
-    --font-weight-semibold: 600; /* font weight/600 */
-    --font-weight-bold: 700; /* font weight/700 */
-    --line-height-tight: 12px; /* line height/12 */
-    --line-height-normal: 16px; /* line height/16 */
-    --line-height-relaxed: 32px; /* line height/32 */
-    --font-family-primary: 'Roboto', sans-serif; /* font family/Font 3 */
+    /* Typography tokens - from Figma variables (aligned with Figma font scale) */
+    --font-size-2xs: 8px;   /* primitives/font/scale/100-8 */
+    --font-size-xs: 12px;   /* primitives/font/scale/200-12 */
+    --font-size-sm: 14px;   /* primitives/font/scale/250-14 */
+    --font-size-base: 16px; /* primitives/font/scale/300-16 - Figma base */
+    --font-size-md: 18px;   /* primitives/font/scale/350-18 */
+    --font-size-lg: 20px;   /* primitives/font/scale/400-20 */
+    --font-size-xl: 24px;   /* primitives/font/scale/500-24 */
+    --font-size-2xl: 32px;  /* primitives/font/scale/600-32 */
+    --font-size-3xl: 36px;  /* primitives/font/scale/700-36 */
+    --font-size-4xl: 48px;  /* primitives/font/scale/800-48 */
+    --font-size-5xl: 64px;  /* primitives/font/scale/900-64 */
+    --font-size-6xl: 80px;  /* primitives/font/scale/1000-80 */
+    --font-weight-light: 300;    /* primitives/font/weight/light */
+    --font-weight-regular: 400;  /* primitives/font/weight/regular */
+    --font-weight-medium: 500;   /* primitives/font/weight/medium */
+    --font-weight-semibold: 600; /* primitives/font/weight/semibold */
+    --font-weight-bold: 700;     /* primitives/font/weight/bold */
+    --line-height-tight: 1.25;   /* tight line height */
+    --line-height-normal: 1.5;   /* normal line height */
+    --line-height-relaxed: 1.75; /* relaxed line height */
+    --font-family-primary: 'Roboto', sans-serif; /* primitives/font/family/primary */
 
     /* Spacing tokens - from Figma variables */
     --spacing-xxs: 4px; /* item spacing/xxs */

@@ -108,7 +108,7 @@ export function AddSessionModal({
               <DialogTitle className="text-lg font-semibold text-gray-900">
                 Add Session
               </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600 flex items-center gap-1">
+              <DialogDescription className="text-sm text-muted-foreground flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {roomName}
                 {eventName && ` • ${eventName}`}
@@ -213,7 +213,7 @@ export function EditSessionModal({
               <DialogTitle className="text-lg font-semibold text-gray-900">
                 {readOnly ? "View Session" : "Edit Session"}
               </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600 flex items-center gap-1">
+              <DialogDescription className="text-sm text-muted-foreground flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {roomName}
                 {eventName && ` • ${eventName}`}

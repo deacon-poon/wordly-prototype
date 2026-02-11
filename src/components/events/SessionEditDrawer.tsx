@@ -457,7 +457,7 @@ export function SessionEditDrawer({
             <Label htmlFor="floorAudio" className="text-sm font-medium">
               Floor audio:
             </Label>
-            <span className="text-xs text-gray-500">(i)</span>
+            <span className="text-xs text-muted-foreground">(i)</span>
           </div>
           <Switch
             id="floorAudio"
@@ -514,7 +514,7 @@ export function SessionEditDrawer({
             <SheetTitle className="text-lg font-semibold">
               Presentation
             </SheetTitle>
-            <SheetDescription className="text-sm text-gray-600">
+            <SheetDescription className="text-sm text-muted-foreground">
               {eventName} • {locationName}
             </SheetDescription>
           </SheetHeader>

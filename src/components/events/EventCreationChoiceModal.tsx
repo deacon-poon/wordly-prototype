@@ -40,7 +40,7 @@ export function EventCreationChoiceModal({
           <DialogTitle className="text-xl font-semibold text-gray-900">
             Create Event
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600">
+          <DialogDescription className="text-sm text-muted-foreground">
             Choose how you&apos;d like to create your event
           </DialogDescription>
         </DialogHeader>
@@ -65,20 +65,20 @@ export function EventCreationChoiceModal({
                     Recommended
                   </span>
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   Upload a CSV or Excel file with your complete event schedule.
                   Rooms and sessions will be created automatically.
                 </p>
                 <ul className="space-y-1.5">
-                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                  <li className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-accent-green-500" />
                     Bulk import all locations and sessions at once
                   </li>
-                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                  <li className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-accent-green-500" />
                     Download template to ensure correct format
                   </li>
-                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                  <li className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-accent-green-500" />
                     Automatic validation of schedule conflicts
                   </li>
@@ -100,26 +100,26 @@ export function EventCreationChoiceModal({
           >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Plus className="h-6 w-6 text-gray-600" />
+                <Plus className="h-6 w-6 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900 mb-1">
                   Create Manually
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   Build your event step-by-step. Add locations and sessions one
                   at a time with full control over each detail.
                 </p>
                 <ul className="space-y-1.5">
-                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                  <li className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-accent-green-500" />
                     Perfect for smaller events or when you need flexibility
                   </li>
-                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                  <li className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-accent-green-500" />
                     Add sessions later as your schedule develops
                   </li>
-                  <li className="flex items-center gap-2 text-xs text-gray-500">
+                  <li className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle className="h-3.5 w-3.5 text-accent-green-500" />
                     Full control over every field
                   </li>
@@ -137,7 +137,7 @@ export function EventCreationChoiceModal({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="text-gray-600"
+            className="text-muted-foreground"
           >
             Cancel
           </Button>

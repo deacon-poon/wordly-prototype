@@ -121,7 +121,7 @@ export function RoomAccordion({
               <h4 className="font-semibold text-gray-900 truncate max-w-[200px] @lg:max-w-none">
                 {room.name}
               </h4>
-              <span className="text-sm text-gray-500 whitespace-nowrap">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
                 ({room.sessions.length}{" "}
                 {room.sessions.length === 1
                   ? "presentation"
@@ -244,7 +244,7 @@ export function RoomAccordion({
         <div className="px-4 pb-3 flex items-center">
           {/* Spacer matching icon column */}
           <div className="w-8 flex-shrink-0" />
-          <div className="flex items-center gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>
               Session ID:{" "}
               <code className="font-mono text-gray-700">
@@ -267,7 +267,7 @@ export function RoomAccordion({
           {/* Empty state when no sessions */}
           {room.sessions.length === 0 && (
             <div className="px-4 py-6 text-center">
-              <p className="text-sm text-gray-500 mb-3">
+              <p className="text-sm text-muted-foreground mb-3">
                 No sessions in this room yet.
               </p>
               {onAddSession && !isPastEvent && (
@@ -316,7 +316,7 @@ export function RoomAccordion({
                 <h5 className="font-medium text-gray-900 truncate">
                   {session.title}
                 </h5>
-                <p className="text-xs text-gray-600 truncate mt-1">
+                <p className="text-xs text-muted-foreground truncate mt-1">
                   {session.presenters.length > 1 ? (
                     <Users className="h-3 w-3 inline mr-1 text-gray-400" />
                   ) : (
@@ -348,7 +348,7 @@ export function RoomAccordion({
                       }
                     }}
                     disabled={isPastEvent}
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-primary-teal-600"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600"
                     title={
                       isPastEvent
                         ? "This event has ended and cannot be edited"

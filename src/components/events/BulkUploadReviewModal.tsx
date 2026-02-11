@@ -805,7 +805,7 @@ export function BulkUploadReviewModal({
                 Review Uploaded Sessions
               </DialogTitle>
               {eventName && (
-                <p className="text-sm text-gray-500 mt-0.5">
+                <p className="text-sm text-muted-foreground mt-0.5">
                   for {eventName}
                 </p>
               )}
@@ -916,7 +916,7 @@ export function BulkUploadReviewModal({
                       className={isEditing ? "bg-blue-50" : ""}
                     >
                       {/* Row number */}
-                      <TableCell className="text-center text-gray-500">
+                      <TableCell className="text-center text-muted-foreground">
                         {session.rowNumber}
                       </TableCell>
 
@@ -1022,7 +1022,7 @@ export function BulkUploadReviewModal({
                         {renderCellWithTooltip(
                           session,
                           "duration",
-                          <span className="text-gray-600">
+                          <span className="text-muted-foreground">
                             {session.duration > 0
                               ? `${session.duration} mins`
                               : "—"}
@@ -1084,7 +1084,7 @@ export function BulkUploadReviewModal({
 
         {/* Footer */}
         <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between flex-shrink-0">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             Showing {filteredSessions.length} of {sessions.length} sessions
           </div>
           <div className="flex items-center gap-3">

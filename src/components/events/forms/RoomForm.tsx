@@ -133,7 +133,7 @@ export function RoomListForm({
   return (
     <div className="space-y-4">
       {/* Info text */}
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-muted-foreground">
         Add the physical rooms where presentations will take place. Each
         room will have its own Session ID and QR code.
       </p>
@@ -192,7 +192,7 @@ export function RoomListForm({
           type="button"
           variant="outline"
           onClick={onAddRoom}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-gray-600 hover:text-primary-blue-700"
+          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-muted-foreground hover:text-primary-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Another Room
@@ -201,7 +201,7 @@ export function RoomListForm({
 
       {/* Empty state */}
       {rooms.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
           <p>No rooms added yet.</p>
           <p className="text-sm">Add at least one room to continue.</p>
@@ -242,7 +242,7 @@ export function RoomCard({
           <MapPin className="h-5 w-5 text-primary-teal-600" />
           <div>
             <h4 className="font-semibold text-gray-900">{room.name}</h4>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {sessionCount} {sessionCount === 1 ? "session" : "sessions"}
             </p>
           </div>

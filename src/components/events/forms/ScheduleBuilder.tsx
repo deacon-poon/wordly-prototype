@@ -170,7 +170,7 @@ function SessionRow({
           </div>
           <div className="flex-1 grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs text-gray-500 mb-1 block">
+              <Label className="text-xs text-muted-foreground mb-1 block">
                 Title *
               </Label>
               <Input
@@ -182,7 +182,7 @@ function SessionRow({
               />
             </div>
             <div>
-              <Label className="text-xs text-gray-500 mb-1 block">
+              <Label className="text-xs text-muted-foreground mb-1 block">
                 Presenters
               </Label>
               <Input
@@ -211,7 +211,7 @@ function SessionRow({
         <div className="flex items-start gap-3 pl-10">
           <div className="flex-1 grid grid-cols-4 gap-3">
             <div>
-              <Label className="text-xs text-gray-500 mb-1 block">Date</Label>
+              <Label className="text-xs text-muted-foreground mb-1 block">Date</Label>
               <Input
                 type="date"
                 value={session.scheduledDate}
@@ -221,7 +221,7 @@ function SessionRow({
               />
             </div>
             <div>
-              <Label className="text-xs text-gray-500 mb-1 block">
+              <Label className="text-xs text-muted-foreground mb-1 block">
                 Start Time
               </Label>
               <TimeInput
@@ -231,7 +231,7 @@ function SessionRow({
               />
             </div>
             <div>
-              <Label className="text-xs text-gray-500 mb-1 block">
+              <Label className="text-xs text-muted-foreground mb-1 block">
                 End Time
               </Label>
               <TimeInput
@@ -410,7 +410,7 @@ function RoomCard({
                   </h3>
                 )}
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {sessions.length}{" "}
                     {sessions.length === 1 ? "session" : "sessions"}
                   </span>
@@ -536,7 +536,7 @@ function RoomCard({
             ) : (
               <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                 <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm text-gray-500">No sessions yet</p>
+                <p className="text-sm text-muted-foreground">No sessions yet</p>
                 <p className="text-xs text-gray-400">
                   Click "Add Session" to create one
                 </p>
@@ -625,7 +625,7 @@ export function ScheduleBuilder({
           type="button"
           variant="outline"
           onClick={onAddRoom}
-          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-gray-600 hover:text-primary-blue-700 py-6"
+          className="w-full border-dashed border-2 border-gray-300 hover:border-primary-blue-400 hover:bg-primary-blue-50 text-muted-foreground hover:text-primary-blue-700 py-6"
         >
           <Plus className="h-5 w-5 mr-2" />
           Add Room
@@ -634,7 +634,7 @@ export function ScheduleBuilder({
 
       {/* Empty State */}
       {rooms.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-muted-foreground">
           <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-300" />
           <p className="text-lg font-medium">No rooms added yet</p>
           <p className="text-sm mt-1">Add at least one room to continue</p>

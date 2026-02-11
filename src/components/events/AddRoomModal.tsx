@@ -76,7 +76,7 @@ export function AddRoomModal({
                 Add Room
               </DialogTitle>
               {eventName && (
-                <DialogDescription className="text-sm text-gray-600">
+                <DialogDescription className="text-sm text-muted-foreground">
                   Adding room to: {eventName}
                 </DialogDescription>
               )}
@@ -107,7 +107,7 @@ export function AddRoomModal({
 
           {/* Hint */}
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               After creating the room, you can add sessions individually or
               use &quot;Upload Schedule&quot; to bulk import.
             </p>
@@ -203,7 +203,7 @@ export function EditRoomModal({
                 Edit Room
               </DialogTitle>
               {eventName && (
-                <DialogDescription className="text-sm text-gray-600">
+                <DialogDescription className="text-sm text-muted-foreground">
                   Editing room in: {eventName}
                 </DialogDescription>
               )}
