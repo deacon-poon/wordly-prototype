@@ -97,7 +97,7 @@ export interface SessionFormData {
   autoSelect: boolean; // ALS auto-detect
   languages: string[]; // Selected output languages
   glossaryId: string;
-  transcriptSetting: "save" | "save-workspace" | "none";
+  transcriptSetting: "save" | "save-workspace" | "save-attendees" | "none";
   accessType: "open" | "passcode";
   floorAudio: boolean;
   voicePack: string;
@@ -129,7 +129,7 @@ export interface EventFormState {
 export const DEFAULT_EVENT_DETAILS: EventDetailsFormData = {
   name: "",
   timezone: "America/Los_Angeles", // Default to Pacific Time
-  accountId: "acc-default", // Default account
+  accountId: "acc-8ff07", // Default account
 };
 
 export const DEFAULT_ROOM: RoomFormData = {
@@ -147,7 +147,7 @@ export const DEFAULT_SESSION: SessionFormData = {
   endTime: "10:00",
   timezone: "America/Los_Angeles",
   // Advanced settings - inherit from Session Defaults
-  accountId: "acc-default",
+  accountId: "acc-8ff07",
   startingLanguage: "en-US",
   autoSelect: true,
   languages: ["en-US"],
@@ -227,9 +227,9 @@ export const GLOSSARIES = [
 ] as const;
 
 export const TRANSCRIPT_SETTINGS = [
+  { value: "none", label: "Do not save transcript" },
   { value: "save-workspace", label: "Save transcript to workspace" },
-  { value: "save", label: "Save transcript" },
-  { value: "none", label: "Don't save transcript" },
+  { value: "save-attendees", label: "Save and allow attendees to copy full transcripts" },
 ] as const;
 
 export const ACCESS_TYPES = [
@@ -238,10 +238,19 @@ export const ACCESS_TYPES = [
 ] as const;
 
 export const VOICE_PACKS = [
-  { id: "feminine", name: "Feminine Voice" },
-  { id: "masculine", name: "Masculine Voice" },
-  { id: "neutral", name: "Neutral Voice" },
+  { id: "feminine", name: "Feminine voice" },
+  { id: "masculine", name: "Masculine voice" },
 ] as const;
+
+// Mock pool of minutes (in production, fetched from account API)
+export const POOL_OF_MINUTES = [
+  { id: "acc-8ff07", name: "Gardendale City", accountCode: "8ff07", minutesRemaining: 3241 },
+  { id: "acc-2a49e", name: "Deacon Poon", accountCode: "2a49e", minutesRemaining: 1500 },
+  { id: "acc-corp", name: "Corporate Events", accountCode: "c0rp1", minutesRemaining: 8750 },
+] as const;
+
+// Languages that do NOT support automatic language selection
+export const NON_AUTO_SELECT_LANGUAGES = ["cy", "hi", "tr", "pl", "sv", "no"] as const;
 
 // ============================================================================
 // Utility Functions

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useViewportSize } from "@/hooks/use-mobile";
 import {
   getStoredEvent,
   saveEvent,
@@ -449,6 +450,11 @@ export default function EventDetailPage({
   const [event, setEvent] = useState<Event>(() =>
     getMockEventData(resolvedParams.eventId)
   );
+
+  // Viewport-based responsive breakpoints
+  const { width: viewportWidth } = useViewportSize();
+  const isDesktop = viewportWidth >= 1024;
+  const isMobile = viewportWidth < 768;
 
   // Save event changes to localStorage for persistence
   useEffect(() => {
@@ -991,6 +997,22 @@ export default function EventDetailPage({
     setIsBulkReviewModalOpen(false);
   };
 
+  // Shared account minutes computation (used by SessionPanel and BulkUploadReviewModal)
+  const accountMinutes = useMemo(() => ({
+    total: event.totalMinutes,
+    used: event.rooms.reduce(
+      (acc, room) =>
+        acc +
+        room.sessions.reduce((sessionAcc, session) => {
+          const [startH, startM] = session.scheduledStart.split(":").map(Number);
+          const [endH, endM] = session.endTime.split(":").map(Number);
+          const duration = (endH * 60 + endM) - (startH * 60 + startM);
+          return sessionAcc + Math.max(0, duration);
+        }, 0),
+      0
+    ),
+  }), [event.totalMinutes, event.rooms]);
+
   const mainContent = (
     <>
       {/* Smart sticky header - hides on scroll down, shows on scroll up */}
@@ -1001,9 +1023,9 @@ export default function EventDetailPage({
           isHeaderVisible ? "translate-y-0" : "-translate-y-full"
         )}
       >
-        <div className="px-6 py-5">
+        <div className="px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
           {/* Row 1: Title (editable) + Add Room */}
-          <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {isEditingEventName ? (
                 <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1051,7 +1073,7 @@ export default function EventDetailPage({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 min-w-0">
-                  <h1 className="text-2xl font-semibold text-gray-900 truncate">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 truncate">
                     {event.name}
                   </h1>
                   <button
@@ -1081,7 +1103,7 @@ export default function EventDetailPage({
           </div>
 
           {/* Row 2: Metadata + Public Summary Link */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-4">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <span className="flex items-center gap-1.5">
               <Calendar className="h-4 w-4 text-gray-400" />
               {event.dateRange}
@@ -1106,12 +1128,12 @@ export default function EventDetailPage({
             )}
           </div>
 
-          {/* Row 3: Tabs (left) + Actions (right) - container-query responsive */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Row 3: Tabs (left) + Actions (right) - stacks on mobile */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
             <Tabs
               value={selectedTab}
               onValueChange={(value: any) => setSelectedTab(value)}
-              className="flex-shrink-0"
+              className="flex-shrink-0 w-full sm:w-auto"
             >
               <TabsList>
                 <TabsTrigger value="now">Now</TabsTrigger>
@@ -1160,7 +1182,7 @@ export default function EventDetailPage({
       </div>
 
       {/* Schedule grouped by date */}
-      <div className="px-6 pb-6 pt-4 space-y-4">
+      <div className="px-3 pb-4 pt-3 sm:px-4 sm:pb-5 lg:px-6 lg:pb-6 lg:pt-4 space-y-3 sm:space-y-4">
         {/* Show rooms without sessions */}
         {event.rooms.filter((rm) => rm.sessions.length === 0).length >
           0 && (
@@ -1279,7 +1301,7 @@ export default function EventDetailPage({
                 {/* Date Header - Collapsible Accordion */}
                 <button
                   onClick={() => toggleDateExpansion(date)}
-                  className="w-full px-4 py-4 flex items-center text-left"
+                  className="w-full px-2.5 py-3 sm:px-4 sm:py-4 flex items-center text-left"
                 >
                   {/* Left: Icon column (fixed width for alignment) */}
                   <div className="w-8 flex-shrink-0 flex items-center justify-center">
@@ -1287,11 +1309,11 @@ export default function EventDetailPage({
                   </div>
 
                   {/* Center: Date info (grows) */}
-                  <div className="flex-1 flex items-center gap-3 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-lg">
+                  <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base lg:text-lg truncate">
                       {formatSessionDate(date)}
                     </h3>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs sm:text-sm text-gray-500">
                       ({sessionsForDate.length}{" "}
                       {sessionsForDate.length === 1
                         ? "presentation"
@@ -1313,7 +1335,7 @@ export default function EventDetailPage({
 
                 {/* Rooms for this date */}
                 {isDateExpanded && (
-                  <div className="px-4 pb-4 pt-2 space-y-3">
+                  <div className="px-2 pb-3 pt-1.5 sm:px-4 sm:pb-4 sm:pt-2 space-y-3">
                     {roomsList.map(({ room, sessions }) => {
                       // Create a modified room object with only sessions for this date
                       const roomWithDateSessions = {
@@ -1513,27 +1535,34 @@ export default function EventDetailPage({
         onSubmit={handleBulkReviewSubmit}
         initialSessions={parsedSessions}
         eventName={event.name}
-        accountMinutes={{
-          total: event.totalMinutes,
-          used: event.rooms.reduce(
-            (acc, room) =>
-              acc +
-              room.sessions.reduce((sessionAcc, session) => {
-                const [startH, startM] = session.scheduledStart.split(":").map(Number);
-                const [endH, endM] = session.endTime.split(":").map(Number);
-                const duration = (endH * 60 + endM) - (startH * 60 + startM);
-                return sessionAcc + Math.max(0, duration);
-              }, 0),
-            0
-          ),
-        }}
+        accountMinutes={accountMinutes}
       />
     </>
   );
 
-  return (
-    <div className="h-full">
-      {sessionPanelState?.isOpen ? (
+  const sessionPanelElement = sessionPanelState?.isOpen ? (
+    <SessionPanel
+      mode={sessionPanelState.mode}
+      session={sessionPanelState.session}
+      roomName={sessionPanelState.roomName}
+      roomId={sessionPanelState.roomId}
+      eventName={event.name}
+      defaultDate={mostRecentSessionDate}
+      rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
+      accountMinutes={accountMinutes}
+      onClose={handleCloseSessionPanel}
+      onSave={handleSaveSession}
+      onDelete={handleDeleteSession}
+      onAddRoom={() => setIsAddRoomModalOpen(true)}
+    />
+  ) : null;
+
+  const isPanelOverlay = sessionPanelState?.isOpen && !isDesktop;
+
+  // Desktop + panel open: side-by-side resizable panels
+  if (sessionPanelState?.isOpen && isDesktop) {
+    return (
+      <div className="h-full overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="h-full">
           <ResizablePanel defaultSize={65} minSize={50}>
             <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-white @container">
@@ -1542,39 +1571,44 @@ export default function EventDetailPage({
           </ResizablePanel>
           <ResizableHandle className="w-px bg-transparent hover:bg-gray-300 transition-colors" />
           <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
-            <SessionPanel
-              mode={sessionPanelState.mode}
-              session={sessionPanelState.session}
-              roomName={sessionPanelState.roomName}
-              roomId={sessionPanelState.roomId}
-              eventName={event.name}
-              defaultDate={mostRecentSessionDate}
-              rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
-              accountMinutes={{
-                total: event.totalMinutes,
-                used: event.rooms.reduce(
-                  (acc, room) =>
-                    acc +
-                    room.sessions.reduce((sessionAcc, session) => {
-                      const [startH, startM] = session.scheduledStart.split(":").map(Number);
-                      const [endH, endM] = session.endTime.split(":").map(Number);
-                      const duration = (endH * 60 + endM) - (startH * 60 + startM);
-                      return sessionAcc + Math.max(0, duration);
-                    }, 0),
-                  0
-                ),
-              }}
-              onClose={handleCloseSessionPanel}
-              onSave={handleSaveSession}
-              onDelete={handleDeleteSession}
-              onAddRoom={() => setIsAddRoomModalOpen(true)}
-            />
+            {sessionPanelElement}
           </ResizablePanel>
         </ResizablePanelGroup>
-      ) : (
-        <div ref={scrollContainerRef} className="h-full overflow-y-auto bg-white @container">
-          {mainContent}
-        </div>
+      </div>
+    );
+  }
+
+  // Mobile/Tablet: main content with overlay panel when open
+  return (
+    <div className="h-full overflow-hidden relative">
+      <div
+        ref={scrollContainerRef}
+        className={cn(
+          "h-full bg-white @container",
+          isPanelOverlay ? "overflow-hidden" : "overflow-y-auto"
+        )}
+      >
+        {mainContent}
+      </div>
+      {isPanelOverlay && (
+        <>
+          {/* Tablet backdrop - click to close */}
+          {!isMobile && (
+            <div
+              className="absolute inset-0 z-30 bg-black/20"
+              onClick={handleCloseSessionPanel}
+            />
+          )}
+          {/* Session panel overlay */}
+          <div
+            className={cn(
+              "absolute inset-y-0 right-0 z-40 bg-white animate-in slide-in-from-right duration-300",
+              isMobile ? "left-0" : "w-[65%] shadow-xl"
+            )}
+          >
+            {sessionPanelElement}
+          </div>
+        </>
       )}
     </div>
   );

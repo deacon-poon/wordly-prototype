@@ -1592,10 +1592,10 @@ export default function EventsPage() {
         className="group rounded-xl border border-gray-200 bg-white shadow-sm hover:border-primary-teal-300 hover:shadow-lg transition-all cursor-pointer"
         onClick={() => router.push(`/events/${event.id}`)}
       >
-        <div className="px-5 py-4">
+        <div className="px-3 py-3 sm:px-5 sm:py-4">
           {/* Header with title, status badge on right, and actions */}
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <h2 className="text-lg font-semibold text-gray-900 truncate min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate min-w-0 flex-1">
               {event.name}
             </h2>
 
@@ -1644,9 +1644,9 @@ export default function EventsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 mb-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-600 mb-2">
             <span className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-gray-400" />
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
               {event.sessionCount > 0 ? event.dateRange : <span className="text-gray-500 italic">No sessions scheduled</span>}
             </span>
             <span className="text-gray-300">·</span>
@@ -1662,7 +1662,7 @@ export default function EventsPage() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium mt-3"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-primary-teal-600 hover:text-primary-teal-700 font-medium mt-2 sm:mt-3"
             >
               <ExternalLink className="h-4 w-4" />
               <span>Public Summaries Page</span>
@@ -1674,20 +1674,20 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Page header - white header to contrast with gray content area */}
       <div className="bg-white border-b border-gray-200">
-        <div className="px-6 py-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Events</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Events</h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
                 Manage and organize your events, rooms, and presentations
               </p>
             </div>
             <Button
               onClick={handleAddEvent}
-              className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white shadow-sm"
+              className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white shadow-sm w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Event
@@ -1709,16 +1709,16 @@ export default function EventsPage() {
         </div>
       </div>
 
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6 space-y-4 sm:space-y-6">
         {statusFilter === "all" && groupedEvents.today.length > 0 && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 pb-3 border-b-2 border-accent-green-500">
+            <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 border-accent-green-500">
               <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
                 Today ({groupedEvents.today.length})
               </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {groupedEvents.today.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -1728,13 +1728,13 @@ export default function EventsPage() {
 
         {statusFilter === "all" && groupedEvents.future.length > 0 && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 pb-3 border-b-2 border-primary-teal-500">
+            <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 border-primary-teal-500">
               <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
                 Future ({groupedEvents.future.length})
               </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {groupedEvents.future.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -1744,13 +1744,13 @@ export default function EventsPage() {
 
         {statusFilter === "all" && groupedEvents.past.length > 0 && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-400">
+            <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 border-gray-400">
               <span className="w-2 h-2 rounded-full bg-gray-400" />
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
                 Past ({groupedEvents.past.length})
               </h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {groupedEvents.past.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
@@ -1767,8 +1767,8 @@ export default function EventsPage() {
         )}
 
         {filteredEvents.length === 0 && (
-          <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
-            <p className="text-gray-600 text-lg">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 sm:p-12 text-center">
+            <p className="text-gray-600 text-base sm:text-lg">
               {statusFilter === "today" && "No events happening today"}
               {statusFilter === "future" && "No future events"}
               {statusFilter === "past" && "No past events"}

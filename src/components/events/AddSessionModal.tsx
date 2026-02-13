@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Clock, MapPin } from "lucide-react";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { Clock, MapPin, AlertTriangle } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -48,7 +49,7 @@ export function AddSessionModal({
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
 }: AddSessionModalProps) {
-  const { session, updateSession, errors, validate, reset } =
+  const { session, updateSession, errors, validate, reset, isDirty } =
     useStandaloneSessionForm(
       defaultDate
         ? {
@@ -60,7 +61,7 @@ export function AddSessionModal({
             endTime: "10:00",
             timezone: defaultTimezone,
             // Advanced settings - inherit from Session Defaults
-            accountId: "acc-default",
+            accountId: "acc-8ff07",
             startingLanguage: "en-US",
             autoSelect: true,
             languages: ["en-US"],
@@ -75,6 +76,7 @@ export function AddSessionModal({
       defaultTimezone
     );
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isDiscardDialogOpen, setIsDiscardDialogOpen] = useState(false);
 
   const handleSave = async () => {
     if (!validate()) return;
@@ -91,13 +93,34 @@ export function AddSessionModal({
     }
   };
 
-  const handleCancel = () => {
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setIsDiscardDialogOpen(true);
+    } else {
+      reset();
+      onOpenChange(false);
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setIsDiscardDialogOpen(false);
     reset();
     onOpenChange(false);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && isDirty) {
+      setIsDiscardDialogOpen(true);
+      return;
+    }
+    if (!newOpen) {
+      reset();
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <><Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -128,7 +151,7 @@ export function AddSessionModal({
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+          <Button variant="outline" onClick={handleRequestClose} disabled={isSaving}>
             Cancel
           </Button>
           <Button
@@ -141,6 +164,18 @@ export function AddSessionModal({
         </div>
       </DialogContent>
     </Dialog>
+    <ConfirmationDialog
+      open={isDiscardDialogOpen}
+      onOpenChange={setIsDiscardDialogOpen}
+      title="Discard Changes?"
+      description="You have unsaved changes that will be lost. Are you sure you want to close?"
+      onConfirm={handleConfirmDiscard}
+      confirmText="Discard"
+      cancelText="Keep Editing"
+      variant="destructive"
+      icon={<AlertTriangle className="h-12 w-12" />}
+    />
+    </>
   );
 }
 
@@ -171,14 +206,15 @@ export function EditSessionModal({
   eventName,
   readOnly = false,
 }: EditSessionModalProps) {
-  const { session, updateSession, errors, validate, reset } =
+  const { session, updateSession, errors, validate, reset, isDirty, setCleanState } =
     useStandaloneSessionForm(initialData);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isDiscardDialogOpen, setIsDiscardDialogOpen] = React.useState(false);
 
   // Reset form when modal opens with new data
   React.useEffect(() => {
     if (open && initialData) {
-      updateSession(initialData);
+      setCleanState(initialData);
     }
   }, [open, initialData]);
 
@@ -196,13 +232,34 @@ export function EditSessionModal({
     }
   };
 
-  const handleCancel = () => {
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setIsDiscardDialogOpen(true);
+    } else {
+      reset();
+      onOpenChange(false);
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setIsDiscardDialogOpen(false);
     reset();
     onOpenChange(false);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && isDirty) {
+      setIsDiscardDialogOpen(true);
+      return;
+    }
+    if (!newOpen) {
+      reset();
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <><Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -240,7 +297,7 @@ export function EditSessionModal({
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+          <Button variant="outline" onClick={readOnly ? () => onOpenChange(false) : handleRequestClose} disabled={isSaving}>
             {readOnly ? "Close" : "Cancel"}
           </Button>
           {!readOnly && (
@@ -255,5 +312,19 @@ export function EditSessionModal({
         </div>
       </DialogContent>
     </Dialog>
+    {!readOnly && (
+      <ConfirmationDialog
+        open={isDiscardDialogOpen}
+        onOpenChange={setIsDiscardDialogOpen}
+        title="Discard Changes?"
+        description="You have unsaved changes that will be lost. Are you sure you want to close?"
+        onConfirm={handleConfirmDiscard}
+        confirmText="Discard"
+        cancelText="Keep Editing"
+        variant="destructive"
+        icon={<AlertTriangle className="h-12 w-12" />}
+      />
+    )}
+    </>
   );
 }

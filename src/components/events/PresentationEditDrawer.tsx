@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { AlertTriangle } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -67,9 +69,12 @@ export function PresentationEditDrawer({
     errors,
     validate,
     reset,
+    isDirty,
+    setCleanState,
   } = useStandaloneSessionForm(initialFormData);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isDiscardDialogOpen, setIsDiscardDialogOpen] = useState(false);
 
   // Check if session has started (read-only if yes)
   const hasStarted = () => {
@@ -85,7 +90,8 @@ export function PresentationEditDrawer({
   // Reset form when session changes
   useEffect(() => {
     if (session) {
-      updateSession({
+      setCleanState({
+        ...initialFormData,
         id: session.id,
         title: session.title,
         presenters: session.presenters.join(", "),
@@ -97,6 +103,19 @@ export function PresentationEditDrawer({
       });
     }
   }, [session]);
+
+  const handleRequestClose = () => {
+    if (isDirty && !isReadOnly) {
+      setIsDiscardDialogOpen(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setIsDiscardDialogOpen(false);
+    onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +172,7 @@ export function PresentationEditDrawer({
 
       {/* Footer Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onClose}>
+        <Button type="button" variant="outline" onClick={handleRequestClose}>
           Cancel
         </Button>
         <Button
@@ -167,9 +186,28 @@ export function PresentationEditDrawer({
     </form>
   );
 
+  const discardDialog = (
+    <ConfirmationDialog
+      open={isDiscardDialogOpen}
+      onOpenChange={setIsDiscardDialogOpen}
+      title="Discard Changes?"
+      description="You have unsaved changes that will be lost. Are you sure you want to close?"
+      onConfirm={handleConfirmDiscard}
+      confirmText="Discard"
+      cancelText="Keep Editing"
+      variant="destructive"
+      icon={<AlertTriangle className="h-12 w-12" />}
+    />
+  );
+
   if (inline) {
-    return <div className="h-full overflow-y-auto">{formContent}</div>;
+    return (
+      <>
+        <div className="h-full overflow-y-auto">{formContent}</div>
+        {discardDialog}
+      </>
+    );
   }
 
-  return null; // Sheet wrapper would go here if needed
+  return discardDialog; // Sheet wrapper would go here if needed
 }

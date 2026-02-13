@@ -85,7 +85,7 @@ export function AppShell({
       </div>
 
       {/* Main content area - unified elevated container */}
-      <div className="flex-1 flex flex-col overflow-hidden p-4">
+      <div className="flex-1 flex flex-col overflow-hidden p-1.5 sm:p-2.5 lg:p-4">
         <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden">
           {/* Header integrated into the elevated container */}
           <div className="border-b border-gray-200">{header}</div>

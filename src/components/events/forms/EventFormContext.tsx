@@ -458,18 +458,29 @@ export function useStandaloneSessionForm(
   initialData?: SessionFormData,
   defaultTimezone?: string
 ) {
-  const [session, setSession] = React.useState<SessionFormData>(
-    initialData || {
-      ...DEFAULT_SESSION,
-      id: generateTempId(),
-      timezone: defaultTimezone || DEFAULT_SESSION.timezone,
-    }
-  );
+  const defaultData = initialData || {
+    ...DEFAULT_SESSION,
+    id: generateTempId(),
+    timezone: defaultTimezone || DEFAULT_SESSION.timezone,
+  };
+
+  const [session, setSession] = React.useState<SessionFormData>(defaultData);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const cleanStateRef = React.useRef<string>(JSON.stringify(defaultData));
 
   const updateSession = (data: Partial<SessionFormData>) => {
     setSession((prev) => ({ ...prev, ...data }));
   };
+
+  /** Set form data AND mark it as the clean baseline (no unsaved changes) */
+  const setCleanState = (data: SessionFormData) => {
+    setSession(data);
+    cleanStateRef.current = JSON.stringify(data);
+    setErrors({});
+  };
+
+  /** Whether the form has been modified from the clean baseline */
+  const isDirty = JSON.stringify(session) !== cleanStateRef.current;
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -493,9 +504,11 @@ export function useStandaloneSessionForm(
   };
 
   const reset = () => {
-    setSession({ ...DEFAULT_SESSION, id: generateTempId() });
+    const newDefault = { ...DEFAULT_SESSION, id: generateTempId() };
+    setSession(newDefault);
+    cleanStateRef.current = JSON.stringify(newDefault);
     setErrors({});
   };
 
-  return { session, updateSession, errors, validate, reset };
+  return { session, updateSession, errors, validate, reset, isDirty, setCleanState };
 }

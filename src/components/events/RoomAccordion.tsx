@@ -96,7 +96,7 @@ export function RoomAccordion({
       }`}
     >
       {/* Room Header - using div with role="button" to avoid nested button issue */}
-      <div className="w-full px-4 py-3 flex items-center text-left">
+      <div className="w-full px-2 py-2.5 sm:px-4 sm:py-3 flex items-center text-left">
         {/* Clickable area for expand/collapse */}
         <div
           role="button"
@@ -118,10 +118,10 @@ export function RoomAccordion({
           {/* Center: Name + Count (grows) */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="font-semibold text-gray-900 truncate max-w-[200px] @lg:max-w-none">
+              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[140px] @sm:max-w-[200px] @lg:max-w-none">
                 {room.name}
               </h4>
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
+              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                 ({room.sessions.length}{" "}
                 {room.sessions.length === 1
                   ? "presentation"
@@ -241,10 +241,10 @@ export function RoomAccordion({
 
       {/* Credentials row - aligned with icon column */}
       {showCredentials && (
-        <div className="px-4 pb-3 flex items-center">
+        <div className="px-2 pb-2 sm:px-4 sm:pb-3 flex items-start sm:items-center">
           {/* Spacer matching icon column */}
           <div className="w-8 flex-shrink-0" />
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-muted-foreground">
             <span>
               Session ID:{" "}
               <code className="font-mono text-gray-700">
@@ -286,10 +286,10 @@ export function RoomAccordion({
           {room.sessions.map((session) => (
             <div
               key={session.id}
-              className="px-4 py-3 hover:bg-gray-50 transition-colors group flex items-center"
+              className="px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-gray-50 transition-colors group flex items-center"
             >
               {/* Left: Spacer matching icon column */}
-              <div className="w-8 flex-shrink-0" />
+              <div className="w-8 flex-shrink-0 hidden sm:block" />
 
               {/* Center: Title and Presenters (grows) */}
               <button
@@ -313,10 +313,10 @@ export function RoomAccordion({
                     : undefined
                 }
               >
-                <h5 className="font-medium text-gray-900 truncate">
+                <h5 className="font-medium text-gray-900 text-sm sm:text-base truncate">
                   {session.title}
                 </h5>
-                <p className="text-xs text-muted-foreground truncate mt-1">
+                <p className="text-xs text-muted-foreground truncate mt-0.5 sm:mt-1">
                   {session.presenters.length > 1 ? (
                     <Users className="h-3 w-3 inline mr-1 text-gray-400" />
                   ) : (
@@ -326,13 +326,13 @@ export function RoomAccordion({
                 </p>
               </button>
 
-              {/* Right: Time badge + Edit button (aligns with action buttons above) */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue-50 border border-primary-blue-200 rounded-md">
-                  <span className="text-sm font-bold text-primary-blue-800 whitespace-nowrap">
+              {/* Right: Time badge + Edit button */}
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
+                <div className="flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-3 sm:py-1.5 bg-primary-blue-50 border border-primary-blue-200 rounded-md">
+                  <span className="text-xs sm:text-sm font-bold text-primary-blue-800 whitespace-nowrap">
                     {session.scheduledStart} – {session.endTime}
                   </span>
-                  <span className="text-xs font-medium text-primary-teal-600 bg-primary-blue-100 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] sm:text-xs font-medium text-primary-teal-600 bg-primary-blue-100 px-1 sm:px-1.5 py-0.5 rounded hidden @sm:inline">
                     {getTimezoneAbbr(session.timezone || eventTimezone)}
                   </span>
                 </div>
@@ -348,7 +348,7 @@ export function RoomAccordion({
                       }
                     }}
                     disabled={isPastEvent}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600"
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600 hidden sm:flex"
                     title={
                       isPastEvent
                         ? "This event has ended and cannot be edited"
@@ -361,7 +361,7 @@ export function RoomAccordion({
               </div>
 
               {/* Right: Spacer matching chevron column */}
-              <div className="w-10 flex-shrink-0" />
+              <div className="w-6 sm:w-10 flex-shrink-0" />
             </div>
           ))}
 

@@ -1296,7 +1296,7 @@ export default function PublicSummaryPage({
         sessions={allSessions.map((session) => ({
           title: session.title,
           presenters: session.presenters,
-          summary: session.summary,
+          summary: session.summary ?? "",
           scheduledDate: session.scheduledDate,
           scheduledStart: session.scheduledStart,
           roomName: session.roomName || "",

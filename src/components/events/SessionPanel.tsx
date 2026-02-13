@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { ChevronLeft, Loader2, Plus, Edit2, MapPin, Trash2, AlertTriangle, Clock } from "lucide-react";
+import { PanelRight, Loader2, Plus, Edit2, MapPin, Trash2, AlertTriangle, Clock } from "lucide-react";
 import {
   SessionForm,
   useStandaloneSessionForm,
@@ -135,9 +135,13 @@ export function SessionPanel({
     errors,
     validate,
     reset,
+    isDirty,
+    setCleanState,
   } = useStandaloneSessionForm(getInitialFormData(), defaultTimezone);
 
   const [isSaving, setIsSaving] = useState(false);
+  // Unsaved changes confirmation dialog state
+  const [isDiscardDialogOpen, setIsDiscardDialogOpen] = useState(false);
 
   // Check session status for edit restrictions
   // Active sessions: only end time can be edited
@@ -210,7 +214,8 @@ export function SessionPanel({
   // Reset form and room when session changes (edit mode)
   useEffect(() => {
     if (mode === "edit" && session) {
-      updateSession({
+      setCleanState({
+        ...getInitialFormData(),
         id: session.id,
         title: session.title,
         presenters: session.presenters.join(", "),
@@ -226,6 +231,20 @@ export function SessionPanel({
       setSelectedRoomId(roomId);
     }
   }, [session, mode, roomId]);
+
+  /** Gate close/cancel - prompt for confirmation if form has unsaved changes */
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setIsDiscardDialogOpen(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setIsDiscardDialogOpen(false);
+    onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,12 +310,15 @@ export function SessionPanel({
             {roomName} · {eventName}
           </p>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleRequestClose}
+          className="h-9 w-9 p-0 hover:bg-primary-blue-50"
         >
-          <ChevronLeft className="h-5 w-5 text-muted-foreground" />
-        </button>
+          <PanelRight className="h-4 w-4 text-gray-600 hover:text-primary-blue-600 transition-colors" />
+          <span className="sr-only">Close panel</span>
+        </Button>
       </div>
 
       {/* Scrollable Form Body */}
@@ -365,7 +387,7 @@ export function SessionPanel({
         
         {/* Save/Cancel buttons */}
         <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={handleRequestClose}>
             Cancel
           </Button>
           <Button
@@ -402,6 +424,19 @@ export function SessionPanel({
           icon={<AlertTriangle className="h-12 w-12" />}
         />
       )}
+
+      {/* Unsaved Changes Confirmation Dialog */}
+      <ConfirmationDialog
+        open={isDiscardDialogOpen}
+        onOpenChange={setIsDiscardDialogOpen}
+        title="Discard Changes?"
+        description="You have unsaved changes that will be lost. Are you sure you want to close?"
+        onConfirm={handleConfirmDiscard}
+        confirmText="Discard"
+        cancelText="Keep Editing"
+        variant="destructive"
+        icon={<AlertTriangle className="h-12 w-12" />}
+      />
     </div>
   );
 }
