@@ -8,7 +8,7 @@ import {
   Download,
   Edit2,
   ExternalLink,
-  FileSpreadsheet,
+  Upload,
   Plus,
   X,
   AlertTriangle,
@@ -39,6 +39,7 @@ import {
   EditRoomModal,
 } from "@/components/events/AddRoomModal";
 import { SessionPanel } from "@/components/events/SessionPanel";
+import { TranscriptPanel } from "@/components/events/TranscriptPanel";
 import {
   UploadScheduleModal,
   type SessionDefaults,
@@ -263,7 +264,7 @@ function getMockEventData(eventId: string): Event {
             scheduledDate: eventDay1,
             scheduledStart: "09:00",
             endTime: "10:30",
-            status: "pending",
+            status: "completed",
           },
           {
             id: "ses-002",
@@ -272,7 +273,7 @@ function getMockEventData(eventId: string): Event {
             scheduledDate: eventDay1,
             scheduledStart: "11:00",
             endTime: "12:00",
-            status: "pending",
+            status: "completed",
           },
           {
             id: "ses-003",
@@ -281,7 +282,7 @@ function getMockEventData(eventId: string): Event {
             scheduledDate: eventDay1,
             scheduledStart: "13:30",
             endTime: "14:30",
-            status: "pending",
+            status: "completed",
           },
           {
             id: "ses-004",
@@ -317,7 +318,7 @@ function getMockEventData(eventId: string): Event {
             scheduledDate: eventDay1,
             scheduledStart: "09:00",
             endTime: "11:00",
-            status: "pending",
+            status: "completed",
           },
           {
             id: "ses-007",
@@ -326,7 +327,7 @@ function getMockEventData(eventId: string): Event {
             scheduledDate: eventDay1,
             scheduledStart: "11:30",
             endTime: "13:00",
-            status: "pending",
+            status: "completed",
           },
           {
             id: "ses-008",
@@ -416,6 +417,13 @@ export default function EventDetailPage({
     mode: "add" | "edit";
     session?: Session;
     roomId: string;
+    roomName: string;
+  } | null>(null);
+
+  // Transcript panel state
+  const [transcriptPanelState, setTranscriptPanelState] = useState<{
+    isOpen: boolean;
+    session: Session;
     roomName: string;
   } | null>(null);
 
@@ -639,6 +647,7 @@ export default function EventDetailPage({
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
+    setTranscriptPanelState(null); // Close transcript panel if open
     setSessionPanelState({
       isOpen: true,
       mode: "edit",
@@ -646,6 +655,20 @@ export default function EventDetailPage({
       roomId: room.id,
       roomName: room.name,
     });
+  };
+
+  const handleViewTranscript = (session: Session, room: Room) => {
+    // Close session panel if open, then open transcript panel
+    setSessionPanelState(null);
+    setTranscriptPanelState({
+      isOpen: true,
+      session,
+      roomName: room.name,
+    });
+  };
+
+  const handleCloseTranscriptPanel = () => {
+    setTranscriptPanelState(null);
   };
 
   const handleAddSession = (room: Room) => {
@@ -1171,7 +1194,7 @@ export default function EventDetailPage({
                     : "Upload locations and sessions from spreadsheet"
                 }
               >
-                <FileSpreadsheet className="h-4 w-4 @md:mr-1" />
+                <Upload className="h-4 w-4 @md:mr-1" />
                 <span className="hidden @md:inline">
                   {event.sessionCount > 0 ? "Upload Replacement Schedule" : "Upload Schedule"}
                 </span>
@@ -1357,6 +1380,9 @@ export default function EventDetailPage({
                           }
                           onEditSession={(session, room, e) =>
                             handleEditSession(session, room, e)
+                          }
+                          onViewTranscript={(session, room) =>
+                            handleViewTranscript(session, room)
                           }
                           onRenameRoom={(room) => {
                             setEditRoomContext({ room });
@@ -1557,10 +1583,25 @@ export default function EventDetailPage({
     />
   ) : null;
 
-  const isPanelOverlay = sessionPanelState?.isOpen && !isDesktop;
+  const transcriptPanelElement = transcriptPanelState?.isOpen ? (
+    <TranscriptPanel
+      session={transcriptPanelState.session}
+      roomName={transcriptPanelState.roomName}
+      onClose={handleCloseTranscriptPanel}
+    />
+  ) : null;
+
+  // Determine which right panel is active
+  const rightPanelElement = sessionPanelElement || transcriptPanelElement;
+  const isRightPanelOpen = !!(sessionPanelState?.isOpen || transcriptPanelState?.isOpen);
+  const handleCloseRightPanel = sessionPanelState?.isOpen
+    ? handleCloseSessionPanel
+    : handleCloseTranscriptPanel;
+
+  const isPanelOverlay = isRightPanelOpen && !isDesktop;
 
   // Desktop + panel open: side-by-side resizable panels
-  if (sessionPanelState?.isOpen && isDesktop) {
+  if (isRightPanelOpen && isDesktop) {
     return (
       <div className="h-full overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -1569,9 +1610,9 @@ export default function EventDetailPage({
               {mainContent}
             </div>
           </ResizablePanel>
-          <ResizableHandle className="w-px bg-transparent hover:bg-gray-300 transition-colors" />
+          <ResizableHandle className="w-px bg-gray-200 hover:bg-gray-300 transition-colors" />
           <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
-            {sessionPanelElement}
+            {rightPanelElement}
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
@@ -1596,17 +1637,17 @@ export default function EventDetailPage({
           {!isMobile && (
             <div
               className="absolute inset-0 z-30 bg-black/20"
-              onClick={handleCloseSessionPanel}
+              onClick={handleCloseRightPanel}
             />
           )}
-          {/* Session panel overlay */}
+          {/* Right panel overlay */}
           <div
             className={cn(
               "absolute inset-y-0 right-0 z-40 bg-white animate-in slide-in-from-right duration-300",
               isMobile ? "left-0" : "w-[65%] shadow-xl"
             )}
           >
-            {sessionPanelElement}
+            {rightPanelElement}
           </div>
         </>
       )}

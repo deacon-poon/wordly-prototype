@@ -9,6 +9,8 @@ import {
   User,
   Users,
   Edit2,
+  Eye,
+  FileText,
   Play,
   QrCode,
   MoreVertical,
@@ -62,6 +64,7 @@ interface RoomAccordionProps {
     room: Room,
     e: React.MouseEvent
   ) => void;
+  onViewTranscript?: (session: Session, room: Room) => void;
   onRenameRoom?: (room: Room) => void;
   onDeleteRoom?: (room: Room) => void;
   onAddSession?: (room: Room) => void;
@@ -76,6 +79,7 @@ export function RoomAccordion({
   onStartRoom,
   onLinksToJoin,
   onEditSession,
+  onViewTranscript,
   onRenameRoom,
   onDeleteRoom,
   onAddSession,
@@ -283,87 +287,129 @@ export function RoomAccordion({
               )}
             </div>
           )}
-          {room.sessions.map((session) => (
-            <div
-              key={session.id}
-              className="px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-gray-50 transition-colors group flex items-center"
-            >
-              {/* Left: Spacer matching icon column */}
-              <div className="w-8 flex-shrink-0 hidden sm:block" />
+          {room.sessions.map((session) => {
+            const isCompleted = session.status === "completed";
+            const canEdit = !isPastEvent && !isCompleted && onEditSession;
+            const canView = (isPastEvent || isCompleted) && onEditSession;
 
-              {/* Center: Title and Presenters (grows) */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onEditSession && !isPastEvent) {
-                    onEditSession(session, room, e);
-                  }
-                }}
-                disabled={isPastEvent || !onEditSession}
-                className={`flex-1 min-w-0 text-left ${
-                  !isPastEvent && onEditSession
-                    ? "hover:text-primary-blue-700 cursor-pointer"
-                    : "cursor-default"
-                }`}
-                title={
-                  isPastEvent
-                    ? "This event has ended"
-                    : onEditSession
-                    ? "Click to edit presentation"
-                    : undefined
-                }
+            return (
+              <div
+                key={session.id}
+                className="px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-gray-50 transition-colors group flex items-center"
               >
-                <h5 className="font-medium text-gray-900 text-sm sm:text-base truncate">
-                  {session.title}
-                </h5>
-                <p className="text-xs text-muted-foreground truncate mt-0.5 sm:mt-1">
-                  {session.presenters.length > 1 ? (
-                    <Users className="h-3 w-3 inline mr-1 text-gray-400" />
-                  ) : (
-                    <User className="h-3 w-3 inline mr-1 text-gray-400" />
-                  )}
-                  {session.presenters.join(", ")}
-                </p>
-              </button>
+                {/* Left: Spacer matching icon column */}
+                <div className="w-8 flex-shrink-0 hidden sm:block" />
 
-              {/* Right: Time badge + Edit button */}
-              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
-                <div className="flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-3 sm:py-1.5 bg-primary-blue-50 border border-primary-blue-200 rounded-md">
-                  <span className="text-xs sm:text-sm font-bold text-primary-blue-800 whitespace-nowrap">
-                    {session.scheduledStart} – {session.endTime}
-                  </span>
-                  <span className="text-[10px] sm:text-xs font-medium text-primary-teal-600 bg-primary-blue-100 px-1 sm:px-1.5 py-0.5 rounded hidden @sm:inline">
-                    {getTimezoneAbbr(session.timezone || eventTimezone)}
-                  </span>
+                {/* Center: Title and Presenters (grows) */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (canEdit) {
+                      onEditSession!(session, room, e);
+                    } else if (canView) {
+                      onEditSession!(session, room, e);
+                    }
+                  }}
+                  disabled={!canEdit && !canView}
+                  className={`flex-1 min-w-0 text-left ${
+                    canEdit || canView
+                      ? "hover:text-primary-blue-700 cursor-pointer"
+                      : "cursor-default"
+                  }`}
+                  title={
+                    canEdit
+                      ? "Click to edit presentation"
+                      : canView
+                      ? "Click to view presentation details"
+                      : undefined
+                  }
+                >
+                  <h5 className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                    {session.title}
+                  </h5>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5 sm:mt-1">
+                    {session.presenters.length > 1 ? (
+                      <Users className="h-3 w-3 inline mr-1 text-gray-400" />
+                    ) : (
+                      <User className="h-3 w-3 inline mr-1 text-gray-400" />
+                    )}
+                    {session.presenters.join(", ")}
+                  </p>
+                </button>
+
+                {/* Right: Time badge + action buttons */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-2">
+                  <div className="flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-3 sm:py-1.5 bg-primary-blue-50 border border-primary-blue-200 rounded-md">
+                    <span className="text-xs sm:text-sm font-bold text-primary-blue-800 whitespace-nowrap">
+                      {session.scheduledStart} – {session.endTime}
+                    </span>
+                    <span className="text-[10px] sm:text-xs font-medium text-primary-teal-600 bg-primary-blue-100 px-1 sm:px-1.5 py-0.5 rounded hidden @sm:inline">
+                      {getTimezoneAbbr(session.timezone || eventTimezone)}
+                    </span>
+                  </div>
+
+                  {/* Transcript link for completed sessions */}
+                  {isCompleted && onViewTranscript && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onViewTranscript(session, room);
+                          }}
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600 hidden sm:flex"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View transcript</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* Eye icon for completed/past sessions (read-only view) */}
+                  {canView && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditSession!(session, room, e);
+                          }}
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600 hidden sm:flex"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View presentation details</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* Edit icon for editable sessions */}
+                  {canEdit && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditSession!(session, room, e);
+                      }}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600 hidden sm:flex"
+                      title="Edit presentation"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
-                {onEditSession && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!isPastEvent) {
-                        onEditSession(session, room, e);
-                      }
-                    }}
-                    disabled={isPastEvent}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary-teal-600 hidden sm:flex"
-                    title={
-                      isPastEvent
-                        ? "This event has ended and cannot be edited"
-                        : "Edit presentation"
-                    }
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                )}
+                {/* Right: Spacer matching chevron column */}
+                <div className="w-6 sm:w-10 flex-shrink-0" />
               </div>
-
-              {/* Right: Spacer matching chevron column */}
-              <div className="w-6 sm:w-10 flex-shrink-0" />
-            </div>
-          ))}
+            );
+          })}
 
           {/* Add Session button at bottom of list (always visible when expanded with sessions) */}
           {room.sessions.length > 0 && onAddSession && !isPastEvent && (
