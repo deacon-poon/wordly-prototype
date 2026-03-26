@@ -108,8 +108,7 @@ export function AddRoomModal({
           {/* Hint */}
           <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              After creating the room, you can add sessions individually or
-              use &quot;Upload Schedule&quot; to bulk import.
+              All sessions you add in this room later will use a single link to launch all of them.
             </p>
           </div>
         </div>

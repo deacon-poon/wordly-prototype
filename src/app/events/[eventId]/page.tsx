@@ -490,6 +490,26 @@ export default function EventDetailPage({
     eventName: string | null;
   }>({ room: null, eventName: null });
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  // Tracks which rooms are expanded (persists across layout changes when panel opens/closes)
+  // Key format: "roomId:date"
+  const [expandedRooms, setExpandedRooms] = useState<Set<string>>(new Set());
+
+  const isRoomExpanded = (roomId: string, date: string) =>
+    expandedRooms.has(`${roomId}:${date}`);
+
+  const toggleRoomExpanded = (roomId: string, date: string) => {
+    const key = `${roomId}:${date}`;
+    setExpandedRooms((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
   // Tracks how many rooms to show per day (for "Show More" rooms)
   const ROOMS_PAGE_SIZE = 50;
   const [visibleRoomsPerDay, setVisibleRoomsPerDay] = useState<
@@ -625,14 +645,10 @@ export default function EventDetailPage({
     return () => window.removeEventListener("resize", measureHeader);
   }, []);
 
-  // Reset header visibility and scroll position when panel opens/closes
+  // Reset header visibility when panel opens/closes (but preserve scroll position)
   useEffect(() => {
     setIsHeaderVisible(true);
-    lastScrollY.current = 0;
-    // Reset scroll position to top when panel state changes
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
+    lastScrollY.current = scrollContainerRef.current?.scrollTop || 0;
   }, [sessionPanelState?.isOpen]);
 
   const eventStatus = getEventStatus(event.startDate, event.endDate);
@@ -662,6 +678,45 @@ export default function EventDetailPage({
     });
 
     return grouped;
+  }, [event.rooms]);
+
+  // Compute conflicting session IDs per room (sessions that overlap in time on the same date)
+  const conflictsByRoom = useMemo(() => {
+    const result: Record<string, Set<string>> = {};
+
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    event.rooms.forEach((room) => {
+      const conflicts = new Set<string>();
+      const sessions = room.sessions;
+
+      for (let i = 0; i < sessions.length; i++) {
+        for (let j = i + 1; j < sessions.length; j++) {
+          const a = sessions[i];
+          const b = sessions[j];
+          if (a.scheduledDate !== b.scheduledDate) continue;
+
+          const aStart = toMinutes(a.scheduledStart);
+          const aEnd = toMinutes(a.endTime);
+          const bStart = toMinutes(b.scheduledStart);
+          const bEnd = toMinutes(b.endTime);
+
+          if (aStart < bEnd && aEnd > bStart) {
+            conflicts.add(a.id);
+            conflicts.add(b.id);
+          }
+        }
+      }
+
+      if (conflicts.size > 0) {
+        result[room.id] = conflicts;
+      }
+    });
+
+    return result;
   }, [event.rooms]);
 
   // Filter dates based on selected tab
@@ -1505,6 +1560,9 @@ export default function EventDetailPage({
                             showCredentials={true}
                             visibleSessionCount={getSessionVisibleCount(room.id, date)}
                             onShowMoreSessions={() => handleShowMoreSessions(room.id, date)}
+                            isExpanded={isRoomExpanded(room.id, date)}
+                            onToggleExpanded={() => toggleRoomExpanded(room.id, date)}
+                            conflictingSessionIds={conflictsByRoom[room.id]}
                           />
                         );
                       })}
@@ -1710,6 +1768,7 @@ export default function EventDetailPage({
       eventName={event.name}
       defaultDate={mostRecentSessionDate}
       rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
+      allRooms={event.rooms}
       accountMinutes={accountMinutes}
       onClose={handleCloseSessionPanel}
       onSave={handleSaveSession}

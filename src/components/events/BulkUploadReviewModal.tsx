@@ -897,10 +897,8 @@ export function BulkUploadReviewModal({
                   <TableHead className="w-32">Date</TableHead>
                   <TableHead className="w-28">Start Time</TableHead>
                   <TableHead className="w-28">End Time</TableHead>
-                  <TableHead className="w-40">Timezone</TableHead>
                   <TableHead className="w-24">Duration</TableHead>
                   <TableHead className="w-32">Glossary</TableHead>
-                  <TableHead className="w-40">Account</TableHead>
                   <TableHead className="w-36">Voice Pack</TableHead>
                   <TableHead className="w-32">Language</TableHead>
                   <TableHead className="w-28">Label</TableHead>
@@ -1004,19 +1002,6 @@ export function BulkUploadReviewModal({
                         {renderEditableCell(session, "endTime", "time")}
                       </TableCell>
 
-                      {/* Timezone */}
-                      <TableCell>
-                        {renderEditableCell(
-                          session,
-                          "timezone",
-                          "select",
-                          TIMEZONES.map((tz) => ({
-                            id: tz.value,
-                            name: tz.label,
-                          }))
-                        )}
-                      </TableCell>
-
                       {/* Duration (read-only, calculated) */}
                       <TableCell>
                         {renderCellWithTooltip(
@@ -1037,16 +1022,6 @@ export function BulkUploadReviewModal({
                           "glossary",
                           "select",
                           GLOSSARIES
-                        )}
-                      </TableCell>
-
-                      {/* Account */}
-                      <TableCell>
-                        {renderEditableCell(
-                          session,
-                          "account",
-                          "select",
-                          ACCOUNTS
                         )}
                       </TableCell>
 

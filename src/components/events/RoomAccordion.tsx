@@ -17,6 +17,7 @@ import {
   Pencil,
   Trash2,
   Plus,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -74,6 +75,12 @@ interface RoomAccordionProps {
   visibleSessionCount?: number;
   /** Callback when "Show More" is clicked — parent manages the count */
   onShowMoreSessions?: (roomId: string) => void;
+  /** Controlled expanded state (lifted for persistence across layout changes) */
+  isExpanded?: boolean;
+  /** Callback when expand/collapse is toggled */
+  onToggleExpanded?: () => void;
+  /** Sessions that conflict with another session in this room (shown as warning indicators) */
+  conflictingSessionIds?: Set<string>;
 }
 
 // Page size for lazy loading sessions within a room accordion.
@@ -96,11 +103,22 @@ export function RoomAccordion({
   showCredentials = true,
   visibleSessionCount,
   onShowMoreSessions,
+  isExpanded: controlledExpanded,
+  onToggleExpanded,
+  conflictingSessionIds,
 }: RoomAccordionProps) {
-  // Auto-expand if room has no sessions (so user can see "Add Session" button)
-  const [isExpanded, setIsExpanded] = useState(
+  // Use controlled state if provided, otherwise local state
+  const [localExpanded, setLocalExpanded] = useState(
     defaultExpanded || room.sessions.length === 0
   );
+  const isExpanded = controlledExpanded ?? localExpanded;
+  const toggleExpanded = () => {
+    if (onToggleExpanded) {
+      onToggleExpanded();
+    } else {
+      setLocalExpanded(!localExpanded);
+    }
+  };
 
   // Lazy-load pagination: use lifted state if provided, otherwise local state
   const [localVisibleCount, setLocalVisibleCount] = useState(PAGE_SIZE);
@@ -123,11 +141,11 @@ export function RoomAccordion({
         <div
           role="button"
           tabIndex={0}
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => toggleExpanded()}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setIsExpanded(!isExpanded);
+              toggleExpanded();
             }
           }}
           className="flex items-center flex-1 min-w-0 cursor-pointer"
@@ -244,11 +262,11 @@ export function RoomAccordion({
         <div
           role="button"
           tabIndex={0}
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => toggleExpanded()}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setIsExpanded(!isExpanded);
+              toggleExpanded();
             }
           }}
           className="w-10 flex-shrink-0 flex items-center justify-center cursor-pointer"
@@ -309,14 +327,29 @@ export function RoomAccordion({
             const isCompleted = session.status === "completed";
             const canEdit = !isPastEvent && !isCompleted && onEditSession;
             const canView = (isPastEvent || isCompleted) && onEditSession;
+            const hasConflict = conflictingSessionIds?.has(session.id);
 
             return (
               <div
                 key={session.id}
-                className="px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-gray-50 transition-colors group flex items-center"
+                className={cn(
+                  "px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-gray-50 transition-colors group flex items-center",
+                  hasConflict && "bg-amber-50/50 border-l-2 border-l-amber-400"
+                )}
               >
-                {/* Left: Spacer matching icon column */}
-                <div className="w-8 flex-shrink-0 hidden sm:block" />
+                {/* Left: Spacer or conflict icon */}
+                <div className="w-8 flex-shrink-0 hidden sm:flex items-center justify-center">
+                  {hasConflict && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p className="text-xs">Time conflict with another session in this room</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
 
                 {/* Center: Title and Presenters (grows) */}
                 <button

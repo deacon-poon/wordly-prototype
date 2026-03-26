@@ -97,7 +97,7 @@ function MultiSelectTopics({ disabled }: { disabled?: boolean }) {
             )}
           >
             {selectedTopics.length === 0 ? (
-              "Select topics..."
+              <span />
             ) : (
               <div className="flex flex-wrap gap-1">
                 {selectedTopics.map((topic) => (
@@ -144,9 +144,6 @@ function MultiSelectTopics({ disabled }: { disabled?: boolean }) {
           </div>
         </PopoverContent>
       </Popover>
-      <p className="text-xs text-muted-foreground">
-        Multi-select combobox — choose one or more topics.
-      </p>
     </div>
   );
 }
@@ -767,13 +764,9 @@ export function SessionForm({
                         Internal Notes
                       </Label>
                       <Input
-                        placeholder="Add internal notes for this session..."
                         disabled={isFieldDisabled}
                         className="text-sm"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Text field — visible only to workspace members.
-                      </p>
                     </div>
 
                     {/* Numeric custom field */}
@@ -783,14 +776,10 @@ export function SessionForm({
                       </Label>
                       <Input
                         type="number"
-                        placeholder="0"
                         min={0}
                         disabled={isFieldDisabled}
                         className="text-sm"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Numeric field — estimated number of attendees.
-                      </p>
                     </div>
 
                     {/* Single-select custom field */}
@@ -800,7 +789,7 @@ export function SessionForm({
                       </Label>
                       <Select disabled={isFieldDisabled}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a track" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="keynote">Keynote</SelectItem>
@@ -810,9 +799,6 @@ export function SessionForm({
                           <SelectItem value="networking">Networking</SelectItem>
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Single-select field — categorize the session type.
-                      </p>
                     </div>
 
                     {/* Multi-select combobox custom field */}

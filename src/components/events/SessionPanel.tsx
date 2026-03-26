@@ -30,6 +30,13 @@ interface RoomOption {
   name: string;
 }
 
+/** Room with its sessions, used for conflict detection */
+interface RoomWithSessions {
+  id: string;
+  name: string;
+  sessions: Session[];
+}
+
 interface SessionPanelProps {
   mode: "add" | "edit";
   /** Required for edit mode */
@@ -43,6 +50,8 @@ interface SessionPanelProps {
   defaultTimezone?: string;
   /** Available rooms for move functionality */
   rooms?: RoomOption[];
+  /** All rooms with sessions — used for time conflict detection */
+  allRooms?: RoomWithSessions[];
   /** Account minutes info for alert */
   accountMinutes?: {
     total: number;
@@ -72,6 +81,7 @@ export function SessionPanel({
   defaultDate,
   defaultTimezone = "America/Los_Angeles",
   rooms,
+  allRooms,
   accountMinutes,
   onClose,
   onSave,
@@ -211,6 +221,51 @@ export function SessionPanel({
 
   const minutesAlert = getMinutesAlert();
 
+  // Check for time conflicts with other sessions in the same room
+  const getConflictAlert = (): { sessions: string[] } | null => {
+    if (!allRooms) return null;
+
+    const targetRoomId = selectedRoomId || roomId;
+    if (!targetRoomId) return null;
+
+    const targetRoom = allRooms.find((r) => r.id === targetRoomId);
+    if (!targetRoom) return null;
+
+    const date = formData.scheduledDate;
+    const startTime = formData.scheduledStart;
+    const endTime = formData.endTime;
+
+    if (!date || !startTime || !endTime) return null;
+
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    };
+
+    const newStart = toMinutes(startTime);
+    const newEnd = toMinutes(endTime);
+    if (newEnd <= newStart) return null;
+
+    const conflicts = targetRoom.sessions.filter((s) => {
+      // Skip self in edit mode
+      if (mode === "edit" && session && s.id === session.id) return false;
+      // Only check sessions on the same date
+      if (s.scheduledDate !== date) return false;
+
+      const existingStart = toMinutes(s.scheduledStart);
+      const existingEnd = toMinutes(s.endTime);
+      if (existingEnd <= existingStart) return false;
+
+      // Overlap: new session starts before existing ends AND new session ends after existing starts
+      return newStart < existingEnd && newEnd > existingStart;
+    });
+
+    if (conflicts.length === 0) return null;
+    return { sessions: conflicts.map((s) => `"${s.title}" (${s.scheduledStart}–${s.endTime})`) };
+  };
+
+  const conflictAlert = getConflictAlert();
+
   // Reset form and room when session changes (edit mode)
   useEffect(() => {
     if (mode === "edit" && session) {
@@ -348,6 +403,24 @@ export function SessionPanel({
             >
               <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <span>{minutesAlert.message}</span>
+            </div>
+          )}
+          {conflictAlert && (
+            <div className="p-3 rounded-lg text-sm flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800">
+              <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <strong>Time conflict:</strong> This session overlaps with{" "}
+                {conflictAlert.sessions.length === 1
+                  ? conflictAlert.sessions[0]
+                  : `${conflictAlert.sessions.length} sessions`}
+                {conflictAlert.sessions.length > 1 && (
+                  <ul className="mt-1 ml-4 list-disc text-xs">
+                    {conflictAlert.sessions.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           )}
 
