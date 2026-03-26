@@ -11,6 +11,7 @@ import {
   Trash2,
   AlertTriangle,
   Edit2,
+  ChevronDown,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,11 @@ export default function EventsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // "Show More" state for events list — tracks how many events to show per group/filter
+  // Demo: 3 to show "Show More" with small dataset. Production: 50
+  const EVENTS_PAGE_SIZE = 3;
+  const [visibleEventsCount, setVisibleEventsCount] = useState<Record<string, number>>({});
 
   // Events state - initialized with mock data
   // In production, this would be fetched from an API
@@ -1719,9 +1725,29 @@ export default function EventsPage() {
               </h3>
             </div>
             <div className="space-y-3 sm:space-y-4">
-              {groupedEvents.today.map((event) => (
+              {groupedEvents.today.slice(0, visibleEventsCount["today"] || EVENTS_PAGE_SIZE).map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
+              {groupedEvents.today.length > (visibleEventsCount["today"] || EVENTS_PAGE_SIZE) && (
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setVisibleEventsCount((prev) => ({
+                      ...prev,
+                      today: (prev["today"] || EVENTS_PAGE_SIZE) + EVENTS_PAGE_SIZE,
+                    }))}
+                    className="text-gray-600 hover:text-gray-900 border-gray-300"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1.5" />
+                    Show More ({Math.min(groupedEvents.today.length - (visibleEventsCount["today"] || EVENTS_PAGE_SIZE), EVENTS_PAGE_SIZE)} of{" "}
+                    {groupedEvents.today.length - (visibleEventsCount["today"] || EVENTS_PAGE_SIZE)} remaining)
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Showing {visibleEventsCount["today"] || EVENTS_PAGE_SIZE} of {groupedEvents.today.length} events
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1735,9 +1761,29 @@ export default function EventsPage() {
               </h3>
             </div>
             <div className="space-y-3 sm:space-y-4">
-              {groupedEvents.future.map((event) => (
+              {groupedEvents.future.slice(0, visibleEventsCount["future"] || EVENTS_PAGE_SIZE).map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
+              {groupedEvents.future.length > (visibleEventsCount["future"] || EVENTS_PAGE_SIZE) && (
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setVisibleEventsCount((prev) => ({
+                      ...prev,
+                      future: (prev["future"] || EVENTS_PAGE_SIZE) + EVENTS_PAGE_SIZE,
+                    }))}
+                    className="text-gray-600 hover:text-gray-900 border-gray-300"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1.5" />
+                    Show More ({Math.min(groupedEvents.future.length - (visibleEventsCount["future"] || EVENTS_PAGE_SIZE), EVENTS_PAGE_SIZE)} of{" "}
+                    {groupedEvents.future.length - (visibleEventsCount["future"] || EVENTS_PAGE_SIZE)} remaining)
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Showing {visibleEventsCount["future"] || EVENTS_PAGE_SIZE} of {groupedEvents.future.length} events
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1751,20 +1797,65 @@ export default function EventsPage() {
               </h3>
             </div>
             <div className="space-y-3 sm:space-y-4">
-              {groupedEvents.past.map((event) => (
+              {groupedEvents.past.slice(0, visibleEventsCount["past"] || EVENTS_PAGE_SIZE).map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
+              {groupedEvents.past.length > (visibleEventsCount["past"] || EVENTS_PAGE_SIZE) && (
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setVisibleEventsCount((prev) => ({
+                      ...prev,
+                      past: (prev["past"] || EVENTS_PAGE_SIZE) + EVENTS_PAGE_SIZE,
+                    }))}
+                    className="text-gray-600 hover:text-gray-900 border-gray-300"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1.5" />
+                    Show More ({Math.min(groupedEvents.past.length - (visibleEventsCount["past"] || EVENTS_PAGE_SIZE), EVENTS_PAGE_SIZE)} of{" "}
+                    {groupedEvents.past.length - (visibleEventsCount["past"] || EVENTS_PAGE_SIZE)} remaining)
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Showing {visibleEventsCount["past"] || EVENTS_PAGE_SIZE} of {groupedEvents.past.length} events
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {statusFilter !== "all" && filteredEvents.length > 0 && (
-          <div className="space-y-4">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
-        )}
+        {statusFilter !== "all" && filteredEvents.length > 0 && (() => {
+          const visibleCount = visibleEventsCount[statusFilter] || EVENTS_PAGE_SIZE;
+          const visibleItems = filteredEvents.slice(0, visibleCount);
+          const hasMore = filteredEvents.length > visibleCount;
+          const remaining = filteredEvents.length - visibleCount;
+          return (
+            <div className="space-y-4">
+              {visibleItems.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+              {hasMore && (
+                <div className="flex items-center gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setVisibleEventsCount((prev) => ({
+                      ...prev,
+                      [statusFilter]: (prev[statusFilter] || EVENTS_PAGE_SIZE) + EVENTS_PAGE_SIZE,
+                    }))}
+                    className="text-gray-600 hover:text-gray-900 border-gray-300"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-1.5" />
+                    Show More ({Math.min(remaining, EVENTS_PAGE_SIZE)} of {remaining} remaining)
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Showing {visibleCount} of {filteredEvents.length} events
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {filteredEvents.length === 0 && (
           <div className="rounded-lg border border-gray-200 bg-white p-6 sm:p-12 text-center">

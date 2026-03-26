@@ -157,6 +157,76 @@ function hasSessionsToday(room: Room): boolean {
   );
 }
 
+// Generate many mock sessions for a room to demo pagination/show-more
+function generateMockSessions(
+  count: number,
+  roomPrefix: string,
+  startDate: string,
+  endDate: string
+): Session[] {
+  const sessions: Session[] = [];
+  const dates = [startDate, endDate];
+  const statuses: Session["status"][] = [
+    "completed",
+    "active",
+    "pending",
+    "pending",
+  ];
+  const titles = [
+    "Opening Keynote",
+    "Panel Discussion",
+    "Workshop",
+    "Deep Dive",
+    "Lightning Talk",
+    "Fireside Chat",
+    "Technical Demo",
+    "Roundtable",
+    "Breakout Session",
+    "Closing Remarks",
+    "Hands-on Lab",
+    "Case Study Review",
+    "Architecture Review",
+    "Design Sprint",
+    "Retrospective",
+  ];
+  const presenters = [
+    "Dr. Sarah Chen",
+    "John Smith",
+    "Mike Rodriguez",
+    "Emily Zhang",
+    "Alex Thompson",
+    "Jennifer Wu",
+    "Robert Kim",
+    "Lisa Park",
+    "David Martinez",
+    "Tom Anderson",
+    "Rachel Green",
+    "Bob Johnson",
+  ];
+
+  for (let i = 0; i < count; i++) {
+    const dateIdx = i < count * 0.6 ? 0 : 1; // 60% on day 1, 40% on day 2
+    const hour = 8 + (i % 10); // 8:00 - 17:00
+    const startMin = (i % 4) * 15; // 0, 15, 30, 45
+    sessions.push({
+      id: `${roomPrefix}-ses-${String(i + 1).padStart(3, "0")}`,
+      title: `${titles[i % titles.length]}: Topic ${i + 1}`,
+      presenters: [
+        presenters[i % presenters.length],
+        ...(i % 3 === 0
+          ? [presenters[(i + 5) % presenters.length]]
+          : []),
+      ],
+      scheduledDate: dates[dateIdx],
+      scheduledStart: `${String(hour).padStart(2, "0")}:${String(startMin).padStart(2, "0")}`,
+      endTime: `${String(hour + 1).padStart(2, "0")}:${String(startMin).padStart(2, "0")}`,
+      status: statuses[Math.min(dateIdx === 0 ? 0 : 3, statuses.length - 1)],
+    });
+  }
+
+  return sessions;
+}
+
 // Helper to get relative dates
 const getRelativeDate = (daysFromNow: number): Date => {
   const date = new Date();
@@ -253,9 +323,19 @@ function getMockEventData(eventId: string): Event {
       {
         id: "loc-001",
         name: "Main Auditorium",
-        sessionCount: 5,
+        sessionCount: 65,
         roomSessionId: "AUDM-1234",
         passcode: "123456",
+        sessions: generateMockSessions(65, "aud", eventDay1, eventDay2).concat([
+          // Keep a few named sessions at the top for familiarity
+        ].filter(Boolean)),
+      },
+      {
+        id: "loc-001b",
+        name: "Main Auditorium — Original (5 sessions)",
+        sessionCount: 5,
+        roomSessionId: "AUDM-5678",
+        passcode: "654321",
         sessions: [
           {
             id: "ses-001",
@@ -410,6 +490,29 @@ export default function EventDetailPage({
     eventName: string | null;
   }>({ room: null, eventName: null });
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  // Tracks how many rooms to show per day (for "Show More" rooms)
+  const ROOMS_PAGE_SIZE = 50;
+  const [visibleRoomsPerDay, setVisibleRoomsPerDay] = useState<
+    Record<string, number>
+  >({});
+
+  // Tracks how many sessions to show per room+date (persists across accordion collapse/expand)
+  // Key format: "roomId:date"
+  const SESSION_PAGE_SIZE = 5; // Demo: 5, Production: 50
+  const [visibleSessionsPerRoom, setVisibleSessionsPerRoom] = useState<
+    Record<string, number>
+  >({});
+
+  const getSessionVisibleCount = (roomId: string, date: string) =>
+    visibleSessionsPerRoom[`${roomId}:${date}`] || SESSION_PAGE_SIZE;
+
+  const handleShowMoreSessions = (roomId: string, date: string) => {
+    const key = `${roomId}:${date}`;
+    setVisibleSessionsPerRoom((prev) => ({
+      ...prev,
+      [key]: (prev[key] || SESSION_PAGE_SIZE) + SESSION_PAGE_SIZE,
+    }));
+  };
 
   // Session panel state (unified for add/edit)
   const [sessionPanelState, setSessionPanelState] = useState<{
@@ -1357,49 +1460,81 @@ export default function EventDetailPage({
                 </button>
 
                 {/* Rooms for this date */}
-                {isDateExpanded && (
-                  <div className="px-2 pb-3 pt-1.5 sm:px-4 sm:pb-4 sm:pt-2 space-y-3">
-                    {roomsList.map(({ room, sessions }) => {
-                      // Create a modified room object with only sessions for this date
-                      const roomWithDateSessions = {
-                        ...room,
-                        sessions: sessions,
-                      };
+                {isDateExpanded && (() => {
+                  const visibleCount = visibleRoomsPerDay[date] || ROOMS_PAGE_SIZE;
+                  const visibleRooms = roomsList.slice(0, visibleCount);
+                  const hasMoreRooms = roomsList.length > visibleCount;
+                  const remainingRooms = roomsList.length - visibleCount;
 
-                      return (
-                        <RoomAccordion
-                          key={room.id}
-                          room={roomWithDateSessions}
-                          defaultExpanded={false}
-                          eventTimezone={event.timezone}
-                          onStartRoom={(room, e) =>
-                            handleStartRoom(room, event.name, e)
-                          }
-                          onLinksToJoin={(room, e) =>
-                            handleWaysToJoin(room, event.name, e)
-                          }
-                          onEditSession={(session, room, e) =>
-                            handleEditSession(session, room, e)
-                          }
-                          onViewTranscript={(session, room) =>
-                            handleViewTranscript(session, room)
-                          }
-                          onRenameRoom={(room) => {
-                            setEditRoomContext({ room });
-                            setIsEditRoomModalOpen(true);
-                          }}
-                          onDeleteRoom={(room) => {
-                            setRoomToDelete(room);
-                            setIsDeleteRoomDialogOpen(true);
-                          }}
-                          onAddSession={handleAddSession}
-                          isPastEvent={isPastEvent}
-                          showCredentials={true}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                  return (
+                    <div className="px-2 pb-3 pt-1.5 sm:px-4 sm:pb-4 sm:pt-2 space-y-3">
+                      {visibleRooms.map(({ room, sessions }) => {
+                        const roomWithDateSessions = {
+                          ...room,
+                          sessions: sessions,
+                        };
+
+                        return (
+                          <RoomAccordion
+                            key={room.id}
+                            room={roomWithDateSessions}
+                            defaultExpanded={false}
+                            eventTimezone={event.timezone}
+                            onStartRoom={(room, e) =>
+                              handleStartRoom(room, event.name, e)
+                            }
+                            onLinksToJoin={(room, e) =>
+                              handleWaysToJoin(room, event.name, e)
+                            }
+                            onEditSession={(session, room, e) =>
+                              handleEditSession(session, room, e)
+                            }
+                            onViewTranscript={(session, room) =>
+                              handleViewTranscript(session, room)
+                            }
+                            onRenameRoom={(room) => {
+                              setEditRoomContext({ room });
+                              setIsEditRoomModalOpen(true);
+                            }}
+                            onDeleteRoom={(room) => {
+                              setRoomToDelete(room);
+                              setIsDeleteRoomDialogOpen(true);
+                            }}
+                            onAddSession={handleAddSession}
+                            isPastEvent={isPastEvent}
+                            showCredentials={true}
+                            visibleSessionCount={getSessionVisibleCount(room.id, date)}
+                            onShowMoreSessions={() => handleShowMoreSessions(room.id, date)}
+                          />
+                        );
+                      })}
+
+                      {/* Show More Rooms button */}
+                      {hasMoreRooms && (
+                        <div className="flex items-center gap-3 px-2 py-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setVisibleRoomsPerDay((prev) => ({
+                                ...prev,
+                                [date]: (prev[date] || ROOMS_PAGE_SIZE) + ROOMS_PAGE_SIZE,
+                              }))
+                            }
+                            className="text-gray-600 hover:text-gray-900 border-gray-300"
+                          >
+                            <ChevronDown className="h-4 w-4 mr-1.5" />
+                            Show More Rooms ({Math.min(remainingRooms, ROOMS_PAGE_SIZE)} of{" "}
+                            {remainingRooms} remaining)
+                          </Button>
+                          <span className="text-xs text-muted-foreground">
+                            Showing {visibleCount} of {roomsList.length} rooms
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })

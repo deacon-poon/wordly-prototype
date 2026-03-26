@@ -70,7 +70,16 @@ interface RoomAccordionProps {
   onAddSession?: (room: Room) => void;
   isPastEvent?: boolean;
   showCredentials?: boolean;
+  /** Controlled visible session count (lifted state for persistence across accordion toggle) */
+  visibleSessionCount?: number;
+  /** Callback when "Show More" is clicked — parent manages the count */
+  onShowMoreSessions?: (roomId: string) => void;
 }
+
+// Page size for lazy loading sessions within a room accordion.
+// In production this would be 50 (matching API page size).
+// Set to 5 for prototype demo to show "Show More" behavior with small datasets.
+const PAGE_SIZE = 5;
 
 export function RoomAccordion({
   room,
@@ -85,11 +94,20 @@ export function RoomAccordion({
   onAddSession,
   isPastEvent = false,
   showCredentials = true,
+  visibleSessionCount,
+  onShowMoreSessions,
 }: RoomAccordionProps) {
   // Auto-expand if room has no sessions (so user can see "Add Session" button)
   const [isExpanded, setIsExpanded] = useState(
     defaultExpanded || room.sessions.length === 0
   );
+
+  // Lazy-load pagination: use lifted state if provided, otherwise local state
+  const [localVisibleCount, setLocalVisibleCount] = useState(PAGE_SIZE);
+  const effectiveVisibleCount = visibleSessionCount ?? localVisibleCount;
+  const visibleSessions = room.sessions.slice(0, effectiveVisibleCount);
+  const hasMoreSessions = room.sessions.length > effectiveVisibleCount;
+  const remainingCount = room.sessions.length - effectiveVisibleCount;
 
   const hasRoomActions = onRenameRoom || onDeleteRoom || onAddSession;
 
@@ -287,7 +305,7 @@ export function RoomAccordion({
               )}
             </div>
           )}
-          {room.sessions.map((session) => {
+          {visibleSessions.map((session) => {
             const isCompleted = session.status === "completed";
             const canEdit = !isPastEvent && !isCompleted && onEditSession;
             const canView = (isPastEvent || isCompleted) && onEditSession;
@@ -411,11 +429,11 @@ export function RoomAccordion({
             );
           })}
 
-          {/* Add Session button at bottom of list (always visible when expanded with sessions) */}
+          {/* Add Session button - always accessible before "Show More" */}
           {room.sessions.length > 0 && onAddSession && !isPastEvent && (
-            <div className="px-4 py-3 border-t border-gray-100">
+            <div className="px-4 py-2.5 border-t border-gray-100">
               <div className="flex items-center">
-                <div className="w-8 flex-shrink-0" />
+                <div className="w-8 flex-shrink-0 hidden sm:block" />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -425,6 +443,34 @@ export function RoomAccordion({
                   <Plus className="h-4 w-4 mr-1" />
                   Add Session
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Show More button - loads next batch of sessions */}
+          {hasMoreSessions && (
+            <div className="px-4 py-3 border-t border-gray-200 bg-gray-50/50">
+              <div className="flex items-center">
+                <div className="w-8 flex-shrink-0 hidden sm:block" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (onShowMoreSessions) {
+                      onShowMoreSessions(room.id);
+                    } else {
+                      setLocalVisibleCount((prev) => prev + PAGE_SIZE);
+                    }
+                  }}
+                  className="text-gray-600 hover:text-gray-900 border-gray-300"
+                >
+                  <ChevronDown className="h-4 w-4 mr-1.5" />
+                  Show More ({Math.min(remainingCount, PAGE_SIZE)} of{" "}
+                  {remainingCount} remaining)
+                </Button>
+                <span className="ml-3 text-xs text-muted-foreground">
+                  Showing {effectiveVisibleCount} of {room.sessions.length} sessions
+                </span>
               </div>
             </div>
           )}

@@ -59,6 +59,99 @@ import {
 import { cn } from "@/lib/utils";
 
 // ============================================================================
+// Multi-Select Topics (Custom Field Demo)
+// ============================================================================
+
+const TOPIC_OPTIONS = [
+  "AI & Machine Learning",
+  "Cloud Infrastructure",
+  "DevOps",
+  "Security",
+  "Frontend",
+  "Backend",
+  "Data Engineering",
+  "Leadership",
+];
+
+function MultiSelectTopics({ disabled }: { disabled?: boolean }) {
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+
+  const toggleTopic = (topic: string) => {
+    setSelectedTopics((prev) =>
+      prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]
+    );
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-gray-700">Topics</Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            disabled={disabled}
+            className={cn(
+              "w-full justify-between text-sm font-normal h-auto min-h-10 py-2",
+              selectedTopics.length === 0 && "text-muted-foreground"
+            )}
+          >
+            {selectedTopics.length === 0 ? (
+              "Select topics..."
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {selectedTopics.map((topic) => (
+                  <span
+                    key={topic}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary-teal-50 border border-primary-teal-200 text-primary-teal-800 text-xs"
+                  >
+                    {topic}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTopic(topic);
+                      }}
+                      className="hover:text-primary-teal-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <ChevronRight className="ml-2 h-4 w-4 shrink-0 opacity-50 rotate-90" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-[--radix-popover-trigger-width] p-2"
+          align="start"
+        >
+          <div className="space-y-1">
+            {TOPIC_OPTIONS.map((topic) => (
+              <label
+                key={topic}
+                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 cursor-pointer"
+              >
+                <Checkbox
+                  checked={selectedTopics.includes(topic)}
+                  onCheckedChange={() => toggleTopic(topic)}
+                  disabled={disabled}
+                />
+                <span className="text-sm text-gray-700">{topic}</span>
+              </label>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+      <p className="text-xs text-muted-foreground">
+        Multi-select combobox — choose one or more topics.
+      </p>
+    </div>
+  );
+}
+
+// ============================================================================
 // Single Session Form Props
 // ============================================================================
 
@@ -658,6 +751,73 @@ export function SessionForm({
                       </p>
                     </div>
                   )}
+                </div>
+
+                {/* ─── Custom Fields Section ──────────────────────────────── */}
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <h4 className="text-sm font-semibold text-gray-900">Custom Fields</h4>
+                  </div>
+
+                  <div className="space-y-5">
+                    {/* Text Input custom field */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Internal Notes
+                      </Label>
+                      <Input
+                        placeholder="Add internal notes for this session..."
+                        disabled={isFieldDisabled}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Text field — visible only to workspace members.
+                      </p>
+                    </div>
+
+                    {/* Numeric custom field */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Expected Attendance
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        min={0}
+                        disabled={isFieldDisabled}
+                        className="text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Numeric field — estimated number of attendees.
+                      </p>
+                    </div>
+
+                    {/* Single-select custom field */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Session Track
+                      </Label>
+                      <Select disabled={isFieldDisabled}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a track" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="keynote">Keynote</SelectItem>
+                          <SelectItem value="workshop">Workshop</SelectItem>
+                          <SelectItem value="breakout">Breakout</SelectItem>
+                          <SelectItem value="panel">Panel Discussion</SelectItem>
+                          <SelectItem value="networking">Networking</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Single-select field — categorize the session type.
+                      </p>
+                    </div>
+
+                    {/* Multi-select combobox custom field */}
+                    <MultiSelectTopics disabled={isFieldDisabled} />
+                  </div>
                 </div>
               </div>
             </div>
