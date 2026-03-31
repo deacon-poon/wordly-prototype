@@ -719,35 +719,38 @@ export default function EventDetailPage({
     return result;
   }, [event.rooms]);
 
-  // Filter dates based on selected tab
-  // "Now" = today's date (sessions happening now/today)
-  // "Upcoming" = future dates
-  // "Past" = past dates
-  const filteredDates = useMemo(() => {
+  // Categorize dates by session activity:
+  // "now" = today's date (has sessions currently happening or scheduled today)
+  // "upcoming" = future dates (first session hasn't started yet)
+  // "past" = past dates (last session has ended)
+  const categorizedDates = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
     const allDates = Object.keys(sessionsByDate).sort();
 
-    if (selectedTab === "all") {
-      return allDates;
-    }
+    const now: string[] = [];
+    const upcoming: string[] = [];
+    const past: string[] = [];
 
-    if (selectedTab === "now") {
-      // Show only today's date (sessions happening now/today)
-      return allDates.filter((date) => date === today);
-    }
+    allDates.forEach((date) => {
+      if (date === today) {
+        now.push(date);
+      } else if (date > today) {
+        upcoming.push(date);
+      } else {
+        past.push(date);
+      }
+    });
 
-    if (selectedTab === "upcoming") {
-      // Show future dates (sessions scheduled for future)
-      return allDates.filter((date) => date > today);
-    }
+    return { now, upcoming, past, all: allDates };
+  }, [sessionsByDate]);
 
-    if (selectedTab === "past") {
-      // Show past dates (sessions that already happened)
-      return allDates.filter((date) => date < today);
-    }
-
-    return allDates;
-  }, [sessionsByDate, selectedTab]);
+  const filteredDates = useMemo(() => {
+    if (selectedTab === "all") return categorizedDates.all;
+    if (selectedTab === "now") return categorizedDates.now;
+    if (selectedTab === "upcoming") return categorizedDates.upcoming;
+    if (selectedTab === "past") return categorizedDates.past;
+    return categorizedDates.all;
+  }, [categorizedDates, selectedTab]);
 
   // Compute the most recent session date for defaulting new sessions
   // Falls back to today's date if no sessions exist
@@ -1447,12 +1450,17 @@ export default function EventDetailPage({
             )}
           </Card>
         ) : filteredDates.length > 0 ? (
-          // Display dates first, then locations within each date
-          filteredDates.map((date) => {
-            const sessionsForDate = sessionsByDate[date];
+          <>
+            {filteredDates.map((date) => {
+              const sessionsForDate = sessionsByDate[date];
 
-            // Group sessions by room for this date
-            const roomSessionsMap = sessionsForDate.reduce(
+              // Category headers when on "All" tab
+              const showNowHeader = selectedTab === "all" && date === categorizedDates.now[0];
+              const showUpcomingHeader = selectedTab === "all" && date === categorizedDates.upcoming[0];
+              const showPastHeader = selectedTab === "all" && date === categorizedDates.past[0];
+
+              // Group sessions by room for this date
+              const roomSessionsMap = sessionsForDate.reduce(
               (acc, { room, session }) => {
                 if (!acc[room.id]) {
                   acc[room.id] = {
@@ -1466,19 +1474,43 @@ export default function EventDetailPage({
               {} as Record<string, { room: Room; sessions: Session[] }>
             );
 
-            const roomsList = Object.values(roomSessionsMap);
+              const roomsList = Object.values(roomSessionsMap);
 
-            const isDateExpanded = expandedDates.has(date);
+              const isDateExpanded = expandedDates.has(date);
 
-            return (
-              <div
-                key={date}
-                className={`relative transition-all duration-200 rounded-lg ${
-                  isDateExpanded
-                    ? "border border-gray-300 bg-white shadow-sm"
-                    : "border border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
+              return (
+                <React.Fragment key={date}>
+                  {showNowHeader && (
+                    <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 border-accent-green-500">
+                      <span className="w-2 h-2 rounded-full bg-accent-green-500 animate-pulse" />
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                        Now ({categorizedDates.now.reduce((sum, d) => sum + (sessionsByDate[d]?.length || 0), 0)} sessions)
+                      </h3>
+                    </div>
+                  )}
+                  {showUpcomingHeader && (
+                    <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 border-primary-teal-500 mt-2">
+                      <span className="w-2 h-2 rounded-full bg-primary-teal-500" />
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                        Upcoming ({categorizedDates.upcoming.reduce((sum, d) => sum + (sessionsByDate[d]?.length || 0), 0)} sessions)
+                      </h3>
+                    </div>
+                  )}
+                  {showPastHeader && (
+                    <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 border-gray-400 mt-2">
+                      <span className="w-2 h-2 rounded-full bg-gray-400" />
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                        Past ({categorizedDates.past.reduce((sum, d) => sum + (sessionsByDate[d]?.length || 0), 0)} sessions)
+                      </h3>
+                    </div>
+                  )}
+                  <div
+                    className={`relative transition-all duration-200 rounded-lg ${
+                      isDateExpanded
+                        ? "border border-gray-300 bg-white shadow-sm"
+                        : "border border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
                 {/* Date Header - Collapsible Accordion */}
                 <button
                   onClick={() => toggleDateExpansion(date)}
@@ -1593,9 +1625,11 @@ export default function EventDetailPage({
                     </div>
                   );
                 })()}
-              </div>
-            );
-          })
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </>
         ) : null}
       </div>
 

@@ -1700,16 +1700,42 @@ export default function EventsPage() {
             </Button>
           </div>
 
-          {/* Tab navigation */}
+          {/* Tab navigation with counts */}
           <Tabs
             value={statusFilter}
             onValueChange={(value: any) => setStatusFilter(value)}
           >
             <TabsList>
-              <TabsTrigger value="today">Today</TabsTrigger>
-              <TabsTrigger value="future">Future</TabsTrigger>
-              <TabsTrigger value="past">Past</TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="today" className="gap-1.5">
+                Today
+                {statusCounts.today > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+                    {statusCounts.today}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="future" className="gap-1.5">
+                Future
+                {statusCounts.future > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+                    {statusCounts.future}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="past" className="gap-1.5">
+                Past
+                {statusCounts.past > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+                    {statusCounts.past}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="all" className="gap-1.5">
+                All
+                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+                  {statusCounts.all}
+                </span>
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -1825,12 +1851,23 @@ export default function EventsPage() {
         )}
 
         {statusFilter !== "all" && filteredEvents.length > 0 && (() => {
+          const headerConfig = {
+            today: { color: "border-accent-green-500", dotColor: "bg-accent-green-500", pulse: true, label: "Today" },
+            future: { color: "border-primary-teal-500", dotColor: "bg-primary-teal-500", pulse: false, label: "Future" },
+            past: { color: "border-gray-400", dotColor: "bg-gray-400", pulse: false, label: "Past" },
+          }[statusFilter]!;
           const visibleCount = visibleEventsCount[statusFilter] || EVENTS_PAGE_SIZE;
           const visibleItems = filteredEvents.slice(0, visibleCount);
           const hasMore = filteredEvents.length > visibleCount;
           const remaining = filteredEvents.length - visibleCount;
           return (
             <div className="space-y-4">
+              <div className={`flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b-2 ${headerConfig.color}`}>
+                <span className={`w-2 h-2 rounded-full ${headerConfig.dotColor} ${headerConfig.pulse ? "animate-pulse" : ""}`} />
+                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                  {headerConfig.label} ({filteredEvents.length})
+                </h3>
+              </div>
               {visibleItems.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}

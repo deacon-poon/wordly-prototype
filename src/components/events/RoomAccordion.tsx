@@ -81,6 +81,8 @@ interface RoomAccordionProps {
   onToggleExpanded?: () => void;
   /** Sessions that conflict with another session in this room (shown as warning indicators) */
   conflictingSessionIds?: Set<string>;
+  /** ID of the session currently open in the side panel */
+  activeSessionId?: string;
 }
 
 // Page size for lazy loading sessions within a room accordion.
@@ -106,6 +108,7 @@ export function RoomAccordion({
   isExpanded: controlledExpanded,
   onToggleExpanded,
   conflictingSessionIds,
+  activeSessionId,
 }: RoomAccordionProps) {
   // Use controlled state if provided, otherwise local state
   const [localExpanded, setLocalExpanded] = useState(
@@ -328,13 +331,18 @@ export function RoomAccordion({
             const canEdit = !isPastEvent && !isCompleted && onEditSession;
             const canView = (isPastEvent || isCompleted) && onEditSession;
             const hasConflict = conflictingSessionIds?.has(session.id);
+            const isActive = activeSessionId === session.id;
 
             return (
               <div
                 key={session.id}
                 className={cn(
-                  "px-2 py-2.5 sm:px-4 sm:py-3 hover:bg-gray-50 transition-colors group flex items-center",
-                  hasConflict && "bg-amber-50/50 border-l-2 border-l-amber-400"
+                  "px-2 py-2.5 sm:px-4 sm:py-3 transition-colors group flex items-center",
+                  isActive
+                    ? "bg-gray-50"
+                    : "hover:bg-gray-50",
+                  hasConflict && !isActive && "bg-amber-50/50 border-l-2 border-l-amber-400",
+                  hasConflict && isActive && "bg-amber-50/70 border-l-2 border-l-amber-400"
                 )}
               >
                 {/* Left: Spacer or conflict icon */}
