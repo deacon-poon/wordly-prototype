@@ -1,0 +1,39 @@
+---
+title: Accent Orange
+description: Accent orange color scale
+---
+
+import { ColorScale, ModePair } from '@/components/color-swatch';
+
+# Accent Orange
+
+Used for secondary accents and attention-drawing elements.
+
+## Scale
+
+<ColorScale
+  name="accent-orange"
+  colors={[
+    { step: '10', hex: '#fffcfa' },
+    { step: '25', hex: '#fff6f0' },
+    { step: '50', hex: '#ffe7d6' },
+    { step: '100', hex: '#ffd2b2' },
+    { step: '200', hex: '#ffae75' },
+    { step: '300', hex: '#ff8833' },
+    { step: '400', hex: '#ff6a00' },
+    { step: '500', hex: '#cc5500' },
+    { step: '600', hex: '#a84600' },
+    { step: '700', hex: '#8f3b00' },
+    { step: '800', hex: '#5c2600' },
+    { step: '900', hex: '#3d1900' },
+    { step: '950', hex: '#1a0b00' },
+    { step: '975', hex: '#0a0400' },
+  ]}
+/>
+
+## Dark Mode Palette
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Default" light="#ff6a00" dark="#ffae75" token="accent-orange/default" />
+  <ModePair name="Background" light="#ffe7d6" dark="#3d1900" token="accent-orange/bg" />
+</div>

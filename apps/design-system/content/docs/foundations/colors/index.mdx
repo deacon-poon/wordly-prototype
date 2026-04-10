@@ -1,0 +1,195 @@
+---
+title: Colors
+description: Wordly color system — all primitive scales and semantic tokens
+---
+
+import { ColorScale, ColorCard } from '@/components/color-swatch';
+
+# Colors
+
+The Wordly color system is built on **primitive color scales** mapped through **semantic tokens**. All values are sourced from the [Wordly Figma Design System](https://www.figma.com/design/KIjCL0Hm88Ah2xsJmfvhaZ/Wordly-Design-System).
+
+| Layer | Purpose | Example |
+|-------|---------|---------|
+| **Primitives** | Raw color scales (10–975) | `brand-blue-400` = `#017cff` |
+| **Semantic** | Contextual usage tokens | `actions/primary` → `brand-blue-500` |
+
+---
+
+## Brand Blue
+
+Primary brand color. Hue 211, Saturation 100.
+
+<ColorScale
+  name="brand-blue"
+  colors={[
+    { step: '10', hex: '#fafcff' },
+    { step: '25', hex: '#f0f7ff' },
+    { step: '50', hex: '#d6eaff' },
+    { step: '100', hex: '#b2d8ff' },
+    { step: '200', hex: '#75b8ff' },
+    { step: '300', hex: '#3396ff' },
+    { step: '400', hex: '#017cff' },
+    { step: '500', hex: '#0063cc' },
+    { step: '600', hex: '#0051a8' },
+    { step: '700', hex: '#00458f' },
+    { step: '800', hex: '#002c5c' },
+    { step: '900', hex: '#001e3d' },
+    { step: '950', hex: '#000c1a' },
+    { step: '975', hex: '#00050a' },
+  ]}
+/>
+
+---
+
+## Accent Green
+
+Positive/growth indicators. Hue 137, Saturation 79.
+
+<ColorScale
+  name="accent-green"
+  colors={[
+    { step: '10', hex: '#fafefc' },
+    { step: '25', hex: '#f1fdf5' },
+    { step: '50', hex: '#dafbe4' },
+    { step: '100', hex: '#bbf7cb' },
+    { step: '200', hex: '#84f1a2' },
+    { step: '300', hex: '#48ea76' },
+    { step: '400', hex: '#1be453' },
+    { step: '500', hex: '#15b743' },
+    { step: '600', hex: '#129737' },
+    { step: '700', hex: '#0f802f' },
+    { step: '800', hex: '#0a521e' },
+    { step: '900', hex: '#063714' },
+    { step: '950', hex: '#031708' },
+    { step: '975', hex: '#010903' },
+  ]}
+/>
+
+---
+
+## Accent Orange
+
+Secondary accents and attention-drawing elements.
+
+<ColorScale
+  name="accent-orange"
+  colors={[
+    { step: '10', hex: '#fffcfa' },
+    { step: '25', hex: '#fff6f0' },
+    { step: '50', hex: '#ffe7d6' },
+    { step: '100', hex: '#ffd2b2' },
+    { step: '200', hex: '#ffae75' },
+    { step: '300', hex: '#ff8833' },
+    { step: '400', hex: '#ff6a00' },
+    { step: '500', hex: '#cc5500' },
+    { step: '600', hex: '#a84600' },
+    { step: '700', hex: '#8f3b00' },
+    { step: '800', hex: '#5c2600' },
+    { step: '900', hex: '#3d1900' },
+    { step: '950', hex: '#1a0b00' },
+    { step: '975', hex: '#0a0400' },
+  ]}
+/>
+
+---
+
+## Gray
+
+Neutral palette for text, backgrounds, borders, and disabled states.
+
+<ColorScale
+  name="gray"
+  colors={[
+    { step: '50', hex: '#f8f9fa' },
+    { step: '100', hex: '#eef0f2' },
+    { step: '200', hex: '#e3e6e8' },
+    { step: '300', hex: '#cdd2d7' },
+    { step: '400', hex: '#9ba3ab' },
+    { step: '500', hex: '#646e78' },
+    { step: '600', hex: '#495057' },
+    { step: '700', hex: '#343a40' },
+    { step: '800', hex: '#212529' },
+    { step: '900', hex: '#121416' },
+  ]}
+/>
+
+---
+
+## Success
+
+<ColorScale
+  name="success"
+  colors={[
+    { step: '50', hex: '#e6f6ec' },
+    { step: '100', hex: '#c5e8d2' },
+    { step: '200', hex: '#9cd7b0' },
+    { step: '300', hex: '#66c188' },
+    { step: '400', hex: '#34ad67' },
+    { step: '500', hex: '#0c9a4e' },
+    { step: '600', hex: '#0a7b3f' },
+    { step: '700', hex: '#085d2f' },
+    { step: '800', hex: '#053e20' },
+    { step: '900', hex: '#021f10' },
+  ]}
+/>
+
+---
+
+## Warning
+
+<ColorScale
+  name="warning"
+  colors={[
+    { step: '50', hex: '#fff7ed' },
+    { step: '100', hex: '#ffedd5' },
+    { step: '200', hex: '#fed7aa' },
+    { step: '300', hex: '#fdba74' },
+    { step: '400', hex: '#fb923c' },
+    { step: '500', hex: '#f97316' },
+    { step: '600', hex: '#ea580c' },
+    { step: '700', hex: '#c2410c' },
+    { step: '800', hex: '#9a3412' },
+    { step: '900', hex: '#7c2d12' },
+  ]}
+/>
+
+---
+
+## Error
+
+<ColorScale
+  name="error"
+  colors={[
+    { step: '50', hex: '#fcebea' },
+    { step: '100', hex: '#f9cfcc' },
+    { step: '200', hex: '#f5a8a2' },
+    { step: '300', hex: '#f07870' },
+    { step: '400', hex: '#ea4f45' },
+    { step: '500', hex: '#e62d21' },
+    { step: '600', hex: '#b8221a' },
+    { step: '700', hex: '#8a1a13' },
+    { step: '800', hex: '#5c110d' },
+    { step: '900', hex: '#2e0906' },
+  ]}
+/>
+
+---
+
+## Info
+
+<ColorScale
+  name="info"
+  colors={[
+    { step: '50', hex: '#ebf5ff' },
+    { step: '100', hex: '#d1e7ff' },
+    { step: '200', hex: '#b3d4ff' },
+    { step: '300', hex: '#84c5ff' },
+    { step: '400', hex: '#53b1fd' },
+    { step: '500', hex: '#2563eb' },
+    { step: '600', hex: '#1d4ed8' },
+    { step: '700', hex: '#1e40af' },
+    { step: '800', hex: '#1e3a8a' },
+    { step: '900', hex: '#1e2f60' },
+  ]}
+/>

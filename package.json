@@ -2,6 +2,9 @@
   "name": "wordly-prototype",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "tokens:generate": "node scripts/generate-figma-tokens.js",

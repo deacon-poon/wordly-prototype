@@ -1,0 +1,134 @@
+---
+title: Typography
+description: Type system — font family, weights, scale, and text styles for Wordly
+---
+
+import { TypeRow, FontScaleStrip, WeightSamples } from '@/components/type-specimen';
+
+# Typography
+
+Wordly uses **Roboto** as its primary typeface across all platforms. The type system is defined in the [Wordly Figma Design System](https://www.figma.com/design/KIjCL0Hm88Ah2xsJmfvhaZ/Wordly-Design-System?node-id=707-3095).
+
+## Font Family
+
+| Token | Value |
+|-------|-------|
+| `font/family/primary` | **Roboto** |
+
+## Weights
+
+<WeightSamples
+  weights={[
+    { name: 'Light', value: 300 },
+    { name: 'Regular', value: 400 },
+    { name: 'Italic', value: 400, style: 'italic' },
+    { name: 'Medium', value: 500 },
+    { name: 'SemiBold', value: 600 },
+    { name: 'Bold', value: 700 },
+  ]}
+/>
+
+## Font Scale
+
+Visual representation of the type ramp tokens.
+
+<FontScaleStrip
+  steps={[
+    { token: '100', px: 8 },
+    { token: '200', px: 12 },
+    { token: '250', px: 14 },
+    { token: '300', px: 16 },
+    { token: '350', px: 18 },
+    { token: '400', px: 20 },
+    { token: '450', px: 22 },
+    { token: '500', px: 24 },
+    { token: '600', px: 32 },
+    { token: '700', px: 36 },
+    { token: '800', px: 48 },
+    { token: '900', px: 64 },
+    { token: '1000', px: 80 },
+  ]}
+/>
+
+| Token | Size | Use case |
+|-------|------|----------|
+| `font/scale/100` | 8px | Micro labels |
+| `font/scale/200` | 12px | Small text, captions |
+| `font/scale/250` | 14px | Body text (default) |
+| `font/scale/300` | 16px | Large body text |
+| `font/scale/350` | 18px | Emphasized body |
+| `font/scale/400` | 20px | H6 / section title |
+| `font/scale/450` | 22px | Subheading |
+| `font/scale/500` | 24px | H5 |
+| `font/scale/600` | 32px | H4 |
+| `font/scale/700` | 36px | H3 |
+| `font/scale/800` | 48px | H2 |
+| `font/scale/900` | 64px | H1 / Display |
+| `font/scale/1000` | 80px | Hero display |
+
+---
+
+## Display Styles
+
+<div className="rounded-xl border border-fd-border overflow-hidden">
+  <TypeRow name="display/2xl-h1" fontSize={64} lineHeight={80} weight="Regular" sample="Display 2XL" />
+  <TypeRow name="display/xl-h2" fontSize={48} lineHeight={64} weight="Regular" sample="Display XL" />
+  <TypeRow name="display/lg-h3" fontSize={36} lineHeight={48} weight="Regular" sample="Display Large" />
+  <TypeRow name="display/md-h4" fontSize={32} lineHeight={36} weight="Regular" sample="Display Medium" />
+  <TypeRow name="display/sm-h5" fontSize={24} lineHeight={32} weight="Regular" sample="Display Small" />
+  <TypeRow name="display/xs-h6" fontSize={20} lineHeight={32} weight="SemiBold" sample="Display XS" />
+</div>
+
+---
+
+## Text Large (16px)
+
+<div className="rounded-xl border border-fd-border overflow-hidden">
+  <TypeRow name="text-lg/regular" fontSize={16} lineHeight={24} weight="Regular" />
+  <TypeRow name="text-lg/medium" fontSize={16} lineHeight={24} weight="Medium" />
+  <TypeRow name="text-lg/semibold" fontSize={16} lineHeight={24} weight="SemiBold" />
+</div>
+
+---
+
+## Text Medium (14px)
+
+<div className="rounded-xl border border-fd-border overflow-hidden">
+  <TypeRow name="text-md/regular" fontSize={14} lineHeight={22} weight="Regular" />
+  <TypeRow name="text-md/medium" fontSize={14} lineHeight={22} weight="Medium" />
+  <TypeRow name="text-md/semibold" fontSize={14} lineHeight={22} weight="SemiBold" />
+</div>
+
+---
+
+## Text Small (12px)
+
+<div className="rounded-xl border border-fd-border overflow-hidden">
+  <TypeRow name="text-sm/regular" fontSize={12} lineHeight={18} weight="Regular" />
+  <TypeRow name="text-sm/medium" fontSize={12} lineHeight={18} weight="Medium" />
+  <TypeRow name="text-sm/semibold" fontSize={12} lineHeight={18} weight="SemiBold" />
+  <TypeRow name="text-sm/italic" fontSize={12} lineHeight={18} weight="Italic" />
+</div>
+
+---
+
+## All Text Styles Reference
+
+| Style | Font | Size | Line Height | Weight | Letter Spacing |
+|-------|------|------|-------------|--------|----------------|
+| `display/2xl-h1` | Roboto | 64px | 80px | Regular (400) | 0.25% |
+| `display/xl-h2` | Roboto | 48px | 64px | Regular (400) | 0.25% |
+| `display/lg-h3` | Roboto | 36px | 48px | Regular (400) | 0.25% |
+| `display/md-h4` | Roboto | 32px | 36px | Regular (400) | 0.25% |
+| `display/sm-h5` | Roboto | 24px | 32px | Regular (400) | 0.25% |
+| `display/xs-h6` | Roboto | 20px | 32px | SemiBold (600) | 0.25% |
+| `text-lg/regular` | Roboto | 16px | 24px | Regular (400) | 0.25% |
+| `text-lg/medium` | Roboto | 16px | 24px | Medium (500) | 0.25% |
+| `text-lg/semibold` | Roboto | 16px | 24px | SemiBold (600) | 0.25% |
+| `text-md/regular` | Roboto | 14px | 22px | Regular (400) | 0.25% |
+| `text-md/medium` | Roboto | 14px | 22px | Medium (500) | 0.25% |
+| `text-md/semibold` | Roboto | 14px | 22px | SemiBold (600) | 0.25% |
+| `text-sm/regular` | Roboto | 12px | 18px | Regular (400) | 0.25% |
+| `text-sm/medium` | Roboto | 12px | 18px | Medium (500) | 0.25% |
+| `text-sm/semibold` | Roboto | 12px | 18px | SemiBold (600) | 0.25% |
+| `text-sm/italic` | Roboto | 12px | 18px | Italic (400) | 0.25% |

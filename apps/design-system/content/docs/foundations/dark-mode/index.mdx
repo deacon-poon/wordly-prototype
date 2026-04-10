@@ -1,0 +1,309 @@
+---
+title: Dark Mode
+description: Dark mode palette construction for Wordly — surfaces, text, brand adaptation, and mixed-mode patterns
+---
+
+import { ModePair, ColorCard, ColorScale } from '@/components/color-swatch';
+
+# Dark Mode
+
+This document defines how the Wordly design system adapts to dark mode, starting with mobile. The approach is informed by Material Design 3, Apple HIG, and Airbnb's design systems.
+
+## Core Principles
+
+1. **Dark, not black.** The base surface is `#121416` (gray-900), not `#000000`. Pure black creates excessive contrast and halation on OLED screens.
+2. **Elevation = lighter.** Higher surfaces are progressively lighter, replacing shadows that are invisible on dark backgrounds.
+3. **Brand stays recognizable.** The Wordly blue shifts lighter (500 → 300) for sufficient contrast against dark surfaces, but hue remains constant.
+4. **Mixed-mode zones are allowed.** Branded regions (the blue gradient header, logo lockup) stay in light mode. Content cards go dark. A clear boundary separates them.
+
+---
+
+## Surface Elevation System
+
+Following Material Design 3's tonal surface model — each elevation step is lighter, with a subtle brand-blue tint mixed in.
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Background (Base)" light="#ffffff" dark="#121416" token="surface/base" />
+  <ModePair name="Surface (Elevated 1)" light="#f8f9fa" dark="#1a1d21" token="surface/1" />
+  <ModePair name="Surface Container (Elevated 2)" light="#f8f9fa" dark="#21252b" token="surface/2" />
+  <ModePair name="Surface Container High (Elevated 3)" light="#eef0f2" dark="#282d35" token="surface/3" />
+  <ModePair name="Surface Container Highest (Elevated 4)" light="#e3e6e8" dark="#2f353e" token="surface/4" />
+</div>
+
+### Construction
+
+The dark surfaces are not pure grays — they carry a faint blue tint from brand-blue to maintain brand warmth:
+
+| Level | Base gray | + brand-blue tint | Result |
+|-------|-----------|-------------------|--------|
+| Base | `#121416` | 0% | `#121416` |
+| Elevated 1 | `#1a1c1e` | 3% brand-blue-900 | `#1a1d21` |
+| Elevated 2 | `#212325` | 5% brand-blue-900 | `#21252b` |
+| Elevated 3 | `#282a2c` | 7% brand-blue-800 | `#282d35` |
+| Elevated 4 | `#2f3133` | 9% brand-blue-800 | `#2f353e` |
+
+---
+
+## Text on Dark Surfaces
+
+Following Apple HIG's approach — text is off-white, not pure white, to reduce halation on OLED displays.
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Text Primary" light="#121416" dark="#f0f2f4" token="text/primary" />
+  <ModePair name="Text Secondary" light="#646e78" dark="#9ba3ab" token="text/secondary" />
+  <ModePair name="Text Disabled" light="#9ba3ab" dark="#495057" token="text/disabled" />
+  <ModePair name="Text Placeholder" light="#9ba3ab" dark="#495057" token="text/placeholder" />
+</div>
+
+| Emphasis | Light mode | Dark mode | Opacity model |
+|----------|-----------|-----------|---------------|
+| Primary | gray-900 `#121416` | `#f0f2f4` (~`rgba(255,255,255,0.93)`) | High emphasis |
+| Secondary | gray-500 `#646e78` | gray-400 `#9ba3ab` (~`rgba(255,255,255,0.60)`) | Medium emphasis |
+| Disabled | gray-400 `#9ba3ab` | gray-600 `#495057` (~`rgba(255,255,255,0.38)`) | Low emphasis |
+
+---
+
+## Brand Color Adaptation
+
+The Wordly blue shifts **2–3 steps lighter** in dark mode to maintain vibrancy and WCAG AA contrast against dark surfaces. Hue (211) stays constant.
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Brand" light="#017cff" dark="#3396ff" token="brand/brand" />
+  <ModePair name="Primary Action" light="#0063cc" dark="#3396ff" token="actions/primary" />
+  <ModePair name="Hover" light="#0051a8" dark="#75b8ff" token="actions/hover" />
+  <ModePair name="Active" light="#00458f" dark="#b2d8ff" token="actions/active" />
+  <ModePair name="Brand Background" light="#f0f7ff" dark="#001e3d" token="brand/bg" />
+</div>
+
+### Why lighter, not the same?
+
+| | Light mode primary on white | Dark mode primary on #121416 |
+|---|---|---|
+| `#0063cc` (500) | 4.7:1 contrast ✓ | 3.2:1 ✗ fails AA |
+| `#3396ff` (300) | 2.4:1 ✗ | 5.8:1 ✓ passes AA |
+
+The 300 step passes AA on dark surfaces while the 500 step does not. This follows the Material Design 3 pattern of using tone 80 (lighter) in dark mode vs tone 40 (darker) in light mode.
+
+---
+
+## Borders, Dividers & Inputs
+
+Dark mode borders use semi-transparent white rather than opaque grays — this adapts naturally to any elevated surface behind them.
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Border (Default)" light="#cdd2d7" dark="rgba(255,255,255,0.12)" token="border/default" />
+  <ModePair name="Border (Strong)" light="#9ba3ab" dark="rgba(255,255,255,0.20)" token="border/strong" />
+  <ModePair name="Input Border" light="#e2e8f0" dark="rgba(255,255,255,0.16)" token="input/border" />
+  <ModePair name="Input Background" light="#ffffff" dark="#1a1d21" token="input/bg" />
+  <ModePair name="Divider" light="#eef0f2" dark="rgba(255,255,255,0.08)" token="divider" />
+  <ModePair name="Focus Ring" light="#0063cc" dark="rgba(51,150,255,0.5)" token="focus/ring" />
+</div>
+
+---
+
+## Buttons
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Primary Button BG" light="#0063cc" dark="#3396ff" token="button/primary-bg" />
+  <ModePair name="Primary Button Text" light="#ffffff" dark="#001e3d" token="button/primary-text" />
+  <ModePair name="Primary Hover" light="#0051a8" dark="#75b8ff" token="button/primary-hover" />
+  <ModePair name="Secondary Button BG" light="#ffffff" dark="#21252b" token="button/secondary-bg" />
+  <ModePair name="Secondary Button Text" light="#121416" dark="#f0f2f4" token="button/secondary-text" />
+  <ModePair name="Secondary Button Border" light="#e2e8f0" dark="rgba(255,255,255,0.16)" token="button/secondary-border" />
+  <ModePair name="Disabled Button BG" light="#eef0f2" dark="#282d35" token="button/disabled-bg" />
+  <ModePair name="Disabled Button Text" light="#9ba3ab" dark="#495057" token="button/disabled-text" />
+</div>
+
+---
+
+## Status Colors in Dark Mode
+
+Status colors shift lighter and slightly more saturated. Backgrounds invert to their deepest value.
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Success Text" light="#0a7b3f" dark="#66c188" token="success/text" />
+  <ModePair name="Success BG" light="#e6f6ec" dark="#021f10" token="success/bg" />
+  <ModePair name="Warning Text" light="#c2410c" dark="#fdba74" token="warning/text" />
+  <ModePair name="Warning BG" light="#fff7ed" dark="#7c2d12" token="warning/bg" />
+  <ModePair name="Error Text" light="#b8221a" dark="#f07870" token="error/text" />
+  <ModePair name="Error BG" light="#fcebea" dark="#2e0906" token="error/bg" />
+  <ModePair name="Info Text" light="#1e40af" dark="#84c5ff" token="info/text" />
+  <ModePair name="Info BG" light="#ebf5ff" dark="#1e2f60" token="info/bg" />
+</div>
+
+---
+
+## Mixed-Mode Pattern: Mobile Attendee Screen
+
+The Wordly mobile attendee screen demonstrates a **split-mode** layout — a branded light zone and a dark content zone.
+
+### What stays light
+
+| Element | Reason | Token |
+|---------|--------|-------|
+| Top gradient background | Brand-blue-50 `#d6eaff` — this IS the brand identity | Stays `brand-blue-50` in both modes |
+| Logo container | White circle with Wordly icon — brand lockup | Stays `#ffffff` |
+| "AI Powered Translation" text | Sits on the light brand background | Stays `#0b1c3a` (navy) |
+
+### What goes dark
+
+| Element | Light | Dark | Token |
+|---------|-------|------|-------|
+| Card background | `#ffffff` | `#1a1d21` (surface/1) | `card/bg` |
+| Card border radius | 16px | 16px | unchanged |
+| Card shadow | `0 2px 48px rgba(0,0,0,0.02)` | `none` (surfaces differentiate by color) | `card/shadow` |
+| "Attend a session" heading | `#121416` | `#f0f2f4` | `text/primary` |
+| "Session ID" label | `#121416` | `#f0f2f4` | `text/primary` |
+| Input placeholder | `#646e78` | `#495057` | `text/placeholder` |
+| Input border | `#e2e8f0` | `rgba(255,255,255,0.16)` | `input/border` |
+| Input background | `#ffffff` | `#21252b` (surface/2) | `input/bg` |
+| "Join" button background | `#0063cc` | `#3396ff` | `button/primary-bg` |
+| "Join" button text | `#f8fafc` | `#001e3d` | `button/primary-text` |
+| "Back" button background | `#ffffff` | `#21252b` | `button/secondary-bg` |
+| "Back" button text | `#020617` | `#f0f2f4` | `button/secondary-text` |
+| "Back" button border | `#e2e8f0` | `rgba(255,255,255,0.16)` | `button/secondary-border` |
+
+### The boundary
+
+The transition from light header to dark card is natural — the card already has `border-radius: 16px` and overlaps the gradient background. In dark mode:
+- The card surface (`#1a1d21`) creates a clear boundary against the light blue gradient
+- No additional separator element is needed
+- The card's rounded corners provide the visual "zone switch"
+
+---
+
+## Implementation Checklist
+
+- [ ] Define CSS custom properties with light/dark values using `prefers-color-scheme` or a class toggle
+- [ ] Surface elevation tokens: base through elevated-4
+- [ ] Semi-transparent borders — avoid hardcoded opaque grays
+- [ ] Brand-blue shifts to 300 step for primary actions
+- [ ] Text uses off-white (`#f0f2f4`), never pure white for body text
+- [ ] Status color backgrounds invert to 900-step values
+- [ ] Shadows removed on dark surfaces — rely on color differentiation
+- [ ] Input fields use surface/2 background to show nesting
+- [ ] Test all combinations at WCAG AA (4.5:1 body text, 3:1 large text)
+
+---
+
+## Complete Variable Reference
+
+All semantic tokens with their Light and Dark mode values, as defined in the Figma "All variables" collection.
+
+### Surface & Layout
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `surface/base` | `#ffffff` | `#121416` |
+| `surface/elevated-1` | `#f8f9fa` | `#1a1d21` |
+| `surface/elevated-2` | `#f8f9fa` | `#21252b` |
+| `surface/elevated-3` | `#eef0f2` | `#282d35` |
+| `surface/elevated-4` | `#e3e6e8` | `#2f353e` |
+| `card/background` | `#ffffff` | `#1a1d21` |
+| `input/background` | `#ffffff` | `#21252b` |
+| `input/border` | `#e2e8f0` | `rgba(255,255,255,0.16)` |
+| `divider` | `#eef0f2` | `rgba(255,255,255,0.08)` |
+| `white` | `#ffffff` | `#121416` |
+| `black` | `#000000` | `#f0f2f4` |
+
+### Text
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `text/text-regular` | gray-900 `#121416` | `#f0f2f4` |
+| `text/text-secondary` | gray-500 `#646e78` | gray-400 `#9ba3ab` |
+| `text/text-regular-disabled` | gray-500 `#646e78` | gray-600 `#495057` |
+
+### Actions
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `actions/primary` | brand-blue-500 `#0063cc` | brand-blue-300 `#3396ff` |
+| `actions/primary-lighter` | brand-blue-200 `#75b8ff` | brand-blue-100 `#b2d8ff` |
+| `actions/primary-background-light` | brand-blue-25 `#f0f7ff` | brand-blue-900 `#001e3d` |
+| `actions/primary-foreground-darkest` | brand-blue-950 `#000c1a` | brand-blue-50 `#d6eaff` |
+| `actions/hover` | brand-blue-600 `#0051a8` | brand-blue-200 `#75b8ff` |
+| `actions/active` | brand-blue-700 `#00458f` | brand-blue-100 `#b2d8ff` |
+
+### Brand
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `brand/brand` | brand-blue-400 `#017cff` | brand-blue-300 `#3396ff` |
+| `brand/brand-lighter` | brand-blue-200 `#75b8ff` | brand-blue-100 `#b2d8ff` |
+| `brand/brand-highlight` | brand-blue-25 `#f0f7ff` | brand-blue-900 `#001e3d` |
+| `brand/hover-brand-highlight` | brand-blue-50 `#d6eaff` | brand-blue-800 `#002c5c` |
+| `brand/brand-foreground-darkest` | brand-blue-600 `#0051a8` | brand-blue-200 `#75b8ff` |
+
+### Buttons
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `button/default` | → actions/primary | → actions/primary |
+| `button/pressed` | → actions/primary-lighter | brand-blue-200 `#75b8ff` |
+| `button/disabled` | gray-100 `#eef0f2` | `#282d35` |
+| `button/focus-ring-on-light` | brand-blue-500 `#0063cc` | `rgba(51,150,255,0.5)` |
+| `button/focus-ring-on-dark` | brand-blue-300 `#3396ff` | brand-blue-300 `#3396ff` |
+
+### Links
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `link/default` | info-500 `#2563eb` | info-300 `#84c5ff` |
+| `link/hovered` | info-700 `#1e40af` | info-200 `#b3d4ff` |
+
+### Gray / Neutral
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `gray/gray-text-on-white` | gray-500 `#646e78` | gray-400 `#9ba3ab` |
+| `gray/gray-text-on-navy` | gray-400 `#9ba3ab` | gray-400 `#9ba3ab` |
+| `gray/gray-background-for-black-text` | gray-100 `#eef0f2` | gray-800 `#212529` |
+| `gray/gray-background-tab` | gray-200 `#e3e6e8` | gray-700 `#343a40` |
+| `gray/gray-border` | gray-300 `#cdd2d7` | gray-700 `#343a40` |
+| `gray/gray-muted-highlight` | gray-50 `#f8f9fa` | gray-800 `#212529` |
+| `gray/gray-background-form-header` | gray-50 `#f8f9fa` | gray-800 `#212529` |
+| `shadow/shadow-gray` | gray-300 `#cdd2d7` | `transparent` |
+
+### Accent Green
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `accent-green/highlight` | accent-green-700 `#0f802f` | accent-green-200 `#84f1a2` |
+| `accent-green/background-accent` | accent-green-50 `#dafbe4` | accent-green-900 `#063714` |
+| `accent-green/background-accent-hover` | accent-green-100 `#bbf7cb` | accent-green-800 `#0a521e` |
+
+### Success
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `success/text` | success-600 `#0a7b3f` | success-300 `#66c188` |
+| `success/background` | success-50 `#e6f6ec` | success-900 `#021f10` |
+| `success/border` | success-100 `#c5e8d2` | success-800 `#053e20` |
+
+### Warning
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `warning/text` | warning-700 `#c2410c` | warning-300 `#fdba74` |
+| `warning/background` | warning-50 `#fff7ed` | warning-900 `#7c2d12` |
+| `warning/border` | warning-100 `#ffedd5` | warning-800 `#9a3412` |
+
+### Error
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `error/text` | error-600 `#b8221a` | error-300 `#f07870` |
+| `error/hover` | error-700 `#8a1a13` | error-200 `#f5a8a2` |
+| `error/active` | error-800 `#5c110d` | error-100 `#f9cfcc` |
+| `error/background` | error-50 `#fcebea` | error-900 `#2e0906` |
+| `error/border` | error-100 `#f9cfcc` | error-800 `#5c110d` |
+
+### Info
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `info/icon` | info-500 `#2563eb` | info-300 `#84c5ff` |
+| `info/text` | info-700 `#1e40af` | info-200 `#b3d4ff` |
+| `info/background` | info-50 `#ebf5ff` | info-900 `#1e2f60` |
+| `info/border` | info-100 `#d1e7ff` | info-800 `#1e3a8a` |

@@ -1,0 +1,81 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+@theme {
+  /* Brand Blue */
+  --color-brand-blue-10: #fafcff;
+  --color-brand-blue-25: #f0f7ff;
+  --color-brand-blue-50: #d6eaff;
+  --color-brand-blue-100: #b2d8ff;
+  --color-brand-blue-200: #75b8ff;
+  --color-brand-blue-300: #3396ff;
+  --color-brand-blue-400: #017cff;
+  --color-brand-blue-500: #0063cc;
+  --color-brand-blue-600: #0051a8;
+  --color-brand-blue-700: #00458f;
+  --color-brand-blue-800: #002c5c;
+  --color-brand-blue-900: #001e3d;
+  --color-brand-blue-950: #000c1a;
+  --color-brand-blue-975: #00050a;
+
+  /* Accent Green */
+  --color-accent-green-10: #fafefc;
+  --color-accent-green-25: #f1fdf5;
+  --color-accent-green-50: #dafbe4;
+  --color-accent-green-100: #bbf7cb;
+  --color-accent-green-200: #84f1a2;
+  --color-accent-green-300: #48ea76;
+  --color-accent-green-400: #1be453;
+  --color-accent-green-500: #15b743;
+  --color-accent-green-600: #129737;
+  --color-accent-green-700: #0f802f;
+  --color-accent-green-800: #0a521e;
+  --color-accent-green-900: #063714;
+  --color-accent-green-950: #031708;
+  --color-accent-green-975: #010903;
+
+  /* Action Teal */
+  --color-action-teal-10: #fafefe;
+  --color-action-teal-25: #f1fbfd;
+  --color-action-teal-50: #dbf5fb;
+  --color-action-teal-100: #bbedf7;
+  --color-action-teal-200: #84def0;
+  --color-action-teal-300: #49cfe9;
+  --color-action-teal-400: #1bc3e4;
+  --color-action-teal-500: #169cb6;
+  --color-action-teal-600: #128197;
+  --color-action-teal-700: #0f6d80;
+  --color-action-teal-800: #0a4652;
+  --color-action-teal-900: #072f37;
+  --color-action-teal-950: #031317;
+  --color-action-teal-975: #010809;
+
+  /* Accent Orange */
+  --color-accent-orange-10: #fffcfa;
+  --color-accent-orange-25: #fff6f0;
+  --color-accent-orange-50: #ffe7d6;
+  --color-accent-orange-100: #ffd2b2;
+  --color-accent-orange-200: #ffae75;
+  --color-accent-orange-300: #ff8833;
+  --color-accent-orange-400: #ff6a00;
+  --color-accent-orange-500: #cc5500;
+  --color-accent-orange-600: #a84600;
+  --color-accent-orange-700: #8f3b00;
+  --color-accent-orange-800: #5c2600;
+  --color-accent-orange-900: #3d1900;
+  --color-accent-orange-950: #1a0b00;
+  --color-accent-orange-975: #0a0400;
+
+  /* Gray */
+  --color-wordly-gray-50: #f8f9fa;
+  --color-wordly-gray-100: #eef0f2;
+  --color-wordly-gray-200: #e3e6e8;
+  --color-wordly-gray-300: #cdd2d7;
+  --color-wordly-gray-400: #9ba3ab;
+  --color-wordly-gray-500: #646e78;
+  --color-wordly-gray-600: #495057;
+  --color-wordly-gray-700: #343a40;
+  --color-wordly-gray-800: #212529;
+  --color-wordly-gray-900: #121416;
+}

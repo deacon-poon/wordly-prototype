@@ -1,0 +1,56 @@
+---
+title: Gray
+description: Neutral gray scale for text, borders, and backgrounds
+---
+
+import { ColorScale, SemanticToken, ModePair } from '@/components/color-swatch';
+
+# Gray
+
+The neutral palette used for text, backgrounds, borders, and disabled states.
+
+## Scale
+
+<ColorScale
+  name="gray"
+  colors={[
+    { step: '50', hex: '#f8f9fa' },
+    { step: '100', hex: '#eef0f2' },
+    { step: '200', hex: '#e3e6e8' },
+    { step: '300', hex: '#cdd2d7' },
+    { step: '400', hex: '#9ba3ab' },
+    { step: '500', hex: '#646e78' },
+    { step: '600', hex: '#495057' },
+    { step: '700', hex: '#343a40' },
+    { step: '800', hex: '#212529' },
+    { step: '900', hex: '#121416' },
+  ]}
+/>
+
+## Dark Mode Palette
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Text Primary" light="#121416" dark="#f8f9fa" token="text/regular" />
+  <ModePair name="Text Secondary" light="#646e78" dark="#9ba3ab" token="text/secondary" />
+  <ModePair name="Background" light="#ffffff" dark="#121416" token="color/background" />
+  <ModePair name="Surface" light="#f8f9fa" dark="#212529" token="color/surface" />
+  <ModePair name="Border" light="#cdd2d7" dark="#343a40" token="gray/border" />
+  <ModePair name="Muted" light="#eef0f2" dark="#212529" token="gray/muted" />
+  <ModePair name="Disabled" light="#eef0f2" dark="#343a40" token="button/disabled" />
+</div>
+
+## Semantic Mappings
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <SemanticToken name="text/regular" hex="#121416" alias="gray-900" />
+  <SemanticToken name="text/secondary" hex="#646e78" alias="gray-500" />
+  <SemanticToken name="text/disabled" hex="#646e78" alias="gray-500" />
+  <SemanticToken name="gray/text-on-white" hex="#646e78" alias="gray-500" />
+  <SemanticToken name="gray/text-on-navy" hex="#9ba3ab" alias="gray-400" />
+  <SemanticToken name="gray/bg-black-text" hex="#eef0f2" alias="gray-100" />
+  <SemanticToken name="gray/bg-tab" hex="#e3e6e8" alias="gray-200" />
+  <SemanticToken name="gray/border" hex="#cdd2d7" alias="gray-300" />
+  <SemanticToken name="gray/muted-highlight" hex="#f8f9fa" alias="gray-50" />
+  <SemanticToken name="shadow/gray" hex="#cdd2d7" alias="gray-300" />
+  <SemanticToken name="button/disabled" hex="#eef0f2" alias="gray-100" />
+</div>

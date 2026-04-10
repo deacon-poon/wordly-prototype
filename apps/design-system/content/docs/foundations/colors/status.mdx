@@ -1,0 +1,108 @@
+---
+title: Status Colors
+description: Success, warning, error, and info color scales
+---
+
+import { ColorScale, SemanticToken, ModePair } from '@/components/color-swatch';
+
+# Status Colors
+
+Used for feedback states — success, warning, error, and informational messages.
+
+## Success
+
+<ColorScale
+  name="success"
+  colors={[
+    { step: '50', hex: '#e6f6ec' },
+    { step: '100', hex: '#c5e8d2' },
+    { step: '200', hex: '#9cd7b0' },
+    { step: '300', hex: '#66c188' },
+    { step: '400', hex: '#34ad67' },
+    { step: '500', hex: '#0c9a4e' },
+    { step: '600', hex: '#0a7b3f' },
+    { step: '700', hex: '#085d2f' },
+    { step: '800', hex: '#053e20' },
+    { step: '900', hex: '#021f10' },
+  ]}
+/>
+
+<div className="not-prose flex flex-col gap-3 mb-10">
+  <ModePair name="Text" light="#0a7b3f" dark="#66c188" token="success/text" />
+  <ModePair name="Background" light="#e6f6ec" dark="#021f10" token="success/bg" />
+  <ModePair name="Border" light="#c5e8d2" dark="#053e20" token="success/border" />
+</div>
+
+## Warning
+
+<ColorScale
+  name="warning"
+  colors={[
+    { step: '50', hex: '#fff7ed' },
+    { step: '100', hex: '#ffedd5' },
+    { step: '200', hex: '#fed7aa' },
+    { step: '300', hex: '#fdba74' },
+    { step: '400', hex: '#fb923c' },
+    { step: '500', hex: '#f97316' },
+    { step: '600', hex: '#ea580c' },
+    { step: '700', hex: '#c2410c' },
+    { step: '800', hex: '#9a3412' },
+    { step: '900', hex: '#7c2d12' },
+  ]}
+/>
+
+<div className="not-prose flex flex-col gap-3 mb-10">
+  <ModePair name="Text" light="#c2410c" dark="#fdba74" token="warning/text" />
+  <ModePair name="Background" light="#fff7ed" dark="#7c2d12" token="warning/bg" />
+  <ModePair name="Border" light="#ffedd5" dark="#9a3412" token="warning/border" />
+</div>
+
+## Error
+
+<ColorScale
+  name="error"
+  colors={[
+    { step: '50', hex: '#fcebea' },
+    { step: '100', hex: '#f9cfcc' },
+    { step: '200', hex: '#f5a8a2' },
+    { step: '300', hex: '#f07870' },
+    { step: '400', hex: '#ea4f45' },
+    { step: '500', hex: '#e62d21' },
+    { step: '600', hex: '#b8221a' },
+    { step: '700', hex: '#8a1a13' },
+    { step: '800', hex: '#5c110d' },
+    { step: '900', hex: '#2e0906' },
+  ]}
+/>
+
+<div className="not-prose flex flex-col gap-3 mb-10">
+  <ModePair name="Text" light="#b8221a" dark="#f07870" token="error/text" />
+  <ModePair name="Hover" light="#8a1a13" dark="#f5a8a2" token="error/hover" />
+  <ModePair name="Background" light="#fcebea" dark="#2e0906" token="error/bg" />
+  <ModePair name="Border" light="#f9cfcc" dark="#5c110d" token="error/border" />
+</div>
+
+## Info
+
+<ColorScale
+  name="info"
+  colors={[
+    { step: '50', hex: '#ebf5ff' },
+    { step: '100', hex: '#d1e7ff' },
+    { step: '200', hex: '#b3d4ff' },
+    { step: '300', hex: '#84c5ff' },
+    { step: '400', hex: '#53b1fd' },
+    { step: '500', hex: '#2563eb' },
+    { step: '600', hex: '#1d4ed8' },
+    { step: '700', hex: '#1e40af' },
+    { step: '800', hex: '#1e3a8a' },
+    { step: '900', hex: '#1e2f60' },
+  ]}
+/>
+
+<div className="not-prose flex flex-col gap-3 mb-10">
+  <ModePair name="Icon" light="#2563eb" dark="#84c5ff" token="info/icon" />
+  <ModePair name="Text" light="#1e40af" dark="#b3d4ff" token="info/text" />
+  <ModePair name="Background" light="#ebf5ff" dark="#1e2f60" token="info/bg" />
+  <ModePair name="Border" light="#d1e7ff" dark="#1e3a8a" token="info/border" />
+</div>

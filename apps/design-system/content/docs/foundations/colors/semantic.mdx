@@ -1,0 +1,101 @@
+---
+title: Semantic Tokens
+description: Contextual color tokens that map to primitive scales
+---
+
+import { SemanticToken, ModePair } from '@/components/color-swatch';
+
+# Semantic Tokens
+
+Semantic tokens provide contextual meaning by aliasing primitive color values. Use semantic tokens instead of raw primitives — this ensures consistency and makes theme updates a single-point change.
+
+## Dark Mode Mapping Overview
+
+The core principle: in dark mode, **swap light backgrounds with dark values** and **swap dark foregrounds with light values** from the same scale.
+
+<div className="not-prose flex flex-col gap-3 mb-10">
+  <ModePair name="Background" light="#ffffff" dark="#121416" token="color/background" />
+  <ModePair name="Surface" light="#f8f9fa" dark="#212529" token="color/surface" />
+  <ModePair name="Text Primary" light="#121416" dark="#f8f9fa" token="text/regular" />
+  <ModePair name="Text Secondary" light="#646e78" dark="#9ba3ab" token="text/secondary" />
+  <ModePair name="Border" light="#cdd2d7" dark="#343a40" token="gray/border" />
+  <ModePair name="Primary Action" light="#0063cc" dark="#3396ff" token="actions/primary" />
+  <ModePair name="Brand" light="#017cff" dark="#3396ff" token="brand/brand" />
+  <ModePair name="Link" light="#2563eb" dark="#84c5ff" token="link/default" />
+</div>
+
+## Actions
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+  <SemanticToken name="actions/primary" hex="#0063cc" alias="brand-blue-500" />
+  <SemanticToken name="actions/hover" hex="#0051a8" alias="brand-blue-600" />
+  <SemanticToken name="actions/active" hex="#00458f" alias="brand-blue-700" />
+  <SemanticToken name="actions/primary-lighter" hex="#75b8ff" alias="brand-blue-200" />
+  <SemanticToken name="actions/primary-bg-light" hex="#f0f7ff" alias="brand-blue-25" />
+  <SemanticToken name="actions/primary-fg-darkest" hex="#000c1a" alias="brand-blue-950" />
+</div>
+
+## Brand
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+  <SemanticToken name="brand/brand" hex="#017cff" alias="brand-blue-400" />
+  <SemanticToken name="brand/brand-lighter" hex="#75b8ff" alias="brand-blue-200" />
+  <SemanticToken name="brand/brand-highlight" hex="#f0f7ff" alias="brand-blue-25" />
+  <SemanticToken name="brand/hover-highlight" hex="#d6eaff" alias="brand-blue-50" />
+  <SemanticToken name="brand/fg-darkest" hex="#0051a8" alias="brand-blue-600" />
+</div>
+
+## Text
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+  <SemanticToken name="text/regular" hex="#121416" alias="gray-900" />
+  <SemanticToken name="text/secondary" hex="#646e78" alias="gray-500" />
+  <SemanticToken name="text/disabled" hex="#646e78" alias="gray-500" />
+</div>
+
+## Buttons
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+  <SemanticToken name="button/default" hex="#0063cc" alias="actions/primary" />
+  <SemanticToken name="button/pressed" hex="#75b8ff" alias="actions/primary-lighter" />
+  <SemanticToken name="button/disabled" hex="#eef0f2" alias="gray-100" />
+  <SemanticToken name="button/focus-ring-light" hex="#0063cc" alias="brand-blue-500" />
+  <SemanticToken name="button/focus-ring-dark" hex="#3396ff" alias="brand-blue-300" />
+</div>
+
+## Links
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+  <SemanticToken name="link/default" hex="#2563eb" alias="info-500" />
+  <SemanticToken name="link/hovered" hex="#1e40af" alias="info-700" />
+</div>
+
+## Surfaces & Borders
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
+  <SemanticToken name="white" hex="#ffffff" alias="white" />
+  <SemanticToken name="black" hex="#000000" alias="black" />
+  <SemanticToken name="gray/border" hex="#cdd2d7" alias="gray-300" />
+  <SemanticToken name="gray/bg-black-text" hex="#eef0f2" alias="gray-100" />
+  <SemanticToken name="gray/bg-tab" hex="#e3e6e8" alias="gray-200" />
+  <SemanticToken name="gray/muted-highlight" hex="#f8f9fa" alias="gray-50" />
+  <SemanticToken name="shadow/gray" hex="#cdd2d7" alias="gray-300" />
+</div>
+
+## Status
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <SemanticToken name="success/text" hex="#0a7b3f" alias="success-600" />
+  <SemanticToken name="success/background" hex="#e6f6ec" alias="success-50" />
+  <SemanticToken name="success/border" hex="#c5e8d2" alias="success-100" />
+  <SemanticToken name="warning/text" hex="#c2410c" alias="warning-700" />
+  <SemanticToken name="warning/background" hex="#fff7ed" alias="warning-50" />
+  <SemanticToken name="warning/border" hex="#ffedd5" alias="warning-100" />
+  <SemanticToken name="error/text" hex="#b8221a" alias="error-600" />
+  <SemanticToken name="error/background" hex="#fcebea" alias="error-50" />
+  <SemanticToken name="error/border" hex="#f9cfcc" alias="error-100" />
+  <SemanticToken name="info/icon" hex="#2563eb" alias="info-500" />
+  <SemanticToken name="info/text" hex="#1e40af" alias="info-700" />
+  <SemanticToken name="info/background" hex="#ebf5ff" alias="info-50" />
+  <SemanticToken name="info/border" hex="#d1e7ff" alias="info-100" />
+</div>

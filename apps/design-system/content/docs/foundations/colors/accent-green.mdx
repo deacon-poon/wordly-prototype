@@ -1,0 +1,50 @@
+---
+title: Accent Green
+description: Accent green color scale — Hue 137, Saturation 79
+---
+
+import { ColorScale, ColorCard, SemanticToken, ModePair } from '@/components/color-swatch';
+
+# Accent Green
+
+Used for positive/growth indicators and accent highlights.
+
+- **Hue**: 137 | **Saturation**: 79
+
+## Scale
+
+<ColorScale
+  name="accent-green"
+  colors={[
+    { step: '10', hex: '#fafefc' },
+    { step: '25', hex: '#f1fdf5' },
+    { step: '50', hex: '#dafbe4' },
+    { step: '100', hex: '#bbf7cb' },
+    { step: '200', hex: '#84f1a2' },
+    { step: '300', hex: '#48ea76' },
+    { step: '400', hex: '#1be453' },
+    { step: '500', hex: '#15b743' },
+    { step: '600', hex: '#129737' },
+    { step: '700', hex: '#0f802f' },
+    { step: '800', hex: '#0a521e' },
+    { step: '900', hex: '#063714' },
+    { step: '950', hex: '#031708' },
+    { step: '975', hex: '#010903' },
+  ]}
+/>
+
+## Dark Mode Palette
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Highlight" light="#0f802f" dark="#84f1a2" token="accent-green/highlight" />
+  <ModePair name="Background" light="#dafbe4" dark="#063714" token="accent-green/bg" />
+  <ModePair name="Background Hover" light="#bbf7cb" dark="#0a521e" token="accent-green/bg-hover" />
+</div>
+
+## Semantic Mappings
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <SemanticToken name="accent-green/highlight" hex="#0f802f" alias="accent-green-700" />
+  <SemanticToken name="accent-green/background" hex="#dafbe4" alias="accent-green-50" />
+  <SemanticToken name="accent-green/bg-hover" hex="#bbf7cb" alias="accent-green-100" />
+</div>

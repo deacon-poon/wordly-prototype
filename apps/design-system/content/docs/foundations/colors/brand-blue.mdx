@@ -1,0 +1,80 @@
+---
+title: Brand Blue
+description: Primary brand color scale — Hue 211, Saturation 100
+---
+
+import { ColorScale, ColorCard, SemanticToken, ModePair } from '@/components/color-swatch';
+
+# Brand Blue
+
+The primary brand color for Wordly. Used for primary actions, brand identity, and interactive elements.
+
+- **Hue**: 211 | **Saturation**: 100
+- **Logo color**: brand-blue-400 (`#017cff`)
+
+## Scale
+
+<ColorScale
+  name="brand-blue"
+  colors={[
+    { step: '10', hex: '#fafcff' },
+    { step: '25', hex: '#f0f7ff' },
+    { step: '50', hex: '#d6eaff' },
+    { step: '100', hex: '#b2d8ff' },
+    { step: '200', hex: '#75b8ff' },
+    { step: '300', hex: '#3396ff' },
+    { step: '400', hex: '#017cff' },
+    { step: '500', hex: '#0063cc' },
+    { step: '600', hex: '#0051a8' },
+    { step: '700', hex: '#00458f' },
+    { step: '800', hex: '#002c5c' },
+    { step: '900', hex: '#001e3d' },
+    { step: '950', hex: '#000c1a' },
+    { step: '975', hex: '#00050a' },
+  ]}
+/>
+
+## Key Colors
+
+<div className="not-prose grid gap-3 sm:grid-cols-3 mb-8">
+  <ColorCard name="brand-blue-400" hex="#017cff" description="Logo / Brand" />
+  <ColorCard name="brand-blue-500" hex="#0063cc" description="Primary Action" />
+  <ColorCard name="brand-blue-600" hex="#0051a8" description="Hover State" />
+</div>
+
+## WCAG Compliance
+
+| Contrast with white | Minimum step |
+|---------------------|-------------|
+| Large text / icons (3:1) | 500 (`#0063cc`) |
+| Body text (4.5:1) | 600 (`#0051a8`) |
+
+## Dark Mode Palette
+
+Proposed light/dark mappings for brand-blue tokens:
+
+<div className="not-prose flex flex-col gap-3 mb-8">
+  <ModePair name="Primary" light="#0063cc" dark="#3396ff" token="actions/primary" />
+  <ModePair name="Hover" light="#0051a8" dark="#75b8ff" token="actions/hover" />
+  <ModePair name="Background" light="#f0f7ff" dark="#001e3d" token="actions/primary-bg" />
+  <ModePair name="Foreground" light="#000c1a" dark="#d6eaff" token="actions/primary-fg" />
+  <ModePair name="Brand" light="#017cff" dark="#3396ff" token="brand/brand" />
+  <ModePair name="Highlight" light="#f0f7ff" dark="#002c5c" token="brand/highlight" />
+</div>
+
+## Semantic Mappings
+
+<div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <SemanticToken name="actions/primary" hex="#0063cc" alias="brand-blue-500" />
+  <SemanticToken name="actions/hover" hex="#0051a8" alias="brand-blue-600" />
+  <SemanticToken name="actions/active" hex="#00458f" alias="brand-blue-700" />
+  <SemanticToken name="actions/primary-bg-light" hex="#f0f7ff" alias="brand-blue-25" />
+  <SemanticToken name="actions/primary-fg-darkest" hex="#000c1a" alias="brand-blue-950" />
+  <SemanticToken name="brand/brand" hex="#017cff" alias="brand-blue-400" />
+  <SemanticToken name="brand/brand-lighter" hex="#75b8ff" alias="brand-blue-200" />
+  <SemanticToken name="brand/brand-highlight" hex="#f0f7ff" alias="brand-blue-25" />
+  <SemanticToken name="brand/hover-highlight" hex="#d6eaff" alias="brand-blue-50" />
+  <SemanticToken name="brand/fg-darkest" hex="#0051a8" alias="brand-blue-600" />
+  <SemanticToken name="button/focus-ring-light" hex="#0063cc" alias="brand-blue-500" />
+  <SemanticToken name="button/focus-ring-dark" hex="#3396ff" alias="brand-blue-300" />
+</div>
