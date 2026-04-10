@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { MeshGradient } from '@paper-design/shaders-react';
 
 // Original control points from wordly-ribbon.svg path
 // M -128.475 730.771
@@ -10,17 +9,17 @@ import { MeshGradient } from '@paper-design/shaders-react';
 // C 1231.560 639.594 1438.820 488.481 1578.810  19.339
 
 const BASE_POINTS = [
-  // [x, y] — all Y-axis control points that we'll wave
-  { x: -128.475, y: 730.771 },  // M start
-  { x: -128.475, y: 730.771 },  // C1 cp1
+  // Extended: pushed start further left, end further right so it bleeds off-screen
+  { x: -300,     y: 780 },      // M start — extended left
+  { x: -250,     y: 750 },      // C1 cp1
   { x: 111.292,  y: 507.499 },  // C1 cp2
   { x: 299.891,  y: 470.136 },  // C1 end
   { x: 556.965,  y: 419.209 },  // C2 cp1
   { x: 768.426,  y: 554.050 },  // C2 cp2
   { x: 1020.41,  y: 600.594 },  // C2 end
   { x: 1231.56,  y: 639.594 },  // C3 cp1
-  { x: 1438.82,  y: 488.481 },  // C3 cp2
-  { x: 1578.81,  y: 19.339 },   // C3 end
+  { x: 1500,     y: 420 },      // C3 cp2 — extended
+  { x: 1750,     y: -60 },      // C3 end — extended right
 ];
 
 function buildPath(points: { x: number; y: number }[]): string {
@@ -47,9 +46,9 @@ export function FluidRibbon() {
     // --- 1. Wave-deform path — throttled to every 3rd frame for perf ---
     if (mainPath && frame % 3 === 0) {
       const waved = BASE_POINTS.map((pt, i) => {
-        const phase = i * 0.7;
-        const waveY = Math.sin(t * 1.2 + phase) * 12 + Math.sin(t * 0.8 + phase * 1.3) * 6;
-        const waveX = Math.cos(t * 0.9 + phase * 0.8) * 4;
+        const phase = i * 0.8;
+        const waveY = Math.sin(t * 1.5 + phase) * 18 + Math.sin(t * 0.9 + phase * 1.4) * 10;
+        const waveX = Math.cos(t * 1.1 + phase * 0.9) * 6;
         return { x: pt.x + waveX, y: pt.y + waveY };
       });
       const d = buildPath(waved);
@@ -57,31 +56,33 @@ export function FluidRibbon() {
       if (glowPath) glowPath.setAttribute('d', d);
     }
 
-    // --- 2. Gradient flow — every frame (cheap) ---
-    const grad = svg.getElementById('ribbon-grad') as SVGLinearGradientElement;
-    const stops = grad?.querySelectorAll('stop');
+    // --- 2. Gradient flow — every 3rd frame ---
+    if (frame % 3 === 0) {
+      const grad = svg.getElementById('ribbon-grad') as SVGLinearGradientElement;
+      const stops = grad?.querySelectorAll('stop');
 
-    if (stops && stops.length >= 3) {
-      const s0 = Math.sin(t * 0.8) * 0.18;
-      const s1 = 0.51 + Math.sin(t * 0.6 + 1.0) * 0.18;
-      const s2 = 1.0 + Math.cos(t * 0.7) * 0.12;
+      if (stops && stops.length >= 3) {
+        const s0 = Math.sin(t * 0.8) * 0.18;
+        const s1 = 0.51 + Math.sin(t * 0.6 + 1.0) * 0.18;
+        const s2 = 1.0 + Math.cos(t * 0.7) * 0.12;
 
-      stops[0].setAttribute('offset', `${Math.max(0, s0)}`);
-      stops[1].setAttribute('offset', `${Math.min(1, Math.max(0.1, s1))}`);
-      stops[2].setAttribute('offset', `${Math.min(1, s2)}`);
+        stops[0].setAttribute('offset', `${Math.max(0, s0)}`);
+        stops[1].setAttribute('offset', `${Math.min(1, Math.max(0.1, s1))}`);
+        stops[2].setAttribute('offset', `${Math.min(1, s2)}`);
 
-      const dx = Math.sin(t * 0.5) * 200;
-      const dy = Math.cos(t * 0.4) * 140;
-      grad.setAttribute('x1', `${-125.642 + dx}`);
-      grad.setAttribute('y1', `${758.596 + dy}`);
-      grad.setAttribute('x2', `${1612.25 - dx}`);
-      grad.setAttribute('y2', `${323.974 - dy}`);
-    }
+        const dx = Math.sin(t * 0.5) * 200;
+        const dy = Math.cos(t * 0.4) * 140;
+        grad.setAttribute('x1', `${-125.642 + dx}`);
+        grad.setAttribute('y1', `${758.596 + dy}`);
+        grad.setAttribute('x2', `${1612.25 - dx}`);
+        grad.setAttribute('y2', `${323.974 - dy}`);
+      }
 
-    // --- 3. Glow pulse — throttled ---
-    if (glowPath && frame % 3 === 0) {
-      const opacity = 0.14 + Math.sin(t * 1.2) * 0.06;
-      glowPath.setAttribute('stroke-opacity', `${opacity}`);
+      // Glow pulse
+      if (glowPath) {
+        const opacity = 0.14 + Math.sin(t * 1.2) * 0.06;
+        glowPath.setAttribute('stroke-opacity', `${opacity}`);
+      }
     }
 
     frameRef.current = requestAnimationFrame(animate);
@@ -96,18 +97,10 @@ export function FluidRibbon() {
 
   return (
     <div className="absolute inset-0 bg-white">
-      {/* Ambient mesh shader — very subtle background atmosphere */}
-      <MeshGradient
-        className="absolute inset-0 h-full w-full opacity-[0.07]"
-        colors={['#ffffff', '#c2f0c8', '#b8e4f8', '#a8cff0', '#ffffff']}
-        speed={0.4}
-        backgroundcolor="#ffffff"
-      />
-
       {/* SVG ribbon with per-point wave animation */}
       <svg
         ref={svgRef}
-        viewBox="0 0 1500 750"
+        viewBox="-400 -150 2300 1050"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 h-full w-full"

@@ -14,15 +14,17 @@ export default async function Page(props: {
   const MDXContent = page.data.body;
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsBody>
-        <MDXContent
-          components={getMDXComponents({
-            a: createRelativeLink(source, page),
-          })}
-        />
-      </DocsBody>
-    </DocsPage>
+    <div className="animate-page-in">
+      <DocsPage toc={page.data.toc} full={page.data.full}>
+        <DocsBody>
+          <MDXContent
+            components={getMDXComponents({
+              a: createRelativeLink(source, page),
+            })}
+          />
+        </DocsBody>
+      </DocsPage>
+    </div>
   );
 }
 

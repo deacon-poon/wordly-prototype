@@ -109,14 +109,20 @@ function ChipGrid({ items }: { items: { title: string; href: string; ready?: boo
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen bg-white">
+    <main className="relative min-h-screen bg-white animate-page-in">
       {/* ─── Hero ─── */}
-      <section className="relative h-[85vh] min-h-[600px] overflow-hidden">
+      <section className="relative h-[92vh] min-h-[650px] overflow-hidden">
         {/* Ribbon — full bleed behind everything */}
         <FluidRibbon />
 
+        {/* Radial glow behind content — separates text from ribbon */}
+        <div
+          className="pointer-events-none absolute left-1/2 top-[30%] z-10 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80"
+          style={{ background: 'radial-gradient(ellipse, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 40%, rgba(255,255,255,0) 70%)' }}
+        />
+
         {/* Content — positioned in the upper portion, above the ribbon curve */}
-        <div className="relative z-20 flex flex-col items-center px-6 pt-24 sm:pt-28 text-center">
+        <div className="relative z-20 flex flex-col items-center px-6 pt-32 sm:pt-40 text-center">
           <div className="mb-5">
             <img src="/wordly-icon.svg" alt="" className="h-16 w-16" />
           </div>
