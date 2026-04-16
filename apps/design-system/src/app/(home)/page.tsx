@@ -143,9 +143,9 @@ export default function HomePage() {
         {/* Content — positioned in the upper portion, above the ribbon curve */}
         <div className="relative z-20 flex flex-col items-center px-6 pt-32 sm:pt-40 text-center">
           <div className="mb-5">
-            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/wordly-icon.svg`} alt="" className="h-16 w-16" />
+            <img src="/wordly-icon.svg" alt="" className="h-16 w-16" />
           </div>
-          <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/wordly-logo.svg`} alt="Wordly" className="mb-3 h-9" />
+          <img src="/wordly-logo.svg" alt="Wordly" className="mb-3 h-9" />
           <h1
             className="mb-3 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"
             style={{ textShadow: '0 0 40px rgba(255,255,255,0.95), 0 0 80px rgba(255,255,255,0.6)' }}

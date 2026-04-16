@@ -310,7 +310,7 @@ export function MobileScreenDemo() {
           {/* Branded header — always light */}
           <div className="flex flex-col items-center pt-12 pb-6">
             <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
-              <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/wordly-icon.svg`} alt="" className="h-10 w-10" />
+              <img src="/wordly-icon.svg" alt="" className="h-10 w-10" />
             </div>
             <p className="text-lg font-light italic text-[#0b1c3a]">AI Powered Translation</p>
           </div>
