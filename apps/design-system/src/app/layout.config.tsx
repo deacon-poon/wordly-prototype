@@ -5,7 +5,7 @@ export const baseOptions: BaseLayoutProps = {
     title: (
       <div className="flex items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/wordly-logo.svg" alt="Wordly" className="h-5" />
+        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/wordly-logo.svg`} alt="Wordly" className="h-5" />
         <span className="text-sm font-medium text-fd-muted-foreground">
           Design System
         </span>
