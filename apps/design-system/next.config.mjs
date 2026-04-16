@@ -11,6 +11,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  ...(process.env.EXPORT_MODE === '1' ? {
+    basePath: '/design-system',
+    output: 'export',
+  } : {}),
 };
 
 export default withMDX(nextConfig);
