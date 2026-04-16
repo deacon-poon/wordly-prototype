@@ -1,0 +1,34 @@
+---
+title: Textarea
+description: Multi-line text input for longer form content.
+---
+
+import { TextareaDemo } from '@/components/atom-demos';
+
+# Textarea
+
+Multi-line text area for messages, descriptions, and long-form content. Shares styling patterns with the Input atom.
+
+## Preview
+
+<TextareaDemo />
+
+## States
+
+| State | Notes |
+|-------|-------|
+| Default | `min-height: 80px`, border with `--input` color |
+| Placeholder | Muted foreground text |
+| Disabled | 50% opacity, `cursor-not-allowed` |
+| Focused | 2px ring with Brand Blue |
+
+## Dark Mode Behavior
+
+- Inherits same dark mode patterns as Input
+- Background uses `--background` token (dark surface)
+- Border uses `--input` (semi-transparent white in dark mode)
+
+## Accessibility
+
+- Pair with a `<Label>` for screen reader support
+- Supports `aria-invalid` for validation errors

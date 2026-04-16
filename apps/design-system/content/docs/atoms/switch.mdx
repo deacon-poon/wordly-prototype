@@ -1,0 +1,35 @@
+---
+title: Switch
+description: Toggle switch for binary on/off settings.
+---
+
+import { SwitchDemo } from '@/components/atom-demos';
+
+# Switch
+
+A toggle switch for binary settings like enable/disable. Provides immediate visual feedback.
+
+## Preview
+
+<SwitchDemo />
+
+## States
+
+| State | Track | Thumb |
+|-------|-------|-------|
+| Off | Gray surface (`--surface-2`) | White, left position |
+| On | Brand Blue (`--primary`) | White, right position |
+| Disabled | Gray surface, 50% opacity | White, no interaction |
+
+## Dark Mode Behavior
+
+- Off track uses dark elevated surface (`#21252b`)
+- On track shifts to Brand Blue 300 (`#3396ff`)
+- Thumb remains white in both modes
+- Focus ring uses Brand Blue 500 / 300
+
+## Accessibility
+
+- Uses `role="switch"` with `aria-checked`
+- Keyboard toggle via Space key
+- Focus ring: 2px blue ring with offset

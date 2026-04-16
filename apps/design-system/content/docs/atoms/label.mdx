@@ -1,0 +1,31 @@
+---
+title: Label
+description: Form label component built on Radix UI Label.
+---
+
+import { LabelDemo } from '@/components/atom-demos';
+
+# Label
+
+Accessible label for form controls. Built on Radix UI Label for proper association with inputs.
+
+## Preview
+
+<LabelDemo />
+
+## Styling
+
+- `text-sm font-medium leading-none`
+- Disabled state via `peer-disabled:cursor-not-allowed peer-disabled:opacity-70`
+
+## Dark Mode Behavior
+
+- Text color follows `--foreground` token (off-white `#f0f2f4` in dark)
+- Disabled opacity remains at 70%
+- Required indicators use `--destructive` color
+
+## Accessibility
+
+- Radix Label renders as native `<label>` element
+- Click-to-focus: clicking the label focuses the associated control
+- Pair via `htmlFor` attribute matching the control's `id`

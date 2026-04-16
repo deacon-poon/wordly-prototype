@@ -1,0 +1,41 @@
+---
+title: Select
+description: Dropdown selection component built on Radix UI Select primitive.
+---
+
+import { SelectDemo } from '@/components/atom-demos';
+
+# Select
+
+Dropdown selector for choosing from a list of options. Built on Radix UI Select for full keyboard navigation and accessibility.
+
+## Preview
+
+<SelectDemo />
+
+## Anatomy
+
+| Part | Description |
+|------|-------------|
+| `Select` | Root — manages open state and value |
+| `SelectTrigger` | Button that opens the dropdown |
+| `SelectValue` | Displays the selected value or placeholder |
+| `SelectContent` | Dropdown panel with animation |
+| `SelectItem` | Individual option with check indicator |
+| `SelectGroup` | Groups options under a label |
+| `SelectSeparator` | Visual divider between groups |
+
+## Dark Mode Behavior
+
+- Trigger background shifts to elevated surface (`#21252b`)
+- Trigger border uses semi-transparent white
+- Dropdown content uses `--popover` token (dark card surface)
+- Focused item uses `--accent` token for background highlight
+- Check indicator inherits foreground color
+
+## Accessibility
+
+- Full keyboard navigation: arrow keys, type-ahead, Enter/Space
+- `SelectTrigger` has `role="combobox"` with proper ARIA attributes
+- Focus trapping within open dropdown
+- Scroll buttons appear when content overflows

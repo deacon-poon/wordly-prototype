@@ -1,0 +1,54 @@
+---
+title: Button
+description: Interactive button component with multiple variants, sizes, and states.
+---
+
+import { ButtonDemo, ButtonPropsTable } from '@/components/atom-demos';
+
+# Button
+
+Triggers an action or event. Built on native `<button>` with Radix `Slot` support for composition. Uses Brand Blue as the primary interaction color across all variants.
+
+## Preview
+
+<ButtonDemo />
+
+## Variants
+
+| Variant | Usage |
+|---------|-------|
+| `default` | Primary actions — Brand Blue 500 background |
+| `secondary` | Secondary emphasis — Brand Blue 100 background, Blue 800 text |
+| `outline` | Bordered — transparent background, hover reveals Blue 50 |
+| `ghost` | Minimal — no border, hover reveals Blue 50 |
+| `destructive` | Dangerous actions — red background |
+| `success` | Positive confirmation — green background |
+| `link` | Inline text links — underline on hover |
+
+## Sizes
+
+| Size | Height | Padding |
+|------|--------|---------|
+| `sm` | 36 px | `px-3` |
+| `default` | 40 px | `px-4 py-2` |
+| `lg` | 44 px | `px-8` |
+| `icon` | 40 &times; 40 px | — |
+
+## Dark Mode Behavior
+
+- **Primary** shifts from Brand Blue 500 (`#0063cc`) to Brand Blue 300 (`#3396ff`), foreground inverts to Blue 900
+- **Secondary** shifts to elevated surface (`#21252b`) with light text
+- **Outline / Ghost** hover states use elevated surface tones instead of Blue 50
+- **Destructive** lightens to `#f07870` with dark foreground
+- **Disabled** state uses `opacity-50` in both modes
+
+## Props
+
+<ButtonPropsTable />
+
+## Accessibility
+
+- Uses native `<button>` element for keyboard and screen reader support
+- Focus ring: 2px Brand Blue ring with 2px offset
+- `disabled` attribute removes pointer events and reduces opacity
+- `asChild` enables composition with link elements via Radix Slot

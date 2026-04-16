@@ -1,0 +1,36 @@
+---
+title: Progress
+description: Visual progress indicator bar built on Radix UI Progress.
+---
+
+import { ProgressDemo } from '@/components/atom-demos';
+
+# Progress
+
+Displays task completion as a horizontal bar. Built on Radix UI Progress for accessibility.
+
+## Preview
+
+<ProgressDemo />
+
+## Color Variants
+
+| Variant | Color | Usage |
+|---------|-------|-------|
+| Default | Brand Blue (`--primary`) | Standard progress |
+| Success | Accent Green (`--success`) | Completed or positive progress |
+| Error | Red (`--destructive`) | Failed or negative progress |
+
+## Dark Mode Behavior
+
+- Track background uses `--surface-2` (dark elevated surface)
+- Default indicator shifts to Brand Blue 300 (`#3396ff`)
+- Success indicator uses lighter green (`#66c188`)
+- Error indicator uses lighter red (`#f07870`)
+- Rounded-full on both track and indicator
+
+## Accessibility
+
+- Radix provides `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+- Value is communicated to screen readers automatically
+- Pair with a visible label or percentage for sighted users

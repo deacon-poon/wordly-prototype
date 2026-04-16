@@ -97,14 +97,14 @@ export function FluidRibbon() {
 
   return (
     <div className="absolute inset-0 bg-white">
-      {/* SVG ribbon with per-point wave animation */}
+      {/* SVG ribbon — scales width to container, anchored to bottom-center */}
       <svg
         ref={svgRef}
         viewBox="-400 -150 2300 1050"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="absolute inset-0 h-full w-full"
-        preserveAspectRatio="xMidYMid slice"
+        className="absolute bottom-0 left-1/2 w-[200%] min-w-[1200px] -translate-x-1/2 sm:w-[170%] lg:w-[140%]"
+        preserveAspectRatio="xMidYMax meet"
       >
         <defs>
           <linearGradient

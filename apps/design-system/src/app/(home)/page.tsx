@@ -11,12 +11,22 @@ const foundations = [
 ];
 
 const atoms = [
-  { title: 'Button', href: '/docs/atoms/button' },
-  { title: 'Input', href: '/docs/atoms/input' },
-  { title: 'Badge', href: '/docs/atoms/badge' },
-  { title: 'Avatar', href: '/docs/atoms/avatar' },
-  { title: 'Icon', href: '/docs/atoms/icon' },
-  { title: 'Tooltip', href: '/docs/atoms/tooltip' },
+  { title: 'Button', href: '/docs/atoms/button', ready: true },
+  { title: 'Input', href: '/docs/atoms/input', ready: true },
+  { title: 'Textarea', href: '/docs/atoms/textarea', ready: true },
+  { title: 'Select', href: '/docs/atoms/select', ready: true },
+  { title: 'Checkbox', href: '/docs/atoms/checkbox', ready: true },
+  { title: 'Radio Group', href: '/docs/atoms/radio-group', ready: true },
+  { title: 'Switch', href: '/docs/atoms/switch', ready: true },
+  { title: 'Toggle', href: '/docs/atoms/toggle', ready: true },
+  { title: 'Badge', href: '/docs/atoms/badge', ready: true },
+  { title: 'Avatar', href: '/docs/atoms/avatar', ready: true },
+  { title: 'Label', href: '/docs/atoms/label', ready: true },
+  { title: 'Tooltip', href: '/docs/atoms/tooltip', ready: true },
+  { title: 'Alert', href: '/docs/atoms/alert', ready: true },
+  { title: 'Separator', href: '/docs/atoms/separator', ready: true },
+  { title: 'Skeleton', href: '/docs/atoms/skeleton', ready: true },
+  { title: 'Progress', href: '/docs/atoms/progress', ready: true },
 ];
 
 const molecules = [

@@ -1,0 +1,37 @@
+---
+title: Skeleton
+description: Animated placeholder for content loading states.
+---
+
+import { SkeletonDemo } from '@/components/atom-demos';
+
+# Skeleton
+
+Placeholder animation for content that is loading. Shows a pulsing shape that matches the expected content layout.
+
+## Preview
+
+<SkeletonDemo />
+
+## Patterns
+
+| Pattern | Usage |
+|---------|-------|
+| Card skeleton | Avatar + text lines for user cards |
+| Inline skeleton | Avatar + name/subtitle pairs |
+| Table skeleton | Rows of rectangular placeholders |
+| Text skeleton | Multiple lines with varying widths |
+
+## Usage Guidelines
+
+- Match skeleton shapes to expected content dimensions
+- Last text line should be shorter (~66% width) to simulate natural text flow
+- Use rounded corners matching the content they replace
+- Group related skeletons together for visual coherence
+
+## Dark Mode Behavior
+
+- Uses `--surface-2` token for pulse color
+- Light mode: Gray 100 (`#eef0f2`)
+- Dark mode: elevated surface (`#21252b`)
+- `animate-pulse` opacity cycles between 50% and 100%

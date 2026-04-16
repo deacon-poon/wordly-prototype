@@ -1,0 +1,33 @@
+---
+title: Separator
+description: Visual divider for separating content sections.
+---
+
+import { SeparatorDemo } from '@/components/atom-demos';
+
+# Separator
+
+A thin line used to visually separate content. Built on Radix UI Separator for accessibility.
+
+## Preview
+
+<SeparatorDemo />
+
+## Orientations
+
+| Orientation | Size |
+|-------------|------|
+| `horizontal` | Full width, 1px height |
+| `vertical` | Full height, 1px width |
+
+## Dark Mode Behavior
+
+- Uses `--border` token: Gray 200 (`#e3e6e8`) in light, Gray 700 (`#343a40`) in dark
+- Maintains consistent visual weight across modes
+- `decorative` prop controls whether the separator is announced to screen readers
+
+## Accessibility
+
+- Renders as `role="separator"` by default
+- Set `decorative` to `true` for visual-only separators (removes from accessibility tree)
+- Vertical separators in flex rows serve as column dividers

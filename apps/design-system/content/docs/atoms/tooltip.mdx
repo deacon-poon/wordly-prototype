@@ -1,0 +1,41 @@
+---
+title: Tooltip
+description: Floating label that appears on hover or focus, built on Radix UI Tooltip.
+---
+
+import { TooltipDemo } from '@/components/atom-demos';
+
+# Tooltip
+
+Provides contextual information when hovering or focusing an element. Built on Radix UI Tooltip with animated entrance.
+
+## Preview
+
+<TooltipDemo />
+
+## Anatomy
+
+| Part | Description |
+|------|-------------|
+| `Tooltip` | Root — wraps provider and trigger |
+| `TooltipTrigger` | Element that activates the tooltip |
+| `TooltipContent` | Floating panel with text and arrow |
+
+## Positioning
+
+Content supports `side` prop: `top` (default), `bottom`, `left`, `right`. Each side has a corresponding slide-in animation.
+
+## Dark Mode Behavior
+
+- Background uses `--primary` token (dark in light mode, light in dark mode)
+- Text uses `--primary-foreground` (inverts per mode)
+- Arrow fills match the background for seamless appearance
+- In light mode: dark tooltip on light background
+- In dark mode: light tooltip on dark background
+
+## Accessibility
+
+- `delayDuration` defaults to `0` for immediate display
+- Keyboard accessible — shows on focus, hides on blur
+- Content uses `text-balance` for readable line wrapping
+- Tooltip dismissed on Escape key

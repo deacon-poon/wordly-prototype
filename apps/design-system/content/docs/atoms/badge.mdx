@@ -1,0 +1,45 @@
+---
+title: Badge
+description: Compact label component for status indicators, tags, and counts.
+---
+
+import { BadgeDemo, BadgePropsTable } from '@/components/atom-demos';
+
+# Badge
+
+Small label for categorization, status, and metadata. Supports brand color variants for Wordly-specific use cases.
+
+## Preview
+
+<BadgeDemo />
+
+## Variants
+
+| Variant | Usage |
+|---------|-------|
+| `default` | Primary badge — Brand Blue background |
+| `secondary` | Subtle emphasis — muted background |
+| `destructive` | Error or removal — red background |
+| `outline` | Bordered — text foreground only |
+| `navy` | Brand Blue 500 — primary brand |
+| `accent` | Accent Green 500 — secondary brand |
+
+## Sizes
+
+| Size | Padding | Font |
+|------|---------|------|
+| `sm` | `px-2 py-0.5` | `text-xs` |
+| `default` | `px-2.5 py-0.5` | `text-xs` |
+| `lg` | `px-3 py-1` | `text-sm` |
+
+## Dark Mode Behavior
+
+- **Default** shifts to Brand Blue 300 with dark foreground
+- **Secondary** uses dark elevated surface
+- **Destructive** lightens to `#f07870`
+- **Brand variants** adapt to lighter color steps for contrast on dark surfaces
+- **Outline** border follows `--border` token
+
+## Props
+
+<BadgePropsTable />

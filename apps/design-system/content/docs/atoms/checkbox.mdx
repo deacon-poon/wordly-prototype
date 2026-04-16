@@ -1,0 +1,35 @@
+---
+title: Checkbox
+description: Binary toggle control for forms, built on Radix UI Checkbox.
+---
+
+import { CheckboxDemo } from '@/components/atom-demos';
+
+# Checkbox
+
+A boolean toggle for selecting one or more items in a list. Built on Radix UI Checkbox for accessibility.
+
+## Preview
+
+<CheckboxDemo />
+
+## States
+
+| State | Appearance |
+|-------|------------|
+| Unchecked | Border only, `--primary` color border |
+| Checked | Filled `--primary` background with checkmark icon |
+| Disabled | 50% opacity, `cursor-not-allowed` |
+
+## Dark Mode Behavior
+
+- Unchecked border shifts to Brand Blue 300 (`#3396ff`)
+- Checked fill shifts to Brand Blue 300 with dark foreground
+- Checkmark icon uses `--primary-foreground` (inverts per mode)
+
+## Accessibility
+
+- Radix UI provides `role="checkbox"` with `aria-checked`
+- 2px focus ring with offset for keyboard navigation
+- Label association via `id` / `htmlFor` pairing
+- Supports indeterminate state via Radix API

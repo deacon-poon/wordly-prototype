@@ -4,6 +4,7 @@ description: Dark mode palette construction for Wordly — surfaces, text, brand
 ---
 
 import { ModePair, ColorCard, ColorScale } from '@/components/color-swatch';
+import { SurfaceElevationDemo, CardDemo, StatusBannerDemo, TypographyDemo, MobileScreenDemo } from '@/components/surface-demo';
 
 # Dark Mode
 
@@ -18,16 +19,32 @@ This document defines how the Wordly design system adapts to dark mode, starting
 
 ---
 
+## Interactive Previews
+
+Toggle between light and dark to see how tokens behave across modes.
+
+<SurfaceElevationDemo />
+
+<CardDemo />
+
+<TypographyDemo />
+
+<StatusBannerDemo />
+
+<MobileScreenDemo />
+
+---
+
 ## Surface Elevation System
 
 Following Material Design 3's tonal surface model — each elevation step is lighter, with a subtle brand-blue tint mixed in.
 
 <div className="not-prose flex flex-col gap-3 mb-8">
   <ModePair name="Background (Base)" light="#ffffff" dark="#121416" token="surface/base" />
-  <ModePair name="Surface (Elevated 1)" light="#f8f9fa" dark="#1a1d21" token="surface/1" />
-  <ModePair name="Surface Container (Elevated 2)" light="#f8f9fa" dark="#21252b" token="surface/2" />
-  <ModePair name="Surface Container High (Elevated 3)" light="#eef0f2" dark="#282d35" token="surface/3" />
-  <ModePair name="Surface Container Highest (Elevated 4)" light="#e3e6e8" dark="#2f353e" token="surface/4" />
+  <ModePair name="Surface (Elevated 1)" light="#f8f9fa" dark="#1a1d21" token="surface/elevated-1" />
+  <ModePair name="Surface Container (Elevated 2)" light="#f8f9fa" dark="#21252b" token="surface/elevated-2" />
+  <ModePair name="Surface Container High (Elevated 3)" light="#eef0f2" dark="#282d35" token="surface/elevated-3" />
+  <ModePair name="Surface Container Highest (Elevated 4)" light="#e3e6e8" dark="#2f353e" token="surface/elevated-4" />
 </div>
 
 ### Construction
@@ -194,25 +211,25 @@ All semantic tokens with their Light and Dark mode values, as defined in the Fig
 
 | Token | Light | Dark |
 |-------|-------|------|
-| `surface/base` | `#ffffff` | `#121416` |
-| `surface/elevated-1` | `#f8f9fa` | `#1a1d21` |
-| `surface/elevated-2` | `#f8f9fa` | `#21252b` |
-| `surface/elevated-3` | `#eef0f2` | `#282d35` |
-| `surface/elevated-4` | `#e3e6e8` | `#2f353e` |
-| `card/background` | `#ffffff` | `#1a1d21` |
-| `input/background` | `#ffffff` | `#21252b` |
-| `input/border` | `#e2e8f0` | `rgba(255,255,255,0.16)` |
-| `divider` | `#eef0f2` | `rgba(255,255,255,0.08)` |
-| `white` | `#ffffff` | `#121416` |
-| `black` | `#000000` | `#f0f2f4` |
+| `surface/base` | → white `#ffffff` | → dark-surface/base `#121416` |
+| `surface/elevated-1` | → gray-50 `#f8f9fa` | → dark-surface/elevated-1 `#1a1d21` |
+| `surface/elevated-2` | → gray-50 `#f8f9fa` | → dark-surface/elevated-2 `#21252b` |
+| `surface/elevated-3` | → gray-100 `#eef0f2` | → dark-surface/elevated-3 `#282d35` |
+| `surface/elevated-4` | → gray-200 `#e3e6e8` | → dark-surface/elevated-4 `#2f353e` |
+| `card/background` | → white `#ffffff` | → dark-surface/elevated-1 `#1a1d21` |
+| `input/background` | → white `#ffffff` | → dark-surface/elevated-2 `#21252b` |
+| `input/border` | → gray-150 `#e2e8f0` | → dark-overlay/border `rgba(255,255,255,0.16)` |
+| `divider` | → gray-100 `#eef0f2` | → dark-overlay/divider `rgba(255,255,255,0.08)` |
+| `white` | → white `#ffffff` | → dark-surface/base `#121416` |
+| `black` | → black `#000000` | → gray-25 `#f0f2f4` |
 
 ### Text
 
 | Token | Light | Dark |
 |-------|-------|------|
-| `text/text-regular` | gray-900 `#121416` | `#f0f2f4` |
-| `text/text-secondary` | gray-500 `#646e78` | gray-400 `#9ba3ab` |
-| `text/text-regular-disabled` | gray-500 `#646e78` | gray-600 `#495057` |
+| `text/text-regular` | → gray-900 `#121416` | → gray-25 `#f0f2f4` |
+| `text/text-secondary` | → gray-500 `#646e78` | → gray-400 `#9ba3ab` |
+| `text/text-regular-disabled` | → gray-500 `#646e78` | → gray-600 `#495057` |
 
 ### Actions
 
@@ -241,8 +258,8 @@ All semantic tokens with their Light and Dark mode values, as defined in the Fig
 |-------|-------|------|
 | `button/default` | → actions/primary | → actions/primary |
 | `button/pressed` | → actions/primary-lighter | brand-blue-200 `#75b8ff` |
-| `button/disabled` | gray-100 `#eef0f2` | `#282d35` |
-| `button/focus-ring-on-light` | brand-blue-500 `#0063cc` | `rgba(51,150,255,0.5)` |
+| `button/disabled` | → gray-100 `#eef0f2` | → dark-surface/elevated-3 `#282d35` |
+| `button/focus-ring-on-light` | → brand-blue-500 `#0063cc` | → dark-overlay/focus-brand `rgba(51,150,255,0.5)` |
 | `button/focus-ring-on-dark` | brand-blue-300 `#3396ff` | brand-blue-300 `#3396ff` |
 
 ### Links
@@ -263,7 +280,7 @@ All semantic tokens with their Light and Dark mode values, as defined in the Fig
 | `gray/gray-border` | gray-300 `#cdd2d7` | gray-700 `#343a40` |
 | `gray/gray-muted-highlight` | gray-50 `#f8f9fa` | gray-800 `#212529` |
 | `gray/gray-background-form-header` | gray-50 `#f8f9fa` | gray-800 `#212529` |
-| `shadow/shadow-gray` | gray-300 `#cdd2d7` | `transparent` |
+| `shadow/shadow-gray` | → gray-300 `#cdd2d7` | → transparent |
 
 ### Accent Green
 

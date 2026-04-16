@@ -1,0 +1,42 @@
+---
+title: Toggle
+description: Two-state toggle button built on Radix UI Toggle.
+---
+
+import { ToggleDemo } from '@/components/atom-demos';
+
+# Toggle
+
+A pressable button that toggles between on and off states. Useful for toolbar controls and formatting options.
+
+## Preview
+
+<ToggleDemo />
+
+## Variants
+
+| Variant | Off | On |
+|---------|-----|----|
+| `default` | Transparent | `--accent` background |
+| `outline` | Border, transparent | Border, `--accent` background |
+
+## Sizes
+
+| Size | Height |
+|------|--------|
+| `sm` | 36 px |
+| `default` | 40 px |
+| `lg` | 44 px |
+
+## Dark Mode Behavior
+
+- Off state text uses `--muted-foreground` (lighter gray)
+- On state background uses dark `--accent` surface
+- Hover state uses muted surface tones
+- Border color follows `--input` token
+
+## Accessibility
+
+- Radix provides `aria-pressed` state management
+- Keyboard activation via Enter/Space
+- Focus ring with 2px Brand Blue ring

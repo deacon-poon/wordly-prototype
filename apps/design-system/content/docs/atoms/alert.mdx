@@ -1,0 +1,36 @@
+---
+title: Alert
+description: Contextual feedback messages for status, warnings, errors, and information.
+---
+
+import { AlertDemo } from '@/components/atom-demos';
+
+# Alert
+
+Displays important messages to the user. Supports info, success, warning, and error variants with appropriate color coding.
+
+## Preview
+
+<AlertDemo />
+
+## Variants
+
+| Variant | Light | Dark |
+|---------|-------|------|
+| Info | Blue 25 bg, Blue 700 text | Blue 900 bg, Blue 200 text |
+| Success | Green 25 bg, Green 700 text | Green 950 bg, Green 300 text |
+| Warning | Orange 25 bg, Orange 700 text | Orange 800 bg, Orange 200 text |
+| Error | Red bg, Red 700 text | Red 950 bg, Red 300 text |
+
+## Dark Mode Behavior
+
+- Background colors shift to deep tones from the same hue family
+- Text lightens 2-3 steps for readability on dark backgrounds
+- Border colors match the dark background for subtle containment
+- Icons maintain the same hue but shift to lighter values
+
+## Accessibility
+
+- Use appropriate `role` attributes: `role="alert"` for errors, `role="status"` for info
+- Include an icon paired with color for non-color-dependent communication
+- Keep messages concise and actionable

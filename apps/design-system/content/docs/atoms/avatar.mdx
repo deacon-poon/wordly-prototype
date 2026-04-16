@@ -1,0 +1,44 @@
+---
+title: Avatar
+description: Circular user representation with image and fallback support.
+---
+
+import { AvatarDemo } from '@/components/atom-demos';
+
+# Avatar
+
+Displays a user profile image with a fallback to initials. Built on Radix UI Avatar for image loading states.
+
+## Preview
+
+<AvatarDemo />
+
+## Anatomy
+
+| Part | Description |
+|------|-------------|
+| `Avatar` | Root container — `rounded-full`, overflow hidden |
+| `AvatarImage` | Lazy-loaded image with aspect-square |
+| `AvatarFallback` | Initials or icon shown while image loads or on error |
+
+## Patterns
+
+| Pattern | Usage |
+|---------|-------|
+| Single | User profile display |
+| Sized | `h-8 w-8` (sm), `h-10 w-10` (md), `h-14 w-14` (lg) |
+| Group | Overlapping with `-space-x-2` and ring border |
+| Overflow | `+N` indicator for truncated groups |
+
+## Dark Mode Behavior
+
+- Fallback background uses `--muted` token (dark surface)
+- Group ring color follows `--background` to blend with surface
+- Brand color fallbacks (Blue, Green, Orange) maintain their colors with white text in both modes
+- Overflow badge uses `--surface-2` with muted foreground text
+
+## Accessibility
+
+- `AvatarImage` requires `alt` text
+- Fallback initials are visible to screen readers
+- Group avatars should include a descriptive `aria-label` on the container

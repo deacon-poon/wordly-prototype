@@ -1,0 +1,41 @@
+---
+title: Input
+description: Text input field with placeholder, focus, disabled, and error states.
+---
+
+import { InputDemo, InputPropsTable } from '@/components/atom-demos';
+
+# Input
+
+Standard text input for forms and data entry. Supports all native input types.
+
+## Preview
+
+<InputDemo />
+
+## States
+
+| State | Border | Background | Notes |
+|-------|--------|------------|-------|
+| Default | `--input` | transparent / `--input-bg` | Standard resting state |
+| Placeholder | `--input` | transparent | Muted foreground text |
+| Focused | `--ring` | transparent | 3px ring with 25% opacity |
+| Disabled | `--input` | transparent | 50% opacity, no pointer events |
+| Error | `--destructive` | transparent | Red ring, helper text below |
+
+## Dark Mode Behavior
+
+- Background shifts to `#21252b` with `dark:bg-input/30` transparency
+- Border uses `rgba(255,255,255,0.16)` for subtle contrast
+- Focus ring shifts to Brand Blue 300 (`#3396ff`) with 25% opacity
+- Error ring uses `#f07870` with 20% opacity
+
+## Props
+
+<InputPropsTable />
+
+## Accessibility
+
+- Always pair with a `<Label>` using matching `htmlFor` / `id`
+- Uses `aria-invalid` for error states, which triggers red ring styling
+- File inputs render as inline buttons with accessible text

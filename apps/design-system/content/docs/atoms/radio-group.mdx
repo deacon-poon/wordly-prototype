@@ -1,0 +1,41 @@
+---
+title: Radio Group
+description: Single-selection group control built on Radix UI Radio Group.
+---
+
+import { RadioGroupDemo } from '@/components/atom-demos';
+
+# Radio Group
+
+Allows selecting a single option from a set. Built on Radix UI Radio Group for accessibility.
+
+## Preview
+
+<RadioGroupDemo />
+
+## Anatomy
+
+| Part | Description |
+|------|-------------|
+| `RadioGroup` | Root — manages selected value, renders as grid |
+| `RadioGroupItem` | Individual radio button with circle indicator |
+
+## States
+
+| State | Appearance |
+|-------|------------|
+| Unselected | Circle border only, `--primary` color |
+| Selected | Border with filled circle indicator |
+| Disabled | 50% opacity, no pointer events |
+
+## Dark Mode Behavior
+
+- Border color shifts to Brand Blue 300 (`#3396ff`)
+- Selected indicator fill matches `--primary`
+- Text uses `--foreground` token (off-white in dark)
+
+## Accessibility
+
+- Radix provides `role="radiogroup"` and `role="radio"` with `aria-checked`
+- Arrow key navigation between options
+- Focus ring with 2px offset

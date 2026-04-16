@@ -1,0 +1,21 @@
+{
+  "title": "Atoms",
+  "pages": [
+    "button",
+    "input",
+    "textarea",
+    "select",
+    "checkbox",
+    "radio-group",
+    "switch",
+    "toggle",
+    "badge",
+    "avatar",
+    "label",
+    "tooltip",
+    "alert",
+    "separator",
+    "skeleton",
+    "progress"
+  ]
+}

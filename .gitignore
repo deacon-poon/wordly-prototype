@@ -46,3 +46,6 @@ next-env.d.ts
 # YoYo AI version control directory
 .yoyo/
 .env*.local
+
+# Design system static export (built from apps/design-system)
+public/design-system/
