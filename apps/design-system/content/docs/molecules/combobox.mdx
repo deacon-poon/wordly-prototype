@@ -1,0 +1,38 @@
+---
+title: Combobox
+description: Searchable dropdown with autocomplete for filtering options.
+---
+
+# Combobox
+
+A searchable dropdown that combines a text input with a filterable option list. Use when the option list is large and users benefit from typing to narrow results.
+
+## Variants
+
+| Variant | Description |
+|---------|-------------|
+| Light | Light mode (`mode=light`) |
+| Dark | Dark mode (`mode=dark`) |
+| Collapsed | Closed state showing the trigger (`expand=collapsed`) |
+| Expanded | Open state with search input and filtered list (`expand=expanded`) |
+| With chevron | Trigger includes a dropdown chevron indicator (`has chevron=yes`) |
+| Without chevron | Trigger without a chevron indicator (`has chevron=no`) |
+
+### Figma Component Properties
+
+| Property | Values | Description |
+|----------|--------|-------------|
+| `expand` | `collapsed`, `expanded` | Open/closed state |
+| `has chevron` | `yes`, `no` | Whether the trigger shows a chevron icon |
+| `mode` | `light`, `dark` | Color mode variant |
+
+## Usage Guidelines
+
+- Use when the option list exceeds 10-15 items and searching is more efficient than scrolling
+- Prefer a standard select when the list is short and searching adds unnecessary complexity
+- Show a "no results" message when the search query matches nothing
+- Support keyboard navigation: arrow keys to move, Enter to select, Escape to close
+
+## Figma
+
+View in Figma: [Wordly Design System → Molecules → Forms](https://www.figma.com/design/KIjCL0Hm88Ah2xsJmfvhaZ/Wordly-Design-System)

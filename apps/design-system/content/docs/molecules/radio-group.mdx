@@ -1,0 +1,35 @@
+---
+title: Radio Group
+description: Single-selection control from a set of mutually exclusive options.
+---
+
+# Radio Group
+
+A set of radio buttons for selecting exactly one option from a group. Use when all options should be visible and the list is short (2-7 items).
+
+## Variants
+
+| Variant | Description |
+|---------|-------------|
+| Light | Light mode (`mode=light`) |
+| Dark | Dark mode (`mode=dark`) |
+| Default | Standard interactive state (`Property 1=default`) |
+| Disabled | Non-interactive state (`Property 1=disabled`) |
+
+### Figma Component Properties
+
+| Property | Values | Description |
+|----------|--------|-------------|
+| `Property 1` | `default`, `disabled` | Interaction state |
+| `mode` | `light`, `dark` | Color mode variant |
+
+## Usage Guidelines
+
+- Use when users must choose exactly one option and all choices should be visible
+- Prefer a select dropdown when the list exceeds 7 items
+- Always pre-select a default option unless "no selection" is a valid state
+- Group radio buttons with a descriptive legend using `fieldset` and `legend`
+
+## Figma
+
+View in Figma: [Wordly Design System → Molecules → Forms](https://www.figma.com/design/KIjCL0Hm88Ah2xsJmfvhaZ/Wordly-Design-System)

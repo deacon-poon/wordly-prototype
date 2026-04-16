@@ -30,12 +30,21 @@ const atoms = [
 ];
 
 const molecules = [
-  { title: 'Form Field', href: '/docs/molecules/form-field' },
-  { title: 'Search Bar', href: '/docs/molecules/search-bar' },
-  { title: 'Card', href: '/docs/molecules/card' },
-  { title: 'Dropdown Menu', href: '/docs/molecules/dropdown-menu' },
-  { title: 'Toast', href: '/docs/molecules/toast' },
-  { title: 'Tabs', href: '/docs/molecules/tabs' },
+  { title: 'Button', href: '/docs/molecules/button', ready: true },
+  { title: 'Toggle', href: '/docs/molecules/toggle', ready: true },
+  { title: 'Select', href: '/docs/molecules/select', ready: true },
+  { title: 'Combobox', href: '/docs/molecules/combobox', ready: true },
+  { title: 'Calendar', href: '/docs/molecules/calendar', ready: true },
+  { title: 'Form Field', href: '/docs/molecules/form-field', ready: true },
+  { title: 'Card', href: '/docs/molecules/card', ready: true },
+  { title: 'Dialog', href: '/docs/molecules/dialog', ready: true },
+  { title: 'Dropdown Menu', href: '/docs/molecules/dropdown-menu', ready: true },
+  { title: 'Accordion', href: '/docs/molecules/accordion', ready: true },
+  { title: 'Toast', href: '/docs/molecules/toast', ready: true },
+  { title: 'Tabs', href: '/docs/molecules/tabs', ready: true },
+  { title: 'Table', href: '/docs/molecules/table', ready: true },
+  { title: 'Data Table', href: '/docs/molecules/data-table', ready: true },
+  { title: '+32 more', href: '/docs/molecules', ready: true },
 ];
 
 const organisms = [
