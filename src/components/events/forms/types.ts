@@ -77,6 +77,8 @@ export interface EventDetailsFormData {
 export interface RoomFormData {
   id?: string; // Present when editing, absent when creating
   name: string;
+  // Whether attendees must enter a passcode to join. When true, a passcode is generated.
+  requirePasscode?: boolean;
   // Auto-generated credentials (displayed after creation, placeholders before)
   roomSessionId?: string;
   passcode?: string;

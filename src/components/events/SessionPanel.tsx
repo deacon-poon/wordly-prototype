@@ -41,8 +41,8 @@ interface SessionPanelProps {
   mode: "add" | "edit";
   /** Required for edit mode */
   session?: Session;
-  /** Room details */
-  roomName: string;
+  /** Room details. Optional in add mode — user picks/creates the room from the dropdown. */
+  roomName?: string;
   roomId?: string;
   eventName: string;
   /** Default date for new sessions */
@@ -61,6 +61,7 @@ interface SessionPanelProps {
   onClose: () => void;
   onSave: (session: Session | SessionFormData, isNew: boolean, newRoomId?: string) => void;
   onDelete?: (sessionId: string) => void;
+  /** Open the parent-managed Add Room modal. */
   onAddRoom?: () => void;
 }
 
@@ -266,7 +267,9 @@ export function SessionPanel({
 
   const conflictAlert = getConflictAlert();
 
-  // Reset form and room when session changes (edit mode)
+  // Initialize form fields. Intentionally NOT depending on roomId — we don't want
+  // to wipe the in-progress form when the user creates a room mid-flow and the
+  // parent updates roomId to auto-select it.
   useEffect(() => {
     if (mode === "edit" && session) {
       setCleanState({
@@ -280,12 +283,16 @@ export function SessionPanel({
         timezone: defaultTimezone,
         languages: ["en-US"],
       });
-      setSelectedRoomId(roomId);
     } else if (mode === "add") {
       reset();
-      setSelectedRoomId(roomId);
     }
-  }, [session, mode, roomId]);
+  }, [session?.id, mode]);
+
+  // Sync the room selection when the parent changes the panel's roomId
+  // (e.g. after the Add Room modal saves and we want to auto-select the new draft).
+  useEffect(() => {
+    setSelectedRoomId(roomId);
+  }, [roomId]);
 
   /** Gate close/cancel - prompt for confirmation if form has unsaved changes */
   const handleRequestClose = () => {
@@ -310,6 +317,11 @@ export function SessionPanel({
     }
 
     if (!validate()) {
+      return;
+    }
+
+    if (!selectedRoomId) {
+      // Block save when the user hasn't picked or created a room yet
       return;
     }
 
@@ -362,7 +374,7 @@ export function SessionPanel({
           </div>
           <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1">
             <MapPin className="h-3 w-3" />
-            {roomName} · {eventName}
+            {roomName ? `${roomName} · ${eventName}` : eventName}
           </p>
         </div>
         <Button
@@ -427,7 +439,12 @@ export function SessionPanel({
           <SessionForm
             data={formData}
             onChange={updateSession}
-            errors={errors}
+            errors={{
+              ...errors,
+              ...(!selectedRoomId && mode === "add"
+                ? { roomId: "Select a room or create a new one" }
+                : {}),
+            }}
             mode={mode === "add" ? "create" : "edit"}
             readOnly={isReadOnly}
             activeSessionMode={isActive}
@@ -466,7 +483,12 @@ export function SessionPanel({
           <Button
             type="submit"
             form="session-form"
-            disabled={isSaving || isCompleted || !formData.title.trim()}
+            disabled={
+              isSaving ||
+              isCompleted ||
+              !formData.title.trim() ||
+              (mode === "add" && !selectedRoomId)
+            }
             className="bg-primary-blue-600 hover:bg-primary-blue-700 text-white"
           >
             {isSaving ? (

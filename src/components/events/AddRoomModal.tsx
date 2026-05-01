@@ -11,7 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, MapPin } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info, Loader2, MapPin } from "lucide-react";
 import { useStandaloneRoomForm, RoomFormData } from "./forms";
 
 // ============================================================================
@@ -103,6 +110,42 @@ export function AddRoomModal({
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name}</p>
             )}
+          </div>
+
+          {/* Require attendee passcode */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Label
+                htmlFor="room-require-passcode"
+                className="text-sm font-semibold text-gray-900 cursor-pointer"
+              >
+                Require attendee passcode?
+              </Label>
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-gray-400 hover:text-gray-600"
+                      aria-label="What is the attendee passcode?"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs">
+                    When enabled, attendees must enter a 6-digit passcode to
+                    join the room. Disable for open-access events.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Checkbox
+              id="room-require-passcode"
+              checked={!!room.requirePasscode}
+              onCheckedChange={(checked) =>
+                updateRoom({ requirePasscode: checked === true })
+              }
+            />
           </div>
 
           {/* Hint */}

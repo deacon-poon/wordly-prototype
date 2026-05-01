@@ -25,6 +25,16 @@ import {
   getTimezoneAbbr,
 } from "@/components/ui/datetime-picker";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Check,
+  ChevronsUpDown,
   Clock,
   Trash2,
   Plus,
@@ -187,7 +197,7 @@ interface SessionFormProps {
   selectedRoomId?: string;
   /** Callback when room is changed */
   onRoomChange?: (roomId: string) => void;
-  /** Callback to add a new room */
+  /** Open the Add Room modal. Parent owns the modal + post-save selection. */
   onAddRoom?: () => void;
 }
 
@@ -215,6 +225,10 @@ export function SessionForm({
   const isFieldDisabled = readOnly || activeSessionMode;
   const [showAdvanced, setShowAdvanced] = useState(false);
   const advancedSectionRef = useRef<HTMLDivElement>(null);
+
+  // Searchable room combobox state
+  const [isRoomComboOpen, setIsRoomComboOpen] = useState(false);
+  const selectedRoom = rooms?.find((r) => r.id === selectedRoomId);
 
   const handleLanguageToggle = (code: string) => {
     if (isFieldDisabled) return;
@@ -286,46 +300,106 @@ export function SessionForm({
             {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
           </div>
 
-          {/* Room - editable dropdown if rooms provided, read-only otherwise */}
-          {(rooms && rooms.length > 0) ? (
+          {/* Room - searchable combobox when onAddRoom is provided, read-only when only roomName given */}
+          {onAddRoom ? (
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Room</Label>
-              <Select
-                value={selectedRoomId}
-                onValueChange={(value) => {
-                  if (value === "__add_new__" && onAddRoom) {
-                    onAddRoom();
-                  } else if (onRoomChange) {
-                    onRoomChange(value);
-                  }
-                }}
-                disabled={isFieldDisabled}
+              <Label className="text-sm font-medium text-gray-700">
+                Room *
+              </Label>
+              <Popover
+                open={isRoomComboOpen}
+                onOpenChange={setIsRoomComboOpen}
               >
-                <SelectTrigger>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <SelectValue placeholder="Select room" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {rooms.map((rm) => (
-                    <SelectItem key={rm.id} value={rm.id}>
-                      {rm.name}
-                    </SelectItem>
-                  ))}
-                  {onAddRoom && (
-                    <>
-                      <div className="border-t my-1" />
-                      <SelectItem value="__add_new__" className="text-primary-teal-600">
-                        <span className="flex items-center gap-2">
-                          <Plus className="h-4 w-4" />
-                          Add New Room
-                        </span>
-                      </SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    role="combobox"
+                    aria-expanded={isRoomComboOpen}
+                    aria-label="Select or create a room"
+                    disabled={isFieldDisabled}
+                    className={cn(
+                      "flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-transparent px-3 py-2 text-sm",
+                      "ring-offset-background placeholder:text-gray-400",
+                      "focus:outline-none focus:ring-2 focus:ring-primary-blue-500 focus:ring-offset-2",
+                      "disabled:cursor-not-allowed disabled:opacity-50",
+                      errors.roomId && "border-red-500"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <span
+                        className={cn(
+                          "truncate",
+                          !selectedRoom && "text-gray-400"
+                        )}
+                      >
+                        {selectedRoom
+                          ? selectedRoom.name
+                          : "Select or create a room"}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="h-4 w-4 text-gray-400 flex-shrink-0 opacity-50" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[--radix-popover-trigger-width] p-0"
+                  align="start"
+                >
+                  <Command>
+                    <CommandInput placeholder="Search rooms…" />
+                    <CommandList className="max-h-[240px]">
+                      {rooms && rooms.length > 0 ? (
+                        <>
+                          <CommandEmpty>No rooms match.</CommandEmpty>
+                          <CommandGroup heading="Rooms">
+                            {rooms.map((rm) => (
+                              <CommandItem
+                                key={rm.id}
+                                value={rm.name}
+                                onSelect={() => {
+                                  onRoomChange?.(rm.id);
+                                  setIsRoomComboOpen(false);
+                                }}
+                                className="aria-selected:bg-green-50 aria-selected:text-gray-900"
+                              >
+                                <MapPin className="mr-2 h-4 w-4 text-gray-400" />
+                                <span className="flex-1 truncate">
+                                  {rm.name}
+                                </span>
+                                {selectedRoomId === rm.id && (
+                                  <Check className="ml-2 h-4 w-4 text-primary-teal-600" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </>
+                      ) : (
+                        <CommandEmpty>
+                          No rooms yet — create the first one.
+                        </CommandEmpty>
+                      )}
+                    </CommandList>
+                    {/* Pinned "Add new room" — outside CommandList so it never scrolls
+                        and is unaffected by the search filter. */}
+                    <div className="border-t border-gray-200 bg-white p-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsRoomComboOpen(false);
+                          onAddRoom();
+                        }}
+                        className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-sm font-medium text-primary-teal-600 hover:bg-green-50 focus:outline-none focus:bg-green-50"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add new room
+                      </button>
+                    </div>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {errors.roomId && (
+                <p className="text-sm text-red-500">{errors.roomId}</p>
+              )}
             </div>
           ) : roomName ? (
             <div className="space-y-2">

@@ -227,6 +227,95 @@ function generateMockSessions(
   return sessions;
 }
 
+// Generate a large event to demo "Show More" at all three levels:
+// - 18+ days (triggers days Show More at 15)
+// - 18+ rooms on one day (triggers rooms Show More at 15)
+// - 18+ sessions per room (triggers sessions Show More at 15)
+function generateLargeEventRooms(eventStartDate: Date): Room[] {
+  const roomNames = [
+    "Main Auditorium", "Workshop Room A", "Breakout Room B", "Innovation Lab",
+    "Executive Boardroom", "Training Center", "Keynote Hall", "Demo Theater",
+    "Collaboration Space", "Research Lab", "Design Studio", "Engineering Hub",
+    "Product Theater", "Analytics Room", "Cloud Lab", "Security Center",
+    "AI Workshop", "Data Science Lab", "DevOps Arena", "Mobile Lab",
+  ];
+
+  const sessionTitles = [
+    "Opening Keynote", "Panel Discussion", "Workshop", "Deep Dive",
+    "Lightning Talk", "Fireside Chat", "Technical Demo", "Roundtable",
+    "Breakout Session", "Hands-on Lab", "Case Study", "Architecture Review",
+    "Design Sprint", "Retrospective", "Closing Remarks",
+  ];
+
+  const presenterNames = [
+    "Dr. Sarah Chen", "John Smith", "Mike Rodriguez", "Emily Zhang",
+    "Alex Thompson", "Jennifer Wu", "Robert Kim", "Lisa Park",
+    "David Martinez", "Tom Anderson", "Rachel Green", "Bob Johnson",
+  ];
+
+  const rooms: Room[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Create 20 rooms — ALL rooms have sessions on day 0 (today) so one day has 20 rooms
+  // Each room also has sessions on 1-2 other days spread across 18+ total days
+  for (let r = 0; r < 20; r++) {
+    const sessions: Session[] = [];
+
+    // Every room gets 18 sessions on the event's "today" (day 0 offset from start)
+    // This ensures one day has 20 rooms with 18 sessions each
+    const todayStr = new Date(eventStartDate.getTime() + 10 * 86400000).toISOString().split("T")[0]; // day 10 = today relative
+    for (let s = 0; s < 18; s++) {
+      const hour = 7 + Math.floor(s / 2);
+      const min = (s % 2) * 30;
+      sessions.push({
+        id: `room${r}-today-ses-${s}`,
+        title: `${sessionTitles[(r + s) % sessionTitles.length]}: ${roomNames[r]}`,
+        presenters: [
+          presenterNames[(r + s) % presenterNames.length],
+          ...(s % 3 === 0 ? [presenterNames[(r + s + 5) % presenterNames.length]] : []),
+        ],
+        scheduledDate: todayStr,
+        scheduledStart: `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
+        endTime: `${String(hour).padStart(2, "0")}:${String(min + 30).padStart(2, "0")}`,
+        status: "pending",
+      });
+    }
+
+    // Also add sessions on unique other days to create 18+ total days
+    // Room 0 gets day 0, room 1 gets day 1, etc. — ensures 20 unique days
+    const otherDayOffset = r; // Each room gets a unique day
+    const otherDate = new Date(eventStartDate.getTime() + otherDayOffset * 86400000);
+    const otherDateStr = otherDate.toISOString().split("T")[0];
+    const otherIsPast = otherDate < today;
+
+    if (otherDateStr !== todayStr) {
+      for (let s = 0; s < 4; s++) {
+        sessions.push({
+          id: `room${r}-other-ses-${s}`,
+          title: `${sessionTitles[(r + s + 3) % sessionTitles.length]}: Day ${r + 1}`,
+          presenters: [presenterNames[(r + s + 2) % presenterNames.length]],
+          scheduledDate: otherDateStr,
+          scheduledStart: `${String(9 + s * 2).padStart(2, "0")}:00`,
+          endTime: `${String(10 + s * 2).padStart(2, "0")}:00`,
+          status: otherIsPast ? "completed" : "pending",
+        });
+      }
+    }
+
+    rooms.push({
+      id: `loc-gen-${String(r).padStart(3, "0")}`,
+      name: roomNames[r],
+      sessionCount: sessions.length,
+      roomSessionId: `${roomNames[r].substring(0, 4).toUpperCase().replace(/\s/g, "")}-${1000 + r}`,
+      passcode: String(100000 + r * 11111).substring(0, 6),
+      sessions,
+    });
+  }
+
+  return rooms;
+}
+
 // Helper to get relative dates
 const getRelativeDate = (daysFromNow: number): Date => {
   const date = new Date();
@@ -259,8 +348,8 @@ function getMockEventData(eventId: string): Event {
   const eventDataMap: Record<string, Partial<Event>> = {
     "evt-001": {
       name: "AI & Machine Learning Summit 2026",
-      startDate: getRelativeDate(0),
-      endDate: getRelativeDate(1),
+      startDate: getRelativeDate(-10),
+      endDate: getRelativeDate(10),
       timezone: "America/Los_Angeles",
       publicSummaryUrl: "/public/ai-ml-summit-2026",
     },
@@ -306,20 +395,12 @@ function getMockEventData(eventId: string): Event {
     };
   }
 
-  return {
-    id: eventId,
-    name: eventData.name || "Sample Event",
-    dateRange: formatDateRange(
-      eventData.startDate || getRelativeDate(0),
-      eventData.endDate || getRelativeDate(1)
-    ),
-    startDate: eventData.startDate || getRelativeDate(0),
-    endDate: eventData.endDate || getRelativeDate(1),
-    timezone: eventData.timezone || "America/Los_Angeles",
-    roomCount: 3,
-    sessionCount: 12,
-    publicSummaryUrl: eventData.publicSummaryUrl,
-    rooms: [
+  // For evt-001, generate large dataset to demo "Show More" at all levels
+  const generatedRooms = eventId === "evt-001"
+    ? generateLargeEventRooms(eventData.startDate || getRelativeDate(0))
+    : null;
+
+  const eventRooms = generatedRooms || [
       {
         id: "loc-001",
         name: "Main Auditorium",
@@ -465,12 +546,29 @@ function getMockEventData(eventId: string): Event {
           },
         ],
       },
-    ],
+    ];
+
+  const totalSessions = eventRooms.reduce((sum, r) => sum + r.sessions.length, 0);
+
+  return {
+    id: eventId,
+    name: eventData.name || "Sample Event",
+    dateRange: formatDateRange(
+      eventData.startDate || getRelativeDate(0),
+      eventData.endDate || getRelativeDate(1)
+    ),
+    startDate: eventData.startDate || getRelativeDate(0),
+    endDate: eventData.endDate || getRelativeDate(1),
+    timezone: eventData.timezone || "America/Los_Angeles",
+    roomCount: eventRooms.length,
+    sessionCount: totalSessions,
+    publicSummaryUrl: eventData.publicSummaryUrl,
+    rooms: eventRooms,
     account: {
       id: "acc-001",
       name: "Deacon Poon (2a4...)",
     },
-    totalMinutes: 1500, // 25 hours allocated for this event
+    totalMinutes: 1500,
   };
 }
 
@@ -510,15 +608,19 @@ export default function EventDetailPage({
     });
   };
 
+  // Tracks how many days to show (for "Show More" days)
+  const DAYS_PAGE_SIZE = 15;
+  const [visibleDaysCount, setVisibleDaysCount] = useState(DAYS_PAGE_SIZE);
+
   // Tracks how many rooms to show per day (for "Show More" rooms)
-  const ROOMS_PAGE_SIZE = 50;
+  const ROOMS_PAGE_SIZE = 15;
   const [visibleRoomsPerDay, setVisibleRoomsPerDay] = useState<
     Record<string, number>
   >({});
 
   // Tracks how many sessions to show per room+date (persists across accordion collapse/expand)
   // Key format: "roomId:date"
-  const SESSION_PAGE_SIZE = 5; // Demo: 5, Production: 50
+  const SESSION_PAGE_SIZE = 15;
   const [visibleSessionsPerRoom, setVisibleSessionsPerRoom] = useState<
     Record<string, number>
   >({});
@@ -534,13 +636,14 @@ export default function EventDetailPage({
     }));
   };
 
-  // Session panel state (unified for add/edit)
+  // Session panel state (unified for add/edit). roomId/roomName are optional so the panel
+  // can be opened from an empty event state, before any room exists.
   const [sessionPanelState, setSessionPanelState] = useState<{
     isOpen: boolean;
     mode: "add" | "edit";
     session?: Session;
-    roomId: string;
-    roomName: string;
+    roomId?: string;
+    roomName?: string;
   } | null>(null);
 
   // Transcript panel state
@@ -550,8 +653,17 @@ export default function EventDetailPage({
     roomName: string;
   } | null>(null);
 
-  // Add Room modal
+  // Add Room modal — opened from inside the session form's room dropdown.
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
+
+  // Draft room created from inside the session form; only persisted to event.rooms
+  // when the session is saved. Discarded if the panel is cancelled.
+  const [pendingRoom, setPendingRoom] = useState<{
+    id: string;
+    name: string;
+    requirePasscode?: boolean;
+  } | null>(null);
+
   const [editRoomContext, setEditRoomContext] = useState<{
     room: Room;
   } | null>(null);
@@ -841,8 +953,18 @@ export default function EventDetailPage({
     });
   };
 
+  const handleAddSessionFromEmpty = () => {
+    setSessionPanelState({
+      isOpen: true,
+      mode: "add",
+      roomId: undefined,
+      roomName: undefined,
+    });
+  };
+
   const handleCloseSessionPanel = () => {
     setSessionPanelState(null);
+    setPendingRoom(null);
   };
 
   const handleSaveSession = (
@@ -866,23 +988,60 @@ export default function EventDetailPage({
         status: "pending",
       };
 
-      // Add to selected room (which may be different from the one panel was opened from)
-      const targetRoomId = newRoomId || sessionPanelState?.roomId;
-      
-      setEvent((prev) => ({
-        ...prev,
-        sessionCount: prev.sessionCount + 1,
-        rooms: prev.rooms.map((rm) =>
-          rm.id === targetRoomId
-            ? {
-                ...rm,
-                sessions: [...rm.sessions, newSession],
-                sessionCount: rm.sessionCount + 1,
-              }
-            : rm
-        ),
-      }));
-      toast.success(`Session "${formData.title}" added successfully`);
+      // Selected room from the form (may differ from the panel's opening room).
+      const selectedRoomId = newRoomId || sessionPanelState?.roomId;
+
+      // If the user created a room inline, materialize it now alongside the session.
+      const isPendingRoom =
+        pendingRoom !== null && selectedRoomId === pendingRoom.id;
+
+      const materializedRoom: Room | null = isPendingRoom
+        ? {
+            id: `loc-${Date.now()}`,
+            name: pendingRoom!.name,
+            sessionCount: 1,
+            roomSessionId: `${Array.from({ length: 4 }, () =>
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)]
+            ).join("")}-${Math.floor(1000 + Math.random() * 9000)}`,
+            passcode: pendingRoom!.requirePasscode
+              ? Math.random().toString().substring(2, 8)
+              : "",
+            sessions: [newSession],
+          }
+        : null;
+
+      const targetRoomId = materializedRoom
+        ? materializedRoom.id
+        : selectedRoomId;
+
+      setEvent((prev) => {
+        const nextRooms = materializedRoom
+          ? [...prev.rooms, materializedRoom]
+          : prev.rooms.map((rm) =>
+              rm.id === targetRoomId
+                ? {
+                    ...rm,
+                    sessions: [...rm.sessions, newSession],
+                    sessionCount: rm.sessionCount + 1,
+                  }
+                : rm
+            );
+        return {
+          ...prev,
+          sessionCount: prev.sessionCount + 1,
+          roomCount: materializedRoom ? prev.roomCount + 1 : prev.roomCount,
+          rooms: nextRooms,
+        };
+      });
+
+      if (materializedRoom) {
+        toast.success(
+          `Session "${formData.title}" added in new room "${materializedRoom.name}"`
+        );
+      } else {
+        toast.success(`Session "${formData.title}" added successfully`);
+      }
+      setPendingRoom(null);
     } else {
       // Editing existing session
       const updatedSession = sessionData as Session;
@@ -1208,7 +1367,7 @@ export default function EventDetailPage({
         )}
       >
         <div className="px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-5">
-          {/* Row 1: Title (editable) + Add Room */}
+          {/* Row 1: Title (editable) + Add Session */}
           <div className="flex items-center justify-between gap-2 sm:gap-3 mb-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {isEditingEventName ? (
@@ -1274,15 +1433,15 @@ export default function EventDetailPage({
                 </div>
               )}
             </div>
-            {/* Add Room button - primary action */}
+            {/* Add Session button - primary action */}
             <Button
-              onClick={() => setIsAddRoomModalOpen(true)}
+              onClick={handleAddSessionFromEmpty}
               disabled={isPastEvent}
               className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white flex-shrink-0"
-              title={isPastEvent ? "Cannot add to past events" : "Add Room"}
+              title={isPastEvent ? "Cannot add to past events" : "Add Session"}
             >
               <Plus className="h-4 w-4 @sm:mr-2" />
-              <span className="hidden @sm:inline">Add Room</span>
+              <span className="hidden @sm:inline">Add Session</span>
             </Button>
           </div>
 
@@ -1429,16 +1588,35 @@ export default function EventDetailPage({
           <Card className="p-8 text-center">
             {/* New event - no rooms at all */}
             {event.rooms.length === 0 ? (
-              <div className="space-y-2">
-                <p className="text-gray-700 font-medium">
-                  This is a new event
-                </p>
-                <p className="text-gray-600">
-                  Click <span className="font-medium">Add Room</span> to add
-                  rooms one at a time, or{" "}
-                  <span className="font-medium">Upload Schedule</span> to bulk
-                  import from a spreadsheet.
-                </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-gray-700 font-medium">
+                    This is a new event
+                  </p>
+                  <p className="text-gray-600">
+                    Add a session to get started — you'll create the room as
+                    part of the session, or{" "}
+                    <span className="font-medium">Upload Schedule</span> to
+                    bulk import from a spreadsheet.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3">
+                  <Button
+                    onClick={handleAddSessionFromEmpty}
+                    disabled={isPastEvent}
+                    className="bg-primary-teal-600 hover:bg-primary-teal-700 text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Session
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsUploadModalOpen(true)}
+                    disabled={isPastEvent}
+                  >
+                    Upload Schedule
+                  </Button>
+                </div>
               </div>
             ) : (
               <p className="text-gray-600">
@@ -1451,7 +1629,7 @@ export default function EventDetailPage({
           </Card>
         ) : filteredDates.length > 0 ? (
           <>
-            {filteredDates.map((date) => {
+            {filteredDates.slice(0, visibleDaysCount).map((date) => {
               const sessionsForDate = sessionsByDate[date];
 
               // Category headers when on "All" tab
@@ -1629,6 +1807,25 @@ export default function EventDetailPage({
                 </React.Fragment>
               );
             })}
+
+            {/* Show More Days button */}
+            {filteredDates.length > visibleDaysCount && (
+              <div className="flex items-center gap-3 px-2 py-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setVisibleDaysCount((prev) => prev + DAYS_PAGE_SIZE)}
+                  className="text-gray-600 hover:text-gray-900 border-gray-300"
+                >
+                  <ChevronDown className="h-4 w-4 mr-1.5" />
+                  Show More Days ({Math.min(filteredDates.length - visibleDaysCount, DAYS_PAGE_SIZE)} of{" "}
+                  {filteredDates.length - visibleDaysCount} remaining)
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Showing {visibleDaysCount} of {filteredDates.length} days
+                </span>
+              </div>
+            )}
           </>
         ) : null}
       </div>
@@ -1677,44 +1874,27 @@ export default function EventDetailPage({
         />
       )}
 
-      {/* Add Room Modal */}
+      {/* Add Room Modal — opened from the session form's room dropdown.
+          Save stages a pending draft that only persists when the session is saved. */}
       <AddRoomModal
         open={isAddRoomModalOpen}
         onOpenChange={setIsAddRoomModalOpen}
         eventName={event.name}
         onSave={async (roomData: RoomFormData) => {
-          // Create a new empty room with generated IDs
-          const newRoom: Room = {
-            id: `loc-${Date.now()}`,
+          const draft = {
+            id: `pending-${Date.now()}`,
             name: roomData.name,
-            sessionCount: 0,
-            roomSessionId:
-              roomData.roomSessionId ||
-              `${Array.from({ length: 4 }, () =>
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)]
-              ).join("")}-${Math.floor(1000 + Math.random() * 9000)}`,
-            passcode:
-              roomData.passcode || Math.random().toString().substring(2, 8),
-            sessions: [],
+            requirePasscode: roomData.requirePasscode,
           };
-
-          // Update event state with new room
-          setEvent((prev) => ({
-            ...prev,
-            rooms: [...prev.rooms, newRoom],
-            roomCount: prev.roomCount + 1,
-          }));
-
-          toast.success(`Room "${roomData.name}" added. Add sessions to schedule it.`);
+          setPendingRoom(draft);
+          // Auto-select the draft in the open session panel without resetting
+          // the form (SessionPanel's room-select effect now runs independently).
+          setSessionPanelState((prev) =>
+            prev
+              ? { ...prev, roomId: draft.id, roomName: draft.name }
+              : prev
+          );
           setIsAddRoomModalOpen(false);
-
-          // Open the session panel to encourage adding a session immediately
-          setSessionPanelState({
-            isOpen: true,
-            mode: "add",
-            roomId: newRoom.id,
-            roomName: newRoom.name,
-          });
         }}
       />
 
@@ -1801,7 +1981,10 @@ export default function EventDetailPage({
       roomId={sessionPanelState.roomId}
       eventName={event.name}
       defaultDate={mostRecentSessionDate}
-      rooms={event.rooms.map((rm) => ({ id: rm.id, name: rm.name }))}
+      rooms={[
+        ...event.rooms.map((rm) => ({ id: rm.id, name: rm.name })),
+        ...(pendingRoom ? [pendingRoom] : []),
+      ]}
       allRooms={event.rooms}
       accountMinutes={accountMinutes}
       onClose={handleCloseSessionPanel}
