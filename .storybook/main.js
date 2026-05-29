@@ -2,9 +2,12 @@ const path = require("path");
 
 const config = {
   stories: [
+    // packages/ui — single source of truth for all component stories
+    "../packages/ui/src/**/*.stories.@(js|jsx|ts|tsx)",
+    "../packages/ui/src/**/*.mdx",
+    // Root-level narrative/intro stories only (NOT component stories)
     "../src/stories/**/*.mdx",
     "../src/stories/**/*.stories.@(js|jsx|ts|tsx)",
-    "../src/components/**/*.stories.@(js|jsx|ts|tsx)",
   ],
   addons: [
     "@storybook/addon-links",

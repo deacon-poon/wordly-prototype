@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev": "next dev",
@@ -24,7 +25,8 @@
     "check:deps": "node scripts/check-dependencies.js",
     "check:deps:pro": "node scripts/check-deps-pro.js",
     "fix:deps": "node scripts/fix-dependencies.js",
-    "postinstall": "echo \"Skipping dependency check for now\""
+    "postinstall": "echo \"Skipping dependency check for now\"",
+    "create-app": "node scripts/create-app.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.88",

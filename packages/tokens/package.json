@@ -1,0 +1,14 @@
+{
+  "name": "@wordly/tokens",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/tokens.css",
+  "exports": {
+    "./tokens.css": "./src/tokens.css",
+    "./tokens.json": "./src/tokens.json"
+  },
+  "files": ["src"],
+  "scripts": {
+    "generate": "node ../../scripts/generate-figma-tokens.js"
+  }
+}

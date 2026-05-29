@@ -1,0 +1,10 @@
+{
+  "name": "@wordly/justin-prototype",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve public --listen 3002",
+    "build": "echo 'Static prototype — no build step'",
+    "preview": "npx serve public"
+  }
+}
