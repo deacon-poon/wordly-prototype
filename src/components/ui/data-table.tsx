@@ -69,7 +69,7 @@ export function DataTable<T>({
                   selectedItem &&
                     idField &&
                     row[idField] === selectedItem[idField]
-                    ? "bg-brand-teal/10"
+                    ? "bg-accent-green-50"
                     : "",
                   rowClassName && rowClassName(row)
                 )}
@@ -88,6 +88,65 @@ export function DataTable<T>({
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+/**
+ * Highlights matching substrings within text.
+ * Supports fuzzy-style highlighting by bolding all occurrences of the query.
+ */
+export function HighlightText({
+  text,
+  query,
+  className,
+}: {
+  text: string;
+  query?: string;
+  className?: string;
+}) {
+  if (!query?.trim()) return <span className={className}>{text}</span>;
+
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+
+  // Find all match positions
+  const parts: { text: string; highlight: boolean }[] = [];
+  let lastIndex = 0;
+  let searchFrom = 0;
+
+  while (searchFrom < lowerText.length) {
+    const idx = lowerText.indexOf(lowerQuery, searchFrom);
+    if (idx === -1) break;
+
+    if (idx > lastIndex) {
+      parts.push({ text: text.slice(lastIndex, idx), highlight: false });
+    }
+    parts.push({ text: text.slice(idx, idx + query.length), highlight: true });
+    lastIndex = idx + query.length;
+    searchFrom = lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ text: text.slice(lastIndex), highlight: false });
+  }
+
+  if (parts.length === 0) return <span className={className}>{text}</span>;
+
+  return (
+    <span className={className}>
+      {parts.map((part, i) =>
+        part.highlight ? (
+          <mark
+            key={i}
+            className="bg-amber-200/70 text-inherit rounded-sm px-0.5"
+          >
+            {part.text}
+          </mark>
+        ) : (
+          <span key={i}>{part.text}</span>
+        )
+      )}
+    </span>
   );
 }
 

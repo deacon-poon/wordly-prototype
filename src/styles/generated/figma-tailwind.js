@@ -15,7 +15,7 @@
  *     }
  *   }
  *
- * Generated at: 2026-01-30T23:17:54.787Z
+ * Generated at: 2026-04-16T18:55:26.105Z
  */
 
 module.exports = {
@@ -93,8 +93,10 @@ module.exports = {
         "900": "#2E0906"
     },
     "gray": {
+        "25": "#F0F2F4",
         "50": "#F8F9FA",
         "100": "#EEF0F2",
+        "150": "#E2E8F0",
         "200": "#E3E6E8",
         "300": "#CDD2D7",
         "400": "#9BA3AB",
@@ -199,7 +201,8 @@ module.exports = {
     "semantic-text": {
         "text-regular": "#121416",
         "text-regular-disabled": "#646E78",
-        "text-secondary": "#646E78"
+        "text-secondary": "#646E78",
+        "on-primary": "#FFFFFF"
     },
     "semantic-black": {
         "undefined": "#000000"
@@ -230,6 +233,38 @@ module.exports = {
         "900": "#3D1900",
         "950": "#1A0B00",
         "975": "#0A0400"
+    },
+    "dark-surface": {
+        "base": "#121416",
+        "elevated-1": "#1A1D21",
+        "elevated-2": "#21252B",
+        "elevated-3": "#282D35",
+        "elevated-4": "#2F353E"
+    },
+    "dark-overlay": {
+        "border": "#FFFFFF",
+        "divider": "#FFFFFF",
+        "focus-brand": "#3396FF"
+    },
+    "transparent": {
+        "DEFAULT": "#000000"
+    },
+    "semantic-surface": {
+        "base": "#FFFFFF",
+        "elevated-1": "#F8F9FA",
+        "elevated-2": "#F8F9FA",
+        "elevated-3": "#EEF0F2",
+        "elevated-4": "#E3E6E8"
+    },
+    "semantic-input": {
+        "background": "#FFFFFF",
+        "border": "#E2E8F0"
+    },
+    "semantic-divider": {
+        "undefined": "#EEF0F2"
+    },
+    "semantic-card": {
+        "background": "#FFFFFF"
     }
 },
   spacing: {},

@@ -20,6 +20,7 @@ import {
   ListChecks,
   UserCog,
   CalendarDays,
+  BarChart3,
 } from "lucide-react";
 import { SidebarSection, SidebarItem } from "@/components/ui/sidebar";
 import {
@@ -31,10 +32,19 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/contexts/workspace-context";
+import * as LucideIcons from "lucide-react";
+import { getFeatureNavLinks } from "@/shell/nav-registry";
 
 interface NavWorkspaceProps {
   pathname: string;
   onClick?: () => void;
+}
+
+// Resolve a lucide icon by name (set in a feature's feature.config.ts), with a fallback.
+function FeatureIcon({ name }: { name: string }) {
+  const icons = LucideIcons as unknown as Record<string, React.ElementType>;
+  const Icon = icons[name] ?? LucideIcons.Sparkles;
+  return <Icon className="h-4 w-4" />;
 }
 
 interface WorkspaceItem {
@@ -119,6 +129,12 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       icon: Settings,
     },
     {
+      id: "org-usage",
+      title: "Usage",
+      href: "/organization/usage",
+      icon: BarChart3,
+    },
+    {
       id: "billing",
       title: "Billing",
       href: "/organization/billing",
@@ -196,6 +212,15 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
               />
             </Link>
           ))}
+          {getFeatureNavLinks("main").map((item) => (
+            <Link key={item.id} href={item.href} onClick={onClick}>
+              <SidebarItem
+                icon={<FeatureIcon name={item.icon} />}
+                title={item.title}
+                isActive={pathname === item.href}
+              />
+            </Link>
+          ))}
         </div>
       </SidebarSection>
 
@@ -211,6 +236,15 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
               />
             </Link>
           ))}
+          {getFeatureNavLinks("workspace").map((item) => (
+            <Link key={item.id} href={item.href} onClick={onClick}>
+              <SidebarItem
+                icon={<FeatureIcon name={item.icon} />}
+                title={item.title}
+                isActive={pathname === item.href}
+              />
+            </Link>
+          ))}
         </div>
       </SidebarSection>
 
@@ -221,6 +255,16 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
             <Link key={item.id} href={item.href} onClick={onClick}>
               <SidebarItem
                 icon={<item.icon className="h-4 w-4" />}
+                title={item.title}
+                isActive={pathname === item.href}
+                variant="organization"
+              />
+            </Link>
+          ))}
+          {getFeatureNavLinks("organization").map((item) => (
+            <Link key={item.id} href={item.href} onClick={onClick}>
+              <SidebarItem
+                icon={<FeatureIcon name={item.icon} />}
                 title={item.title}
                 isActive={pathname === item.href}
                 variant="organization"

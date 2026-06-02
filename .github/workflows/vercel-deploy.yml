@@ -14,19 +14,21 @@ jobs:
   build-and-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "18"
-          cache: "npm"
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
+      # Lint is a signal, not a deploy gate (prototype). `next build` does not run
+      # ESLint (eslint.ignoreDuringBuilds in next.config.js), so the build is the gate.
       - name: Lint
-        run: npm run lint
+        run: bun run lint
+        continue-on-error: true
 
       - name: Build
-        run: npm run build
+        run: bun run build

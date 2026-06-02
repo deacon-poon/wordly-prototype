@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
+    "predev": "npm run generate:features",
     "dev": "next dev",
     "tokens:generate": "node scripts/generate-figma-tokens.js",
-    "prebuild": "echo \"Skipping dependency check for now\"",
+    "generate:features": "node scripts/generate-feature-registry.js",
+    "create-feature": "node scripts/create-feature.js",
+    "prebuild": "npm run generate:features",
     "build": "next build",
-    "prebuild:vercel": "echo \"Skipping dependency check for now\"",
+    "prebuild:vercel": "npm run generate:features",
     "build:vercel": "next build",
     "build:storybook": "storybook build",
     "build:storybook:vercel": "npm run build:storybook",
@@ -24,7 +28,8 @@
     "check:deps": "node scripts/check-dependencies.js",
     "check:deps:pro": "node scripts/check-deps-pro.js",
     "fix:deps": "node scripts/fix-dependencies.js",
-    "postinstall": "echo \"Skipping dependency check for now\""
+    "postinstall": "echo \"Skipping dependency check for now\"",
+    "create-app": "node scripts/create-app.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.88",
