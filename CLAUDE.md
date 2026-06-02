@@ -10,6 +10,63 @@ Wordly is a translation platform prototype (design exploration, not production).
 - `docs/decision.md` - Architectural decision log
 - `docs/feature.json` - Feature tracker with completion criteria
 - `src/documentation/` - Feature specs and gap analyses
+- `docs/COLLABORATING.md` - Human guide for prototype creators (the four verbs)
+
+## Wordly Lab — Collaboration Architecture (READ THIS)
+
+This repo is a **shared prototyping app**. Multiple people (mostly non-technical,
+driving Claude Code) build prototypes here. Each prototype is a **feature module**
+that plugs into the app with **zero edits to shared files**, so contributors never
+collide. As the agent, you own the Git/build/deploy mechanics for them.
+
+### Feature modules
+- One folder per prototype: `src/features/<name>/` — `<name>` is **semantic** (what
+  it is, e.g. `attendee-highlights`), **never a person's name**.
+- Required files: `feature.config.ts` (the contract) + `index.tsx` (`"use client"`,
+  default-exports the root component). Build everything else inside that folder.
+- `src/features/_template/` is the starter. Do not build in it.
+
+### The contract — `feature.config.ts`
+```ts
+{
+  id: "attendee-highlights",      // == folder name; route becomes /lab/<id>
+  title: "Attendee Highlights",
+  owner: "github-handle",          // ownership metadata (not the folder name)
+  stage: "draft",
+  chrome: "portal" | "standalone", // see below (default "portal")
+  nav: { group: "main"|"workspace"|"organization", label, icon, order }
+}
+```
+- **`chrome: "portal"`** → renders inside the dashboard shell (sidebar + header).
+  Use for admin/portal features (Events, settings, etc.).
+- **`chrome: "standalone"`** → full-screen, no shell. Use for **attendee/public
+  end-user experiences**. It still gets a sidebar entry (the portal → experience
+  launch point); the feature must provide its own "← Portal" link back to `/dashboard`.
+  Decide by asking: *is this the admin portal, or an end-user/attendee experience?*
+
+### How registration works (don't hand-wire it)
+- `npm run create-feature <name> [github-owner]` scaffolds a feature from the template.
+- A codegen step (`npm run generate:features`, auto-run on `predev`/`prebuild`) scans
+  `src/features/*` and rewrites `src/shell/feature-registry.generated.ts`. That powers
+  the sidebar (`nav-registry.ts` → `nav-workspace.tsx`) and the single catch-all route
+  `src/app/lab/[feature]/page.tsx`. **Adding a feature touches no shared file.**
+- Never hand-edit `feature-registry.generated.ts`; regenerate it (resolves any conflict).
+
+### Rules for the agent
+- **Extend, don't edit.** Stay inside the contributor's `src/features/<name>/` folder.
+  `src/shell/`, `src/components/`, `packages/`, layout, and globals are owner-gated
+  (`.github/CODEOWNERS` → @deacon-poon). If a change there is truly needed, flag it —
+  it will require Deacon's review.
+- Reuse atoms from `@/components/ui/*` to match the product look (the reusability goal).
+- Use the project's brand tokens (`primary-blue-*`, `accent-green-*`, `action-teal-*`).
+- Never add to `globals.css` or `tailwind.config.js` for a single feature; scope styles
+  to the feature (Tailwind utilities or a `*.module.css`).
+
+### Shipping
+- Use `/ship` (see `.claude/commands/ship.md`): commit on a `feat/<person>-<feature>`
+  branch, push, open/update a PR into `main`. Vercel's Git integration auto-builds a
+  **preview deployment and posts the URL on the PR** — relay that URL back in chat.
+- Use `/new-feature <name>` (see `.claude/commands/new-feature.md`) to start one.
 
 ## Workflow
 

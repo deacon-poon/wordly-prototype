@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { AppShell } from "./AppShell";
 import { AppHeader } from "../app-header";
 import { AppSidebar } from "./AppSidebar";
+import { getFeatureTitle, getFeatureChrome } from "@/shell/nav-registry";
 
 interface RightPanelState {
   isOpen: boolean;
@@ -41,12 +42,21 @@ export function AppShellProvider({ children }: AppShellProviderProps) {
     content: null,
   });
 
-  // Determine if we should show AppShell (skip for auth pages and public pages)
+  // Lab features can opt out of the shell (standalone attendee/public experiences).
+  const labSegments = pathname.split("/").filter(Boolean);
+  const isStandaloneLabFeature =
+    labSegments[0] === "lab" &&
+    !!labSegments[1] &&
+    getFeatureChrome(labSegments[1]) === "standalone";
+
+  // Determine if we should show AppShell (skip for auth pages, public pages,
+  // and standalone lab features)
   const shouldShowAppShell =
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/signup") &&
-    !pathname.startsWith("/public");
+    !pathname.startsWith("/public") &&
+    !isStandaloneLabFeature;
 
   // Get page title based on pathname
   const getPageTitle = () => {
@@ -66,10 +76,13 @@ export function AppShellProvider({ children }: AppShellProviderProps) {
       case "history":
         return "History";
       case "organization":
+        if (segments[1] === "usage") return "Organization Usage";
         return "Organization Management";
       case "workspace":
       case "workspace-settings":
         return "Workspace Settings";
+      case "lab":
+        return (segments[1] && getFeatureTitle(segments[1])) || "Lab";
       default:
         return segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
     }

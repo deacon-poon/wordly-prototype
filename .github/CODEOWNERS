@@ -1,0 +1,25 @@
+# Wordly Lab — code ownership
+#
+# Shared foundation is owner-gated: changes there require Deacon's review.
+# Prototype creators work only inside their own src/features/<name>/ folder,
+# which they own — so they never need to touch shared files.
+
+# --- Shared foundation (owner-gated) ---
+/src/shell/               @deacon-poon
+/src/components/          @deacon-poon
+/src/store/               @deacon-poon
+/src/contexts/            @deacon-poon
+/src/app/layout.tsx       @deacon-poon
+/src/app/globals.css      @deacon-poon
+/src/app/lab/             @deacon-poon
+/packages/                @deacon-poon
+/scripts/                 @deacon-poon
+/.github/                 @deacon-poon
+
+# Auto-generated registry — owner-gated, but produced by `npm run generate:features`.
+# Resolve any conflict here by re-running that command.
+/src/shell/feature-registry.generated.ts   @deacon-poon
+
+# --- Feature modules ---
+# Each creator owns their own feature folder. Add a line per feature, e.g.:
+# /src/features/attend-flow/   @justincepelak
