@@ -25,10 +25,12 @@ contributor just says "ship my feature."
    - Body: what the prototype is, how to view it (`/lab/<name>`), and any shared-file
      touches that need review.
 
-6. **Preview URL.** Vercel's Git integration auto-builds a **preview deployment** for the
-   PR and posts the URL as a PR comment. Wait for it, then **paste the preview URL back
-   in chat** so the contributor can share it. If it doesn't appear within a couple of
-   minutes, check the PR checks / Vercel dashboard and report status.
+6. **Preview URL.** There is ONE Vercel project for the whole app (no per-person
+   projects). Vercel's Git integration auto-builds a **preview deployment** of the entire
+   app for the PR and posts the URL as a comment. The contributor's feature is live at
+   **`<preview-url>/lab/<name>`** — paste that exact link back in chat so they can share
+   it. If it doesn't appear within a couple of minutes, check the PR checks / Vercel
+   dashboard and report status.
 
 ## Notes
 - End commit messages with the Co-Authored-By trailer per the global Git rules.

@@ -58,8 +58,9 @@ live at `http://localhost:3000/lab/attend-flow`.
 
 ## Review & deploy
 
-- Opening a PR triggers a **Vercel preview deployment** — a shareable URL of your
-  prototype. CI also runs lint + build as a sanity check.
+- Opening a PR triggers a **Vercel preview deployment** of the whole app — one shared
+  project, no per-person setup. Your prototype is live at **`<preview-url>/lab/<name>`**,
+  a shareable link. CI also runs lint + build (on bun) as a sanity check.
 - **Deacon reviews and merges.** Anything that touches shared files
   (`src/shell/`, `src/components/`, `packages/`) needs his sign-off — that's
   enforced automatically via `CODEOWNERS`.
