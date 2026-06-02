@@ -100,6 +100,11 @@ export default function OrganizationLayout({
     pathname.includes("/organization/custom-fields") ||
     pathname.includes("/organization/billing");
 
+  // Usage page manages its own panel layout — render children directly
+  if (pathname.includes("/organization/usage")) {
+    return <>{children}</>;
+  }
+
   return (
     <main className="flex-1 overflow-auto bg-[#f8f9fa] relative h-full">
       {useResizablePanel && showPanel ? (

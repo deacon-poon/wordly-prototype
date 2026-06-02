@@ -23,7 +23,14 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: cn(
+          "text-sm font-medium",
+          props.captionLayout === "dropdown" && "hidden"
+        ),
+        dropdowns: "flex items-center gap-1.5",
+        dropdown: "appearance-none bg-transparent text-sm font-medium cursor-pointer border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-blue-200 focus:border-primary-blue-300",
+        months_dropdown: "appearance-none bg-transparent text-sm font-medium cursor-pointer border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-blue-200 focus:border-primary-blue-300",
+        years_dropdown: "appearance-none bg-transparent text-sm font-medium cursor-pointer border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-blue-200 focus:border-primary-blue-300",
         nav: "space-x-1 flex items-center",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),

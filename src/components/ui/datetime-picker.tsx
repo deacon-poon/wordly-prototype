@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format, parse, isValid } from "date-fns";
+import { format, parse, isValid, subDays, startOfMonth, endOfMonth, subMonths, startOfYear } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { CalendarIcon, ChevronDown, Clock, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -726,6 +726,194 @@ export function DatePicker({
       </Popover>
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
+  );
+}
+
+// ============================================================================
+// DateRangePicker Component
+// ============================================================================
+
+interface DateRangePreset {
+  label: string;
+  getValue: () => { from: Date; to: Date };
+}
+
+const DATE_RANGE_PRESETS: DateRangePreset[] = [
+  {
+    label: "Today",
+    getValue: () => {
+      const today = new Date();
+      return { from: today, to: today };
+    },
+  },
+  {
+    label: "Yesterday",
+    getValue: () => {
+      const yesterday = subDays(new Date(), 1);
+      return { from: yesterday, to: yesterday };
+    },
+  },
+  {
+    label: "Last 7 days",
+    getValue: () => ({
+      from: subDays(new Date(), 6),
+      to: new Date(),
+    }),
+  },
+  {
+    label: "Last 14 days",
+    getValue: () => ({
+      from: subDays(new Date(), 13),
+      to: new Date(),
+    }),
+  },
+  {
+    label: "Last 30 days",
+    getValue: () => ({
+      from: subDays(new Date(), 29),
+      to: new Date(),
+    }),
+  },
+  {
+    label: "Last 90 days",
+    getValue: () => ({
+      from: subDays(new Date(), 89),
+      to: new Date(),
+    }),
+  },
+  {
+    label: "This month",
+    getValue: () => ({
+      from: startOfMonth(new Date()),
+      to: new Date(),
+    }),
+  },
+  {
+    label: "Last month",
+    getValue: () => {
+      const lastMonth = subMonths(new Date(), 1);
+      return {
+        from: startOfMonth(lastMonth),
+        to: endOfMonth(lastMonth),
+      };
+    },
+  },
+  {
+    label: "This year",
+    getValue: () => ({
+      from: startOfYear(new Date()),
+      to: new Date(),
+    }),
+  },
+];
+
+interface DateRangePickerProps {
+  from: Date | undefined;
+  to: Date | undefined;
+  onChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  disabled?: boolean;
+  className?: string;
+  placeholder?: string;
+  /** Show preset options like "Last 7 days" (default true) */
+  showPresets?: boolean;
+}
+
+export function DateRangePicker({
+  from,
+  to,
+  onChange,
+  disabled = false,
+  className,
+  placeholder = "Select date range",
+  showPresets = true,
+}: DateRangePickerProps) {
+  const [open, setOpen] = React.useState(false);
+
+  const displayString = React.useMemo(() => {
+    if (from && to) {
+      return `${format(from, "MMM d, yyyy")} – ${format(to, "MMM d, yyyy")}`;
+    }
+    if (from) {
+      return `${format(from, "MMM d, yyyy")} – ...`;
+    }
+    return placeholder;
+  }, [from, to, placeholder]);
+
+  // Determine which preset is currently active (if any)
+  const activePreset = React.useMemo(() => {
+    if (!from || !to) return null;
+    const fromStr = format(from, "yyyy-MM-dd");
+    const toStr = format(to, "yyyy-MM-dd");
+    return DATE_RANGE_PRESETS.find((preset) => {
+      const val = preset.getValue();
+      return format(val.from, "yyyy-MM-dd") === fromStr && format(val.to, "yyyy-MM-dd") === toStr;
+    })?.label ?? null;
+  }, [from, to]);
+
+  const handlePresetClick = (preset: DateRangePreset) => {
+    const range = preset.getValue();
+    onChange(range);
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          disabled={disabled}
+          className={cn(
+            "justify-start text-left font-normal",
+            !from && "text-gray-500",
+            className
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {displayString}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <div className="flex">
+          {showPresets && (
+            <div className="border-r border-gray-200 p-2 flex flex-col gap-0.5 min-w-[140px]">
+              {DATE_RANGE_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => handlePresetClick(preset)}
+                  className={cn(
+                    "text-left text-sm px-3 py-1.5 rounded-md transition-colors whitespace-nowrap",
+                    activePreset === preset.label
+                      ? "bg-primary-blue-50 text-primary-blue-700 font-medium"
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <div>
+            <Calendar
+              mode="range"
+              captionLayout="dropdown"
+              startMonth={new Date(2020, 0)}
+              endMonth={new Date(new Date().getFullYear() + 1, 11)}
+              selected={from ? { from, to } : undefined}
+              onSelect={(range: { from?: Date; to?: Date } | undefined) => {
+                onChange({ from: range?.from, to: range?.to });
+                // Close when both dates selected
+                if (range?.from && range?.to) {
+                  setOpen(false);
+                }
+              }}
+              numberOfMonths={2}
+              initialFocus
+            />
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

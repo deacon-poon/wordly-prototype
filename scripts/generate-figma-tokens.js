@@ -113,9 +113,17 @@ function generateTokens() {
 
   const figmaData = JSON.parse(fs.readFileSync(CONFIG.figmaTokensPath, 'utf8'));
   const variables = figmaData.variables || [];
-  const modeId = Object.keys(figmaData.modes || {})[0] || '801:1';
+  const modes = figmaData.modes || {};
 
-  console.log(`📊 Found ${variables.length} variables\n`);
+  // Identify Light and Dark mode IDs by name (case-insensitive); fallback to first/none.
+  const modeEntries = Object.entries(modes);
+  const lightEntry = modeEntries.find(([, name]) => /light/i.test(name)) || modeEntries[0];
+  const darkEntry = modeEntries.find(([, name]) => /dark/i.test(name));
+  const lightModeId = lightEntry ? lightEntry[0] : '801:1';
+  const darkModeId = darkEntry ? darkEntry[0] : null;
+
+  console.log(`📊 Found ${variables.length} variables`);
+  console.log(`   Light mode: ${lightModeId}${darkModeId ? `  |  Dark mode: ${darkModeId}` : '  |  (no dark mode)'}\n`);
 
   // Create output directory
   if (!fs.existsSync(CONFIG.outputDir)) {
@@ -123,8 +131,8 @@ function generateTokens() {
     console.log(`📁 Created output directory: ${CONFIG.outputDir}\n`);
   }
 
-  // Process variables
-  const cssVariables = [];
+  // Process variables — PER MODE
+  const cssVariablesByMode = {}; // { [modeId]: CssVar[] }
   const tailwindColors = {};
   const tailwindSpacing = {};
   const tailwindFontSize = {};
@@ -141,103 +149,85 @@ function generateTokens() {
     variableLookup[v.id] = v;
   }
 
-  // Resolve alias to get actual value
-  function resolveValue(value, type) {
+  // Resolve alias to get actual value FOR A SPECIFIC MODE
+  function resolveValue(value, type, modeId) {
     if (value && typeof value === 'object' && value.type === 'VARIABLE_ALIAS') {
       const referenced = variableLookup[value.id];
       if (referenced) {
-        const refValue = referenced.valuesByMode?.[modeId];
-        return resolveValue(refValue, referenced.type);
+        // Prefer aliased variable's value in SAME mode; fall back to first available mode
+        const refValue = referenced.valuesByMode?.[modeId]
+          ?? referenced.valuesByMode?.[Object.keys(referenced.valuesByMode || {})[0]];
+        return resolveValue(refValue, referenced.type, modeId);
       }
     }
     return { value, type };
   }
 
-  for (const variable of variables) {
-    const name = variable.name;
-    const id = variable.id;
-    const type = variable.type;
-    const rawValue = variable.valuesByMode?.[modeId];
+  function processMode(modeId) {
+    const cssVariables = [];
+    for (const variable of variables) {
+      const name = variable.name;
+      const id = variable.id;
+      const type = variable.type;
+      const rawValue = variable.valuesByMode?.[modeId];
+      if (rawValue === undefined || rawValue === null) continue;
 
-    // Resolve aliases
-    const resolved = resolveValue(rawValue, type);
-    const value = resolved.value;
-    const resolvedType = resolved.type;
+      const resolved = resolveValue(rawValue, type, modeId);
+      const value = resolved.value;
+      const resolvedType = resolved.type;
+      if (value === undefined || value === null) continue;
 
-    // Skip if no value
-    if (value === undefined || value === null) continue;
+      const cssVarName = figmaNameToCssVar(name);
 
-    const cssVarName = figmaNameToCssVar(name);
+      if (resolvedType === 'COLOR' && typeof value === 'object' && 'r' in value) {
+        const hex = rgbaToHex(value);
+        cssVariables.push({ name: cssVarName, value: hex, figmaName: name, figmaId: id, type: 'color' });
 
-    // Handle different types
-    if (resolvedType === 'COLOR' && typeof value === 'object' && 'r' in value) {
-      const hex = rgbaToHex(value);
-
-      cssVariables.push({
-        name: cssVarName,
-        value: hex,
-        figmaName: name,
-        figmaId: id,
-        type: 'color',
-      });
-
-      // Add to variable map
-      variableMap.colors[hex] = id;
-      variableMap.colors[hex.toLowerCase()] = id;
-
-      // Add to Tailwind colors
-      const twPath = figmaNameToTailwindPath(name);
-      if (twPath) {
-        if (!tailwindColors[twPath.palette]) {
-          tailwindColors[twPath.palette] = {};
+        // Only populate Tailwind/variable-map from LIGHT mode (primary design source)
+        if (modeId === lightModeId) {
+          variableMap.colors[hex] = id;
+          variableMap.colors[hex.toLowerCase()] = id;
+          const twPath = figmaNameToTailwindPath(name);
+          if (twPath) {
+            if (!tailwindColors[twPath.palette]) tailwindColors[twPath.palette] = {};
+            tailwindColors[twPath.palette][twPath.shade] = hex;
+          }
         }
-        tailwindColors[twPath.palette][twPath.shade] = hex;
-      }
-    }
-    else if (resolvedType === 'FLOAT' && typeof value === 'number') {
-      const pxValue = `${value}px`;
+      } else if (resolvedType === 'FLOAT' && typeof value === 'number') {
+        const pxValue = `${value}px`;
+        cssVariables.push({ name: cssVarName, value: pxValue, figmaName: name, figmaId: id, type: 'size' });
 
-      cssVariables.push({
-        name: cssVarName,
-        value: pxValue,
-        figmaName: name,
-        figmaId: id,
-        type: 'size',
-      });
+        if (modeId === lightModeId) {
+          if (name.includes('spacing')) {
+            variableMap.spacing[pxValue] = id;
+            variableMap.spacing[`${value}`] = id;
+            const key = name.split('/').pop();
+            tailwindSpacing[key] = pxValue;
+          } else if (name.includes('font/scale')) {
+            variableMap.fontSize[pxValue] = id;
+            variableMap.fontSize[`${value}`] = id;
+            const match = name.match(/(\d+)-(\d+)$/);
+            if (match) tailwindFontSize[match[2]] = pxValue;
+          }
+        }
+      } else if (resolvedType === 'STRING' && typeof value === 'string') {
+        cssVariables.push({ name: cssVarName, value: value, figmaName: name, figmaId: id, type: 'string' });
 
-      // Categorize by name
-      if (name.includes('spacing')) {
-        variableMap.spacing[pxValue] = id;
-        variableMap.spacing[`${value}`] = id;
-        const key = name.split('/').pop();
-        tailwindSpacing[key] = pxValue;
-      }
-      else if (name.includes('font/scale')) {
-        variableMap.fontSize[pxValue] = id;
-        variableMap.fontSize[`${value}`] = id;
-        // Extract size name like "250-14" → use "14" as key
-        const match = name.match(/(\d+)-(\d+)$/);
-        if (match) {
-          tailwindFontSize[match[2]] = pxValue;
+        if (modeId === lightModeId && name.includes('font/weight')) {
+          const weightName = name.split('/').pop();
+          variableMap.fontWeight[value] = id;
+          variableMap.fontWeight[weightName] = id;
         }
       }
     }
-    else if (resolvedType === 'STRING' && typeof value === 'string') {
-      cssVariables.push({
-        name: cssVarName,
-        value: value,
-        figmaName: name,
-        figmaId: id,
-        type: 'string',
-      });
-
-      if (name.includes('font/weight')) {
-        const weightName = name.split('/').pop();
-        variableMap.fontWeight[value] = id;
-        variableMap.fontWeight[weightName] = id;
-      }
-    }
+    return cssVariables;
   }
+
+  cssVariablesByMode[lightModeId] = processMode(lightModeId);
+  if (darkModeId) cssVariablesByMode[darkModeId] = processMode(darkModeId);
+
+  // For downstream single-mode logic, expose light-mode list as "cssVariables"
+  const cssVariables = cssVariablesByMode[lightModeId];
 
   // ============================================================================
   // GENERATE CSS FILE
@@ -257,7 +247,7 @@ function generateTokens() {
 :root {
 `;
 
-  // Group by type for organization
+  // Group by type for organization (Light mode = :root)
   const colorVars = cssVariables.filter(v => v.type === 'color');
   const sizeVars = cssVariables.filter(v => v.type === 'size');
   const stringVars = cssVariables.filter(v => v.type === 'string');
@@ -278,6 +268,27 @@ function generateTokens() {
   }
 
   cssContent += '}\n';
+
+  // Dark mode block — only emit tokens whose values DIFFER from light (keeps CSS lean)
+  if (darkModeId && cssVariablesByMode[darkModeId]) {
+    const darkVars = cssVariablesByMode[darkModeId];
+    const lightByName = Object.fromEntries(cssVariables.map(v => [v.name, v.value]));
+    const darkDiffs = darkVars.filter(v => lightByName[v.name] !== v.value);
+
+    cssContent += `\n/* ====== DARK MODE OVERRIDES ======\n   Activated by \`[data-theme="dark"]\` or \`.dark\` on :root/html/body.\n   ${darkDiffs.length} tokens differ from light mode. */\n`;
+    cssContent += `:root[data-theme="dark"],\n:root.dark,\nhtml.dark,\nhtml[data-theme="dark"] {\n`;
+    for (const v of darkDiffs) {
+      cssContent += `  --${v.name}: ${v.value}; /* ${v.figmaName} */\n`;
+    }
+    cssContent += '}\n';
+
+    // Also emit a prefers-color-scheme block as an additional default (opt-in via class overrides it)
+    cssContent += `\n@media (prefers-color-scheme: dark) {\n  :root:not([data-theme="light"]):not(.light) {\n`;
+    for (const v of darkDiffs) {
+      cssContent += `    --${v.name}: ${v.value}; /* ${v.figmaName} */\n`;
+    }
+    cssContent += '  }\n}\n';
+  }
 
   const cssPath = path.join(CONFIG.outputDir, CONFIG.cssOutputFile);
   fs.writeFileSync(cssPath, cssContent);

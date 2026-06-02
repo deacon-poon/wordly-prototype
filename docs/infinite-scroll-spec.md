@@ -16,14 +16,14 @@ The current Events UI loads full collections with no pagination. As events, room
 - **"Add Session" placement** — currently pinned to the bottom of the list, unreachable when lists grow long
 - **Filter/grouping ambiguity** — unclear whether Now/Upcoming/Past/All filters are client-side or server-side
 
-### Four levels need "Show More" (confirmed by Graham, 2026-03-24)
+### Four levels need "Show More" (updated per meeting 2026-03-26, page size 15)
 
 | Level | Container | Initial Load | "Show More" |
 |-------|-----------|-------------|-------------|
-| **Events list** (`/events`) | Main page | First 50 events | Load 50 more |
-| **Days per event** (`/events/[id]`) | Main content | First 50 days | Load 50 more |
-| **Rooms per day** (`/events/[id]`) | Day accordion | First 50 rooms | Load 50 more |
-| **Sessions per room** (`/events/[id]`) | Room accordion | First 50 sessions | Load 50 more |
+| **Events list** (`/events`) | Main page | First 15 events per group | Load 15 more |
+| **Days per event** (`/events/[id]`) | Main content | First 15 days | Load 15 more |
+| **Rooms per day** (`/events/[id]`) | Day accordion | First 15 rooms | Load 15 more |
+| **Sessions per room** (`/events/[id]`) | Room accordion | First 15 sessions | Load 15 more |
 
 ---
 

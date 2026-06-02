@@ -1,0 +1,848 @@
+{
+  "project": "wordly-prototype",
+  "description": "Wordly multilingual interpretation platform prototype - UI/UX prototype with mock data, no backend integration",
+  "updatedAt": "2026-02-11",
+  "features": [
+    {
+      "id": "F-001",
+      "name": "Landing Page",
+      "description": "Public-facing landing page with Wordly branding, navigation to Sessions and Login",
+      "status": "complete",
+      "priority": "low",
+      "files": [
+        "src/app/page.tsx"
+      ],
+      "criteria": [
+        "Displays Wordly logo and branding",
+        "Links to Sessions and Login pages",
+        "Responsive layout with header and footer"
+      ],
+      "passes": {
+        "displays_branding": true,
+        "navigation_links": true,
+        "responsive_layout": true
+      }
+    },
+    {
+      "id": "F-002",
+      "name": "Authentication / Login",
+      "description": "SSO login page with Wordly sign-in button and organization SSO search",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/app/(auth)/login/page.tsx",
+        "src/app/(auth)/layout.tsx",
+        "src/store/slices/authSlice.ts"
+      ],
+      "criteria": [
+        "Primary Wordly SSO sign-in button",
+        "SSO search by email or organization name",
+        "Organization search results display",
+        "Redirect to Keycloak for authentication",
+        "Auth state management in Redux"
+      ],
+      "passes": {
+        "sso_button": true,
+        "sso_search": true,
+        "org_results": true,
+        "keycloak_redirect": false,
+        "auth_state": true
+      }
+    },
+    {
+      "id": "F-003",
+      "name": "Dashboard",
+      "description": "Overview dashboard with stats cards, activity charts, and recent sessions",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/dashboard/page.tsx",
+        "src/app/dashboard/data.json",
+        "src/components/dashboard/activity-chart.tsx",
+        "src/components/dashboard/progress-chart.tsx",
+        "src/components/dashboard/dashboard-charts.tsx",
+        "src/components/dashboard/minutes-usage-chart.tsx",
+        "src/components/dashboard/sessions-bar-chart.tsx"
+      ],
+      "criteria": [
+        "Stats overview cards (Total Minutes, Sessions, Active Accounts, Growth Rate)",
+        "Activity chart visualization",
+        "Progress chart visualization",
+        "Recent activity feed with session status badges",
+        "Data from Redux store (user plan, activity)"
+      ],
+      "passes": {
+        "stats_cards": true,
+        "activity_chart": true,
+        "progress_chart": true,
+        "recent_activity": true,
+        "redux_integration": true
+      }
+    },
+    {
+      "id": "F-004",
+      "name": "Events List",
+      "description": "Event management page with Today/Future/Past filtering, event creation wizard, and delete confirmation",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/app/events/page.tsx",
+        "src/components/events/ManualEventWizard.tsx",
+        "src/components/events/EventCreationChoiceModal.tsx",
+        "src/components/events/forms/EventDetailsForm.tsx",
+        "src/components/events/forms/EventFormContext.tsx",
+        "src/components/events/forms/types.ts",
+        "src/lib/eventStore.ts"
+      ],
+      "criteria": [
+        "Event cards with status badges (Today/Future/Past)",
+        "Tab filtering by Today/Future/Past/All",
+        "Event creation wizard modal",
+        "Event deletion with confirmation dialog and name-typing verification",
+        "Public summary URL links",
+        "LocalStorage persistence for created events",
+        "Grouped display by status category"
+      ],
+      "passes": {
+        "event_cards": true,
+        "tab_filtering": true,
+        "creation_wizard": true,
+        "delete_confirmation": true,
+        "public_summary_links": true,
+        "localstorage_persistence": true,
+        "grouped_display": true
+      }
+    },
+    {
+      "id": "F-005",
+      "name": "Event Detail / Schedule Management",
+      "description": "Full event detail page with room management, session CRUD, schedule upload, and resizable panels",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/app/events/[eventId]/page.tsx",
+        "src/components/events/RoomAccordion.tsx",
+        "src/components/events/SessionPanel.tsx",
+        "src/components/events/AddRoomModal.tsx",
+        "src/components/events/AddSessionModal.tsx",
+        "src/components/events/SessionEditDrawer.tsx",
+        "src/components/events/EventSettingsModal.tsx",
+        "src/components/events/forms/RoomForm.tsx",
+        "src/components/events/forms/SessionForm.tsx",
+        "src/components/events/forms/ScheduleBuilder.tsx"
+      ],
+      "criteria": [
+        "Event name inline editing",
+        "Room CRUD (add, rename, delete with confirmation)",
+        "Session CRUD (add, edit, delete) via side panel",
+        "Session panel with resizable split view on desktop",
+        "Date-grouped session display with accordion expand/collapse",
+        "Tab filtering (Now/Upcoming/Past/All)",
+        "Ways to Join modal with QR code and links",
+        "Download for AV crew (CSV export)",
+        "Smart sticky header (hide on scroll down, show on scroll up)",
+        "Responsive layout (desktop resizable panels, tablet overlay, mobile fullscreen)",
+        "Timezone support per event",
+        "Room move functionality for sessions",
+        "Account and minutes tracking per event"
+      ],
+      "passes": {
+        "event_name_editing": true,
+        "room_crud": true,
+        "session_crud": true,
+        "resizable_panels": true,
+        "date_grouped_display": true,
+        "tab_filtering": true,
+        "ways_to_join": true,
+        "av_csv_export": true,
+        "smart_sticky_header": true,
+        "responsive_layout": true,
+        "timezone_support": true,
+        "room_move": true,
+        "account_minutes_tracking": true
+      }
+    },
+    {
+      "id": "F-006",
+      "name": "Bulk Schedule Upload",
+      "description": "Upload Excel/CSV schedule files, parse sessions, review and confirm before import",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/components/events/UploadScheduleModal.tsx",
+        "src/components/events/BulkUploadReviewModal.tsx",
+        "src/components/events/SessionUploadReviewModal.tsx",
+        "src/lib/utils/parseSchedule.ts"
+      ],
+      "criteria": [
+        "File upload modal with drag-and-drop",
+        "Excel/CSV parsing with column detection",
+        "Review modal with validation table",
+        "Skip invalid sessions with confirmation",
+        "Overwrite warning for existing sessions",
+        "Download template in CSV format",
+        "Session defaults (timezone, glossary, account, voice pack)",
+        "Bulk import into rooms (create new or add to existing)"
+      ],
+      "passes": {
+        "upload_modal": true,
+        "excel_csv_parsing": true,
+        "review_modal": true,
+        "skip_invalid": true,
+        "overwrite_warning": true,
+        "download_template": true,
+        "session_defaults": true,
+        "bulk_import_rooms": true
+      }
+    },
+    {
+      "id": "F-007",
+      "name": "Sessions List",
+      "description": "Session management page showing running and scheduled sessions with remote controls",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/app/sessions/page.tsx",
+        "src/store/slices/sessionSlice.ts"
+      ],
+      "criteria": [
+        "Currently running sessions section with expandable controls",
+        "All other sessions table with search and status filter",
+        "Language control panel for running sessions",
+        "Pause/End session buttons",
+        "Session detail right panel via AppShell",
+        "Join session navigation",
+        "Date range and filter controls"
+      ],
+      "passes": {
+        "running_sessions": true,
+        "other_sessions_table": true,
+        "language_controls": true,
+        "pause_end_buttons": true,
+        "detail_panel": true,
+        "join_navigation": true,
+        "date_range_filters": true
+      }
+    },
+    {
+      "id": "F-008",
+      "name": "Session Join / Detail",
+      "description": "Individual session join page with progressive disclosure of connection methods",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/sessions/[sessionId]/page.tsx",
+        "src/components/ui/session-join-modal.tsx",
+        "src/components/ui/session-join-modal-compact.tsx",
+        "src/components/ui/session-join-modal-progressive.tsx",
+        "src/components/ui/session-join-button.tsx",
+        "src/components/WaysToJoinModal.tsx",
+        "src/components/QrCode.tsx"
+      ],
+      "criteria": [
+        "Progressive join method selection (Present App, Bot, RTMPS, etc.)",
+        "QR code generation for mobile joining",
+        "Passcode display and copy",
+        "Multiple connection method instructions",
+        "Back navigation to sessions list"
+      ],
+      "passes": {
+        "progressive_methods": true,
+        "qr_code": true,
+        "passcode_display": true,
+        "connection_instructions": true,
+        "back_navigation": true
+      }
+    },
+    {
+      "id": "F-009",
+      "name": "Remote Control Center",
+      "description": "Demo page for remotely controlling multiple Wordly sessions for AV technicians",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/remote-control-demo/page.tsx",
+        "src/components/ui/session-control-center.tsx",
+        "src/components/ui/bot-remote-control.tsx"
+      ],
+      "criteria": [
+        "Multi-session remote control interface",
+        "Language switching per session",
+        "Mute/unmute input controls",
+        "Town hall use case demonstration",
+        "AV tech workflow support"
+      ],
+      "passes": {
+        "multi_session_control": true,
+        "language_switching": true,
+        "mute_controls": true,
+        "use_case_demo": true,
+        "av_workflow": true
+      }
+    },
+    {
+      "id": "F-010",
+      "name": "Transcripts",
+      "description": "Transcript management with list/detail resizable panel layout, enhanced editor, and translation/summary generation",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/app/transcripts/page.tsx",
+        "src/app/transcripts/layout.tsx",
+        "src/components/transcripts/transcript-detail-view.tsx",
+        "src/components/transcripts/transcript-list-panel.tsx",
+        "src/components/transcripts/transcript-content-area.tsx",
+        "src/components/transcripts/transcript-workspace.tsx",
+        "src/components/transcripts/enhanced-transcript-editor.tsx",
+        "src/components/transcripts/session-glossary-connection.tsx",
+        "src/store/slices/transcriptSlice.ts"
+      ],
+      "criteria": [
+        "Transcript list with search, sort, and multi-select",
+        "Resizable list/detail panel layout on desktop",
+        "Mobile/tablet tab-based view switching",
+        "Transcript detail view with original + translations",
+        "Enhanced transcript editor with segments",
+        "Translation generation to target languages",
+        "Summary generation",
+        "Fullscreen toggle for detail view",
+        "Download and share actions",
+        "Glossary connection for context-aware editing"
+      ],
+      "passes": {
+        "transcript_list": true,
+        "resizable_panels": true,
+        "mobile_tabs": true,
+        "detail_view": true,
+        "enhanced_editor": true,
+        "translation_generation": false,
+        "summary_generation": false,
+        "fullscreen_toggle": true,
+        "download_share": true,
+        "glossary_connection": true
+      }
+    },
+    {
+      "id": "F-011",
+      "name": "Glossaries",
+      "description": "Glossary management with CRUD, language support, and boost/block/replace phrase configuration",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/glossaries/page.tsx",
+        "src/store/slices/glossarySlice.ts"
+      ],
+      "criteria": [
+        "Glossary list with search and Available/Pending tabs",
+        "Add glossary form with side panel",
+        "Multi-language support per glossary",
+        "Boost, Block, and Replace phrase tabs",
+        "Set as default glossary toggle",
+        "Desktop resizable panel layout",
+        "Mobile stacked layout",
+        "Edit, Share, Export, Delete actions"
+      ],
+      "passes": {
+        "glossary_list": true,
+        "add_form": true,
+        "multi_language": true,
+        "boost_block_replace": true,
+        "default_toggle": true,
+        "resizable_panel": true,
+        "mobile_layout": true,
+        "crud_actions": true
+      }
+    },
+    {
+      "id": "F-012",
+      "name": "Usage History",
+      "description": "Session usage history with data table, usage summaries, and right panel details",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/history/page.tsx"
+      ],
+      "criteria": [
+        "Session history data table with sortable columns",
+        "Usage summary with progress bars",
+        "Right panel with presenter and attendee breakdowns",
+        "Date range and filter controls",
+        "Search sessions"
+      ],
+      "passes": {
+        "data_table": true,
+        "usage_summary": true,
+        "right_panel_details": true,
+        "filters": true,
+        "search": true
+      }
+    },
+    {
+      "id": "F-013",
+      "name": "Public Event Summary Page",
+      "description": "Public-facing event summary page with AI-generated session summaries, chatbot, and sharing",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/app/public/[eventSlug]/page.tsx",
+        "src/app/public/layout.tsx",
+        "src/components/public/EventChatbot.tsx"
+      ],
+      "criteria": [
+        "Public event page with branded header",
+        "Session summaries with TL;DR, key takeaways, and notable quotes",
+        "Detailed and compact view mode toggle",
+        "Search across presentations, speakers, topics",
+        "Date filtering by day",
+        "Topic tag filtering with clickable tags",
+        "Upcoming sessions without summaries handled gracefully",
+        "Share button with copy summary and copy link",
+        "AI chatbot powered by OpenAI for Q&A about sessions",
+        "Responsive design"
+      ],
+      "passes": {
+        "branded_public_page": true,
+        "session_summaries": true,
+        "view_mode_toggle": true,
+        "search": true,
+        "date_filtering": true,
+        "tag_filtering": true,
+        "upcoming_handling": true,
+        "share_button": true,
+        "ai_chatbot": true,
+        "responsive": true
+      }
+    },
+    {
+      "id": "F-014",
+      "name": "Public Session Detail Page",
+      "description": "Individual session deep-dive page with full summary, takeaways, related sessions, and chatbot",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/public/[eventSlug]/session/[sessionId]/page.tsx"
+      ],
+      "criteria": [
+        "Full session summary with five-paragraph format",
+        "Key takeaways section",
+        "Notable quote display",
+        "Topic tags",
+        "Share functionality",
+        "Navigation back to event summary",
+        "AI chatbot integration"
+      ],
+      "passes": {
+        "full_summary": true,
+        "key_takeaways": true,
+        "notable_quote": true,
+        "topic_tags": true,
+        "share": true,
+        "back_navigation": true,
+        "chatbot": true
+      }
+    },
+    {
+      "id": "F-015",
+      "name": "Public Transcript Viewer",
+      "description": "Public-facing transcript viewer with language selection and playback-style display",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/public/[eventSlug]/transcript/[sessionId]/page.tsx"
+      ],
+      "criteria": [
+        "Transcript display with speaker labels and timestamps",
+        "Language selector for translations",
+        "Download transcript option",
+        "Share functionality",
+        "Session metadata display"
+      ],
+      "passes": {
+        "transcript_display": true,
+        "language_selector": true,
+        "download": true,
+        "share": true,
+        "metadata_display": true
+      }
+    },
+    {
+      "id": "F-016",
+      "name": "AI Event Chatbot API",
+      "description": "Server-side API route for streaming AI chat responses about event sessions using OpenAI",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/api/chat/route.ts",
+        "src/components/public/EventChatbot.tsx"
+      ],
+      "criteria": [
+        "Streaming text response via AI SDK",
+        "Event context injection with session summaries",
+        "System prompt with event-specific knowledge",
+        "30-second max duration for responses"
+      ],
+      "passes": {
+        "streaming_response": true,
+        "event_context": true,
+        "system_prompt": true,
+        "max_duration": true
+      }
+    },
+    {
+      "id": "F-017",
+      "name": "Organization User Management",
+      "description": "Organization-level user management with roles, invitations, and permissions",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/organization/users/page.tsx",
+        "src/app/organization/layout.tsx"
+      ],
+      "criteria": [
+        "User list with role badges",
+        "Invite users dialog",
+        "Role management (admin, editor, viewer)",
+        "User actions (edit, archive, delete)",
+        "Permission-based visibility"
+      ],
+      "passes": {
+        "user_list": true,
+        "invite_dialog": true,
+        "role_management": true,
+        "user_actions": true,
+        "permissions": true
+      }
+    },
+    {
+      "id": "F-018",
+      "name": "Organization Billing",
+      "description": "Organization billing management with account selection, usage tracking, and invoice history",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/organization/billing/page.tsx",
+        "src/components/billing/enhanced-billing-selection.tsx",
+        "src/components/billing/multi-level-billing-layout.tsx",
+        "src/components/billing/permission-aware-billing.tsx"
+      ],
+      "criteria": [
+        "Account selection and management",
+        "Usage tracking and analytics",
+        "Invoice history table",
+        "Multi-level billing layout",
+        "Permission-aware billing access"
+      ],
+      "passes": {
+        "account_selection": true,
+        "usage_tracking": true,
+        "invoice_history": true,
+        "multi_level_layout": true,
+        "permission_aware": true
+      }
+    },
+    {
+      "id": "F-019",
+      "name": "Organization Custom Fields",
+      "description": "Custom field management for organizations with field types, defaults, and possible values",
+      "status": "complete",
+      "priority": "low",
+      "files": [
+        "src/app/organization/custom-fields/page.tsx",
+        "src/app/workspace/custom-fields/page.tsx"
+      ],
+      "criteria": [
+        "Custom field CRUD (add, edit, delete)",
+        "Field type selection (free text, numeric, single-select, multi-select)",
+        "Default value configuration",
+        "Required field toggle",
+        "Possible values for select fields",
+        "Workspace custom fields redirect to organization"
+      ],
+      "passes": {
+        "field_crud": true,
+        "field_types": true,
+        "default_values": true,
+        "required_toggle": true,
+        "possible_values": true,
+        "workspace_redirect": true
+      }
+    },
+    {
+      "id": "F-020",
+      "name": "Workspace User Management",
+      "description": "Workspace-level user management with role assignment and invitation",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/workspace/users/page.tsx",
+        "src/components/workspace/card-header-layout.tsx",
+        "src/components/workspace/invite-users-dialog.tsx"
+      ],
+      "criteria": [
+        "User list table with role badges",
+        "Invite users dialog with role selection",
+        "Confirmation dialog for deletions",
+        "Card header layout component"
+      ],
+      "passes": {
+        "user_list": true,
+        "invite_dialog": true,
+        "delete_confirmation": true,
+        "card_layout": true
+      }
+    },
+    {
+      "id": "F-021",
+      "name": "Workspace Defaults",
+      "description": "Workspace default settings for languages, voice packs, and session configuration",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/app/workspace/defaults/page.tsx"
+      ],
+      "criteria": [
+        "Default language selection with comprehensive language list",
+        "Language search and categorization",
+        "Radio group for default settings",
+        "Dialog for language picker"
+      ],
+      "passes": {
+        "language_selection": true,
+        "language_search": true,
+        "radio_settings": true,
+        "language_dialog": true
+      }
+    },
+    {
+      "id": "F-022",
+      "name": "App Shell / Navigation",
+      "description": "Application shell with sidebar navigation, header, breadcrumbs, and collapsible right panel",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/components/layouts/AppShell.tsx",
+        "src/components/layouts/AppShellProvider.tsx",
+        "src/components/layouts/AppHeader.tsx",
+        "src/components/layouts/AppSidebar.tsx",
+        "src/components/layouts/SessionsLayout.tsx",
+        "src/components/app-sidebar.tsx",
+        "src/components/app-header.tsx",
+        "src/components/nav-main.tsx",
+        "src/components/nav-workspace.tsx",
+        "src/components/nav-user.tsx",
+        "src/components/nav-documents.tsx",
+        "src/components/nav-projects.tsx",
+        "src/components/nav-secondary.tsx",
+        "src/components/team-switcher.tsx",
+        "src/components/site-header.tsx"
+      ],
+      "criteria": [
+        "Collapsible sidebar navigation",
+        "Main navigation items (Dashboard, Sessions, Events, History, Transcripts, Glossaries)",
+        "Workspace and Organization settings sections",
+        "Team/workspace switcher",
+        "User profile dropdown",
+        "Responsive sidebar (mobile drawer, desktop sidebar)",
+        "Right panel system for details views",
+        "Breadcrumb navigation"
+      ],
+      "passes": {
+        "collapsible_sidebar": true,
+        "main_navigation": true,
+        "settings_sections": true,
+        "team_switcher": true,
+        "user_dropdown": true,
+        "responsive_sidebar": true,
+        "right_panel": true,
+        "breadcrumbs": true
+      }
+    },
+    {
+      "id": "F-023",
+      "name": "Design System / UI Components",
+      "description": "ShadCN-based component library with custom design tokens, typography, spacing, and accessibility patterns",
+      "status": "complete",
+      "priority": "high",
+      "files": [
+        "src/components/ui/index.ts",
+        "src/components/ui/design-tokens.tsx",
+        "src/components/ui/typography.tsx",
+        "src/components/ui/spacing.tsx",
+        "src/components/ui/color-palette.tsx",
+        "src/components/ui/accessibility-guide.tsx",
+        "src/components/ui/mobile-guidelines.tsx",
+        "src/components/ui/confirmation-dialog.tsx",
+        "src/components/ui/datetime-picker.tsx",
+        "src/components/ui/data-table.tsx",
+        "src/lib/design-tokens.ts",
+        "src/lib/colors.ts",
+        "src/lib/accessible-colors.ts"
+      ],
+      "criteria": [
+        "Design tokens (colors, spacing, typography scales)",
+        "Accessible color palette with WCAG 4.5:1 contrast",
+        "Reusable confirmation dialog with destructive variant",
+        "Date/time picker with 15-minute increments",
+        "Data table with sorting and selection",
+        "Storybook stories for documentation",
+        "Mobile guideline components",
+        "Soft gradient background animation"
+      ],
+      "passes": {
+        "design_tokens": true,
+        "accessible_colors": true,
+        "confirmation_dialog": true,
+        "datetime_picker": true,
+        "data_table": true,
+        "storybook_stories": true,
+        "mobile_guidelines": true,
+        "gradient_animation": true
+      }
+    },
+    {
+      "id": "F-024",
+      "name": "Redux State Management",
+      "description": "Redux toolkit store with slices for auth, sessions, transcripts, glossaries, sidebar, and user state",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/store/index.ts",
+        "src/store/slices/authSlice.ts",
+        "src/store/slices/sessionSlice.ts",
+        "src/store/slices/transcriptSlice.ts",
+        "src/store/slices/glossarySlice.ts",
+        "src/store/slices/sidebarSlice.ts",
+        "src/store/slices/userSlice.ts"
+      ],
+      "criteria": [
+        "Redux store configuration",
+        "Auth slice for login state",
+        "Session slice for session management",
+        "Transcript slice for transcript state",
+        "Glossary slice for glossary management",
+        "Sidebar slice for navigation state",
+        "User slice for plan and activity data"
+      ],
+      "passes": {
+        "store_config": true,
+        "auth_slice": true,
+        "session_slice": true,
+        "transcript_slice": true,
+        "glossary_slice": true,
+        "sidebar_slice": true,
+        "user_slice": true
+      }
+    },
+    {
+      "id": "F-025",
+      "name": "Ways to Join Modal",
+      "description": "Comprehensive modal showing all methods to join a Wordly session including QR codes and links",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/components/WaysToJoinModal.tsx",
+        "src/components/QrCode.tsx"
+      ],
+      "criteria": [
+        "QR code generation for session join URL",
+        "Presenter and attendee link display",
+        "Passcode display with copy button",
+        "Download all sessions as CSV",
+        "Session ID display"
+      ],
+      "passes": {
+        "qr_code": true,
+        "join_links": true,
+        "passcode_copy": true,
+        "csv_download": true,
+        "session_id": true
+      }
+    },
+    {
+      "id": "F-026",
+      "name": "Event Store / Persistence",
+      "description": "LocalStorage-based event persistence for user-created events across page navigations",
+      "status": "complete",
+      "priority": "medium",
+      "files": [
+        "src/lib/eventStore.ts"
+      ],
+      "criteria": [
+        "Save event to localStorage",
+        "Retrieve stored events by ID",
+        "Serialize/deserialize Date objects",
+        "Persist rooms and sessions"
+      ],
+      "passes": {
+        "save_event": true,
+        "retrieve_event": true,
+        "date_serialization": true,
+        "room_session_persistence": true
+      }
+    },
+    {
+      "id": "F-027",
+      "name": "Session Join Demo",
+      "description": "Placeholder route for session join flow demonstration",
+      "status": "planned",
+      "priority": "low",
+      "files": [
+        "src/app/session-join-demo/"
+      ],
+      "criteria": [
+        "Session join flow demo page",
+        "Attendee-facing join experience"
+      ],
+      "passes": {
+        "demo_page": false,
+        "join_experience": false
+      }
+    },
+    {
+      "id": "F-028",
+      "name": "Accounts Management",
+      "description": "Placeholder route for account management within the platform",
+      "status": "planned",
+      "priority": "medium",
+      "files": [
+        "src/app/accounts/"
+      ],
+      "criteria": [
+        "Account listing page",
+        "Account detail view",
+        "Account settings management"
+      ],
+      "passes": {
+        "listing_page": false,
+        "detail_view": false,
+        "settings": false
+      }
+    },
+    {
+      "id": "F-029",
+      "name": "Workspace Settings Shell",
+      "description": "Layout wrapper for workspace settings section with sidebar navigation",
+      "status": "in-progress",
+      "priority": "low",
+      "files": [
+        "src/app/workspace-settings/layout.tsx",
+        "src/app/workspace/layout.tsx"
+      ],
+      "criteria": [
+        "Settings layout with navigation sidebar",
+        "Workspace settings sub-routes (users, defaults, custom fields)"
+      ],
+      "passes": {
+        "settings_layout": true,
+        "sub_routes": true
+      }
+    }
+  ],
+  "summary": {
+    "total": 29,
+    "complete": 26,
+    "in_progress": 1,
+    "planned": 2,
+    "note": "This is a UI/UX prototype. All features use mock data and localStorage. No backend API integration, no database, no real authentication. Translation and summary generation buttons exist in UI but do not perform actual operations."
+  }
+}

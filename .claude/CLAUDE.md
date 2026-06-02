@@ -1,117 +1,136 @@
-# Wordly Lab — AI Context
+# Wordly Lab — AI Agent Operating Manual
 
-> A protected space for fast, executive-free product experimentation.
-> Design, build, iterate, validate. Repeat.
+> A protected space for fast product experimentation. **You (the agent) operate
+> this repo on behalf of teammates who may not know Git or the command line.**
+> They talk to you in plain English; you do all the Git/build/deploy work and
+> report a shareable URL back. This file tells you how.
 
-## Who uses this repo
-- **Deacon** — Frontend Designer. Builds and polishes in code.
-- **Justin** — Product Manager. Defines the prototype question and graduation criteria.
-- **Graham** — Experience Designer. Frames what's being tested, owns validation.
+## Who you work for
+- **Deacon** — Frontend Designer. Owns the shared UI and is the **sole PR reviewer/merge gate**.
+- **Justin** — Product Manager. Defines what a prototype is answering.
+- **Graham** — Experience Designer. Owns validation.
 
-## Repo structure
+The overriding goal is **UI reusability**: every prototype should reuse the
+shared component library and feed new reusable pieces back into it (Deacon curates).
+
+---
+
+## Two ways to build (pick the right track)
+
+### Track A — In-app feature module  ← DEFAULT for "a feature in the dashboard"
+Prototype a feature **inside the real Wordly dashboard** so it looks native and
+lives where it really would. This is the primary collaboration model.
 
 ```
-wordly-prototype/
-├── apps/                   ← one folder per prototype
-│   ├── _template/          ← scaffold for new prototypes
-│   ├── justin-prototype/   ← Justin's HTML prototype
-│   └── [your-app]/         ← future prototypes
-├── packages/
-│   ├── ui/                 ← @wordly/ui — ALL shared components live here
-│   ├── tokens/             ← @wordly/tokens — design tokens (CSS + JSON)
-│   └── config/             ← @wordly/config — shared Tailwind/TS/ESLint
-└── .storybook/             ← Storybook → deployed to Vercel (free, public)
+src/features/<id>/
+  feature.config.ts   ← sidebar placement (group/label/icon) + owner. Pure data.
+  index.tsx           ← the prototype UI. THIS is where you build.
 ```
 
-## Creating a new prototype
+- Route is automatic: `src/features/<id>/` → **`/lab/<id>`**. Never hand-write routes.
+- Sidebar entry is automatic: a generator reads every `feature.config.ts` and
+  composes the nav. It runs on `predev`/`prebuild`, or `npm run generate:features`.
+- **Reuse dashboard UI from `@/components/ui/*`** (ShadCN/Radix primitives — Button,
+  Dialog, Table, Tabs, Select, etc.). Match the product; don't reinvent.
 
+### Track B — Standalone prototype in `apps/*`
+For throwaway/rough explorations that should NOT live in the dashboard (incl.
+plain HTML). Scaffold with `npm run create-app <name>`. These import from the
+**`@wordly/ui`** package (`packages/ui`, 67 components) + `@wordly/tokens`.
+
+> Reuse source differs by track: in-app features use `@/components/ui/*`;
+> `apps/*` prototypes use `@wordly/ui`. Don't mix them up.
+
+---
+
+## The four verbs → exact commands
+
+When a teammate uses one of these phrases, run the corresponding sequence. Always
+narrate what you did in plain English (no jargon). Branch name is `feat/<owner>-<id>`.
+
+### 1. "start a feature called X" / "create feature X"
 ```bash
-npm run create-app <name>
-# e.g. npm run create-app attend
-# Scaffolds apps/attend/ from _template/
+git checkout main && git pull --ff-only
+git checkout -b feat/<owner>-<id>
+npm run create-feature <id> <owner>      # scaffolds src/features/<id>/, regenerates registry
 ```
+Then tell them the URL it will live at: `/lab/<id>`, and that you'll build in
+`src/features/<id>/index.tsx`.
 
-Then build with components from `@wordly/ui`:
-```tsx
-import { Button, Card, Dialog, Input } from "@wordly/ui"
-```
-
-## Component library (@wordly/ui)
-
-Source: `packages/ui/src/components/`
-Import: `import { ComponentName } from "@wordly/ui"`
-
-### Available components
-- **Layout**: Card, Separator, Resizable, Sheet, Sidebar
-- **Inputs**: Button, Input, Textarea, Select, Checkbox, RadioGroup, Switch, Toggle, ToggleGroup
-- **Feedback**: Alert, Badge, Progress, Skeleton, Tooltip
-- **Overlays**: Dialog, AlertDialog, Popover, HoverCard, DropdownMenu
-- **Navigation**: Breadcrumb, Tabs, Command
-- **Data**: Table, DataTable, Chart
-- **Typography**: Typography (h1–h6, body, label, caption)
-- **Forms**: Label, FormLayout
-- **Wordly-specific**: SessionJoinModal, SessionJoinButton, SessionControlCenter, BotRemoteControl
-
-### Adding a new component
-1. Add the component file to `packages/ui/src/components/`
-2. Export it from `packages/ui/src/components/index.ts`
-3. Write a Storybook story in `packages/ui/src/components/[name].stories.tsx`
-4. Use it in your app via `import { NewComponent } from "@wordly/ui"`
-
-## Design tokens (@wordly/tokens)
-
-Source: `packages/tokens/src/tokens.css` (CSS vars) + `tokens.json` (machine-readable)
-Generated from the Wordly Figma design system via `npm run tokens:generate`
-
-### Key color tokens
-- **Brand Blue**: `--color-brand-blue-400: #017CFF` (primary CTA)
-- **Action Teal**: `--color-action-teal-400: #1BC3E4` (interactive elements)
-- **Accent Green**: `--color-accent-green-500: #15B743` (success / positive)
-- **Navy**: `--color-brand-blue-600: #0051A8` (headers, emphasis)
-- **Error**: `--color-error-500: #E62D21`
-- **Gray UI**: use Tailwind gray scale
-
-### Typography
-- Font: **Roboto** (variable: `--font-roboto`)
-- Scale: 2xs (8px) → 6xl (80px)
-
-### Regenerating tokens
+### 2. "save my work"
 ```bash
-npm run tokens:generate
-# Reads from Figma export, writes to packages/tokens/src/
+git add -A
+git commit -m "feat(<id>): <plain summary of what changed>"
 ```
 
-## Storybook
+### 3. "sync" / "get the latest"
+```bash
+git fetch origin
+git rebase origin/main
+```
+- If `src/shell/feature-registry.generated.ts` conflicts, **don't hand-merge it** —
+  run `npm run generate:features` and `git add` it (output is deterministic).
+- Resolve other conflicts, then explain in plain terms ("Justin also added a
+  sidebar item; I kept both").
 
-Run locally: `npm run dev:storybook`
-Deployed: Vercel (public URL — see Notion Wordly Lab page for link)
+### 4. "ship my feature" / "share it"
+```bash
+git push -u origin feat/<owner>-<id>
+gh pr create --fill --base main
+```
+Then get the preview URL and report it back:
+```bash
+gh pr view --json url -q .url                       # the PR
+# Vercel bot comments the preview URL on the PR within ~1–2 min:
+gh pr view --json comments -q '.comments[].body' | grep -oE 'https://[^ ]*vercel.app' | head -1
+```
+Paste the clickable preview URL into the chat. Tell them **Deacon reviews and merges**.
 
-Every component in `packages/ui` should have a story.
-Stories live at: `packages/ui/src/components/[name].stories.tsx`
+---
 
-## How to add an HTML prototype
+## Guardrails — protect beginners and the shared UI
 
-1. Put HTML/CSS/JS files in `apps/[name]/public/`
-2. `cd apps/[name] && npx serve public`
-3. Push to a branch → get a Vercel preview URL
+**Extend, don't edit.** Build only inside `src/features/<id>/`. These paths are
+**owner-gated** (`.github/CODEOWNERS` → `@deacon-poon`) — do NOT modify them on a
+teammate's feature branch; importing/reading from them is fine:
 
-## Deployment
+```
+/src/shell/   /src/components/   /src/store/   /src/contexts/
+/src/app/layout.tsx   /src/app/globals.css   /src/app/lab/
+/packages/   /scripts/   /.github/
+```
 
-Every push to `main` → Storybook deploys to Vercel
-Every PR → Vercel preview URL per app (post link in PR)
+- Need a shared component changed or added? **Don't fork it.** Build it locally in
+  the feature first, then flag it for Deacon to promote into the shared library so
+  everyone benefits. That promotion is the reusability flywheel — surface it, never
+  bypass it.
+- Don't hardcode hex colors — use the design tokens / Tailwind classes.
+- Don't add production/backend logic. Lab prototypes produce proof, not production code.
 
-## Handoff criteria
+---
 
-A prototype is ready to hand off when:
-- [ ] The question it was answering is written down
-- [ ] At least one validation signal exists
-- [ ] New components are in `packages/ui` with stories
-- [ ] A PR is open with `docs/handoff-checklist.md` filled out
-- [ ] Engineering contact identified (Grace/React, Javier/Angular, Rob/integration)
+## Reusable UI reference
 
-See `docs/handoff-checklist.md` for the full checklist.
+**Dashboard (Track A)** — `@/components/ui/*` (ShadCN/Radix): Button, Input, Textarea,
+Select, Checkbox, RadioGroup, Switch, Toggle, Card, Separator, Sheet, Sidebar, Dialog,
+AlertDialog, Popover, HoverCard, DropdownMenu, Tooltip, Alert, Badge, Progress, Skeleton,
+Breadcrumb, Tabs, Command, Table, DataTable, Chart, Typography, Label.
 
-## What NOT to do
-- Don't define components locally inside an app — add them to `packages/ui`
-- Don't enable cross-app navigation for usability test prototypes
-- Don't add production logic — Lab prototypes produce proof, not production code
+**Design tokens** — Roboto font; brand colors as CSS vars / Tailwind classes:
+Brand Blue `#017CFF` (primary CTA), Action Teal `#1BC3E4`, Accent Green `#15B743`
+(success), Navy `#0051A8`, Error `#E62D21`. Regenerate from Figma: `npm run tokens:generate`.
+
+**`apps/*` prototypes (Track B)** — import the same families from `@wordly/ui`.
+
+---
+
+## Run / preview
+```bash
+npm run dev          # http://localhost:3000  → open /lab/<id> for an in-app feature
+npm run dev:storybook   # localhost:6006 — component library showcase
+```
+
+## More docs
+- `docs/COLLABORATING.md` — the human-facing teammate guide (plain English).
+- `docs/handoff-checklist.md` — criteria to graduate a prototype to engineering.
+- `src/features/_template/` — the scaffold `create-feature` copies from.

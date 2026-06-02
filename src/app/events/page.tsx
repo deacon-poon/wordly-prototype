@@ -123,7 +123,7 @@ export default function EventsPage() {
 
   // "Show More" state for events list — tracks how many events to show per group/filter
   // Demo: 3 to show "Show More" with small dataset. Production: 50
-  const EVENTS_PAGE_SIZE = 3;
+  const EVENTS_PAGE_SIZE = 15;
   const [visibleEventsCount, setVisibleEventsCount] = useState<Record<string, number>>({});
 
   // Events state - initialized with mock data

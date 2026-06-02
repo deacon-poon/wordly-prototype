@@ -86,9 +86,7 @@ interface RoomAccordionProps {
 }
 
 // Page size for lazy loading sessions within a room accordion.
-// In production this would be 50 (matching API page size).
-// Set to 5 for prototype demo to show "Show More" behavior with small datasets.
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 15;
 
 export function RoomAccordion({
   room,
@@ -472,7 +470,7 @@ export function RoomAccordion({
 
           {/* Add Session button - always accessible before "Show More" */}
           {room.sessions.length > 0 && onAddSession && !isPastEvent && (
-            <div className="px-4 py-2.5 border-t border-gray-100">
+            <div className="px-2 py-2.5 sm:px-4 sm:py-3 border-t border-gray-100">
               <div className="flex items-center">
                 <div className="w-8 flex-shrink-0 hidden sm:block" />
                 <Button
@@ -490,7 +488,7 @@ export function RoomAccordion({
 
           {/* Show More button - loads next batch of sessions */}
           {hasMoreSessions && (
-            <div className="px-4 py-3 border-t border-gray-200 bg-gray-50/50">
+            <div className="px-2 py-2.5 sm:px-4 sm:py-3 border-t border-gray-100">
               <div className="flex items-center">
                 <div className="w-8 flex-shrink-0 hidden sm:block" />
                 <Button
