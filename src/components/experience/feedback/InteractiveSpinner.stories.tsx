@@ -35,7 +35,7 @@ export const Default: Story = {
   },
 };
 
-/** Spinner only — no message rendered (matches the lib's `NoMessages` story). */
+/** Spinner only - no message rendered (matches the lib's `NoMessages` story). */
 export const NoMessages: Story = {
   args: {},
 };
@@ -43,7 +43,7 @@ export const NoMessages: Story = {
 /** A single static message that pulses without cycling. */
 export const SingleMessage: Story = {
   args: {
-    messages: ["Connecting to the session…"],
+    messages: ["Connecting to the session..."],
   },
 };
 

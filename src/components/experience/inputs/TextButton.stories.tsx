@@ -47,65 +47,25 @@ export const Tertiary: Story = {
   args: { label: "Tertiary", prominence: "tertiary" },
 };
 
-export const AllProminences: Story = {
-  render: (args) => (
-    <div className="flex flex-wrap items-center gap-3">
-      <TextButton {...args} label="Primary" prominence="primary" />
-      <TextButton {...args} label="Secondary" prominence="secondary" />
-      <TextButton {...args} label="Tertiary" prominence="tertiary" />
-    </div>
-  ),
-};
-
 export const Disabled: Story = {
-  render: (args) => (
-    <div className="flex flex-wrap items-center gap-3">
-      <TextButton {...args} label="Primary" prominence="primary" disabled />
-      <TextButton {...args} label="Secondary" prominence="secondary" disabled />
-      <TextButton {...args} label="Tertiary" prominence="tertiary" disabled />
-    </div>
-  ),
+  args: { label: "Disabled", prominence: "primary", disabled: true },
 };
 
-export const Sizes: Story = {
-  render: (args) => (
-    <div className="flex flex-wrap items-center gap-3">
-      <TextButton {...args} label="Small" size="sm" />
-      <TextButton {...args} label="Default" size="default" />
-      <TextButton {...args} label="Large" size="lg" />
-    </div>
-  ),
+export const Small: Story = {
+  args: { label: "Small", size: "sm" },
 };
 
-/**
- * The `customColor` escape hatch renders a button outside the theme — for use on
- * colored surfaces. It is an arbitrary runtime color (applied via inline style, not
- * a class), so a raw color value is the correct input type here. Prefer prominence
- * + tokens for on-theme buttons; reach for this only when off-theme.
- */
-const OFF_THEME_DEMO_COLOR = "rgb(124 58 237)"; // arbitrary off-theme purple for the escape-hatch demo
+export const Large: Story = {
+  args: { label: "Large", size: "lg" },
+};
 
+// The customColor escape hatch renders a button outside the theme (arbitrary
+// runtime color via inline style) for colored surfaces. Prefer prominence +
+// tokens for on-theme buttons; reach for this only when off-theme.
 export const CustomColor: Story = {
-  render: (args) => (
-    <div className="flex flex-wrap items-center gap-3">
-      <TextButton
-        {...args}
-        label="Custom Primary"
-        prominence="primary"
-        customColor={OFF_THEME_DEMO_COLOR}
-      />
-      <TextButton
-        {...args}
-        label="Custom Secondary"
-        prominence="secondary"
-        customColor={OFF_THEME_DEMO_COLOR}
-      />
-      <TextButton
-        {...args}
-        label="Custom Tertiary"
-        prominence="tertiary"
-        customColor={OFF_THEME_DEMO_COLOR}
-      />
-    </div>
-  ),
+  args: {
+    label: "Custom",
+    prominence: "primary",
+    customColor: "rgb(124 58 237)",
+  },
 };
