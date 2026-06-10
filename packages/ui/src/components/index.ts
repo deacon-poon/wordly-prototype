@@ -1,4 +1,3 @@
-export * from "./accessibility-guide";
 export * from "./accordion";
 export * from "./alert-dialog";
 export * from "./alert";
@@ -20,7 +19,6 @@ export * from "./dropdown-menu";
 export * from "./hover-card";
 export * from "./input";
 export * from "./label";
-export * from "./mobile-guidelines";
 export * from "./popover";
 export * from "./progress";
 export * from "./radio-group";

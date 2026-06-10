@@ -13,5 +13,5 @@
       "develop": true
     }
   },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./src/stories/ ./.storybook/ ./tailwind.config.mjs ./src/app/globals.css"
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./src/components/ ./src/stories/ ./packages/ui/ ./.storybook/ ./tailwind.config.js ./src/app/globals.css"
 }

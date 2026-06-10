@@ -1,4 +1,3 @@
-export * from "./accessibility-guide";
 export * from "./accordion";
 export * from "./alert-dialog";
 export * from "./alert";
@@ -20,7 +19,6 @@ export * from "./dropdown-menu";
 export * from "./hover-card";
 export * from "./input";
 export * from "./label";
-export * from "./mobile-guidelines";
 export * from "./popover";
 export * from "./progress";
 export * from "./radio-group";
@@ -45,3 +43,15 @@ export * from "./toggle";
 export * from "./toggle-group";
 export * from "./tooltip";
 export * from "./typography";
+// Core primitives migrated from the portal (Angular Spartan → React shadcn)
+export * from "./combobox";
+export * from "./chip";
+export * from "./chip-input";
+export * from "./chip-selector";
+export * from "./date-range-picker";
+export * from "./time-picker";
+export * from "./file-uploader";
+export * from "./infinite-scroll";
+export * from "./load-more";
+export * from "./item";
+export * from "./main-container";
