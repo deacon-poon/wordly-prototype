@@ -7,14 +7,15 @@
     "packages/*"
   ],
   "scripts": {
-    "predev": "npm run generate:features",
+    "predev": "npm run generate:features && npm run validate:features",
     "dev": "next dev",
     "tokens:generate": "node scripts/generate-figma-tokens.js",
     "generate:features": "node scripts/generate-feature-registry.js",
+    "validate:features": "node scripts/validate-features.js",
     "create-feature": "node scripts/create-feature.js",
-    "prebuild": "npm run generate:features",
+    "prebuild": "npm run generate:features && npm run validate:features",
     "build": "next build",
-    "prebuild:vercel": "npm run generate:features",
+    "prebuild:vercel": "npm run generate:features && npm run validate:features",
     "build:vercel": "next build",
     "build:storybook": "storybook build",
     "build:storybook:vercel": "npm run build:storybook",
