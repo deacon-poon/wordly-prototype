@@ -25,11 +25,14 @@
     "deploy:vercel": "npm run build:vercel && vercel --prod",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "check:deps": "node scripts/check-dependencies.js",
     "check:deps:pro": "node scripts/check-deps-pro.js",
     "fix:deps": "node scripts/fix-dependencies.js",
     "postinstall": "echo \"Skipping dependency check for now\"",
-    "create-app": "node scripts/create-app.js"
+    "create-app": "node scripts/create-app.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.88",
@@ -69,7 +72,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "lucide-react": "^0.298.0",
-    "next": "^15.5.7",
+    "next": "^15.5.19",
     "next-themes": "^0.4.6",
     "react": "18.2.0",
     "react-day-picker": "^9.13.0",
@@ -89,6 +92,8 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/eslintrc": "2.1.4",
     "@storybook/addon-essentials": "7.6.10",
     "@storybook/addon-interactions": "7.6.10",
@@ -105,7 +110,10 @@
     "eslint": "8.56.0",
     "eslint-config-next": "14.1.0",
     "eslint-plugin-storybook": "0.6.15",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
     "postcss": "^8.4.32",
+    "prettier": "^3.8.4",
     "storybook": "7.6.10",
     "tailwindcss": "3.4.0",
     "typescript": "5.3.3",

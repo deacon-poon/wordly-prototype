@@ -1,0 +1,16 @@
+# Build output & deps
+node_modules
+.next
+out
+dist
+storybook-static
+
+# Generated — never hand-format
+src/shell/feature-registry.generated.ts
+
+# Embedded prototype HTML (authored as-is, not ours to reformat)
+public/lab/**/*.html
+
+# Lockfiles
+package-lock.json
+bun.lockb
