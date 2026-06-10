@@ -26,3 +26,17 @@ src/features/<name>/
 3. Ship it (opens a PR + preview URL) — ask Claude: **"ship my feature"**
 
 See `docs/COLLABORATING.md` for the full guide.
+
+## ⚠️ Prototypes are React (`.tsx`), not raw HTML
+
+`index.tsx` must be a React component — `"use client"` at the top and a
+`export default function ...` that returns JSX. The route loads that default
+export and renders it.
+
+**Do not paste a raw `<!DOCTYPE html>` document into `index.tsx`.** It won't
+compile as TSX and it breaks the build (and the deploy) for everyone.
+
+If you've sketched an idea in plain HTML, that's fine as a starting point — ask
+Claude: **"convert my HTML prototype to React"** and it'll port it into proper
+`.tsx` components that reuse `@/components/ui/*`. That React version is what
+ships; the design-system reuse is the whole point.

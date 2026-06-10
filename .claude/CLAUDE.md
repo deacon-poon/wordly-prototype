@@ -100,6 +100,15 @@ teammate's feature branch; importing/reading from them is fine:
 /packages/   /scripts/   /.github/
 ```
 
+**Prototypes are React, never raw HTML.** `src/features/<id>/index.tsx` MUST be a
+React module — `"use client"` + a default-exported component returning JSX. The
+route renders that default export, so a raw `<!DOCTYPE html>` document pasted into
+`index.tsx` does not compile and **breaks the build/deploy for everyone**. If a
+teammate hands you an HTML sketch (or you find one as `index.tsx`), port it into
+proper `.tsx` reusing `@/components/ui/*` — don't iframe it long-term. (A static
+`public/*.html` + iframe wrapper is an acceptable *temporary* bridge to unbreak a
+deploy, but flag it as debt: the real version is native React.)
+
 - Need a shared component changed or added? **Don't fork it.** Build it locally in
   the feature first, then flag it for Deacon to promote into the shared library so
   everyone benefits. That promotion is the reusability flywheel — surface it, never

@@ -10,6 +10,10 @@ import config from "./feature.config";
  * where it would actually live.
  *
  * Rules of the road:
+ *  - This file MUST stay a React component: keep "use client" above and a
+ *    `export default function` that returns JSX. Never paste a raw
+ *    <!DOCTYPE html> document in here — it won't compile and breaks the build.
+ *    Have an HTML sketch? Ask Claude: "convert my HTML prototype to React".
  *  - Build everything inside this folder (src/features/__ID__/).
  *  - Reuse shared UI from "@/components/ui/*" so it matches the product.
  *  - Don't edit shared files outside this folder — that keeps you conflict-free.
