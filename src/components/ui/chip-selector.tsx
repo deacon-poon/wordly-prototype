@@ -252,8 +252,10 @@ export function ChipSelector({
       {/* Input-style box holding the chips */}
       <div
         className={cn(
-          "min-h-[2.5rem] w-full rounded-md border bg-background px-3 py-2 ring-offset-background has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2",
-          hasError ? "!border-destructive" : "border-input",
+          "min-h-[2.5rem] w-full rounded-md border bg-background px-3 py-2 shadow-xs has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring has-[:focus-visible]:border-ring",
+          hasError
+            ? "!border-destructive has-[:focus-visible]:ring-destructive/20"
+            : "border-input",
           disabled && "cursor-not-allowed opacity-50"
         )}
       >
@@ -269,7 +271,7 @@ export function ChipSelector({
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-xs"
+              className="h-7 px-2 text-xs shadow-xs"
               onClick={onRetry}
             >
               {retryText}
@@ -321,19 +323,19 @@ export function ChipSelector({
             ) : null}
 
             {/* Selection info banner (portal: bg-info / border-info-border; two-color text) */}
-            <div className="rounded-lg border border-primary-blue-200 bg-primary-blue-50 p-3">
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
               <div className="flex items-center gap-1 text-sm font-medium">
                 {hasLimit ? (
                   <>
-                    <span className="text-primary-blue-700">
+                    <span className="text-blue-700">
                       {selectionLimitText} {maxSelectable} {itemTypeName}
                     </span>
-                    <span className="text-primary">
+                    <span className="text-blue-500">
                       ({tempSelected.length} selected)
                     </span>
                   </>
                 ) : (
-                  <span className="text-primary-blue-700">
+                  <span className="text-blue-700">
                     {unlimitedSelectionText}
                   </span>
                 )}
@@ -353,7 +355,10 @@ export function ChipSelector({
                     <label
                       key={option.value}
                       className={cn(
-                        "flex cursor-pointer items-center gap-3 rounded-md border border-input p-3 transition-colors hover:bg-gray-50",
+                        "flex cursor-pointer items-start gap-3 rounded-md border p-4 transition-all duration-200 ease-in-out",
+                        checked
+                          ? "border-primary bg-accent"
+                          : "border-input hover:bg-accent/50",
                         rowDisabled && "cursor-not-allowed opacity-50"
                       )}
                     >
@@ -364,12 +369,19 @@ export function ChipSelector({
                           toggleTemp(option.value, c === true)
                         }
                       />
-                      <span className="flex-1 text-sm text-gray-900">
-                        {optionText(option)}
-                      </span>
-                      {showChipInfoTooltip && option.help ? (
-                        <InfoTip help={option.help} />
-                      ) : null}
+                      <div className="grid flex-1 gap-1.5">
+                        <span className="text-sm font-medium leading-none text-foreground">
+                          {optionText(option)}
+                        </span>
+                        {showChipInfoTooltip && option.help ? (
+                          <div className="flex items-center gap-2">
+                            <Info className="h-4 w-4 shrink-0 text-blue-700" />
+                            <p className="text-sm text-muted-foreground">
+                              {option.help}
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
                     </label>
                   );
                 })}
@@ -449,7 +461,7 @@ function Chip({ option, showInfo, showClose, disabled, onRemove }: ChipProps) {
           title={`Remove ${optionText(option)}`}
           disabled={disabled}
           onClick={onRemove}
-          className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 transition-colors duration-200 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+          className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 transition-colors duration-200 hover:bg-gray-200 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -459,9 +471,10 @@ function Chip({ option, showInfo, showClose, disabled, onRemove }: ChipProps) {
 }
 
 /**
- * Info / help tooltip trigger. The portal renders the info icon in Blue-700 by
- * default and White when on a selected chip; here `selected` swaps to the chip's
- * foreground color so it stays legible on the Brand Blue fill.
+ * Info / help tooltip trigger. The portal renders the info icon in the
+ * informational Blue-700 by default and White when on a selected chip; here
+ * `selected` swaps to the chip's foreground color so it stays legible on the
+ * Brand Blue fill.
  */
 function InfoTip({
   help,
@@ -477,7 +490,7 @@ function InfoTip({
           <span
             className={cn(
               "inline-flex shrink-0 items-center",
-              selected ? "text-primary-foreground" : "text-primary-blue-700"
+              selected ? "text-primary-foreground" : "text-blue-700"
             )}
             aria-label={help}
           >

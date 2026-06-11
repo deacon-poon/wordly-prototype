@@ -21,9 +21,11 @@ const meta: Meta<typeof VoiceSelector> = {
   },
   tags: ["autodocs"],
   argTypes: {
+    size: { control: "inline-radio", options: ["default", "sm"] },
     loading: { control: "boolean" },
     error: { control: "boolean" },
     disabled: { control: "boolean" },
+    readonly: { control: "boolean" },
     required: { control: "boolean" },
   },
 };
@@ -57,7 +59,7 @@ export const Loading: Story = {
   args: { loading: true },
 };
 
-/** Error/invalid state — trigger border + text use the destructive token. */
+/** Error/invalid state - trigger border + text use the destructive token. */
 export const Error: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Voice", required: true, error: true },
@@ -71,4 +73,16 @@ export const Empty: Story = {
 export const Disabled: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Voice", disabled: true },
+};
+
+/** Read-only: keeps the selected appearance but blocks opening the modal. */
+export const Readonly: Story = {
+  render: (args) => <Controlled {...args} />,
+  args: { label: "Voice", value: "vp-marcus", readonly: true },
+};
+
+/** Small trigger height (h-8) - matches the portal `data-size="sm"`. */
+export const Small: Story = {
+  render: (args) => <Controlled {...args} />,
+  args: { label: "Voice", value: "vp-aria", size: "sm" },
 };

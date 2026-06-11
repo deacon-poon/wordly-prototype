@@ -40,7 +40,7 @@ function Controlled(props: React.ComponentProps<typeof DateRangePicker>) {
     <div className="flex flex-col gap-3">
       <DateRangePicker {...props} value={value} onValueChange={setValue} />
       <p className="text-xs text-gray-500">
-        {value ? `${fmt(value[0])} → ${fmt(value[1])}` : "All Time (no range)"}
+        {value ? `${fmt(value[0])} - ${fmt(value[1])}` : "All Time (no range)"}
       </p>
     </div>
   );
@@ -110,7 +110,7 @@ export const Disabled: Story = {
 };
 
 /**
- * Custom (non-preset) range — exercises the formatted trigger label and, when the
+ * Custom (non-preset) range - exercises the formatted trigger label and, when the
  * popover is opened, the `accent-green-100` between-range fill on the calendar.
  */
 export const CustomRange: Story = {
@@ -123,7 +123,7 @@ export const CustomRange: Story = {
 };
 
 /**
- * Active-preset highlight — opening the popover shows the matched preset
+ * Active-preset highlight - opening the popover shows the matched preset
  * highlighted in the rail (neutral `bg-accent font-medium`, matching the portal).
  */
 export const PresetHighlight: Story = {

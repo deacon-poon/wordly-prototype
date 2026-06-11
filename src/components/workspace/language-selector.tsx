@@ -24,7 +24,8 @@
  */
 
 import * as React from "react";
-import { Check, ChevronsUpDown, Sparkles, X } from "lucide-react";
+import { cva } from "class-variance-authority";
+import { Check, ChevronDown, Sparkles, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,37 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The single-
+// selection mode proxies wordly-language-selector -> wordly-select ->
+// hlm-select-trigger, so the real control anatomy lives there: border-input,
+// rounded-md, px-3 py-2, text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8,
+// focus ring [3px] on ring (no offset) with focus-visible:border-ring, no hover
+// background, destructive border+text+ring on error. ChevronDown indicator
+// (size-4). Identical to the validated account-selector reference.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WordlyLanguageOption model)
@@ -376,24 +408,26 @@ function SingleLanguageSelect({
       <FieldLabel label={label} required={required} />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
+          <button
             type="button"
-            variant="outline"
             role="combobox"
             aria-expanded={open}
+            aria-invalid={error || undefined}
+            aria-required={required || undefined}
             disabled={disabled || loading || error}
-            className={cn(
-              "w-full justify-between font-normal",
-              !selected && "text-muted-foreground",
-              error && "border-destructive text-destructive"
-            )}
+            className={cn(selectTriggerVariants({ error }))}
           >
-            <span className="flex items-center gap-2 truncate">
-              {loading ? <Spinner className="h-4 w-4" /> : null}
+            <span
+              className={cn(
+                "flex min-w-0 items-center gap-2 truncate",
+                !selected && "text-muted-foreground"
+              )}
+            >
+              {loading ? <Spinner className="h-4 w-4 shrink-0" /> : null}
               <span className="truncate">{triggerLabel}</span>
             </span>
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-          </Button>
+            <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
+          </button>
         </PopoverTrigger>
         <PopoverContent
           className="w-[var(--radix-popover-trigger-width)] p-0"
@@ -602,8 +636,10 @@ function MultiLanguageSelect({
       {/* Container styled like an input field (matches wordly-chip-selector). */}
       <div
         className={cn(
-          "min-h-[2.5rem] w-full rounded-md border bg-background px-3 py-2 ring-offset-background has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2",
-          error ? "border-destructive" : "border-input",
+          "min-h-[2.5rem] w-full rounded-md border bg-background px-3 py-2 shadow-xs transition-[color,box-shadow] has-[:focus-visible]:border-ring has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50",
+          error
+            ? "border-destructive has-[:focus-visible]:ring-destructive/20"
+            : "border-input",
           disabled && "opacity-50 cursor-not-allowed"
         )}
       >
@@ -654,23 +690,21 @@ function MultiLanguageSelect({
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 
-          {/* Selection-info banner (matches chip-selector). The portal uses an
-              `info` semantic token (bg-info / border-info-border /
-              text-info-foreground); the prototype has no `info` token, so this
-              uses the closest brand-blue tokens — see notes/FLAG. */}
-          <div className="mx-6 rounded-lg border border-primary-blue-100 bg-primary-blue-25 p-3">
-            <div className="flex items-center gap-1 text-sm font-medium">
+          {/* Selection-info banner (matches chip-selector). The portal uses the
+              informational `info` semantic token (bg-info / border-info-border /
+              text-info-foreground); those map to the prototype's informational
+              blue scale: bg-blue-50 / border-blue-100 / text-blue-700. */}
+          <div className="mx-6 rounded-md border border-blue-100 bg-blue-50 p-3">
+            <div className="flex items-center gap-1 text-sm font-medium text-blue-700">
               {typeof maxSelectable === "number" && maxSelectable > 0 ? (
                 <>
-                  <span className="text-gray-700">
+                  <span>
                     {selectionLimitText} {maxSelectable} {itemTypeName}
                   </span>
-                  <span className="text-primary-blue-500">
-                    ({draft.length} selected)
-                  </span>
+                  <span>({draft.length} selected)</span>
                 </>
               ) : (
-                <span className="text-gray-700">
+                <span>
                   {draft.length} {itemTypeName} selected
                 </span>
               )}

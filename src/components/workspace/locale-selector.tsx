@@ -9,8 +9,8 @@
  * The Angular original is a proxy over the core `wordly-select`, populated with
  * supported-locale data from a bridge service (ConstantsService.SUPPORTED_LOCALES).
  * Here we keep the same public surface (label, placeholder, required, disabled,
- * helper text, and loading/error/empty states) but drop the Angular DI/service
- * layer: locales arrive via props, defaulting to mock data.
+ * readonly, helper text, and loading/error/empty states) but drop the Angular
+ * DI/service layer: locales arrive via props, defaulting to mock data.
  *
  * Built on the shared shadcn primitives (Command + Popover) per the
  * WorkspaceSelector proof. In production these locales would be fetched from the
@@ -18,11 +18,11 @@
  */
 
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 // AlertCircle is this lucide-react version's name for the portal's lucideAlertCircle glyph.
-import { AlertCircle, Check, ChevronsUpDown, Loader2, X } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Loader2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -38,11 +38,45 @@ import {
 } from "@/components/ui/popover";
 
 // ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
+// proxies wordly-locale-selector → wordly-select → hlm-select-trigger, so the
+// real control anatomy lives there: border-input, rounded-md, px-3 py-2,
+// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
+// ring (no offset) with focus-visible:border-ring, destructive border+text+ring
+// on error. No hover state on the trigger.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
+
+export type LocaleSelectorSize = NonNullable<
+  VariantProps<typeof selectTriggerVariants>["size"]
+>;
+
+// ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular LocaleOption model)
 // ---------------------------------------------------------------------------
 
 export interface LocaleOption {
-  /** Display label for the locale (e.g., "English", "Español"). */
+  /** Display label for the locale (e.g., "English", "Espanol"). */
   label: string;
   /** Short locale code (e.g., "en", "es"). */
   value: string;
@@ -81,7 +115,12 @@ export interface LocaleSelectorProps {
   /** Allow clearing the current selection. */
   clearable?: boolean;
 
+  /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
+  size?: LocaleSelectorSize;
+
   disabled?: boolean;
+  /** Read-only: shows the value but blocks interaction (portal `readonly`). */
+  readonly?: boolean;
   loading?: boolean;
   error?: boolean;
 
@@ -107,7 +146,9 @@ export function LocaleSelector({
   placeholder = "Select locale",
   searchable = false,
   clearable = false,
+  size = "default",
   disabled = false,
+  readonly = false,
   loading = false,
   error = false,
   label,
@@ -131,6 +172,9 @@ export function LocaleSelector({
       ? errorLoadingText
       : (selected?.label ?? placeholder);
 
+  // Loading / error block the trigger; readonly keeps appearance but blocks open.
+  const interactionBlocked = disabled || loading || error || readonly;
+
   function handleSelect(next: string) {
     onValueChange?.(next === value ? "" : next);
     setOpen(false);
@@ -140,6 +184,8 @@ export function LocaleSelector({
     e.stopPropagation();
     onValueChange?.("");
   }
+
+  const showClear = clearable && !!selected && !loading && !error && !readonly;
 
   return (
     // Container — portal wordlyContainerVariants default: flex flex-col gap-4
@@ -156,85 +202,91 @@ export function LocaleSelector({
 
       {/* Content — portal wordlyContentVariants default: flex flex-col gap-3 */}
       <div className="flex flex-col gap-3">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              aria-invalid={error || undefined}
-              aria-required={required || undefined}
-              disabled={disabled || loading || error}
-              className={cn(
-                "w-full justify-between font-normal",
-                // placeholder uses muted-foreground (wordly-select-placeholder)
-                !selected && "text-muted-foreground",
-                // error state mirrors core select: .border-destructive
-                error && "border-destructive text-destructive"
-              )}
-            >
-              <span className="flex items-center gap-x-2 truncate">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                <span className="line-clamp-1 truncate">{triggerLabel}</span>
-              </span>
-              <span className="flex items-center gap-1">
-                {clearable && selected && !loading && !error ? (
-                  // Clear button — mirrors core select clear: rounded-sm,
-                  // hover:bg-muted, text-muted-foreground
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    className="rounded-sm p-0.5 text-muted-foreground hover:bg-muted"
-                    onClick={handleClear}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleClear(e as unknown as React.MouseEvent);
-                      }
-                    }}
-                    aria-label="Clear selection"
-                  >
-                    <X className="h-4 w-4 shrink-0" />
-                  </span>
-                ) : null}
-                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-              </span>
-            </Button>
-          </PopoverTrigger>
+        <Popover
+          open={open}
+          onOpenChange={interactionBlocked ? undefined : setOpen}
+        >
+          <div className="relative">
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                role="combobox"
+                aria-expanded={open}
+                aria-invalid={error || undefined}
+                aria-readonly={readonly || undefined}
+                aria-required={required || undefined}
+                disabled={disabled || loading || error}
+                className={cn(
+                  selectTriggerVariants({ size, error }),
+                  // placeholder uses muted-foreground (wordly-select-placeholder)
+                  !selected && "text-muted-foreground",
+                  // Make room for the clear button + chevron when clearable.
+                  showClear && "pr-12",
+                  readonly && "pointer-events-none"
+                )}
+              >
+                <span
+                  className={cn(
+                    "flex min-w-0 items-center gap-2 truncate",
+                    !selected && "text-muted-foreground"
+                  )}
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                  ) : null}
+                  <span className="truncate">{triggerLabel}</span>
+                </span>
+                <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
+              </button>
+            </PopoverTrigger>
+
+            {/* Clear button: portal places it absolutely at right-8, before the chevron. */}
+            {showClear ? (
+              <button
+                type="button"
+                aria-label="Clear selection"
+                onClick={handleClear}
+                className="absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:bg-muted"
+              >
+                <X className="size-3.5" />
+              </button>
+            ) : null}
+          </div>
 
           <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] p-0"
+            className="min-w-[8rem] w-[var(--radix-popover-trigger-width)] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
             align="start"
           >
             <Command>
               {searchable ? <CommandInput placeholder={placeholder} /> : null}
               <CommandList>
-                <CommandEmpty>
+                <CommandEmpty className="py-1.5 text-sm italic text-muted-foreground">
                   {hasOptions ? noSearchResultsText : noLocalesText}
                 </CommandEmpty>
                 <CommandGroup>
-                  {locales.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      value={option.label}
-                      onSelect={() => handleSelect(option.value)}
-                    >
-                      {/* Check icon — core select renders it text-primary */}
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4 text-primary",
-                          value === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      <span className="flex-1">{option.label}</span>
-                      {option.use ? (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          {option.use}
+                  {locales.map((option) => {
+                    const isSelected = value === option.value;
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        value={option.label}
+                        onSelect={() => handleSelect(option.value)}
+                        className="relative cursor-default gap-2 rounded-sm py-1.5 pl-2 pr-8 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+                      >
+                        <span className="flex-1 truncate">{option.label}</span>
+                        {option.use ? (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {option.use}
+                          </span>
+                        ) : null}
+                        <span className="absolute right-2 flex size-3.5 items-center justify-center">
+                          {isSelected ? (
+                            <Check className="size-4 shrink-0 text-primary" />
+                          ) : null}
                         </span>
-                      ) : null}
-                    </CommandItem>
-                  ))}
+                      </CommandItem>
+                    );
+                  })}
                 </CommandGroup>
               </CommandList>
             </Command>

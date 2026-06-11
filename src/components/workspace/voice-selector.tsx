@@ -21,6 +21,7 @@
  */
 
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { ChevronDown, ChevronRight, Loader2, Play } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -40,6 +41,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts), identical to
+// the validated AccountSelector reference. The portal proxies
+// wordly-voice-selector → a trigger that opens the modal, so the control
+// anatomy matches hlm-select-trigger: border-input, rounded-md, px-3 py-2,
+// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
+// ring with border-ring (no offset), destructive border+text+ring on error.
+// No hover state on the trigger (portal trigger has none).
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-left text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
+
+export type VoiceSelectorSize = NonNullable<
+  VariantProps<typeof selectTriggerVariants>["size"]
+>;
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular VoicePackOption / LanguageOption models)
@@ -126,7 +162,12 @@ export interface VoiceSelectorProps {
   cancelLabel?: string;
   playButtonAriaLabel?: string;
 
+  /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
+  size?: VoiceSelectorSize;
+
   disabled?: boolean;
+  /** Read-only: shows the value but blocks interaction (portal `readonly`). */
+  readonly?: boolean;
   loading?: boolean;
   error?: boolean;
 
@@ -158,7 +199,9 @@ export function VoiceSelector({
   selectLabel = "Select Voice",
   cancelLabel = "Cancel",
   playButtonAriaLabel = "Play voice sample",
+  size = "default",
   disabled = false,
+  readonly = false,
   loading = false,
   error = false,
   label,
@@ -198,6 +241,8 @@ export function VoiceSelector({
   }
 
   function openModal() {
+    // Loading / error block the trigger; readonly keeps appearance but blocks open.
+    if (disabled || loading || error || readonly) return;
     setTempPack(value ?? null);
     setPreviewLanguage("");
     setSampleExpanded(false);
@@ -256,20 +301,28 @@ export function VoiceSelector({
       <button
         type="button"
         aria-label={placeholder}
+        aria-invalid={error || undefined}
+        aria-readonly={readonly || undefined}
+        aria-required={required || undefined}
         disabled={disabled || loading || error}
         onClick={openModal}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-md border bg-white px-3 py-2 text-left text-sm shadow-sm transition-colors hover:border-gray-400 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
-          error ? "!border-destructive text-destructive" : "border-border",
+          selectTriggerVariants({ size, error }),
           !selectedPack && !loading && !error && "text-muted-foreground",
+          readonly && "pointer-events-none",
           triggerClassName
         )}
       >
-        <span className="flex items-center gap-2 truncate">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        <span className="flex min-w-0 items-center gap-2 truncate">
+          {loading ? (
+            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+          ) : null}
           <span className="truncate">{triggerText}</span>
         </span>
-        <ChevronDown className="h-5 w-5 shrink-0 text-gray-400" aria-hidden />
+        <ChevronDown
+          className="ml-2 size-4 shrink-0 text-muted-foreground"
+          aria-hidden
+        />
       </button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -310,7 +363,7 @@ export function VoiceSelector({
 
             {/* Voice Sample Preview Section */}
             {tempPack ? (
-              <div className="rounded-lg border border-border p-4">
+              <div className="rounded-md border border-border p-4">
                 <button
                   type="button"
                   onClick={() => setSampleExpanded((v) => !v)}

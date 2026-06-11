@@ -14,13 +14,13 @@
  *
  * Here we keep that public surface (controlled `value` as [Date, Date] | null,
  * `onValueChange`, `min`/`max`, `defaultPreset`, label/helper/error/disabled)
- * but drop the Angular DI / RxJS / ControlValueAccessor / i18next layers — data
+ * but drop the Angular DI / RxJS / ControlValueAccessor / i18next layers - data
  * and handlers arrive via props.
  *
  * Built on the shared shadcn primitives: Popover + the react-day-picker Calendar
  * (mode="range"). The trigger reproduces the portal's `hlmInput` anatomy
  * (h-9 / rounded-md / border-input / focus-visible ring / px-3) rather than the
- * Button component, so it matches the Angular source 1:1. Brand tokens only —
+ * Button component, so it matches the Angular source 1-to-1. Brand tokens only -
  * no raw hex. Error styling uses the `destructive` token; the portal's primary
  * Teal maps to our Brand Blue, so nothing teal is reintroduced as primary.
  */
@@ -278,7 +278,7 @@ export function DateRangePicker({
   const [isCustomMode, setIsCustomMode] = React.useState(false);
   // Anchor for an in-progress custom range (after the first calendar click,
   // before the range completes). Mirrors Angular's startDate-set/endDate-undefined
-  // intermediate state — no value is emitted until the range completes.
+  // intermediate state - no value is emitted until the range completes.
   const [pendingFrom, setPendingFrom] = React.useState<Date | undefined>(
     undefined
   );
@@ -346,7 +346,7 @@ export function DateRangePicker({
     // Popover stays open so the highlighted range is visible (matches Angular).
   }
 
-  // react-day-picker range selection → drive custom mode + commit on complete.
+  // react-day-picker range selection -> drive custom mode + commit on complete.
   // Mirrors the Angular two-step contract: the first click anchors a start date
   // and emits NOTHING (range incomplete); only the second click (full range)
   // commits a value. We hold the in-progress anchor in `pendingFrom` rather than
@@ -357,11 +357,11 @@ export function DateRangePicker({
     const from = range?.from;
     const to = range?.to;
     if (from && to) {
-      // Range complete — commit and clear the anchor.
+      // Range complete - commit and clear the anchor.
       setPendingFrom(undefined);
       commit([startOfDay(from), endOfDay(to)]);
     } else if (from) {
-      // First click — anchor the start; do not emit until the range completes.
+      // First click - anchor the start; do not emit until the range completes.
       setPendingFrom(startOfDay(from));
     } else {
       // Cleared.
@@ -392,7 +392,7 @@ export function DateRangePicker({
         </label>
       ) : null}
 
-      {/* Inner control wrapper — mirrors the portal's `relative flex flex-col gap-2 w-full`. */}
+      {/* Inner control wrapper - mirrors the portal's `relative flex flex-col gap-2 w-full`. */}
       <div className="relative flex w-full flex-col gap-2">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -404,7 +404,7 @@ export function DateRangePicker({
               aria-invalid={hasError || undefined}
               disabled={disabled}
               className={cn(
-                "flex h-9 w-auto min-w-[220px] items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none transition-[color,box-shadow]",
+                "flex h-9 w-auto min-w-[220px] items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none transition-[color,box-shadow]",
                 "cursor-pointer hover:bg-accent",
                 "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
                 "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
@@ -426,7 +426,7 @@ export function DateRangePicker({
             align="start"
           >
             <div className="flex overflow-x-auto">
-              {/* Preset rail — portal: py-2 min-w-[160px] border-r border-border. */}
+              {/* Preset rail - portal: py-2 min-w-[160px] border-r border-border. */}
               <div className="flex min-w-[160px] flex-col border-r border-border py-2">
                 {presets.map((preset) => (
                   <button
@@ -443,7 +443,7 @@ export function DateRangePicker({
                 ))}
               </div>
 
-              {/* Calendar panel — between-range fill matches the portal accent-green-100.
+              {/* Calendar panel - between-range fill matches the portal accent-green-100.
                   react-day-picker v9 exposes the in-between state via the `range_middle`
                   classNames slot (not a data-* attribute), so the fill is applied there. */}
               <Calendar
@@ -467,7 +467,7 @@ export function DateRangePicker({
         </Popover>
       </div>
 
-      {/* Error takes precedence over helper text — portal renders one or the other. */}
+      {/* Error takes precedence over helper text - portal renders one or the other. */}
       {hasError ? (
         <div className="flex items-center gap-1.5 pl-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />

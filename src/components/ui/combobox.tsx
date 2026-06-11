@@ -23,7 +23,7 @@
  */
 
 import * as React from "react";
-import { Check, ChevronsUpDown, type LucideIcon } from "lucide-react";
+import { Check, ChevronDown, type LucideIcon } from "lucide-react";
 import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
@@ -53,7 +53,7 @@ export interface ComboboxOption {
   disabled?: boolean;
   /** lucide-react icon component rendered before the label. */
   icon?: LucideIcon;
-  /** Right-aligned shortcut hint (e.g. "⌘K"). */
+  /** Right-aligned shortcut hint (e.g. "Ctrl+K"). */
   shortcut?: string;
   /** Shown in the trigger instead of `label` when `compact` is true. */
   shortLabel?: string;
@@ -73,31 +73,34 @@ function isGroup(item: ComboboxOptionType): item is ComboboxOptionGroup {
 }
 
 // ---------------------------------------------------------------------------
-// Trigger anatomy — faithful to the portal's `hlmBtn variant="outline"`
-// (wordly_portal: libs/ui/button buttonVariants). Rendered natively (not via
-// the shared <Button>) so we can match the portal's exact px without editing
-// the owner-gated button.tsx:
-//   base:   rounded-md (6px @ --radius .5rem), text-sm font-medium, gap-2,
-//           focus-visible ring-[3px] ring-ring/50 + border-ring,
-//           aria-invalid -> destructive border/ring, disabled opacity-50
-//   outline: bg-background, border (--input), shadow-xs,
-//           hover:bg-accent hover:text-accent-foreground
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). This is a
+// SELECT-style control, so the trigger matches hlm-select-trigger exactly —
+// identical to the validated `workspace/account-selector.tsx` reference:
+// border-input, rounded-md (6px), px-3 py-2, text-sm, shadow-xs, gap-2, sizes
+// default=h-9 / sm=h-8, focus ring [3px] on --ring + border-ring (no offset),
+// destructive border+text+ring on error. No hover state on the trigger.
 // Brand-color note: the portal focus ring resolves to --ring, which in this
 // repo is Brand Blue 600 — i.e. our primary stays Brand Blue (not teal).
 // ---------------------------------------------------------------------------
 
 const comboboxTriggerVariants = cva(
-  "inline-flex w-full shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-normal shadow-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20",
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       size: {
-        sm: "h-8 px-3",
-        default: "h-9 px-4 py-2",
-        lg: "h-10 px-6",
+        sm: "h-8",
+        default: "h-9",
+        lg: "h-10",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
       },
     },
     defaultVariants: {
       size: "default",
+      error: false,
     },
   }
 );
@@ -216,15 +219,17 @@ export function Combobox({
       aria-haspopup="listbox"
       aria-expanded={readonly ? false : open}
       aria-invalid={error || undefined}
+      aria-readonly={readonly || undefined}
+      aria-required={required || undefined}
       disabled={disabled}
       className={cn(
-        comboboxTriggerVariants({ size }),
+        comboboxTriggerVariants({ size, error }),
         !selected && "text-muted-foreground",
-        error && "border-destructive"
+        readonly && "pointer-events-none"
       )}
     >
       <span className="mr-2 truncate text-left">{triggerLabel}</span>
-      <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+      <ChevronDown className="size-4 shrink-0 opacity-50" />
     </button>
   );
 
@@ -273,7 +278,13 @@ export function Combobox({
             className="w-[var(--radix-popover-trigger-width)] p-0"
             align="start"
           >
-            <Command filter={filter}>
+            <Command
+              filter={filter}
+              // Group/section heading matches the portal hlm-select-label:
+              // text-sm font-semibold text-muted-foreground (overrides the
+              // shared command.tsx default of text-xs/medium/gray-500).
+              className="[&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
+            >
               <CommandInput placeholder={placeholder} />
               <CommandList>
                 <CommandEmpty>{noResultsText}</CommandEmpty>

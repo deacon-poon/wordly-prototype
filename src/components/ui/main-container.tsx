@@ -387,11 +387,11 @@ export function MainContainer({
                   aria-label="Resize side panel"
                   onMouseDown={handleDividerMouseDown}
                   className={cn(
-                    "inline-flex cursor-ew-resize items-center justify-center rounded-md border border-border bg-background py-1 shadow-sm transition-colors",
+                    "inline-flex cursor-ew-resize items-center justify-center rounded-md border border-border bg-background py-1 shadow-xs transition-colors",
                     isDragging && "border-muted-foreground/50"
                   )}
                 >
-                  <GripVertical className="pointer-events-none h-4 w-4 text-muted-foreground" />
+                  <GripVertical className="pointer-events-none h-3 w-3 text-muted-foreground" />
                 </div>
               </div>
             </div>

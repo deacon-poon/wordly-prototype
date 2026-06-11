@@ -56,7 +56,7 @@ export function LoadMore({
   const hasMore = remaining > 0;
   const nextBatch = Math.min(limit, remaining);
 
-  // Matches the Angular host display:none — render nothing when fully loaded.
+  // Matches the Angular host display:none -- render nothing when fully loaded.
   if (!hasMore) return null;
 
   const entity = capitalize(entityLabel);
@@ -82,28 +82,33 @@ export function LoadMore({
         size="sm"
         // Portal anatomy (wordly-button .variant-outline.size-sm): font-family
         // Roboto, min-h 36px, padding 8px 12px, radius 6px, font 14px/20px
-        // weight 500, gap 8px, white bg, gray-800 text, 1px gray-200 border.
-        // Hover/active use the portal's Teal ramp — remapped here to OUR Brand
-        // Blue primary (primary-blue-50 / primary-blue-100). Loading dims to
+        // weight 500, gap 8px, white bg, 1px gray-200 border. The load-more
+        // template overrides the button text to gray-600 (class="text-gray-600").
+        // The outline hover/active only swaps the background (Teal ramp) -- text
+        // and border stay put; remapped here to OUR Brand Blue primary
+        // (primary-blue-50 hover / primary-blue-100 active). Loading dims to
         // 0.7 opacity with a wait cursor; disabled drops to 0.5 (Button base).
         className={cn(
-          "min-h-9 gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium leading-5 text-gray-800",
-          "hover:border-gray-200 hover:bg-primary-blue-50 hover:text-gray-800",
+          "min-h-9 gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium leading-5 text-gray-600 shadow-xs",
+          "hover:border-gray-200 hover:bg-primary-blue-50 hover:text-gray-600",
           "active:bg-primary-blue-100",
+          // Brand Blue focus ring: 3px, no offset (overrides Button base ring-2/offset-2).
+          "focus-visible:ring-[3px] focus-visible:ring-primary-blue-400 focus-visible:ring-offset-0",
           loading && "cursor-wait opacity-70"
         )}
         disabled={loading}
         aria-busy={loading}
         onClick={() => onShowMore?.()}
       >
-        {/* Portal load-more wraps the icon in <span class="mr-1.5 inline-flex">
-            with a size="xs" (14px) icon. The loading spinner swaps in
-            (lucideLoader → Loader2) matching the proxied wordly-button. */}
+        {/* Portal load-more wraps the chevron in <span class="mr-1.5 inline-flex">
+            with a size="xs" (12px) icon. While loading, the proxied wordly-button
+            renders its own size="sm" (16px) lucideLoader spinner; we swap it into
+            the same span at that 16px size (lucideLoader -> Loader2). */}
         <span className="mr-1.5 inline-flex">
           {loading ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           ) : (
-            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+            <ChevronDown className="h-3 w-3" aria-hidden="true" />
           )}
         </span>
         {showMoreText}

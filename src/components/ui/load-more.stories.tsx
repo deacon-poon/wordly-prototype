@@ -13,10 +13,12 @@ const meta: Meta<typeof LoadMore> = {
         component:
           "Visual parity with the portal `app-wordly-load-more`, which proxies a single " +
           "`wordly-button` (variant `outline`, size `sm`). Anatomy: min-h 36px, padding " +
-          "8px 12px, radius 6px, 14px/20px Roboto medium, white bg, gray-800 text, 1px " +
-          "gray-200 border. The portal's Teal hover/active ramp is remapped to OUR Brand " +
-          "Blue primary (primary-blue-50 hover / primary-blue-100 active). Loading dims to " +
-          "70% opacity with a wait cursor and swaps the chevron for a spinner.",
+          "8px 12px, radius 6px, 14px/20px Roboto medium, white bg, gray-600 text (the " +
+          "load-more template overrides the button text color), 1px gray-200 border. The " +
+          "chevron is the design-system `xs` size (12px); the loading spinner is `sm` (16px). " +
+          "The portal's Teal hover/active ramp is remapped to OUR Brand Blue primary " +
+          "(primary-blue-50 hover / primary-blue-100 active). Loading dims to 70% opacity " +
+          "with a wait cursor and swaps the chevron for a spinner.",
       },
     },
   },
@@ -123,7 +125,7 @@ export const PartialNextBatch: Story = {
   },
 };
 
-/** Nothing left to load — the component renders nothing (like Angular display:none). */
+/** Nothing left to load -- the component renders nothing (like Angular display:none). */
 export const FullyLoaded: Story = {
   args: {
     count: 10,

@@ -44,9 +44,14 @@ const GROUPED: ComboboxOptionType[] = [
 ];
 
 const WITH_SHORTCUTS: ComboboxOptionType[] = [
-  { label: "Profile", value: "profile", icon: User, shortcut: "⌘P" },
-  { label: "Workspace", value: "workspace", icon: Building2, shortcut: "⌘W" },
-  { label: "Language", value: "language", icon: Globe, shortcut: "⌘L" },
+  { label: "Profile", value: "profile", icon: User, shortcut: "Ctrl+P" },
+  {
+    label: "Workspace",
+    value: "workspace",
+    icon: Building2,
+    shortcut: "Ctrl+W",
+  },
+  { label: "Language", value: "language", icon: Globe, shortcut: "Ctrl+L" },
 ];
 
 // ---------------------------------------------------------------------------

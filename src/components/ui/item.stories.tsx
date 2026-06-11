@@ -189,7 +189,7 @@ export const States: Story = {
         <ItemContent>
           <ItemTitle>Interactive row</ItemTitle>
           <ItemDescription>
-            Hover → accent-green-100, active → accent-green-200
+            Hover -&gt; accent-green-100, active -&gt; accent-green-200
           </ItemDescription>
         </ItemContent>
       </Item>

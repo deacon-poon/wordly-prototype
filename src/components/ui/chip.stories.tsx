@@ -49,7 +49,7 @@ export const AllVariants: Story = {
   ),
 };
 
-/** Selectable hover states: default → blue border, selected → darker blue. */
+/** Selectable hover states: default -> blue border, selected -> darker blue. */
 export const SelectableStates: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-2">

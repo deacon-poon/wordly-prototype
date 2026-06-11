@@ -11,7 +11,7 @@ const meta: Meta<typeof FileUploader> = {
     docs: {
       description: {
         component:
-          "Drag-and-drop or click-to-browse file selector ported from the Angular `wordly-file-uploader`. No real upload — selected files are surfaced via `onFiles`. Supports single (default) and multiple selection.",
+          "Drag-and-drop or click-to-browse file selector ported from the Angular `wordly-file-uploader`. No real upload - selected files are surfaced via `onFiles`. Supports single (default) and multiple selection.",
       },
     },
   },

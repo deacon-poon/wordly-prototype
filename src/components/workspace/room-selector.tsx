@@ -20,13 +20,8 @@
  */
 
 import * as React from "react";
-import {
-  AlertCircle,
-  Check,
-  ChevronsUpDown,
-  Loader2,
-  MapPin,
-} from "lucide-react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { AlertCircle, Check, ChevronDown, Loader2, MapPin } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,6 +50,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
+// proxies wordly-room-selector → wordly-combobox → hlm-select-trigger, so the
+// real control anatomy lives there: border-input, rounded-md, px-3 py-2,
+// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
+// ring with no offset, destructive border+text+ring on error. Identical to the
+// validated-exact account-selector reference.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
+
+export type RoomSelectorSize = NonNullable<
+  VariantProps<typeof selectTriggerVariants>["size"]
+>;
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular EventRoom / RoomSelectorOption types)
@@ -164,6 +193,8 @@ export interface RoomSelectorProps {
   placeholder?: string;
   /** Show a search input to filter rooms. */
   searchable?: boolean;
+  /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
+  size?: RoomSelectorSize;
   label?: string;
   required?: boolean;
 
@@ -192,6 +223,7 @@ export function RoomSelector({
   // The portal combobox always renders its search input; default to true to
   // match. Pass `searchable={false}` to suppress it.
   searchable = true,
+  size = "default",
   label,
   required = false,
   disabled = false,
@@ -254,24 +286,28 @@ export function RoomSelector({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
+          <button
             type="button"
-            variant="outline"
             role="combobox"
             aria-expanded={open}
+            aria-invalid={error || undefined}
+            aria-required={required || undefined}
             disabled={disabled || loading || error}
-            className={cn(
-              "w-full justify-between font-normal",
-              !selected && "text-muted-foreground",
-              error && "border-destructive"
-            )}
+            className={cn(selectTriggerVariants({ size, error }))}
           >
-            <span className="flex items-center gap-2 truncate">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            <span
+              className={cn(
+                "flex min-w-0 items-center gap-2 truncate",
+                !selected && "text-muted-foreground"
+              )}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+              ) : null}
               <span className="truncate">{triggerLabel}</span>
             </span>
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-          </Button>
+            <ChevronDown className="size-4 shrink-0 opacity-50" />
+          </button>
         </PopoverTrigger>
 
         <PopoverContent
@@ -486,8 +522,8 @@ function RoomDialog({
             </div>
           ) : null}
 
-          <Alert>
-            <AlertDescription>
+          <Alert className="border-blue-100 bg-blue-50 text-blue-700">
+            <AlertDescription className="text-blue-700">
               All sessions you add in this room later will use a single link to
               launch all of them.
             </AlertDescription>

@@ -33,9 +33,9 @@ module.exports = {
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         brand: {
           // NEW 2026 Rebrand: Brand Blue 500 is primary, Accent Green 500 is secondary
-          "primary": "#0063CC", // Brand Blue 500 - primary brand color from Figma
-          "secondary": "#15B743", // Accent Green 500 - secondary brand color from Figma
-          "action": "#128197", // Action Teal 600 - for buttons and actions from Figma
+          primary: "#0063CC", // Brand Blue 500 - primary brand color from Figma
+          secondary: "#15B743", // Accent Green 500 - secondary brand color from Figma
+          action: "#128197", // Action Teal 600 - for buttons and actions from Figma
           // Legacy aliases (map to new colors)
           "primary-teal": "#0063CC", // Now maps to Brand Blue 500
           "secondary-navy": "#0063CC", // Now maps to Brand Blue 500 (primary)
@@ -263,6 +263,10 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        // Matches the portal's hlm-* `shadow-xs` (subtle 1px control shadow).
+        xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: 0 },
@@ -283,18 +287,18 @@ module.exports = {
       // Font sizes aligned with Figma primitives/font/scale
       // Figma base is 16px (scale/300-16)
       fontSize: {
-        '2xs': ['8px', { lineHeight: '1.25' }],    // scale/100-8
-        'xs': ['12px', { lineHeight: '1.25' }],    // scale/200-12
-        'sm': ['14px', { lineHeight: '1.4' }],     // scale/250-14
-        'base': ['16px', { lineHeight: '1.5' }],   // scale/300-16 - Figma base
-        'md': ['18px', { lineHeight: '1.5' }],     // scale/350-18
-        'lg': ['20px', { lineHeight: '1.5' }],     // scale/400-20
-        'xl': ['24px', { lineHeight: '1.4' }],     // scale/500-24
-        '2xl': ['32px', { lineHeight: '1.3' }],    // scale/600-32
-        '3xl': ['36px', { lineHeight: '1.3' }],    // scale/700-36
-        '4xl': ['48px', { lineHeight: '1.2' }],    // scale/800-48
-        '5xl': ['64px', { lineHeight: '1.1' }],    // scale/900-64
-        '6xl': ['80px', { lineHeight: '1.1' }],    // scale/1000-80
+        "2xs": ["8px", { lineHeight: "1.25" }], // scale/100-8
+        xs: ["12px", { lineHeight: "1.25" }], // scale/200-12
+        sm: ["14px", { lineHeight: "1.4" }], // scale/250-14
+        base: ["16px", { lineHeight: "1.5" }], // scale/300-16 - Figma base
+        md: ["18px", { lineHeight: "1.5" }], // scale/350-18
+        lg: ["20px", { lineHeight: "1.5" }], // scale/400-20
+        xl: ["24px", { lineHeight: "1.4" }], // scale/500-24
+        "2xl": ["32px", { lineHeight: "1.3" }], // scale/600-32
+        "3xl": ["36px", { lineHeight: "1.3" }], // scale/700-36
+        "4xl": ["48px", { lineHeight: "1.2" }], // scale/800-48
+        "5xl": ["64px", { lineHeight: "1.1" }], // scale/900-64
+        "6xl": ["80px", { lineHeight: "1.1" }], // scale/1000-80
       },
     },
   },

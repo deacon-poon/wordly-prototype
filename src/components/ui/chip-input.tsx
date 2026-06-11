@@ -42,22 +42,21 @@ export type ChipVariant =
   | "info"
   | "destructive";
 
+// Portal `WordlyBadgeComponent` applies hover only to anchor badges (`[a&]:hover`).
+// Chips here are never anchors, so they have NO hover color shift — matched below.
 const CHIP_VARIANT_STYLES: Record<ChipVariant, string> = {
   // portal: bg-gray-100 text-gray-800 (neutral)
-  default: "border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200",
+  default: "border-transparent bg-gray-100 text-gray-800",
   // portal: bg-blue-600 text-white  → OUR Brand Blue primary
-  primary:
-    "border-transparent bg-primary text-primary-foreground hover:bg-primary/90",
+  primary: "border-transparent bg-primary text-primary-foreground",
   // portal: bg-gray-200 text-gray-800
-  secondary: "border-transparent bg-gray-200 text-gray-800 hover:bg-gray-300",
+  secondary: "border-transparent bg-gray-200 text-gray-800",
   // portal: border-gray-400 text-gray-700 bg-transparent
-  outline:
-    "border border-gray-400 bg-transparent text-gray-700 hover:bg-gray-100",
+  outline: "border border-gray-400 bg-transparent text-gray-700",
   // portal: bg-teal-100 text-teal-800 → OUR Action Teal scale (not the primary action color)
-  info: "border-transparent bg-action-teal-100 text-action-teal-800 hover:bg-action-teal-200",
+  info: "border-transparent bg-action-teal-100 text-action-teal-800",
   // portal: bg-destructive text-white
-  destructive:
-    "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/90",
+  destructive: "border-transparent bg-destructive text-destructive-foreground",
 };
 
 // ---------------------------------------------------------------------------
@@ -164,10 +163,10 @@ export function ChipInput({
       {label ? (
         <label
           htmlFor={controlId}
-          className="text-sm font-medium text-gray-700"
+          className="flex items-center gap-2.5 text-sm font-semibold tracking-wider text-foreground"
         >
           {label}
-          {required ? <span className="ml-0.5 text-destructive">*</span> : null}
+          {required ? <span className="text-destructive">*</span> : null}
         </label>
       ) : null}
 
@@ -178,8 +177,8 @@ export function ChipInput({
             ? "pointer-events-none cursor-not-allowed opacity-50"
             : undefined,
           error
-            ? "border-destructive focus-within:border-destructive"
-            : "border-input focus-within:border-ring",
+            ? "border-destructive focus-within:border-destructive focus-within:ring-destructive/50 focus-within:ring-[3px]"
+            : "border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
           inputClassName
         )}
       >

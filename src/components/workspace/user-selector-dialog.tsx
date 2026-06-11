@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Loader2, Search, UserPlus, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,8 @@ const dialogButtonVariants = cva(
   cn(
     "inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium",
     "transition-all duration-200 ease-in-out",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    // Portal control focus: 3px ring + border-ring, NO offset (matches hlm-* controls).
+    "outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
     // portal disabled: gray-100 bg, gray-500 text, opacity-50, no pointer events
     "disabled:pointer-events-none disabled:bg-gray-100 disabled:text-gray-500 disabled:opacity-50"
   ),
@@ -271,11 +272,9 @@ export function UserSelectorDialog({
           type="button"
           className={cn(
             dialogButtonVariants({ variant: "primary", size: "default" }),
-            "gap-2",
             className
           )}
         >
-          <UserPlus className="h-4 w-4" />
           {buttonText}
         </Button>
       </DialogTrigger>
@@ -294,7 +293,7 @@ export function UserSelectorDialog({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={searchPlaceholder}
-              className="pl-9"
+              className="pl-10"
               aria-label={searchPlaceholder}
             />
           </div>
@@ -303,7 +302,7 @@ export function UserSelectorDialog({
           {hasSearched && loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary" />
                 <span className="text-sm">Searching...</span>
               </div>
             </div>
@@ -311,7 +310,7 @@ export function UserSelectorDialog({
 
           {/* Search Results */}
           {hasSearched && !loading && searchResults.length > 0 ? (
-            <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
+            <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-xs">
               <div className="max-h-[250px] overflow-y-auto">
                 {searchResults.map((user) => {
                   // Mirrors Angular: a row is disabled only when the user is
@@ -351,7 +350,7 @@ export function UserSelectorDialog({
 
           {/* No Results State */}
           {hasNoResults ? (
-            <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-sm">
+            <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-xs">
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                   <Search className="h-5 w-5 text-muted-foreground" />

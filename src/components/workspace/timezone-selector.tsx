@@ -20,17 +20,10 @@
  */
 
 import * as React from "react";
-import {
-  AlertCircle,
-  Check,
-  ChevronsUpDown,
-  Clock,
-  Loader2,
-  X,
-} from "lucide-react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { AlertCircle, Check, ChevronDown, Clock, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -44,6 +37,39 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
+// proxies wordly-timezone-selector → wordly-combobox → hlm-select-trigger, so
+// the real control anatomy lives there: border-input, rounded-md, px-3 py-2,
+// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
+// ring (no offset), destructive border+text+ring on error.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
+
+export type TimezoneSelectorSize = NonNullable<
+  VariantProps<typeof selectTriggerVariants>["size"]
+>;
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WordlyComboboxOption / OptionGroup types)
@@ -114,6 +140,9 @@ export interface TimezoneSelectorProps {
   /** Show the leading clock icon in the trigger. Off by default to match the portal. */
   showLeadingIcon?: boolean;
 
+  /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
+  size?: TimezoneSelectorSize;
+
   disabled?: boolean;
   /**
    * Read-only: renders the trigger but does not open the popover (mirrors the
@@ -147,6 +176,7 @@ export function TimezoneSelector({
   searchable = true,
   clearable = false,
   showLeadingIcon = false,
+  size = "default",
   disabled = false,
   readonly = false,
   loading = false,
@@ -182,6 +212,9 @@ export function TimezoneSelector({
       ? errorLoadingText
       : (selectedLabel ?? placeholder);
 
+  // Loading / error block the trigger; readonly keeps appearance but blocks open.
+  const interactionBlocked = disabled || loading || error || readonly;
+
   function handleSelect(next: string) {
     const resolved = next === value ? "" : next;
     onValueChange?.(resolved);
@@ -193,47 +226,7 @@ export function TimezoneSelector({
     onValueChange?.("");
   }
 
-  // The portal trigger is the spartan outline button at size `default`
-  // (h-9 px-4 py-2, rounded-md, text-sm font-medium, gap-2, border shadow-xs).
-  // Error mirrors the portal `[class.border-destructive]` + aria-invalid ring;
-  // placeholder is muted-foreground (`.wordly-combobox-placeholder`).
-  const trigger = (
-    <Button
-      type="button"
-      variant="outline"
-      role="combobox"
-      aria-expanded={readonly ? false : open}
-      aria-haspopup="listbox"
-      aria-invalid={error || undefined}
-      disabled={disabled || loading || error}
-      className={cn(
-        "h-9 w-full justify-between gap-2 px-4 py-2 text-sm font-medium",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        !selected && "font-normal text-muted-foreground",
-        error &&
-          "border-destructive ring-destructive/20 focus-visible:ring-destructive/20"
-      )}
-    >
-      <span className="flex min-w-0 items-center gap-2">
-        {loading ? (
-          <Loader2 className="size-4 shrink-0 animate-spin opacity-50" />
-        ) : showLeadingIcon ? (
-          <Clock className="size-4 shrink-0 opacity-50" />
-        ) : null}
-        <span className="mr-2 truncate">{triggerLabel}</span>
-      </span>
-      <span className="flex shrink-0 items-center gap-1">
-        {clearable && selected && !readonly && !loading && !error ? (
-          <X
-            className="size-4 shrink-0 opacity-50 hover:opacity-100"
-            onClick={handleClear}
-            aria-label="Clear selection"
-          />
-        ) : null}
-        <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-      </span>
-    </Button>
-  );
+  const showClear = clearable && !!selected && !readonly && !loading && !error;
 
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
@@ -244,64 +237,118 @@ export function TimezoneSelector({
         </label>
       ) : null}
 
-      {readonly ? (
-        trigger
-      ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <Popover
+        open={open}
+        onOpenChange={interactionBlocked ? undefined : setOpen}
+      >
+        <div className="relative">
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              role="combobox"
+              aria-expanded={readonly ? false : open}
+              aria-haspopup="listbox"
+              aria-invalid={error || undefined}
+              aria-readonly={readonly || undefined}
+              aria-required={required || undefined}
+              disabled={disabled || loading || error}
+              className={cn(
+                selectTriggerVariants({ size, error }),
+                // Make room for the clear button + chevron when clearable.
+                showClear && "pr-12",
+                readonly && "pointer-events-none"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex min-w-0 items-center gap-2 truncate",
+                  !selected && "text-muted-foreground"
+                )}
+              >
+                {loading ? (
+                  <span
+                    className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                    aria-hidden="true"
+                  />
+                ) : showLeadingIcon ? (
+                  <Clock className="size-4 shrink-0 text-muted-foreground" />
+                ) : null}
+                <span className="truncate">{triggerLabel}</span>
+              </span>
+              <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
+            </button>
+          </PopoverTrigger>
 
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] p-0"
-            align="start"
-          >
-            <Command>
-              {searchable ? <CommandInput placeholder={placeholder} /> : null}
-              <CommandList>
-                <CommandEmpty>
-                  {hasOptions ? noSearchResultsText : noTimezonesText}
-                </CommandEmpty>
-                {groups.map((group, i) => (
-                  <CommandGroup
-                    key={group.groupLabel || `group-${i}`}
-                    heading={group.groupLabel || undefined}
-                  >
-                    {group.options.map((option) => (
-                      <CommandItem
-                        key={option.value}
-                        // Search by city, abbreviation, and IANA id (Angular value search).
-                        value={`${option.label} ${option.shortLabel} ${option.value}`}
-                        // Indent options under a group label (Angular indentGroupedOptions).
-                        className={cn(group.groupLabel && "pl-6")}
-                        onSelect={() => handleSelect(option.value)}
-                      >
-                        <span className="min-w-0 flex-1 truncate text-left">
-                          {option.label}
-                        </span>
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          {option.shortLabel}
-                        </span>
-                        <Check
-                          className={cn(
-                            "ml-auto size-4",
-                            value === option.value ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                ))}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
+          {/* Clear button: portal places it absolutely at right-8, before the chevron. */}
+          {showClear ? (
+            <button
+              type="button"
+              aria-label="Clear selection"
+              onClick={handleClear}
+              className="absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:bg-muted"
+            >
+              <X className="size-3.5" />
+            </button>
+          ) : null}
+        </div>
+
+        <PopoverContent
+          className="min-w-[8rem] w-[var(--radix-popover-trigger-width)] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+          align="start"
+        >
+          <Command>
+            {searchable ? <CommandInput placeholder={placeholder} /> : null}
+            <CommandList>
+              <CommandEmpty className="py-1.5 text-sm italic text-muted-foreground">
+                {hasOptions ? noSearchResultsText : noTimezonesText}
+              </CommandEmpty>
+              {groups.map((group, i) => (
+                <CommandGroup
+                  key={group.groupLabel || `group-${i}`}
+                  heading={group.groupLabel || undefined}
+                  // Group heading mirrors portal hlm-select-label:
+                  // text-sm font-semibold text-muted-foreground.
+                  className="[&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
+                >
+                  {group.options.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      // Search by city, abbreviation, and IANA id (Angular value search).
+                      value={`${option.label} ${option.shortLabel} ${option.value}`}
+                      // Indent options under a group label (Angular indentGroupedOptions).
+                      className={cn(
+                        "relative cursor-default gap-2 rounded-sm py-1.5 pl-2 pr-8 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground",
+                        group.groupLabel && "pl-6"
+                      )}
+                      onSelect={() => handleSelect(option.value)}
+                    >
+                      <span className="min-w-0 flex-1 truncate text-left">
+                        {option.label}
+                      </span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {option.shortLabel}
+                      </span>
+                      <Check
+                        className={cn(
+                          "ml-auto size-4",
+                          value === option.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
       {error && errorMessage ? (
         <p className="flex items-center gap-1 pl-3 text-xs text-destructive">
           <AlertCircle className="size-3.5 shrink-0" />
           <span>{errorMessage}</span>
         </p>
-      ) : helperText ? (
+      ) : helperText && !error ? (
         <p className="pl-3 text-xs text-muted-foreground">{helperText}</p>
       ) : null}
     </div>

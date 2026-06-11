@@ -8,7 +8,7 @@
  *
  * A compact tag/chip that can be:
  * - read-only (display a label),
- * - dismissible (an X "remove" button → onRemove),
+ * - dismissible (an X "remove" button -> onRemove),
  * - selectable (toggles a "selected" visual + emits onClick), and
  * - annotated with a help icon + tooltip.
  *
@@ -23,11 +23,11 @@
  * Visual anatomy is aligned 1:1 with the portal SCSS/HTML:
  *   container  px-1 py-1, rounded-2xl (16px), border, text-sm, leading-6
  *   default    bg-white, text-gray-900, border-gray-900;
- *              selectable hover → border primary-blue-600
+ *              selectable hover -> border primary-blue-600
  *   selected   bg/border primary-blue-500, text-white;
- *              selectable hover → bg/border primary-blue-600
+ *              selectable hover -> bg/border primary-blue-600
  *              (portal's primary Teal maps to OUR Brand Blue primary)
- *   info       light-blue bg, black text
+ *   info       blue-300 fill+border (info scale), black text
  *   disabled   opacity-50, not-allowed, pointer-events-none
  *   close btn  22px square, rounded-full, bg-gray-100, hover bg-gray-200,
  *              icon always near-black (text-gray-900)
@@ -49,16 +49,17 @@ import {
 // ---------------------------------------------------------------------------
 
 const chipVariants = cva(
-  "inline-flex items-center gap-1 rounded-2xl border px-1 py-1 text-sm font-normal leading-6 transition-colors duration-200 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-1 min-w-0 max-w-full select-none",
+  "inline-flex items-center gap-1 rounded-2xl border px-1 py-1 text-sm font-normal leading-6 transition-colors duration-200 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring min-w-0 max-w-full select-none",
   {
     variants: {
       variant: {
-        // Neutral resting chip — white fill, full dark border (portal default).
+        // Neutral resting chip - white fill, full dark border (portal default).
         default: "bg-white text-gray-900 border-gray-900",
         // Active / chosen state. Portal's primary Teal maps to OUR Brand Blue.
         selected: "bg-primary-blue-500 text-white border-primary-blue-500",
-        // Informational accent — light blue fill, black text (portal info).
-        info: "bg-primary-blue-100 text-black border-primary-blue-100",
+        // Informational accent - portal info chip: --blue-300 fill + border,
+        // black text (informational blue scale, not the brand-blue scale).
+        info: "bg-blue-300 text-black border-blue-300",
       },
       disabled: {
         true: "opacity-50 cursor-not-allowed pointer-events-none",
@@ -69,8 +70,8 @@ const chipVariants = cva(
         false: "cursor-default",
       },
     },
-    // Selectable hover states mirror the portal SCSS (default → blue border;
-    // selected → darker blue fill+border). Disabled wins via pointer-events.
+    // Selectable hover states mirror the portal SCSS (default -> blue border;
+    // selected -> darker blue fill+border). Disabled wins via pointer-events.
     compoundVariants: [
       {
         variant: "default",
@@ -212,7 +213,7 @@ const Chip = React.forwardRef<HTMLDivElement, ChipProps>(function Chip(
               <Info
                 className={cn(
                   "h-4 w-4 shrink-0",
-                  iconSelected ? "text-white" : "text-primary-blue-700"
+                  iconSelected ? "text-white" : "text-blue-700"
                 )}
               />
             </span>
@@ -234,7 +235,7 @@ const Chip = React.forwardRef<HTMLDivElement, ChipProps>(function Chip(
           tabIndex={disabled ? -1 : 0}
           onClick={handleRemove}
           className={cn(
-            "flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 transition-colors duration-200 hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-1"
+            "flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 transition-colors duration-200 hover:bg-gray-200 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring"
           )}
         >
           <X className="h-4 w-4" />

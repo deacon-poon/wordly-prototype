@@ -21,6 +21,7 @@ const meta: Meta<typeof TimezoneSelector> = {
   },
   tags: ["autodocs"],
   argTypes: {
+    size: { control: "inline-radio", options: ["default", "sm"] },
     compact: { control: "boolean" },
     searchable: { control: "boolean" },
     clearable: { control: "boolean" },
@@ -84,14 +85,14 @@ export const Empty: Story = {
   args: { groups: [] },
 };
 
-/** Disabled trigger — portal `disabled` (opacity-50, no interaction). */
+/** Disabled trigger - portal `disabled` (opacity-50, no interaction). */
 export const Disabled: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Timezone", disabled: true, value: "America/New_York" },
 };
 
 /**
- * Read-only — mirrors the Angular combobox `readonly`: the trigger renders but
+ * Read-only - mirrors the Angular combobox `readonly`: the trigger renders but
  * does not open (a non-interactive button, not a disabled one).
  */
 export const Readonly: Story = {
@@ -103,4 +104,10 @@ export const Readonly: Story = {
 export const WithLeadingIcon: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Timezone", showLeadingIcon: true, value: "Asia/Tokyo" },
+};
+
+/** Small trigger height (h-8) - mirrors the portal `data-size="sm"`. */
+export const Small: Story = {
+  render: (args) => <Controlled {...args} />,
+  args: { label: "Timezone", size: "sm", value: "Europe/Paris" },
 };

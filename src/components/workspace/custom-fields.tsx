@@ -249,8 +249,12 @@ function MultiSelect({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-auto min-h-9 w-full justify-between font-normal",
-            error && "border-destructive text-destructive"
+            // Match portal hlm-select-trigger anatomy: rounded-md (6px),
+            // shadow-xs, and a 3px focus ring with no offset (border-ring).
+            "h-auto min-h-9 w-full justify-between rounded-md font-normal shadow-xs",
+            "ring-offset-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+            error &&
+              "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
           )}
         >
           <span className="flex flex-1 flex-wrap items-center gap-1">
@@ -330,9 +334,13 @@ function SingleSelect({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal",
+            // Match portal hlm-select-trigger anatomy: rounded-md (6px),
+            // shadow-xs, and a 3px focus ring with no offset (border-ring).
+            "w-full justify-between rounded-md font-normal shadow-xs",
+            "ring-offset-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
             !value && "text-muted-foreground",
-            error && "border-destructive text-destructive"
+            error &&
+              "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
           )}
         >
           <span className="truncate">{value || placeholder}</span>
@@ -528,7 +536,9 @@ export function CustomFields({
                       aria-label="Remove field"
                       className={cn(
                         ICON_BUTTON,
-                        "border-gray-200 text-error-600 hover:bg-error-50 hover:text-error-700"
+                        // Portal icon-destructive: red border + red text/hover.
+                        "border-destructive text-error-600 hover:bg-error-50 hover:text-error-700",
+                        "ring-offset-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                       )}
                       onClick={() => removeField(i)}
                     >
@@ -549,7 +559,10 @@ export function CustomFields({
                       aria-label={addFieldLabel}
                       className={cn(
                         ICON_BUTTON,
-                        "border-gray-200 text-gray-600 hover:bg-primary-blue-50 hover:text-gray-700"
+                        // Portal variant-icon: gray-200 border, brand-color hover
+                        // (teal-50 remapped to Brand Blue), gray text.
+                        "border-gray-200 text-gray-600 hover:bg-primary-blue-50 hover:text-gray-700",
+                        "ring-offset-0 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                       )}
                       onClick={addField}
                     >

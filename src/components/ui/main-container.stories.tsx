@@ -140,7 +140,7 @@ export const StickyHeader: Story = {
   },
 };
 
-/** Controlled wrapper — the side panel open state lives in the consumer. */
+/** Controlled wrapper - the side panel open state lives in the consumer. */
 export const WithResizableSidePanel: Story = {
   render: (args) => {
     const [open, setOpen] = React.useState(true);

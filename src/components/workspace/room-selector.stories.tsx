@@ -20,6 +20,10 @@ const meta: Meta<typeof RoomSelector> = {
   },
   tags: ["autodocs"],
   argTypes: {
+    size: {
+      control: "inline-radio",
+      options: ["default", "sm"],
+    },
     searchable: { control: "boolean" },
     required: { control: "boolean" },
     showAddRoom: { control: "boolean" },
@@ -48,7 +52,7 @@ export const Basic: Story = {
   args: { label: "Room" },
 };
 
-/** Required field — the `*` indicator uses the destructive token. */
+/** Required field - the `*` indicator uses the destructive token. */
 export const Required: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Room", required: true },
@@ -90,4 +94,10 @@ export const Disabled: Story = {
 export const Empty: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Room", rooms: [] },
+};
+
+/** Small trigger (h-8) - matches the portal `data-size="sm"`. */
+export const Small: Story = {
+  render: (args) => <Controlled {...args} />,
+  args: { label: "Room", size: "sm" },
 };

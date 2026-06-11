@@ -92,7 +92,7 @@ export const Loading: Story = {
 export const Empty: Story = {
   render: (args) => <Controlled {...args} />,
   args: {
-    // No directory → any search lands on the "no users found" empty state.
+    // No directory -> any search lands on the "no users found" empty state.
     users: [],
   },
 };
@@ -109,7 +109,7 @@ export const CustomCopy: Story = {
 };
 
 /**
- * Button anatomy parity check — exercises the dialog's internal
+ * Button anatomy parity check - exercises the dialog's internal
  * `dialogButtonVariants`, which mirrors the portal core button
  * (wordly-button.component.scss): variants primary/secondary/destructive/
  * outline/icon and sizes sm/default/lg/block, plus the disabled state.

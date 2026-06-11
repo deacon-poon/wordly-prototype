@@ -20,10 +20,14 @@
  * Dialog + Input for the create flow) per the WorkspaceSelector proof.
  *
  * VISUAL PARITY (vs. portal core anatomy):
- *  - The combobox trigger is the portal `wordly-combobox` button, which renders
- *    `hlmBtn variant="outline"` (white bg, gray-800 text, 1px gray-200 border,
- *    6px radius, 38px min-height, 8px/16px padding, hover brand-blue-50, active
- *    brand-blue-100, placeholder = muted-foreground, error border = destructive).
+ *  - The combobox trigger uses the portal SELECT-trigger anatomy
+ *    (`hlm-select-trigger`), identical to our validated AccountSelector reference:
+ *    h-9 (default) / h-8 (sm), px-3 py-2, gap-2, rounded-md, border border-input,
+ *    bg-transparent, text-sm, shadow-xs, single ChevronDown indicator (size-4,
+ *    opacity-50 via muted-foreground), NO hover background on the trigger, focus
+ *    ring [3px] with focus-visible:border-ring and no offset, error ->
+ *    border-destructive text-destructive focus-visible:ring-destructive/20.
+ *    Placeholder = muted-foreground; readonly keeps appearance + blocks interaction.
  *  - The create button is the portal `wordly-button` `variant="primary"` at the
  *    default size (38px / 8px 16px / 16px text). Portal primary Teal maps to our
  *    Brand Blue, so: bg-primary, hover brand-blue-600, active brand-blue-700.
@@ -36,7 +40,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
   Check,
-  ChevronsUpDown,
+  ChevronDown,
   Info,
   Loader2,
   LogOut,
@@ -89,8 +93,9 @@ import {
 
 export const workspaceButtonVariants = cva(
   // base: portal `button` rule — inline-flex, centered, 500 weight, 6px radius,
-  // smooth transition, focus ring (Brand Blue via --ring).
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 disabled:text-gray-500 disabled:pointer-events-none",
+  // smooth transition, focus ring (Brand Blue via --ring): portal uses a 3px ring
+  // with focus-visible:border-ring and NO ring offset.
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 disabled:text-gray-500 disabled:pointer-events-none",
   {
     variants: {
       variant: {
@@ -135,6 +140,36 @@ export type WorkspaceButtonVariant = NonNullable<
 export type WorkspaceButtonSize = NonNullable<
   VariantProps<typeof workspaceButtonVariants>["size"]
 >;
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts), identical to our
+// validated AccountSelector reference. The combobox trigger renders the SELECT
+// trigger, not the generic button: border-input, rounded-md, px-3 py-2, text-sm,
+// shadow-xs, gap-2, sizes default=h-9 / sm=h-8, NO hover background, focus ring
+// [3px] on ring with focus-visible:border-ring (no offset), and on error
+// border-destructive + text-destructive + ring-destructive/20.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WorkspaceManagerComboboxOption / WorkspaceGroup)
@@ -296,13 +331,12 @@ export function WorkspaceManager({
     newWorkspace.trim().length > wsNameMaxLength ||
     isCreating;
 
-  // Portal combobox trigger = hlmBtn variant="outline", class
-  // "w-full justify-between font-normal" (+ placeholder / error classes).
+  // Portal combobox trigger = the SELECT trigger (hlm-select-trigger) anatomy.
+  // Placeholder text -> muted-foreground; error -> destructive border/text/ring
+  // (handled by the variant).
   const triggerClasses = cn(
-    workspaceButtonVariants({ variant: "outline", size: "default" }),
-    "w-full justify-between font-normal",
-    showPlaceholder && "text-muted-foreground",
-    error && "border-destructive text-destructive"
+    selectTriggerVariants({ size: "default", error }),
+    showPlaceholder && "text-muted-foreground"
   );
 
   return (
@@ -321,10 +355,10 @@ export function WorkspaceManager({
           aria-expanded={false}
           className={cn(triggerClasses, "pointer-events-none")}
         >
-          <span className="flex items-center gap-2 truncate">
+          <span className="flex min-w-0 items-center gap-2 truncate">
             <span className="truncate">{triggerLabel}</span>
           </span>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
         </button>
       ) : (
         <Popover open={open} onOpenChange={setOpen}>
@@ -337,11 +371,13 @@ export function WorkspaceManager({
               disabled={triggerDisabled}
               className={triggerClasses}
             >
-              <span className="flex items-center gap-2 truncate">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              <span className="flex min-w-0 items-center gap-2 truncate">
+                {loading ? (
+                  <Loader2 className="size-4 shrink-0 animate-spin" />
+                ) : null}
                 <span className="truncate">{triggerLabel}</span>
               </span>
-              <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+              <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
             </button>
           </PopoverTrigger>
 

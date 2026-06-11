@@ -39,10 +39,14 @@ import { Separator } from "@/components/ui/separator";
 // ---------------------------------------------------------------------------
 
 // Mirrors the Spartan `hlmItem` anatomy that the Angular `app-wordly-item`
-// proxies (Spartan is the ng port of shadcn's Item primitive):
-//   root  → flex, items-center, gap-4, rounded-md (6px), text-sm
-//   default → transparent; outline → border + shadow-sm; muted → bg-gray-50
-//   default density → p-4 (16px); sm → p-3 (12px), gap-3
+// proxies (Spartan is the ng port of shadcn's Item primitive). Base classes
+// are 1:1 with `hlm-item.ts`:
+//   root  → group/item flex flex-wrap items-center rounded-md (6px) border
+//           border-transparent text-sm transition-colors duration-100 outline-none
+//           focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]
+//   default → transparent; outline → bg-white border-border (+responsive col→row);
+//             muted → bg-muted/50
+//   default density → gap-4 p-4; sm → gap-2.5 px-4 py-3
 // State colors come from the portal CSS vars (styles-v2.scss):
 //   --item-selected-bg     → accent-green-50
 //   --item-selected-border → accent-green-700
@@ -50,18 +54,19 @@ import { Separator } from "@/components/ui/separator";
 //   --item-hover-bg        → accent-green-100
 //   --item-active-bg       → accent-green-200
 const itemVariants = cva(
-  "group/item flex w-full items-center gap-4 rounded-md border border-transparent text-left text-sm text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-300",
+  "group/item flex w-full flex-wrap items-center rounded-md border border-transparent text-left text-sm text-gray-900 outline-none transition-colors duration-100 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
   {
     variants: {
       variant: {
         default: "bg-transparent",
-        outline: "border-gray-200 bg-white shadow-sm",
-        muted: "bg-gray-50",
+        outline:
+          "border-border bg-white flex-col items-stretch shadow-xs md:flex-row md:items-center",
+        muted: "bg-muted/50",
       },
       // size === density
       size: {
-        default: "p-4",
-        sm: "gap-3 p-3",
+        default: "gap-4 p-4",
+        sm: "gap-2.5 px-4 py-3",
       },
       rounded: {
         true: "",
@@ -86,15 +91,20 @@ const itemVariants = cva(
   }
 );
 
+// Mirrors Spartan `hlm-item-media.ts`:
+//   base  → flex shrink-0 items-center justify-center gap-2 (+ description-offset
+//           utilities that nudge the media to self-start when a description exists)
+//   icon  → bg-muted size-8 rounded-sm border, icon glyph at text-base (size-4)
+//   image → size-10 overflow-hidden rounded-sm, img fills + object-cover
 const itemMediaVariants = cva(
-  "flex shrink-0 items-center justify-center overflow-hidden text-gray-500",
+  "flex shrink-0 items-center justify-center gap-2 text-muted-foreground group-has-[[data-slot=item-description]]/item:translate-y-0.5 group-has-[[data-slot=item-description]]/item:self-start",
   {
     variants: {
       mediaVariant: {
-        default: "size-10 bg-transparent",
-        icon: "size-10 rounded-md bg-primary-blue-50 text-primary-blue-600 [&_svg]:size-5",
+        default: "bg-transparent",
+        icon: "size-8 rounded-sm border bg-muted [&_svg]:size-4",
         image:
-          "size-10 rounded-md bg-gray-100 [&_img]:h-full [&_img]:w-full [&_img]:object-cover",
+          "size-10 overflow-hidden rounded-sm [&_img]:size-full [&_img]:object-cover",
       },
     },
     defaultVariants: {
@@ -138,7 +148,10 @@ const ItemContent = React.forwardRef<
   <div
     ref={ref}
     data-slot="item-content"
-    className={cn("flex min-w-0 flex-1 flex-col gap-1", className)}
+    className={cn(
+      "flex min-w-0 flex-1 flex-col gap-1 [&+[data-slot=item-content]]:flex-none",
+      className
+    )}
     {...props}
   />
 ));
@@ -151,7 +164,10 @@ const ItemTitle = React.forwardRef<
   <span
     ref={ref}
     data-slot="item-title"
-    className={cn("truncate text-sm font-medium text-gray-900", className)}
+    className={cn(
+      "flex w-fit items-center gap-2 truncate text-sm font-medium leading-snug text-gray-900",
+      className
+    )}
     {...props}
   />
 ));
@@ -164,7 +180,10 @@ const ItemDescription = React.forwardRef<
   <p
     ref={ref}
     data-slot="item-description"
-    className={cn("truncate text-sm text-gray-500", className)}
+    className={cn(
+      "line-clamp-2 text-sm font-normal leading-normal text-muted-foreground",
+      className
+    )}
     {...props}
   />
 ));
@@ -177,7 +196,7 @@ const ItemActions = React.forwardRef<
   <div
     ref={ref}
     data-slot="item-actions"
-    className={cn("ml-auto flex shrink-0 items-center gap-2", className)}
+    className={cn("flex w-full items-center gap-2 md:w-auto", className)}
     {...props}
   />
 ));
@@ -190,7 +209,10 @@ const ItemHeader = React.forwardRef<
   <div
     ref={ref}
     data-slot="item-header"
-    className={cn("flex w-full items-center", className)}
+    className={cn(
+      "flex basis-full items-center justify-between gap-2",
+      className
+    )}
     {...props}
   />
 ));
@@ -203,7 +225,10 @@ const ItemFooter = React.forwardRef<
   <div
     ref={ref}
     data-slot="item-footer"
-    className={cn("flex w-full items-center", className)}
+    className={cn(
+      "flex basis-full items-center justify-between gap-2",
+      className
+    )}
     {...props}
   />
 ));

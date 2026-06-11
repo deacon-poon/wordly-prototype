@@ -20,12 +20,14 @@ const meta: Meta<typeof LocaleSelector> = {
   },
   tags: ["autodocs"],
   argTypes: {
+    size: { control: "radio", options: ["default", "sm"] },
     searchable: { control: "boolean" },
     clearable: { control: "boolean" },
     required: { control: "boolean" },
     loading: { control: "boolean" },
     error: { control: "boolean" },
     disabled: { control: "boolean" },
+    readonly: { control: "boolean" },
   },
 };
 
@@ -94,4 +96,16 @@ export const Empty: Story = {
 export const Disabled: Story = {
   render: (args) => <Controlled {...args} />,
   args: { label: "Language", disabled: true },
+};
+
+/** Read-only: keeps the field appearance but blocks interaction (portal readonly). */
+export const ReadOnly: Story = {
+  render: (args) => <Controlled {...args} />,
+  args: { label: "Language", value: "en", readonly: true },
+};
+
+/** Small trigger height (h-8), mirroring the portal data-size="sm". */
+export const Small: Story = {
+  render: (args) => <Controlled {...args} />,
+  args: { label: "Language", size: "sm" },
 };

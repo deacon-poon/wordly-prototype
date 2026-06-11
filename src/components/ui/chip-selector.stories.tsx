@@ -31,7 +31,7 @@ export default meta;
 
 type Story = StoryObj<typeof ChipSelector>;
 
-/** Controlled wrapper — the component is fully controlled via value/onValueChange. */
+/** Controlled wrapper - the component is fully controlled via value/onValueChange. */
 function Controlled({
   initial = [],
   ...props

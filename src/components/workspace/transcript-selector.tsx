@@ -19,10 +19,10 @@
  */
 
 import * as React from "react";
+import { cva } from "class-variance-authority";
 import { Check, ChevronDown, AlertCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -36,6 +36,36 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
+// proxies wordly-transcript-selector -> wordly-select -> hlm-select-trigger, so
+// the real control anatomy lives there: border-input, rounded-md, px-3 py-2,
+// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
+// ring (no offset), destructive border+text+ring on error. No hover state.
+// Identical to the validated AccountSelector reference.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  {
+    variants: {
+      size: {
+        default: "h-9",
+        sm: "h-8",
+      },
+      error: {
+        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      error: false,
+    },
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WordlySelectOption + transcriptMode enum)
@@ -187,9 +217,8 @@ export function TranscriptSelector({
       ) : (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button
+            <button
               type="button"
-              variant="outline"
               role="combobox"
               aria-expanded={open}
               aria-invalid={error || undefined}
@@ -199,27 +228,21 @@ export function TranscriptSelector({
               onBlur={onBlur}
               onFocus={onFocus}
               className={cn(
-                // Portal selectTriggerVariants + hlmInput anatomy:
-                // full-width trigger, rounded-md, border-input, bg-transparent,
-                // px-3, gap-2, text-sm, shadow-xs, focus-visible ring (Brand Blue).
-                "w-full justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm font-normal shadow-xs",
-                "outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                // data-size: default → h-9, sm → h-8
-                size === "sm" ? "h-8" : "h-9",
-                !selected && "text-muted-foreground",
-                // Portal error state: text + border destructive, ring-destructive/20
-                error &&
-                  "border-destructive text-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
+                selectTriggerVariants({ size, error }),
                 readonly && "pointer-events-none",
                 triggerClass
               )}
             >
-              <span className="flex items-center gap-x-2 truncate">
-                <span className="truncate line-clamp-1">{triggerLabel}</span>
+              <span
+                className={cn(
+                  "flex min-w-0 items-center gap-2 truncate",
+                  !selected && "text-muted-foreground"
+                )}
+              >
+                <span className="truncate">{triggerLabel}</span>
               </span>
               <ChevronDown className="ml-2 size-4 shrink-0 flex-none text-muted-foreground" />
-            </Button>
+            </button>
           </PopoverTrigger>
 
           <PopoverContent

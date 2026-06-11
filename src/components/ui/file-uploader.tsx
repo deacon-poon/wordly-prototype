@@ -19,10 +19,9 @@
  */
 
 import * as React from "react";
-import { Upload, X, FileIcon } from "lucide-react";
+import { Upload, FileIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -149,10 +148,10 @@ export function FileUploader({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-8 text-center shadow-xs transition-colors",
+            "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:border-ring",
             isDragOver
-              ? "border-primary bg-primary/5"
+              ? "border-primary bg-primary-blue-50"
               : "border-border hover:border-primary",
             disabled && "cursor-not-allowed opacity-50 hover:border-border"
           )}
@@ -181,7 +180,7 @@ export function FileUploader({
           {files.map((file, index) => (
             <li
               key={`${file.name}-${index}`}
-              className="flex items-center justify-between gap-2 rounded-lg border border-border px-4 py-3"
+              className="flex items-center justify-between gap-2 rounded-md border border-border px-4 py-3"
             >
               <span className="flex min-w-0 items-center gap-2">
                 <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -194,17 +193,15 @@ export function FileUploader({
                   </span>
                 ) : null}
               </span>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+                className="ml-2 shrink-0 cursor-pointer text-lg leading-none text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label={removeFileLabel}
                 disabled={disabled}
                 onClick={() => removeFile(index)}
               >
-                <X className="h-4 w-4" />
-              </Button>
+                &times;
+              </button>
             </li>
           ))}
         </ul>

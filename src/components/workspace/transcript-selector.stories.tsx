@@ -24,7 +24,7 @@ const meta: Meta<typeof TranscriptSelector> = {
       control: "inline-radio",
       options: ["default", "sm"],
       description:
-        "Trigger height — portal data-size (default → h-9, sm → h-8).",
+        "Trigger height - portal data-size (default = h-9, sm = h-8).",
     },
     searchable: { control: "boolean" },
     required: { control: "boolean" },

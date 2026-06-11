@@ -8,9 +8,9 @@
  *
  * The Angular original is a pure proxy over the core `wordly-select`, populated
  * with workspace data from a bridge service. The real control anatomy therefore
- * lives in `wordly-select` → `hlm-select-trigger`, so this component matches the
+ * lives in `wordly-select` -> `hlm-select-trigger`, so this component matches the
  * portal's select-trigger anatomy 1:1 (mirrors the AccountSelector proof):
- * border-input, rounded-md, px-3 py-2, text-sm, shadow-sm, gap-2, sizes
+ * border-input, rounded-md, px-3 py-2, text-sm, shadow-xs, gap-2, sizes
  * default=h-9 / sm=h-8, focus ring [3px] on ring, destructive border+text+ring
  * on error, readonly keeps appearance but blocks interaction.
  *
@@ -42,16 +42,16 @@ import {
 } from "@/components/ui/popover";
 
 // ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal `selectTriggerVariants`
+// Trigger anatomy - mirrors the portal `selectTriggerVariants`
 // (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
-// proxies wordly-workspace-selector → wordly-select → hlm-select-trigger, so
+// proxies wordly-workspace-selector -> wordly-select -> hlm-select-trigger, so
 // the real control anatomy lives there: border-input, rounded-md, px-3 py-2,
-// text-sm, shadow-sm, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
+// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
 // ring, destructive border+text+ring on error.
 // ---------------------------------------------------------------------------
 
 const selectTriggerVariants = cva(
-  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
   {
     variants: {
       size: {
@@ -91,7 +91,7 @@ export interface WorkspaceOptionGroup {
 export const ALL_OPTION_VALUE = "ALL";
 
 // ---------------------------------------------------------------------------
-// Mock data — in production, fetched from the workspaces API (DEC-007)
+// Mock data - in production, fetched from the workspaces API (DEC-007)
 // ---------------------------------------------------------------------------
 
 export const MOCK_WORKSPACES: WorkspaceOption[] = [
@@ -314,6 +314,9 @@ export function WorkspaceSelector({
                 <CommandGroup
                   key={group.groupName || `group-${i}`}
                   heading={group.groupName || undefined}
+                  // Portal hlm-select-label: text-sm font-semibold text-muted-foreground
+                  // (overrides the shared CommandGroup default of text-xs/medium/gray-500).
+                  className="[&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
                 >
                   {group.options.map((option) => {
                     const isSelected = value === option.value;
