@@ -30,7 +30,6 @@ export * from "./select";
 export * from "./separator";
 export * from "./session-join-modal";
 export * from "./session-join-modal-compact";
-export * from "./session-join-button";
 export * from "./bot-remote-control";
 export * from "./session-control-center";
 export * from "./sheet";
