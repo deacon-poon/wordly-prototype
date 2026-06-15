@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from "./alert";
  * variants get adopted, the gap to close is a real `variant` prop on `Alert`.
  */
 const meta: Meta<typeof Alert> = {
-  title: "Core/Alert",
+  title: "Design System/Molecules/Alert",
   component: Alert,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

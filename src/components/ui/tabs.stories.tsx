@@ -4,7 +4,7 @@ import * as React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
 
 const meta: Meta<typeof Tabs> = {
-  title: "Core/Tabs",
+  title: "Design System/Molecules/Tabs",
   component: Tabs,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

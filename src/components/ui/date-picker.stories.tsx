@@ -14,7 +14,7 @@ import { Calendar } from "./calendar";
  * dropdown caption (month/year jump), a min/max bounded calendar, and disabled.
  */
 const meta: Meta<typeof Calendar> = {
-  title: "Core/DatePicker",
+  title: "Design System/Molecules/DatePicker",
   component: Calendar,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

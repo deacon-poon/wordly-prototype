@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "./radio-group";
 import { Label } from "./label";
 
 const meta: Meta<typeof RadioGroup> = {
-  title: "Core/RadioGroup",
+  title: "Design System/Atoms/RadioGroup",
   component: RadioGroup,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

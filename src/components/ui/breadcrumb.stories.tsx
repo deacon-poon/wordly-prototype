@@ -20,7 +20,7 @@ import {
  * a Dashboard root, intermediate links, and a current (non-link) page.
  */
 const meta: Meta<typeof Breadcrumb> = {
-  title: "Core/Breadcrumb",
+  title: "Design System/Molecules/Breadcrumb",
   component: Breadcrumb,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

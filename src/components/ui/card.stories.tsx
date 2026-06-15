@@ -19,7 +19,7 @@ import { Button } from "./button";
  * content, footer) and its default vs rich layouts.
  */
 const meta: Meta<typeof Card> = {
-  title: "Core/Card",
+  title: "Design System/Molecules/Card",
   component: Card,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

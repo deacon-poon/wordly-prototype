@@ -9,7 +9,7 @@ import {
 } from "./date-range-picker";
 
 const meta: Meta<typeof DateRangePicker> = {
-  title: "Core/DateRangePicker",
+  title: "Design System/Molecules/DateRangePicker",
   component: DateRangePicker,
   tags: ["autodocs"],
   parameters: {

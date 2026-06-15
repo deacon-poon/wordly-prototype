@@ -16,7 +16,7 @@ import {
 } from "./dialog";
 
 const meta: Meta<typeof Dialog> = {
-  title: "Core/Dialog",
+  title: "Design System/Organisms/Dialog",
   component: Dialog,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

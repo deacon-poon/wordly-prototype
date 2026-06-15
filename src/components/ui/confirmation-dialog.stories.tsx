@@ -11,7 +11,7 @@ import { Button } from "./button";
  * state so the dialog can be opened and dismissed live in the canvas.
  */
 const meta: Meta<typeof ConfirmationDialog> = {
-  title: "Core/ConfirmDialog",
+  title: "Design System/Organisms/ConfirmDialog",
   component: ConfirmationDialog,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

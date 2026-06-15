@@ -4,7 +4,7 @@ import * as React from "react";
 import { Button } from "./button";
 
 const meta: Meta<typeof Button> = {
-  title: "Core/Button",
+  title: "Design System/Atoms/Button",
   component: Button,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

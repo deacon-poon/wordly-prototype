@@ -6,7 +6,7 @@ import { Input } from "./input";
 import { Label } from "./label";
 
 const meta: Meta<typeof Input> = {
-  title: "Core/Input",
+  title: "Design System/Atoms/Input",
   component: Input,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

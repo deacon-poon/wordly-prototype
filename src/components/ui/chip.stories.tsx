@@ -4,7 +4,7 @@ import * as React from "react";
 import { Chip } from "./chip";
 
 const meta: Meta<typeof Chip> = {
-  title: "Core/Chip",
+  title: "Design System/Atoms/Chip",
   component: Chip,
   tags: ["autodocs"],
   argTypes: {

@@ -72,7 +72,7 @@ function Icon({
 }
 
 const meta: Meta<typeof Icon> = {
-  title: "Core/Icon",
+  title: "Design System/Atoms/Icon",
   component: Icon,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

@@ -20,7 +20,7 @@ import {
  * placeholder, default value, grouped options, disabled item, disabled control.
  */
 const meta: Meta<typeof Select> = {
-  title: "Core/Select",
+  title: "Design System/Molecules/Select",
   component: Select,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

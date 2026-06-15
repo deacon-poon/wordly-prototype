@@ -20,7 +20,7 @@ import {
  * basic data, selectable rows, row numbers, a footer summary, loading, and empty.
  */
 const meta: Meta<typeof Table> = {
-  title: "Core/Table",
+  title: "Design System/Organisms/Table",
   component: Table,
   tags: ["autodocs"],
   parameters: { layout: "padded" },

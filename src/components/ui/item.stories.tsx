@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/item";
 
 const meta: Meta<typeof Item> = {
-  title: "Core/Item",
+  title: "Design System/Molecules/Item",
   component: Item,
   tags: ["autodocs"],
   parameters: {

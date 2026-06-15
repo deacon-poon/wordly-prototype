@@ -18,6 +18,7 @@ export * from "./dialog";
 export * from "./dropdown-menu";
 export * from "./hover-card";
 export * from "./input";
+export * from "./password-input";
 export * from "./label";
 export * from "./popover";
 export * from "./progress";
