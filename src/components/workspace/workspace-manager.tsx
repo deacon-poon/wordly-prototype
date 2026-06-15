@@ -38,6 +38,7 @@
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { selectTriggerVariants } from "@/components/ui/select-trigger";
 import {
   Check,
   ChevronDown,
@@ -150,26 +151,6 @@ export type WorkspaceButtonSize = NonNullable<
 // [3px] on ring with focus-visible:border-ring (no offset), and on error
 // border-destructive + text-destructive + ring-destructive/20.
 // ---------------------------------------------------------------------------
-
-const selectTriggerVariants = cva(
-  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
-  {
-    variants: {
-      size: {
-        default: "h-9",
-        sm: "h-8",
-      },
-      error: {
-        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
-        false: "",
-      },
-    },
-    defaultVariants: {
-      size: "default",
-      error: false,
-    },
-  }
-);
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WorkspaceManagerComboboxOption / WorkspaceGroup)
