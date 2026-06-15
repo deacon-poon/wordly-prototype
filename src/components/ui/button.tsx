@@ -45,17 +45,63 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  /** Icon rendered before the label. */
+  leftIcon?: React.ReactNode;
+  /** Icon rendered after the label. */
+  rightIcon?: React.ReactNode;
+  /** Rendered icon size in px (Figma uses 16 at default, 24 for larger CTAs). */
+  iconSize?: 16 | 24;
 }
 
+// Force the rendered icon (usually an SVG) to a fixed box so 16/24 is exact.
+const iconSizeClass: Record<16 | 24, string> = {
+  16: "[&>svg]:size-4",
+  24: "[&>svg]:size-6",
+};
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      leftIcon,
+      rightIcon,
+      iconSize = 16,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
+    const hasIcon = Boolean(leftIcon || rightIcon);
+    // asChild requires a single child, so icon props are ignored in that mode.
+    const content = asChild ? (
+      children
+    ) : (
+      <>
+        {leftIcon && (
+          <span className={cn("inline-flex shrink-0", iconSizeClass[iconSize])}>
+            {leftIcon}
+          </span>
+        )}
+        {children}
+        {rightIcon && (
+          <span className={cn("inline-flex shrink-0", iconSizeClass[iconSize])}>
+            {rightIcon}
+          </span>
+        )}
+      </>
+    );
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size }), hasIcon && "gap-2", className)}
         ref={ref}
         {...props}
-      />
+      >
+        {content}
+      </Comp>
     );
   }
 );
