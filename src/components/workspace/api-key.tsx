@@ -3,49 +3,57 @@
 /**
  * ApiKey
  *
- * React migration of the production Angular `wordly-api-key`
- * (wordly_portal: libs/components/business/wordly-api-key).
+ * EXACT React mirror of the production Angular `wordly-api-key`
+ *   wordly_portal:
+ *     libs/components/business/wordly-api-key/
+ *       wordly-api-key.component.{ts,html,scss}
+ *       models/wordly-api-key.models.ts
  *
- * The Angular original is a thin form-control proxy that composes the core
- * `app-wordly-button` and `app-wordly-input` primitives. The real visual anatomy
- * therefore lives in `core/button` (wordly-button.component.scss) and `core/input`.
- * This pass aligns our React markup 1:1 with that core anatomy:
+ * The Angular component extends `WordlyFormControlBase<string>` and renders
+ * `app-wordly-form-control-wrapper` (label / required / helper / error / layout)
+ * wrapping a single read-only `app-wordly-input` plus a per-state action cluster:
  *
- *   - empty state  → primary button, size `sm`  (portal `variant="primary" size="sm"`)
- *   - has-key      → three 38×38 icon buttons (copy / refresh / icon-destructive delete)
- *   - error        → alert icon + outline button, size `sm`
- *   - delete       → destructive AlertDialog action
+ *   - loading  → <hlm-spinner />
+ *   - empty    → primary button, size `sm`  (`variant="primary" size="sm"`) — text only
+ *   - has_key  → three icon buttons: copy (lucideCopy) / refresh (lucideRefreshCcw) /
+ *                delete (`variant="icon-destructive"`, lucideTrash colored --destructive)
+ *   - error    → lucideCircleAlert (size 16, text-destructive) + outline button "Retry"
  *
- * Portal primary is Teal (`--teal-500`); per the migration brief we keep OUR
- * Brand Blue as the primary action color (token classes `primary` / `primary-blue-*`).
- * Everything else (grays, destructive, hover surfaces) tracks the portal SCSS using
- * design-token classes — no raw hex.
+ * Anatomy is ported 1:1 from the portal:
+ *   - The wrapper is the shared FormControlWrapper (default label-beside layout).
+ *   - The input is the shared shadcn Input, read-only, value = apiKey || noKeyText.
+ *   - Icon buttons mirror core/button `variant-icon`: fixed 38×38, gray-200 border,
+ *     padding 0 (`button.component.scss`). Note `icon-destructive` renders as
+ *     `variant-icon` (gray-200 border kept); ONLY the trash icon is destructive-colored
+ *     — see WordlyButtonComponent.computedClasses() (`'icon-destructive' ? 'icon'`).
+ *   - Delete confirmation mirrors WordlyConfirmDialogService.confirm({variant:'destructive'}).
  *
- * We keep the same public surface — the four UI states, the copy/refresh/delete/add
- * actions, the destructive delete confirmation, and the configurable labels — but
- * drop the Angular DI/service layer (Keycloak, clipboard, confirm-dialog, i18next).
- * State is driven by props and local component state; action callbacks fire instead
- * of services.
+ * Per the migration brief, OUR Brand Blue stays the primary action color (the
+ * portal primary is Teal `--teal-500`); the shared Button's default variant already
+ * maps to Brand Blue, so the empty-state button uses the default variant. Everything
+ * else tracks the portal SCSS via design-token classes — no raw hex.
  *
- * Built on the shared shadcn primitives (Input + Button + AlertDialog) per the
- * workspace-selector proof. In production the key would be fetched and mutated
- * via the developer-api (createApiKey / refreshApiKey / deleteApiKey).
+ * The Angular DI/service layer (Keycloak flow, ngxClipboard, confirm-dialog,
+ * i18next, developer-api) is dropped: state is driven by props + local state, and
+ * the @Output events surface as callbacks (onAdd/onCopy/onRefresh/onDelete + onRetry).
  */
 
 import * as React from "react";
+// lucide-react exports `AlertCircle` (legacy alias) for the glyph the portal
+// references as `lucideCircleAlert`; `Loader2` is the spinning ring equivalent
+// of the portal `<hlm-spinner />`.
 import {
-  AlertCircle,
-  Check,
+  AlertCircle as CircleAlert,
   Copy,
   Loader2,
-  Plus,
   RefreshCcw,
-  Trash2,
+  Trash as Trash2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,40 +64,35 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
 // ---------------------------------------------------------------------------
-// Data contract (mirrors the Angular WordlyApiKeyState / event-data types)
+// Data contract (mirrors models/wordly-api-key.models.ts)
 // ---------------------------------------------------------------------------
 
+/** Mirrors the Angular `WordlyApiKeyState` enum. */
 export type ApiKeyState = "loading" | "empty" | "has_key" | "error";
 
+/** Mirrors the Angular `WordlyApiKeyEventData` interface. */
 export interface ApiKeyEventData {
   apiKey?: string;
   error?: string;
 }
 
 // ---------------------------------------------------------------------------
-// Portal-aligned anatomy tokens
-//
-// Mirrors core/button/wordly-button.component.scss. Portal `variant="icon"` is a
-// fixed 38×38 square with a gray-200 border; hover surface is teal-50 in the
-// portal, mapped here to primary-blue-50 to keep Brand Blue as the interaction
-// color. `icon-destructive` adds a destructive border (portal `!border-destructive`).
+// Icon-button anatomy — ported verbatim from core/button wordly-button.component.scss
+// (`button.variant-icon`): fixed 38×38, gray-200 border, padding 0, brand-blue
+// hover/active surface (portal teal-50/teal-100, remapped to Brand Blue per brief).
+// `icon-destructive` keeps this same gray-200 border in the portal (computedClasses
+// maps it to `variant-icon`); the destructive accent lives only on the icon glyph.
 // ---------------------------------------------------------------------------
 
-// 38×38 icon button, gray-200 border, padding 0, brand-blue hover surface
 const ICON_BTN =
   "h-[38px] w-[38px] min-w-[38px] rounded-md border border-gray-200 bg-white p-0 text-gray-800 hover:bg-primary-blue-50 hover:text-primary-blue-700 active:bg-primary-blue-100";
 
 // ---------------------------------------------------------------------------
 // Mock data — in production, fetched from the developer-api
-// (getApiKeys → entities[0].apiKey; created/refreshed via the Keycloak flow)
+// (getApiKeys → entities[0].apiKey; created/refreshed via the Keycloak flow).
 // ---------------------------------------------------------------------------
 
 export const MOCK_API_KEY = "wk_live_8f3a91c2e7b4d65f0a1c9e2d7b4f6a83";
@@ -103,6 +106,8 @@ export interface ApiKeyProps {
   value?: string | null;
   /** Drive the visible state directly (loading/empty/has_key/error). */
   state?: ApiKeyState;
+  /** Loading flag (portal `isLoading$`): disables the input + action buttons. */
+  loading?: boolean;
 
   /** Add a new key (empty state). Angular: initiateKeycloakFlow(). */
   onAdd?: () => void;
@@ -116,11 +121,24 @@ export interface ApiKeyProps {
   onRetry?: () => void;
 
   disabled?: boolean;
-  readOnly?: boolean;
+  readonly?: boolean;
 
+  // ===== FormControlWrapper passthroughs (portal @Inputs from the base) =====
   label?: string;
   required?: boolean;
+  helperText?: string;
+  helperTextOnTop?: boolean;
+  showError?: boolean;
+  errorMessage?: string;
+  extraInfo?: string;
+  showInfoIcon?: boolean;
+  infoTooltipText?: string;
+  /** Wrapper layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
 
+  // ===== Configurable text (portal @Inputs, with the same defaults) =====
+  /** Portal `id` forwarded to the input. */
+  id?: string;
   addButtonText?: string;
   noKeyText?: string;
   placeholder?: string;
@@ -132,8 +150,6 @@ export interface ApiKeyProps {
   deleteConfirmAccept?: string;
   deleteConfirmReject?: string;
   clipboardSuccessMessage?: string;
-  errorText?: string;
-  retryText?: string;
 
   className?: string;
 }
@@ -141,15 +157,26 @@ export interface ApiKeyProps {
 export function ApiKey({
   value,
   state,
+  loading = false,
   onAdd,
   onCopy,
   onRefresh,
   onDelete,
   onRetry,
   disabled = false,
-  readOnly = false,
+  readonly = false,
   label,
   required = false,
+  helperText,
+  helperTextOnTop = false,
+  showError = false,
+  errorMessage,
+  extraInfo,
+  showInfoIcon = false,
+  infoTooltipText,
+  layoutVariant = "default",
+  id,
+  // Defaults mirror the Angular *Translated getters (the en fallbacks).
   addButtonText = "Add Api Key",
   noKeyText = "There is no API Key associated with your account.",
   placeholder = "",
@@ -161,24 +188,24 @@ export function ApiKey({
   deleteConfirmAccept = "Delete",
   deleteConfirmReject = "Cancel",
   clipboardSuccessMessage = "Copied to clipboard",
-  errorText = "Failed to load API key",
-  retryText = "Retry",
   className,
 }: ApiKeyProps) {
   const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [copied, setCopied] = React.useState(false);
 
-  // Derive the effective state: explicit `state` prop wins, else infer from value.
+  // Derive the effective state: explicit `state` prop wins, else infer from value
+  // (mirrors setApiKey(): apiKey ? HAS_KEY : EMPTY).
   const effectiveState: ApiKeyState = state ?? (value ? "has_key" : "empty");
 
   const apiKey = value ?? null;
 
+  // Angular: onCopyApiKey() copies via ngxClipboard then emits apiKeyCopied and
+  // shows the clipboard success toast. Here we surface the callback + best-effort
+  // clipboard write (no toast layer in the lab).
   function handleCopy() {
     if (!apiKey) return;
-    // In production this writes to navigator.clipboard and toasts
-    // `clipboardSuccessMessage`; here we surface a transient check icon.
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      void navigator.clipboard.writeText(apiKey).catch(() => undefined);
+    }
     onCopy?.({ apiKey });
   }
 
@@ -187,149 +214,137 @@ export function ApiKey({
     onRefresh?.({ apiKey });
   }
 
+  // Angular: deleteApiKey() opens the destructive confirm dialog, then on accept
+  // calls bridge.deleteApiKey + emits apiKeyDeleted.
   function confirmDelete() {
     setConfirmOpen(false);
     if (apiKey) onDelete?.({ apiKey });
   }
 
-  const inputDisabled = disabled || effectiveState === "loading";
-  const actionsDisabled = disabled || readOnly;
+  // Portal: input is disabled by `isLoading$`; action buttons by `(isLoading$ | async)`
+  // (or the loading state) combined with `disabled`.
+  const isLoading = loading || effectiveState === "loading";
+  const buttonsDisabled = isLoading || disabled;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <label className="text-sm font-medium text-gray-700">
-          {label}
-          {required ? <span className="ml-0.5 text-destructive">*</span> : null}
-        </label>
-      ) : null}
-
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={helperText}
+      helperTextOnTop={helperTextOnTop}
+      showError={showError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      controlId={id}
+      layoutVariant={layoutVariant}
+      className={className}
+    >
+      {/* Main Layout: Input + Buttons (portal: <div class="flex items-center gap-2">) */}
       <div className="flex items-center gap-2">
-        {/* API key field — always present, read-only (mirrors Angular). */}
-        <Input
-          readOnly
-          disabled={inputDisabled}
-          placeholder={placeholder}
-          value={apiKey ?? noKeyText}
-          aria-invalid={effectiveState === "error"}
-          className={cn(
-            "flex-1 font-mono text-sm",
-            !apiKey && "font-sans text-muted-foreground",
-            effectiveState === "error" &&
-              "border-destructive focus-visible:ring-destructive/50"
-          )}
-          aria-label={label ?? "API key"}
-        />
+        {/* API Key Input (always present) — portal: <div class="flex-1"> */}
+        <div className="flex-1">
+          <Input
+            id={id}
+            value={apiKey ?? noKeyText}
+            readOnly
+            placeholder={placeholder}
+            disabled={isLoading}
+          />
+        </div>
 
+        {/* Loading State — portal: <hlm-spinner /> */}
         {effectiveState === "loading" ? (
-          <div className="flex items-center gap-2 px-2">
+          <div className="flex items-center gap-2">
             <Loader2
-              className="h-4 w-4 animate-spin text-muted-foreground"
-              aria-label="Loading API key"
+              className="size-4 animate-spin text-muted-foreground"
+              aria-label="Loading"
             />
           </div>
         ) : null}
 
-        {/* Empty state → portal variant="primary" size="sm". Kept on Brand Blue. */}
+        {/* Empty State - Add Button — portal: variant="primary" size="sm" (Brand Blue here) */}
         {effectiveState === "empty" ? (
-          <Button
-            type="button"
-            size="sm"
-            disabled={actionsDisabled}
-            onClick={() => onAdd?.()}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            {addButtonText}
-          </Button>
+          <div>
+            <Button
+              type="button"
+              size="sm"
+              disabled={buttonsDisabled || readonly}
+              onClick={() => onAdd?.()}
+            >
+              {addButtonText}
+            </Button>
+          </div>
         ) : null}
 
-        {/* Has-key state → three 38×38 icon buttons (copy / refresh / delete). */}
+        {/* Has API Key State - Action Buttons — portal: <div class="flex items-center gap-1"> */}
         {effectiveState === "has_key" ? (
-          <TooltipProvider>
-            <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={actionsDisabled}
-                    onClick={handleCopy}
-                    aria-label={copyButtonTitle}
-                    className={ICON_BTN}
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-accent-green-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {copied ? clipboardSuccessMessage : copyButtonTitle}
-                </TooltipContent>
-              </Tooltip>
+          <div className="flex items-center gap-1">
+            {/* Copy Button — portal variant="icon" */}
+            <Button
+              type="button"
+              variant="ghost"
+              title={copyButtonTitle}
+              aria-label={copyButtonTitle}
+              disabled={buttonsDisabled}
+              onClick={handleCopy}
+              className={cn(ICON_BTN, readonly && "pointer-events-none")}
+            >
+              <Copy className="size-4" aria-hidden="true" />
+            </Button>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={actionsDisabled}
-                    onClick={handleRefresh}
-                    aria-label={refreshButtonTitle}
-                    className={ICON_BTN}
-                  >
-                    <RefreshCcw className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{refreshButtonTitle}</TooltipContent>
-              </Tooltip>
+            {/* Refresh Button — portal variant="icon" */}
+            <Button
+              type="button"
+              variant="ghost"
+              title={refreshButtonTitle}
+              aria-label={refreshButtonTitle}
+              disabled={buttonsDisabled}
+              onClick={handleRefresh}
+              className={cn(ICON_BTN, readonly && "pointer-events-none")}
+            >
+              <RefreshCcw className="size-4" aria-hidden="true" />
+            </Button>
 
-              {/* icon-destructive: portal adds `!border-destructive` + destructive icon. */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={actionsDisabled}
-                    onClick={() => setConfirmOpen(true)}
-                    aria-label={deleteButtonTitle}
-                    className={cn(
-                      ICON_BTN,
-                      "border-destructive text-destructive hover:text-destructive"
-                    )}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{deleteButtonTitle}</TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
+            {/* Delete Button — portal variant="icon-destructive": SAME gray-200
+                icon button; only the trash glyph is colored var(--destructive). */}
+            <Button
+              type="button"
+              variant="ghost"
+              title={deleteButtonTitle}
+              aria-label={deleteButtonTitle}
+              disabled={buttonsDisabled}
+              onClick={() => setConfirmOpen(true)}
+              className={cn(ICON_BTN, readonly && "pointer-events-none")}
+            >
+              <Trash2 className="size-4 text-destructive" aria-hidden="true" />
+            </Button>
+          </div>
         ) : null}
 
-        {/* Error state → alert icon + outline button, size sm (portal). */}
+        {/* Error State - Retry Button — portal: alert icon (16) + outline button */}
         {effectiveState === "error" ? (
           <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
+            <CircleAlert
+              className="size-4 text-destructive"
+              aria-hidden="true"
+            />
             <Button
               type="button"
               variant="outline"
               size="sm"
-              disabled={actionsDisabled}
+              disabled={readonly}
               onClick={() => onRetry?.()}
             >
-              {retryText}
+              Retry
             </Button>
           </div>
         ) : null}
       </div>
 
-      {effectiveState === "error" ? (
-        <p className="text-sm text-destructive">{errorText}</p>
-      ) : null}
-
-      {/* Destructive delete confirmation (Angular: WordlyConfirmDialogService). */}
+      {/* Destructive delete confirmation (portal WordlyConfirmDialogService,
+          variant: 'destructive'). */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -349,6 +364,6 @@ export function ApiKey({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </FormControlWrapper>
   );
 }
