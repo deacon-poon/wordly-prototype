@@ -18,8 +18,13 @@
  * The Angular DI / RxJS / reactive-forms layer is dropped: data and the
  * selection handler arrive via props (controlled `value` + `onValueChange`).
  *
+ * Like the portal HTML, the trigger + popover are wrapped in the shared
+ * `app-wordly-form-control-wrapper` (React: FormControlWrapper) for the
+ * label / required / helperText / error / extraInfo / info-icon affordances,
+ * matching the validated `workspace/account-selector.tsx` reference.
+ *
  * Built on the shared shadcn primitives (Command + Popover), matching the
- * repo idiom established by `workspace-selector.tsx`.
+ * repo idiom established by `account-selector.tsx`.
  */
 
 import * as React from "react";
@@ -42,6 +47,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WordlyComboboxOption / *Group / *Type)
@@ -140,14 +147,38 @@ export interface ComboboxProps {
 
   label?: string;
   required?: boolean;
-  /** Error styling on the trigger. */
+  /** Error styling on the trigger + error message in the wrapper. */
   error?: boolean;
+  /** Message shown (in red) below the control when `error` is true. */
+  errorMessage?: string;
+  /** Helper text under the control (hidden when an error message is shown). */
+  helperText?: string;
+  /** Place helper text above the control (stacked layout only). */
+  helperTextOnTop?: boolean;
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  /** Tooltip text for the info icon (portal `infoTooltipText`). */
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
 
   /**
    * Trigger height/padding, matching the portal button sizes.
    * @default "default"
    */
   size?: ComboboxSize;
+
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  /** Container layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
+
+  /** Stable id used to associate the label with the control. */
+  id?: string;
 
   className?: string;
 }
@@ -168,9 +199,24 @@ export function Combobox({
   label,
   required = false,
   error = false,
+  errorMessage,
+  helperText,
+  helperTextOnTop = false,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
   size = "default",
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
+  id,
   className,
 }: ComboboxProps) {
+  const reactId = React.useId();
+  const controlId = id ?? reactId;
   const [open, setOpen] = React.useState(false);
 
   const allOptions = React.useMemo<ComboboxOption[]>(
@@ -215,6 +261,7 @@ export function Combobox({
   const trigger = (
     <button
       type="button"
+      id={controlId}
       role="combobox"
       aria-haspopup="listbox"
       aria-expanded={readonly ? false : open}
@@ -260,66 +307,79 @@ export function Combobox({
     );
   };
 
-  return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <label className="text-sm font-medium text-gray-700">
-          {label}
-          {required ? <span className="ml-0.5 text-destructive">*</span> : null}
-        </label>
-      ) : null}
+  const control = readonly ? (
+    trigger
+  ) : (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+      >
+        <Command
+          filter={filter}
+          // Group/section heading matches the portal hlm-select-label:
+          // text-sm font-semibold text-muted-foreground (overrides the
+          // shared command.tsx default of text-xs/medium/gray-500).
+          className="[&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
+        >
+          <CommandInput placeholder={placeholder} />
+          <CommandList>
+            <CommandEmpty>{noResultsText}</CommandEmpty>
+            {options.map((item, i) => {
+              if (!isGroup(item)) {
+                return (
+                  <CommandGroup key={`opt-${item.value}`}>
+                    {renderItem(item, false)}
+                  </CommandGroup>
+                );
+              }
+              return (
+                <React.Fragment key={`group-${item.groupLabel || i}`}>
+                  <CommandGroup heading={item.groupLabel || undefined}>
+                    {item.options.map((option) =>
+                      renderItem(
+                        option,
+                        indentGroupedOptions && !!item.groupLabel
+                      )
+                    )}
+                  </CommandGroup>
+                  {item.showSeparator ? <CommandSeparator /> : null}
+                </React.Fragment>
+              );
+            })}
+          </CommandList>
+          {showFooter && footer ? (
+            <div className="sticky bottom-0 border-t border-border bg-popover py-2">
+              {footer}
+            </div>
+          ) : null}
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 
-      {readonly ? (
-        trigger
-      ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] p-0"
-            align="start"
-          >
-            <Command
-              filter={filter}
-              // Group/section heading matches the portal hlm-select-label:
-              // text-sm font-semibold text-muted-foreground (overrides the
-              // shared command.tsx default of text-xs/medium/gray-500).
-              className="[&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
-            >
-              <CommandInput placeholder={placeholder} />
-              <CommandList>
-                <CommandEmpty>{noResultsText}</CommandEmpty>
-                {options.map((item, i) => {
-                  if (!isGroup(item)) {
-                    return (
-                      <CommandGroup key={`opt-${item.value}`}>
-                        {renderItem(item, false)}
-                      </CommandGroup>
-                    );
-                  }
-                  return (
-                    <React.Fragment key={`group-${item.groupLabel || i}`}>
-                      <CommandGroup heading={item.groupLabel || undefined}>
-                        {item.options.map((option) =>
-                          renderItem(
-                            option,
-                            indentGroupedOptions && !!item.groupLabel
-                          )
-                        )}
-                      </CommandGroup>
-                      {item.showSeparator ? <CommandSeparator /> : null}
-                    </React.Fragment>
-                  );
-                })}
-              </CommandList>
-              {showFooter && footer ? (
-                <div className="sticky bottom-0 border-t border-border bg-popover py-2">
-                  {footer}
-                </div>
-              ) : null}
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
-    </div>
+  return (
+    <FormControlWrapper
+      controlId={controlId}
+      label={label}
+      required={required}
+      helperText={!error ? helperText : undefined}
+      helperTextOnTop={helperTextOnTop}
+      showError={error}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      layoutVariant={layoutVariant}
+      labelStyleVariant={labelStyleVariant}
+      labelSizeVariant={labelSizeVariant}
+      labelContextVariant={labelContextVariant}
+      spacingVariant={spacingVariant}
+      contentContextVariant={contentContextVariant}
+      className={className}
+    >
+      {control}
+    </FormControlWrapper>
   );
 }

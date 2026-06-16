@@ -17,18 +17,22 @@
  * surface — controlled `value: string[]`, the same texts and state flags — but
  * drop the Angular DI / forms / RxJS layer: value + handlers arrive via props.
  *
- * Built on the shared shadcn primitives (Dialog, Button, Checkbox, Input,
- * Tooltip) so it matches the product look and feeds the reusability flywheel.
- * The chip anatomy mirrors the portal's `app-wordly-chip` (selected variant):
- * a rounded-2xl bordered pill with a 22px gray close button.
+ * Built on the shared shadcn primitives (Dialog, Button, Checkbox, Input) and
+ * the shared `Chip` atom, plus the shared `FormControlWrapper`
+ * (`app-wordly-form-control-wrapper`) for the label / helper / error / extra-info
+ * / info-icon chrome — exactly as the Angular template composes them — so it
+ * matches the product look and feeds the reusability flywheel. Selected items
+ * render via the shared `Chip` atom in its `selected` variant, mirroring the
+ * portal's `<app-wordly-chip variant="selected">`.
  */
 
 import * as React from "react";
-import { Info, Loader2, Search, X } from "lucide-react";
+import { Info, Loader2, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Chip } from "@/components/ui/chip";
 import {
   Dialog,
   DialogContent,
@@ -37,14 +41,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors WordlyChipSelectorOption / WordlyChipSelectorValue)
@@ -67,8 +65,21 @@ export interface ChipSelectorProps {
   /** The full set of selectable options. */
   options: ChipSelectorOption[];
 
+  // ===== FormControlWrapper chrome (mirrors WordlyFormControlBase @Inputs) =====
   label?: string;
   required?: boolean;
+  /** Helper text shown below the control. */
+  helperText?: string;
+  /** Render the wrapper error state. Mirrors `displayError` / `showError`. */
+  displayError?: boolean;
+  /** Error message surfaced by the wrapper when `displayError` is true. */
+  errorMessage?: string;
+  /** Extra info text shown beneath the control. */
+  extraInfo?: string;
+  /** Show the info icon beside the label. */
+  showInfoIcon?: boolean;
+  /** Tooltip text for the info icon. */
+  infoTooltipText?: string;
 
   /** Max number of options that can be selected (undefined / 0 = no limit). */
   maxSelectable?: number;
@@ -115,6 +126,12 @@ export function ChipSelector({
   options,
   label,
   required = false,
+  helperText,
+  displayError = false,
+  errorMessage,
+  extraInfo,
+  showInfoIcon = false,
+  infoTooltipText,
   maxSelectable,
   hideSelectedOptions = true,
   showChipInfoTooltip = true,
@@ -241,19 +258,22 @@ export function ChipSelector({
   ) : null;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <Label className="text-gray-700">
-          {label}
-          {required ? <span className="ml-0.5 text-destructive">*</span> : null}
-        </Label>
-      ) : null}
-
-      {/* Input-style box holding the chips */}
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={helperText}
+      showError={displayError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      className={className}
+    >
+      {/* Chips container styled like an input field (wordly-chip-selector). */}
       <div
         className={cn(
           "min-h-[2.5rem] w-full rounded-md border bg-background px-3 py-2 shadow-xs has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring has-[:focus-visible]:border-ring",
-          hasError
+          displayError
             ? "!border-destructive has-[:focus-visible]:ring-destructive/20"
             : "border-input",
           disabled && "cursor-not-allowed opacity-50"
@@ -282,10 +302,13 @@ export function ChipSelector({
             {selectedOptions.map((option) => (
               <Chip
                 key={option.value}
-                option={option}
-                showInfo={showChipInfoTooltip}
-                showClose={!interactionDisabled}
+                text={optionText(option)}
+                helpText={option.help}
+                showHelpIcon={showChipInfoTooltip && !!option.help}
+                showCloseButton={!interactionDisabled}
                 disabled={disabled}
+                variant="selected"
+                selectable={false}
                 onRemove={() => removeChip(option.value)}
               />
             ))}
@@ -415,90 +438,6 @@ export function ChipSelector({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Chip — a single selected option rendered as a removable Badge
-// ---------------------------------------------------------------------------
-
-interface ChipProps {
-  option: ChipSelectorOption;
-  showInfo: boolean;
-  showClose: boolean;
-  disabled?: boolean;
-  onRemove: () => void;
-}
-
-function Chip({ option, showInfo, showClose, disabled, onRemove }: ChipProps) {
-  // Mirrors the portal `app-wordly-chip` in its `selected` variant: a pill with
-  // gap-1 / px-1 / py-1, rounded-2xl, a bordered fill, and a 22px close button.
-  // Selected fill maps the portal's Teal-500 → our Brand Blue primary.
-  return (
-    <div
-      role="presentation"
-      title={option.help || optionText(option)}
-      aria-label={optionText(option)}
-      className={cn(
-        "flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-2xl border border-primary bg-primary px-1 py-1 text-base font-normal leading-6 text-primary-foreground transition-colors duration-200 focus:outline-none",
-        disabled && "pointer-events-none cursor-not-allowed opacity-50"
-      )}
-    >
-      {showInfo && option.help ? <InfoTip help={option.help} selected /> : null}
-
-      {/* Text content (portal wraps the label in pl-2 pr-2). */}
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden pl-2 pr-2 leading-6">
-        <span className="select-none break-words text-sm">
-          {optionText(option)}
-        </span>
-      </div>
-
-      {showClose ? (
-        <button
-          type="button"
-          aria-label={`Remove ${optionText(option)}`}
-          title={`Remove ${optionText(option)}`}
-          disabled={disabled}
-          onClick={onRemove}
-          className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-900 transition-colors duration-200 hover:bg-gray-200 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-/**
- * Info / help tooltip trigger. The portal renders the info icon in the
- * informational Blue-700 by default and White when on a selected chip; here
- * `selected` swaps to the chip's foreground color so it stays legible on the
- * Brand Blue fill.
- */
-function InfoTip({
-  help,
-  selected = false,
-}: {
-  help: string;
-  selected?: boolean;
-}) {
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center",
-              selected ? "text-primary-foreground" : "text-blue-700"
-            )}
-            aria-label={help}
-          >
-            <Info className="h-3.5 w-3.5" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{help}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    </FormControlWrapper>
   );
 }

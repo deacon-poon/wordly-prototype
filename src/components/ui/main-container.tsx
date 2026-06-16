@@ -254,11 +254,15 @@ export function MainContainer({
     ? { width: `${100 - mainWidthPercent}%` }
     : undefined;
 
+  // Mirrors Angular get sidePanelClass(): open states supply the visual
+  // separator via !border-l (removed below md in overlay mode); the closed
+  // state drops the border entirely so the 1px doesn't overflow the flex row
+  // and trigger a page-level horizontal scrollbar on mobile.
   const sidePanelClass = sidePanelOpen
     ? resizableRightPanel
-      ? "translate-x-0 opacity-100 max-md:border-l-0"
-      : "translate-x-0 w-full lg:w-1/3 lg:max-w-[400px] md:w-1/2 opacity-100 max-md:border-l-0"
-    : "translate-x-full w-0 opacity-0 max-md:border-l-0";
+      ? "translate-x-0 opacity-100 !border-l max-md:!border-l-0"
+      : "translate-x-0 w-full lg:w-1/3 lg:max-w-[400px] md:w-1/2 opacity-100 !border-l max-md:!border-l-0"
+    : "translate-x-full w-0 opacity-0";
 
   const mainContentWidthClass =
     panelActive && !resizableRightPanel
@@ -300,7 +304,7 @@ export function MainContainer({
         <div
           style={mainContentStyle}
           className={cn(
-            "flex h-full flex-col transition-all duration-300 ease-in-out max-md:!w-full",
+            "flex h-full flex-col transition-all duration-300 ease-in-out @container max-md:!w-full",
             mainContentWidthClass,
             showContentPadding ? "gap-6" : "pb-6",
             isDragging && "transition-none",
@@ -341,8 +345,9 @@ export function MainContainer({
             className={cn(
               "flex flex-1 flex-col",
               bodyClass,
-              showContentPadding && "pb-6",
-              stickyHeader && "min-h-0 overflow-y-auto"
+              showContentPadding && !stickyHeader && "pb-6",
+              stickyHeader &&
+                "min-h-0 overflow-y-auto overscroll-contain touch-pan-y"
             )}
           >
             <Separator />
@@ -387,8 +392,10 @@ export function MainContainer({
                   aria-label="Resize side panel"
                   onMouseDown={handleDividerMouseDown}
                   className={cn(
-                    "inline-flex cursor-ew-resize items-center justify-center rounded-md border border-border bg-background py-1 shadow-xs transition-colors",
-                    isDragging && "border-muted-foreground/50"
+                    // Portal: pill is hidden below lg (tablet) where the panel is
+                    // fixed at 50% and resizing would be confusing.
+                    "inline-flex cursor-ew-resize items-center justify-center rounded-md border border-border bg-background py-1 shadow-sm transition-colors max-lg:hidden",
+                    isDragging && "!border-muted-foreground/50"
                   )}
                 >
                   <GripVertical className="pointer-events-none h-3 w-3 text-muted-foreground" />
@@ -403,7 +410,7 @@ export function MainContainer({
           <aside
             style={sidePanelStyle}
             className={cn(
-              "absolute right-0 top-0 z-50 h-full overflow-hidden rounded-xl border-l border-solid border-border bg-background transition-all duration-300 ease-in-out md:relative md:z-auto md:rounded-l-none max-md:!w-full",
+              "absolute right-0 top-0 z-50 h-full overflow-hidden rounded-xl border-solid border-border bg-background transition-all duration-300 ease-in-out md:relative md:z-auto md:rounded-l-none max-md:!w-full",
               sidePanelClass,
               isDragging && "transition-none"
             )}

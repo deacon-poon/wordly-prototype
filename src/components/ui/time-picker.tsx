@@ -3,28 +3,37 @@
 /**
  * TimePicker
  *
- * React migration of the production Angular `wordly-time-picker`
- * (wordly_portal: libs/components/core/time-picker).
+ * EXACT React mirror of the production Angular `wordly-time-picker`
+ *   wordly_portal:
+ *     libs/components/core/time-picker/
+ *       wordly-time-picker.component.{ts,html}
  *
- * The Angular original is a SINGLE native `<input type="time">` wrapped in the
- * shared form control wrapper (label / required / helperText / error / disabled)
- * with a leading clock icon button that calls the input's `showPicker()`. The
- * value is a 24-hour "HH:mm" string via ControlValueAccessor; the browser renders
- * 12/24h per locale and handles 1-minute resolution natively.
+ * Like the Angular original, the control is a SINGLE native `<input type="time">`
+ * with a leading clock icon button (calls the input's `showPicker()`), wrapped in
+ * the shared `app-wordly-form-control-wrapper` for label / required / helperText /
+ * error / extraInfo / info-icon affordances. The value is a 24-hour "HH:mm" string;
+ * the browser renders 12/24h per locale and handles 1-minute resolution natively.
  *
- * Here we keep that same public surface (label, required, helperText,
- * placeholder, disabled, error + errorMessage, controlled "HH:mm" value) and
- * drop the Angular DI / forms / RxJS layer - value + change arrive via props.
+ *   Angular:  wordly-time-picker → form-control-wrapper + (clock button + native input)
+ *   React:    TimePicker        → FormControlWrapper    + (clock button + native input)
  *
- * The native calendar-picker indicator is hidden (matching the portal SCSS) so
- * the leading clock button is the only affordance to open the picker.
+ * The inner control box mirrors the portal HTML verbatim (border-input,
+ * focus-within ring [3px] on --ring, destructive on error). The native
+ * calendar-picker indicator is hidden (matching the portal SCSS) so the leading
+ * clock button is the only affordance to open the picker.
+ *
+ * The Angular DI / forms / RxJS layer is dropped: value + change arrive via props.
+ *
+ * Brand-color note: the portal focus ring resolves to --ring, which in this repo
+ * is Brand Blue — i.e. our primary stays Brand Blue (no raw hex).
  */
 
 import * as React from "react";
-import { Clock, AlertCircle } from "lucide-react";
+import { Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -42,6 +51,8 @@ export interface TimePickerProps {
   required?: boolean;
   /** Helper text under the control (hidden when an error message is shown). */
   helperText?: string;
+  /** Place helper text above the control (stacked layout only). */
+  helperTextOnTop?: boolean;
 
   /** Placeholder shown when no value is selected. */
   placeholder?: string;
@@ -53,8 +64,30 @@ export interface TimePickerProps {
   /** Message shown (in red) when `error` is true. */
   errorMessage?: string;
 
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  /** Tooltip text for the info icon (portal `infoTooltipText`). */
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
+
   /** Stable id used to associate the label with the control. */
   id?: string;
+
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  /** Container layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
+
+  /** Extra classes for the wrapper container (portal `extraContainerClasses`). */
+  extraContainerClasses?: string;
+  /** Extra classes for the content wrapper (portal `extraContentClasses`). */
+  extraContentClasses?: string;
+
   className?: string;
 }
 
@@ -64,11 +97,23 @@ export function TimePicker({
   label,
   required = false,
   helperText,
+  helperTextOnTop = false,
   placeholder,
   disabled = false,
   error = false,
   errorMessage,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
   id,
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
+  extraContainerClasses,
+  extraContentClasses,
   className,
 }: TimePickerProps) {
   const reactId = React.useId();
@@ -76,28 +121,36 @@ export function TimePicker({
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const showError = error;
-  const showMessage = showError && !!errorMessage;
 
   function openPicker() {
     inputRef.current?.showPicker?.();
   }
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <Label
-          htmlFor={controlId}
-          className="flex items-center gap-2.5 text-sm font-bold tracking-wider text-black"
-        >
-          {label}
-          {required ? <span className="text-destructive">*</span> : null}
-        </Label>
-      ) : null}
-
+    <FormControlWrapper
+      controlId={controlId}
+      label={label}
+      required={required}
+      helperText={!error ? helperText : undefined}
+      helperTextOnTop={helperTextOnTop}
+      showError={showError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      layoutVariant={layoutVariant}
+      labelStyleVariant={labelStyleVariant}
+      labelSizeVariant={labelSizeVariant}
+      labelContextVariant={labelContextVariant}
+      spacingVariant={spacingVariant}
+      contentContextVariant={contentContextVariant}
+      className={cn(extraContainerClasses, className)}
+      contentClasses={extraContentClasses}
+    >
+      {/* Inner control box — mirrors the portal time-picker HTML verbatim. */}
       <div
         className={cn(
           "flex h-9 w-full items-center rounded-md border bg-transparent shadow-xs transition-[color,box-shadow]",
-          disabled && "pointer-events-none cursor-not-allowed opacity-50",
           showError
             ? "border-destructive focus-within:ring-[3px] focus-within:ring-destructive/20"
             : "border-input focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
@@ -109,10 +162,7 @@ export function TimePicker({
           disabled={disabled}
           aria-label="Open time picker"
           onClick={openPicker}
-          className={cn(
-            "flex h-full shrink-0 items-center pl-3 pr-2",
-            showError ? "text-destructive" : "text-muted-foreground"
-          )}
+          className="flex h-full shrink-0 items-center pl-3 pr-2 text-muted-foreground"
         >
           <Clock className="size-4" />
         </button>
@@ -138,17 +188,6 @@ export function TimePicker({
           )}
         />
       </div>
-
-      {showMessage ? (
-        <div className="flex items-center gap-2 pl-3 text-sm leading-5 text-destructive">
-          <AlertCircle aria-hidden className="size-4 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
-      ) : helperText ? (
-        <p className="pl-3 text-sm leading-5 text-muted-foreground">
-          {helperText}
-        </p>
-      ) : null}
-    </div>
+    </FormControlWrapper>
   );
 }

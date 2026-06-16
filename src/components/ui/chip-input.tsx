@@ -8,13 +8,18 @@
  *
  * A text input that turns typed entries into removable chips (Badges). The
  * value is a controlled `string[]`. Entries are committed on a separator key
- * (Enter and comma by default; the Angular original used Tab) or on blur.
- * Backspace on an empty input removes the last chip. Optional de-duplication.
+ * (Tab by default, mirroring the Angular `separatorKeyCodes: [TAB]`) or on
+ * blur. Backspace on an empty input removes the last chip. Optional
+ * de-duplication via `uniqueValues`.
  *
  * Faithful to the Angular API: `chipVariant`, `uniqueValues`, `separatorKeys`
- * (was `separatorKeyCodes`), disabled + error states, label/required. The
- * Angular DI / RxJS / reactive-forms layer is dropped — data and handlers
- * arrive via props. Built on the shared shadcn `Badge` primitive.
+ * (was `separatorKeyCodes`), disabled + error states, label/required. Like the
+ * Angular template, the label / helper text / error message / extra-info /
+ * info-icon chrome is delegated to the shared `FormControlWrapper`
+ * (`app-wordly-form-control-wrapper`). The Angular DI / RxJS / reactive-forms
+ * layer is dropped — data and handlers arrive via props. Chips are rendered
+ * with the shared shadcn `Badge` primitive (the portal uses `app-wordly-badge`
+ * with a `WordlyBadgeVariant`).
  */
 
 import * as React from "react";
@@ -22,6 +27,7 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
 
 // ---------------------------------------------------------------------------
 // Chip variant anatomy — 1:1 with the portal `WordlyBadgeComponent`
@@ -60,11 +66,11 @@ const CHIP_VARIANT_STYLES: Record<ChipVariant, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Props (mirror the Angular @Inputs / @Output)
+// Props (mirror the Angular @Inputs / @Output + WordlyFormControlBase chrome)
 // ---------------------------------------------------------------------------
 
 export interface ChipInputProps {
-  /** Controlled chip values. */
+  /** Controlled chip values. Mirrors the form-control value `string[]`. */
   value?: string[];
   /** Fired with the next chip array whenever chips are added/removed. */
   onValueChange?: (value: string[]) => void;
@@ -75,17 +81,29 @@ export interface ChipInputProps {
   uniqueValues?: boolean;
   /**
    * Keys that commit the current text into a chip. Mirrors `separatorKeyCodes`.
-   * Defaults to Enter and comma (the React-friendly equivalent of Tab).
+   * Defaults to Tab (the portal default `[TAB]`); pass e.g. `["Tab", ","]` to
+   * also commit on comma.
    */
   separatorKeys?: string[];
 
   placeholder?: string;
   disabled?: boolean;
-  /** Render the error styling (red border). Mirrors `showError`. */
+  /** Render the error styling (red border) + error message. Mirrors `showError`. */
   error?: boolean;
 
+  // ===== FormControlWrapper chrome (mirrors WordlyFormControlBase @Inputs) =====
   label?: string;
   required?: boolean;
+  /** Helper text shown below (or above) the control. */
+  helperText?: string;
+  /** Error message surfaced by the wrapper when `error` is true. */
+  errorMessage?: string;
+  /** Extra info text shown beneath the control. */
+  extraInfo?: string;
+  /** Show the info icon beside the label. */
+  showInfoIcon?: boolean;
+  /** Tooltip text for the info icon. */
+  infoTooltipText?: string;
 
   /** Extra classes applied to the chip container. Mirrors `inputClass`. */
   inputClassName?: string;
@@ -108,12 +126,17 @@ export function ChipInput({
   onValueChange,
   chipVariant = "outline",
   uniqueValues = false,
-  separatorKeys = ["Enter", ","],
+  separatorKeys = ["Tab"],
   placeholder = "Add an item",
   disabled = false,
   error = false,
   label,
   required = false,
+  helperText,
+  errorMessage,
+  extraInfo,
+  showInfoIcon = false,
+  infoTooltipText,
   inputClassName,
   className,
   id: idProp,
@@ -159,17 +182,19 @@ export function ChipInput({
   }
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <label
-          htmlFor={controlId}
-          className="flex items-center gap-2.5 text-sm font-semibold tracking-wider text-foreground"
-        >
-          {label}
-          {required ? <span className="text-destructive">*</span> : null}
-        </label>
-      ) : null}
-
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={helperText}
+      showError={error}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      controlId={controlId}
+      className={className}
+    >
+      {/* containerClass — mirrors WordlyChipInputComponent.containerClass */}
       <div
         className={cn(
           "flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none transition-[color,box-shadow] md:text-sm",
@@ -177,8 +202,8 @@ export function ChipInput({
             ? "pointer-events-none cursor-not-allowed opacity-50"
             : undefined,
           error
-            ? "border-destructive focus-within:border-destructive focus-within:ring-destructive/50 focus-within:ring-[3px]"
-            : "border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+            ? "border-destructive focus-within:border-destructive"
+            : "border-input focus-within:border-ring",
           inputClassName
         )}
       >
@@ -215,6 +240,6 @@ export function ChipInput({
           onBlur={() => commitChip(text)}
         />
       </div>
-    </div>
+    </FormControlWrapper>
   );
 }
