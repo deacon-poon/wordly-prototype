@@ -1,24 +1,27 @@
 /**
  * ParticipantName
  *
- * React migration of the production wordly-react-components-lib component
- * `src/components/app/dialogs/participant/ParticipantName.tsx`.
+ * Faithful 1:1 port of the production wordly-react-components-lib component
+ * `src/components/app/dialogs/participant/ParticipantName.tsx` (MUI 6 + Emotion),
+ * rebuilt on Tailwind utilities.
  *
- * The original used two typography helpers (NameTypography +
- * PresenterTypography) whose only job was font sizing in `em` units (so the name
- * scales with the parent font-size) plus a fixed neutral presenter-label color
- * (lib `twilightHaze`). Both are folded into Tailwind utilities here:
+ * Lib structure (mirrored exactly):
+ *   <div>
+ *     {presenter && <PresenterTypography small color={labelColor}>{presenterLabel}</PresenterTypography>}
+ *     <NameTypography small>{formattedName}</NameTypography>
+ *   </div>
  *
- *   - NameTypography      → <span> with inline em font-size (1em / 0.875em small)
- *   - PresenterTypography → <span> with inline em font-size (0.75em / 0.625em
- *                           small), negative margin to tuck it against the name,
- *                           and the gray label color mapped to `text-gray-500`.
+ * The two styled `Typography` helpers only set font sizing (in `em`, so the
+ * block scales with the surrounding font-size) and, for the presenter label, a
+ * tucking negative margin:
+ *   - NameTypography      → fontSize 0.875em (small) / 1em
+ *   - PresenterTypography → display:inherit, marginBottom:-0.4375em,
+ *                           fontSize 0.625em (small) / 0.75em, color={labelColor}
  *
- * Pure Tailwind, no external UI framework. Brand Blue stays primary elsewhere; this
- * component is intentionally neutral (name in foreground, label in gray) and
- * exposes `labelColor` for callers that need an accent (e.g. a presenter
- * highlight color). Data arrives via props — in production the participant
- * name would be fetched from the session/participant API.
+ * Color parity: the lib applies NO default color to either line — both inherit
+ * the surrounding text color (MUI textPrimary). The presenter label only takes
+ * a color when `labelColor` is supplied. We keep that exactly. `labelColor`
+ * accepts a Tailwind text-color class (token-based) instead of the lib's hex.
  */
 
 import * as React from "react";
@@ -29,21 +32,19 @@ export interface ParticipantNameProps {
   /** The name of the participant. */
   name: string;
 
-  /** If true, shrinks the name and presenter-label font sizes. */
+  /** If true, this will shrink the name and presenter label font sizes. */
   small?: boolean;
 
-  /** If true, renders the presenter label above the participant's name. */
+  /** If true, this adds the presenter label above the participant's name. */
   presenter?: boolean;
 
-  /**
-   * Localized string for the presenter label. Defaults to "Presenter".
-   */
+  /** Localized string for the presenter label. Defaults to "Presenter". */
   presenterLabel?: string;
 
   /**
-   * Optional color for the presenter label. Accepts a Tailwind text color
-   * class (e.g. "text-primary") to stay within the design tokens. When
-   * omitted the label uses the neutral `text-gray-500`.
+   * Color of the label. Lib accepted a hex string; here it accepts a Tailwind
+   * text-color class (token-based). When omitted the label inherits the
+   * surrounding text color (lib parity).
    */
   labelColor?: string;
 
@@ -51,9 +52,9 @@ export interface ParticipantNameProps {
 }
 
 /**
- * Renders a participant name, optionally with a small "Presenter" label above
- * it. Font sizes are expressed in `em` so the whole block scales with the
- * surrounding font-size (matching the original library behavior).
+ * Renders the participant name and, when `presenter` is true, the presenter
+ * label tucked above it. Font sizes are expressed in `em` so the block scales
+ * with the surrounding font-size (matching the lib behavior).
  */
 export function ParticipantName({
   name,
@@ -68,26 +69,19 @@ export function ParticipantName({
   const formattedName = trimmedName === "" ? "Anonymous" : trimmedName;
 
   return (
-    <div className={cn("min-w-0", className)}>
+    <div className={className}>
       {presenter ? (
+        // PresenterTypography: display inherit, tucked under the name via the
+        // -0.4375em bottom margin, scaled em font-size. Color only when given.
         <span
-          // PresenterTypography: display:inherit, tucked under the name via a
-          // negative bottom margin, scaled font-size in em. Neutral gray label
-          // unless the caller supplies a token-based labelColor class.
-          className={cn(
-            "block leading-none -mb-[0.4375em]",
-            labelColor ?? "text-gray-500"
-          )}
+          className={cn("block leading-none -mb-[0.4375em]", labelColor)}
           style={{ fontSize: small ? "0.625em" : "0.75em" }}
         >
           {presenterLabel}
         </span>
       ) : null}
-      <span
-        // NameTypography: scaled font-size in em, primary foreground color.
-        className="block truncate leading-tight text-gray-900"
-        style={{ fontSize: small ? "0.875em" : "1em" }}
-      >
+      {/* NameTypography: scaled em font-size, inherits text color. */}
+      <span className="block" style={{ fontSize: small ? "0.875em" : "1em" }}>
         {formattedName}
       </span>
     </div>

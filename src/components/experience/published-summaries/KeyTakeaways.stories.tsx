@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { CalendarClock, Lightbulb } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 
 import { KeyTakeaways } from "./KeyTakeaways";
+import { PendingState } from "./PendingState";
 
 const meta: Meta<typeof KeyTakeaways> = {
   title: "Experience/Published Summaries/KeyTakeaways",
@@ -62,21 +63,7 @@ export const EmptyItems: Story = {
  */
 export const Pending: Story = {
   args: {
-    body: (
-      <div className="flex flex-col items-center gap-2 py-6">
-        <CalendarClock
-          className="size-10 text-gray-300"
-          strokeWidth={1.5}
-          aria-hidden="true"
-        />
-        <p className="text-center text-base font-medium leading-6 text-gray-600">
-          Summary is being created
-        </p>
-        <p className="text-center text-sm leading-5 text-gray-500">
-          The summary will be available soon.
-        </p>
-      </div>
-    ),
+    body: <PendingState />,
   },
 };
 

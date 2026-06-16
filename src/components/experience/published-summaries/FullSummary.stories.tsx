@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { FileText } from "lucide-react";
 
-import { FullSummary, PendingState } from "./FullSummary";
+import { FullSummary } from "./FullSummary";
+import { PendingState } from "./PendingState";
 
 const meta: Meta<typeof FullSummary> = {
   title: "Experience/Published Summaries/FullSummary",

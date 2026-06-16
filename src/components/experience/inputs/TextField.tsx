@@ -16,9 +16,9 @@
  * Decisions for parity + product fit:
  * - Keep the same public surface: label, placeholder, required, disabled,
  *   isPassword, aria-label, inputColor, plus controlled value/defaultValue.
- * - `variant` adds the option to render either the product's bordered input
- *   ("outlined", the default — matches @/components/ui/input) or the original
- *   MUI underline look ("standard").
+ * - `variant` controls the look: the lib hardcodes MUI `variant="standard"`
+ *   (underline), so "standard" is OUR default too for 1:1 fidelity. "outlined"
+ *   (the product's bordered @/components/ui/input) is offered as an option.
  * - `inputColor` is honored as an inline `color` style (the one legitimate use
  *   of a caller-supplied color; component-owned colors use tokens only).
  * - Added error/helper text affordances to match the repo convention proof
@@ -64,7 +64,7 @@ export interface TextFieldProps extends Omit<
    * Underline/label color is theme-owned and uses tokens.
    */
   inputColor?: string;
-  /** "outlined" = product bordered input (default); "standard" = MUI underline. */
+  /** "standard" = MUI underline (lib default); "outlined" = product bordered input. */
   variant?: "outlined" | "standard";
   /** Error state — destructive styling + message. */
   error?: boolean;
@@ -87,7 +87,7 @@ export function TextField({
   isPassword = false,
   "aria-label": ariaLabel,
   inputColor,
-  variant = "outlined",
+  variant = "standard",
   error = false,
   errorMessage,
   helperText,

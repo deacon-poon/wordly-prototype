@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
 // Props — mirrors the lib's ModalDialogProps public surface, minus MUI-only
@@ -64,6 +64,12 @@ export interface ModalDialogProps {
   onConfirm?: (() => void) | null;
   /** Brand-Blue by default; switch to destructive/success accents as needed. */
   confirmVariant?: "default" | "destructive" | "success" | "secondary";
+  /**
+   * Styling/behavior passthrough for the Confirm button (mirrors the lib's
+   * `confirmButtonProps: Omit<TextButtonProps, 'label' | 'handleClick'>`).
+   * Forwarded to our shadcn Button (variant, size, disabled, className, etc.).
+   */
+  confirmButtonProps?: Omit<ButtonProps, "children" | "onClick">;
   /** Disable the Confirm button (e.g. while a form is invalid). */
   confirmDisabled?: boolean;
   /** Hide the separators above and below the body content. */
@@ -88,6 +94,7 @@ export function ModalDialog({
   confirmText = "Confirm",
   onConfirm = null,
   confirmVariant = "default",
+  confirmButtonProps,
   confirmDisabled = false,
   hideDividers = false,
   fullWidth = false,
@@ -142,6 +149,7 @@ export function ModalDialog({
                   variant={confirmVariant}
                   onClick={onConfirm}
                   disabled={confirmDisabled}
+                  {...confirmButtonProps}
                 >
                   {confirmText}
                 </Button>

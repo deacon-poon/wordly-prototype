@@ -2,45 +2,20 @@ import type { Meta, StoryObj } from "@storybook/react";
 
 import { TranscriptMetadata } from "./TranscriptMetadata";
 
+/**
+ * Mirrors the lib stories `App/Meeting/Transcript/TranscriptMetadata/Component`
+ * (LTRText, RTLText, NoLanguage), kept under our `Experience/Transcript`
+ * namespace. Speaker name (or mic-name fallback) + an italic language label;
+ * `alignRight` right-justifies the row.
+ */
 const meta = {
   title: "Experience/Transcript/TranscriptMetadata",
   component: TranscriptMetadata,
   tags: ["autodocs"],
-  parameters: {
-    docs: {
-      description: {
-        component:
-          "Speaker metadata row for a transcript phrase: a name (or mic-name fallback) and an italic language label. `alignRight` right-justifies and reverses the order; `boldName`, `size`, and token `tone` props control appearance. Ported from the MUI/Emotion lib component to shadcn/Tailwind.",
-      },
-    },
-  },
   argTypes: {
-    nameTone: {
-      control: "select",
-      options: [
-        "default",
-        "muted",
-        "primary",
-        "success",
-        "destructive",
-        "teal",
-      ],
-    },
-    languageTone: {
-      control: "select",
-      options: [
-        "default",
-        "muted",
-        "primary",
-        "success",
-        "destructive",
-        "teal",
-      ],
-    },
-    size: {
-      control: "inline-radio",
-      options: ["xs", "sm", "base"],
-    },
+    className: { control: false },
+    nameColor: { control: "color" },
+    languageColor: { control: "color" },
   },
   decorators: [
     (Story) => (
@@ -59,6 +34,8 @@ export const LTRText: Story = {
     name: "Michael Scott",
     alignRight: false,
     language: "English",
+    nameColor: "#000",
+    languageColor: "#999",
   },
 };
 
@@ -67,6 +44,8 @@ export const RTLText: Story = {
     name: "Michael Scott",
     alignRight: true,
     language: "Arabic - عربى",
+    nameColor: "#000",
+    languageColor: "#999",
   },
 };
 
@@ -75,39 +54,7 @@ export const NoLanguage: Story = {
     name: "Michael Scott",
     alignRight: false,
     language: "",
-  },
-};
-
-export const BoldName: Story = {
-  args: {
-    name: "Michael Scott",
-    language: "English",
-    boldName: true,
-  },
-};
-
-export const MicNameFallback: Story = {
-  args: {
-    name: "",
-    micName: "Conference Room Mic 2",
-    language: "Spanish",
-  },
-};
-
-export const PrimaryTone: Story = {
-  args: {
-    name: "Pam Beesly",
-    language: "French",
-    nameTone: "primary",
-    boldName: true,
-  },
-};
-
-export const LargerSize: Story = {
-  args: {
-    name: "Dwight Schrute",
-    language: "German",
-    size: "base",
-    nameTone: "success",
+    nameColor: "#000",
+    languageColor: "#999",
   },
 };

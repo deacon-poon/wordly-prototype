@@ -23,6 +23,7 @@ const meta: Meta<typeof AudioPill> = {
   args: {
     height: 36,
     animationDuration: 250,
+    color: "hsl(var(--primary-blue-500))",
   },
 };
 

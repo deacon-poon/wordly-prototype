@@ -6,121 +6,119 @@
  * React/shadcn port of the production wordly-react-components-lib component
  * (`src/components/library/inputs/HelpIconButton.tsx`, MUI 6 + Emotion).
  *
- * The original renders an MUI `IconButton` that opens an MUI `Popover` on hover
- * (onMouseEnter/onMouseLeave) and on click, displaying arbitrary children. Its
- * sibling `HelpPopoverBubble` formats the content with an optional title + divider.
+ * Lib behavior (mirrored 1:1):
+ * - An icon button (MUI `IconButton`, `disableRipple`, `size="large"`) that opens
+ *   a popover. The popover opens on `onMouseEnter` AND `onClick`, and closes on
+ *   `onMouseLeave` / `onClose`. The icon must be passed via the `icon` prop.
+ * - The popover (`MuiPopover`) anchors below-left of the trigger
+ *   (anchorOrigin bottom/left, transformOrigin top/left), is `pointer-events: none`,
+ *   sets `white-space: pre-line`, `font-size: 0.875em`, an optional border from
+ *   `borderColor`, and a width from `popoverWidth`. It renders arbitrary `children`
+ *   (typically a `HelpPopoverBubble`).
+ * - Props are kept identical to the lib: `children`, `icon`, `iconColor`,
+ *   `popoverWidth`, `aria-label`, `borderColor`.
  *
- * This port:
- * - Replaces MUI IconButton → `@/components/ui/button` (ghost icon button).
- * - Replaces MUI Popover (hover-triggered) → `@/components/ui/hover-card`
- *   (Radix HoverCard is the hover-to-open primitive, matching the original UX).
- * - Folds the `HelpPopoverBubble` title/divider formatting in via the optional
- *   `title` prop (uses `@/components/ui/separator`).
- * - Replaces the MUI `HelpOutline` icon default → lucide `HelpCircle`.
- * - Drops hex-coded `iconColor`/`borderColor`/`gray87` styled props in favor of
- *   our design tokens (Brand Blue primary, muted-foreground, border).
+ * Port substitutions (no MUI / Emotion):
+ * - MUI `IconButton`              → `@/components/ui/button` (variant=ghost, size=icon).
+ * - MUI `Popover` (hover + click) → `@/components/ui/popover` (Radix), driven open
+ *   imperatively so we can mirror the lib's mouse-enter/click open + mouse-leave close.
+ * - `gray87` focus background     → the shared `focus-visible` ring (no raw hex).
+ * - `iconColor` / `borderColor`   → caller-supplied colors are the one legitimate
+ *   runtime-color escape hatch (same role the lib's styled props played); applied
+ *   as inline styles. `iconColor` defaults to the lib's `#000`.
  *
- * Content arrives via props with a small inline mock default; in production the
- * help copy would typically be sourced from a CMS/API.
+ * Note on title/divider/RTL: in the lib those live in the sibling `HelpPopoverBubble`
+ * (passed as `children`), NOT on HelpIconButton itself — so they stay out of this
+ * component's prop surface, exactly as upstream.
  */
 
 import * as React from "react";
-import { HelpCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface HelpIconButtonProps {
-  /** Content displayed inside the popover bubble. Can be anything. */
-  children?: React.ReactNode;
-  /** Optional title rendered above the content with a divider (HelpPopoverBubble). */
-  title?: string;
-  /** Icon used to trigger the popover. Defaults to a lucide HelpCircle. */
+  /** Content that will be displayed in popover bubble. This can be anything. */
+  children: React.ReactNode;
+
+  /** Icon used to indicate popover bubble. */
   icon?: React.ReactNode;
-  /** Width of the popover bubble (any CSS width value). Defaults to 16rem. */
+
+  /** CSS color value for the icon color. */
+  iconColor?: string;
+
+  /** String for determining the width of the popover bubble. */
   popoverWidth?: string;
-  /** When true, content is laid out right-to-left. */
-  rtl?: boolean;
-  /** Accessible label for the trigger button. */
+
+  /** String for setting aria-label. */
   "aria-label"?: string;
-  /** Extra classes for the trigger button. */
-  className?: string;
+
+  /** CSS color value for the border of the popover bubble. */
+  borderColor?: string;
 }
 
-// Inline mock default — in production this copy would be sourced from a CMS/API.
-const DEFAULT_HELP_CONTENT = (
-  <p className="text-sm text-gray-700">
-    This is contextual help. Hover or focus the icon to learn more about this
-    field.
-  </p>
-);
-
-export function HelpIconButton({
-  children = DEFAULT_HELP_CONTENT,
-  title,
+/**
+ * The HelpIconButton component consists of an icon, which must be passed as a
+ * prop, and a popover that takes anything as a child.
+ */
+export const HelpIconButton: React.FC<HelpIconButtonProps> = ({
   icon,
-  popoverWidth = "16rem",
-  rtl = false,
-  "aria-label": ariaLabel = "Help",
-  className,
-}: HelpIconButtonProps) {
+  iconColor = "#000",
+  popoverWidth = "100%",
+  "aria-label": ariaLabel,
+  borderColor = undefined,
+  children,
+}) => {
+  const [open, setOpen] = React.useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   return (
-    <HoverCard openDelay={0} closeDelay={100}>
-      <HoverCardTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button
+          id="help-icon-button"
           type="button"
           variant="ghost"
           size="icon"
-          aria-label={ariaLabel}
+          aria-owns={open ? "mouse-over-popover" : undefined}
           aria-haspopup="true"
+          aria-label={ariaLabel}
           data-testid="help-popover-icon-button"
-          className={cn(
-            "text-muted-foreground hover:text-primary focus-visible:text-primary",
-            className
-          )}
+          onMouseEnter={handleOpen}
+          onMouseLeave={handleClose}
+          onClick={handleOpen}
+          style={{ color: iconColor }}
         >
-          {icon ?? <HelpCircle className="size-5" />}
+          {icon}
         </Button>
-      </HoverCardTrigger>
-      <HoverCardContent
-        align="start"
-        sideOffset={6}
-        style={{ width: popoverWidth }}
-        data-testid="popover-bubble"
-        dir={rtl ? "rtl" : "ltr"}
+      </PopoverTrigger>
+      <PopoverContent
+        id="mouse-over-popover"
         className={cn(
-          "flex max-w-[min(90vw,32rem)] flex-col gap-2 whitespace-pre-line p-0 text-sm text-gray-900",
-          rtl ? "text-right" : "text-left"
+          "popover-container pointer-events-none p-0",
+          "text-[0.875em] whitespace-pre-line"
         )}
+        data-testid="popover-bubble"
+        align="start"
+        side="bottom"
+        sideOffset={0}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        style={{
+          width: popoverWidth,
+          border: borderColor ? `1px solid ${borderColor}` : "none",
+        }}
       >
-        {title ? (
-          <div className="flex flex-col gap-2 px-4 pt-3">
-            <p
-              data-testid="title"
-              className="text-base font-semibold text-gray-900"
-            >
-              {title}
-            </p>
-            <Separator data-testid="divider" />
-          </div>
-        ) : null}
-        <div
-          className={cn(
-            "w-full overflow-auto px-4 pb-4",
-            title ? "pt-1" : "pt-4"
-          )}
-        >
-          {children}
-        </div>
-      </HoverCardContent>
-    </HoverCard>
+        {children}
+      </PopoverContent>
+    </Popover>
   );
-}
+};
 
 export default HelpIconButton;

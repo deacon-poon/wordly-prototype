@@ -9,14 +9,15 @@
  * This port replaces all MUI/Emotion with semantic HTML + Tailwind utilities and
  * maps the lib palette to our design tokens:
  *   - lib blue link  (lightnessBlue53) → Brand Blue primary `text-primary-blue-400`
- *   - lib gray text  (lightnessGray43) → `text-gray-600`
+ *   - lib gray text  (lightnessGray43) → `text-gray-500`
  *   - lib white bg                     → `bg-white`
  *
- * Responsive collapse is reproduced with Tailwind's `sm:`/`md:` breakpoints
- * (Tailwind sm = 640px, md = 768px — close to the original 576/768px intent):
- * single row on desktop, two rows on tablet, four rows on mobile. The flex
- * "breakers" (`basis-full`) force wraps at the smaller breakpoints and hide as
- * the viewport grows, exactly like the original `BreakerMobile`/`BreakerTablet`.
+ * Responsive collapse is reproduced with Tailwind arbitrary-breakpoint
+ * variants (`min-[576px]:` / `min-[768px]:`) so the wrap points match the lib's
+ * exact 576px / 768px media queries: single row on desktop, two rows on tablet,
+ * four rows on mobile. The flex "breakers" (`basis-full`) force wraps at the
+ * smaller breakpoints and hide as the viewport grows, exactly like the original
+ * `BreakerMobile` (576px) / `BreakerTablet` (768px).
  *
  * All content is prop-driven with inline mock defaults; in production the labels
  * and version would come from app config / an API.
@@ -54,10 +55,10 @@ const linkBase =
   "text-xs leading-[18px] tracking-[0.03px] no-underline hover:underline";
 
 // Pipe separator typography (lib `Pipe`): 14px / 21px, gray.
-const pipeClass = "text-sm leading-[21px] text-gray-600 select-none";
+const pipeClass = "text-sm leading-[21px] text-gray-500 select-none";
 
 // Meta text (copyright / version) — 12px / 18px, gray.
-const metaClass = "text-xs leading-[18px] tracking-[0.03px] text-gray-600";
+const metaClass = "text-xs leading-[18px] tracking-[0.03px] text-gray-500";
 
 export function Footer({
   aiInterpretationLabel = "Wordly AI Interpretation",
@@ -86,18 +87,21 @@ export function Footer({
         {aiInterpretationLabel}
       </a>
 
-      {/* Pipe shown from tablet up (lib PipeTabletUp). */}
-      <span aria-hidden="true" className={cn(pipeClass, "hidden sm:inline")}>
+      {/* Pipe shown from tablet up (lib PipeTabletUp, 576px). */}
+      <span
+        aria-hidden="true"
+        className={cn(pipeClass, "hidden min-[576px]:inline")}
+      >
         |
       </span>
-      {/* Force a line break on mobile only (lib BreakerMobile). */}
-      <span aria-hidden="true" className="h-0 basis-full sm:hidden" />
+      {/* Force a line break on mobile only (lib BreakerMobile, 576px). */}
+      <span aria-hidden="true" className="h-0 basis-full min-[576px]:hidden" />
 
       <a
         href={privacyPolicyHref}
         target="_blank"
         rel="noopener noreferrer"
-        className={cn(linkBase, "text-gray-600")}
+        className={cn(linkBase, "text-gray-500")}
       >
         {privacyPolicyLabel}
       </a>
@@ -111,17 +115,20 @@ export function Footer({
         href={termsOfServiceHref}
         target="_blank"
         rel="noopener noreferrer"
-        className={cn(linkBase, "text-gray-600")}
+        className={cn(linkBase, "text-gray-500")}
       >
         {termsOfServiceLabel}
       </a>
 
-      {/* Pipe shown from desktop up (lib PipeDesktopUp). */}
-      <span aria-hidden="true" className={cn(pipeClass, "hidden md:inline")}>
+      {/* Pipe shown from desktop up (lib PipeDesktopUp, 768px). */}
+      <span
+        aria-hidden="true"
+        className={cn(pipeClass, "hidden min-[768px]:inline")}
+      >
         |
       </span>
-      {/* Force a line break on tablet and below (lib BreakerTablet). */}
-      <span aria-hidden="true" className="h-0 basis-full md:hidden" />
+      {/* Force a line break on tablet and below (lib BreakerTablet, 768px). */}
+      <span aria-hidden="true" className="h-0 basis-full min-[768px]:hidden" />
 
       <span className={metaClass}>
         {`Copyright © 2019 - ${getCurrentYear()} ${companyName}`}
@@ -129,15 +136,18 @@ export function Footer({
 
       {version ? (
         <>
-          {/* Pipe shown from tablet up (lib PipeTabletUp). */}
+          {/* Pipe shown from tablet up (lib PipeTabletUp, 576px). */}
           <span
             aria-hidden="true"
-            className={cn(pipeClass, "hidden sm:inline")}
+            className={cn(pipeClass, "hidden min-[576px]:inline")}
           >
             |
           </span>
-          {/* Force a line break on mobile only (lib BreakerMobile). */}
-          <span aria-hidden="true" className="h-0 basis-full sm:hidden" />
+          {/* Force a line break on mobile only (lib BreakerMobile, 576px). */}
+          <span
+            aria-hidden="true"
+            className="h-0 basis-full min-[576px]:hidden"
+          />
           <span className={metaClass}>{`Version ${version}`}</span>
         </>
       ) : null}

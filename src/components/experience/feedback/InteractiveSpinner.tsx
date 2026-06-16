@@ -3,20 +3,29 @@
 /**
  * InteractiveSpinner
  *
- * React/shadcn port of the production lib component
+ * Faithful 1:1 port of the production lib component
  * (wordly-react-components-lib: src/components/library/feedback/InteractiveSpinner.tsx).
  *
- * Original anatomy: an MUI `CircularProgress` with an MUI `Typography` message
- * beneath it that pulses (fade in → out) on an infinite CSS keyframe. On every
- * animation iteration the message advances to the next item in `messages`,
- * cycling forever. This port keeps that exact behavior:
- *   - The ring is a Tailwind-animated border spinner (no @mui CircularProgress).
- *   - The message uses an inline keyframe (`pulsate`) scoped to this component
- *     via a <style> tag (no @emotion `styled`), and `onAnimationIteration`
- *     advances the index — matching the lib's `animationiteration` listener.
+ * Lib anatomy: an MUI `CircularProgress` (size, thickness) with an MUI
+ * `Typography` message beneath it that pulses (fade in → out) on an infinite
+ * `pulsate` CSS keyframe (0% opacity 0 → 50% opacity 1 → 100% opacity 0). On
+ * every animation iteration the message advances to the next item in `messages`,
+ * cycling forever. The message is rendered only when `messages.length > 0`.
  *
- * Theme mapping: the lib's spinner inherits the primary brand color (Brand Blue),
- * so the ring uses our `primary` / `border-primary` token. Text uses `gray-700`.
+ * Port mapping (no @mui/@emotion):
+ *   - `CircularProgress` → a Tailwind `animate-spin` border ring sized by
+ *     `spinnerSize`/`spinnerThickness`.
+ *   - `styled(Typography)` `pulsate` keyframe → an inline keyframe scoped to this
+ *     component via a `<style>` tag, applied with `marginTop: 10px` + centered text.
+ *   - The lib attached an `animationiteration` listener via a ref; we use the
+ *     equivalent React `onAnimationIteration` handler to advance the index.
+ *   - `typographyProps` (forwarded to MUI Typography) → `messageClassName` /
+ *     `messageStyle` (there is no Typography element to forward arbitrary MUI
+ *     props to). FLAGGED below — see report.
+ *
+ * Theme mapping: the lib's spinner inherits the primary brand color, so the ring
+ * uses our Brand Blue primary token (`border-primary-blue-500`). Text inherits
+ * `currentColor` like the lib's Typography (no forced color).
  */
 
 import * as React from "react";
@@ -24,29 +33,30 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface InteractiveSpinnerProps {
-  /**
-   * Messages displayed beneath the spinner. Each fades in/out and is replaced by
-   * the next on every animation iteration, cycling forever.
-   * In production these would typically be fetched/derived (e.g. load-stage copy).
-   */
+  /** Array of messages to be displayed beneath the loading spinner. */
   messages?: string[];
 
-  /** Duration (seconds) of one full fade-in/out iteration of the message. */
+  /** Duration (in seconds) of a full iteration of the fadein/fadeout animation. */
   pulseDuration?: number;
 
   /**
-   * Spinner diameter. A number is treated as pixels; a string is used verbatim
-   * (e.g. "1em", "2.5rem"). Defaults to 40px (the lib default).
+   * Size of the spinner. By default this is 40px. Can provide a number (in
+   * pixels) or a string which contains the size units (e.g., '1em').
    */
   spinnerSize?: string | number;
 
-  /** Thickness of the ring border in pixels. Defaults to 3.6 (the lib default). */
+  /** Thickness of the progress circle in pixels. */
   spinnerThickness?: number;
 
-  /** Extra classes for the message text (replaces the lib's `typographyProps`). */
+  /**
+   * Extra classes for the message element. Replaces the lib's `typographyProps`
+   * (which forwarded to MUI Typography — see component header / report).
+   */
   messageClassName?: string;
 
-  /** Extra classes for the outer container. */
+  /** Extra inline styles for the message element. */
+  messageStyle?: React.CSSProperties;
+
   className?: string;
 }
 
@@ -54,42 +64,42 @@ const toCssSize = (size: string | number): string =>
   typeof size === "number" ? `${size}px` : size;
 
 /**
- * Spinner that fades cycling text messages in and out below an animated ring.
+ * Spinner component that fades in and out text messages below the animated
+ * spinner.
  */
-export function InteractiveSpinner({
+export const InteractiveSpinner: React.FC<InteractiveSpinnerProps> = ({
   messages = [],
   pulseDuration = 5,
   spinnerSize = 40,
   spinnerThickness = 3.6,
   messageClassName,
-  className,
-}: InteractiveSpinnerProps) {
+  messageStyle,
+  ...otherProps
+}) => {
   const [index, setIndex] = React.useState(0);
 
-  const advance = React.useCallback(() => {
-    setIndex((current) => {
-      const next = current + 1;
-      return next >= messages.length ? 0 : next;
+  // Get a new message after each iteration of the animation (lib behavior).
+  const handleAnimationIteration = React.useCallback(() => {
+    setIndex((currentIndex) => {
+      let newIndex = currentIndex + 1;
+      if (newIndex >= messages.length) {
+        newIndex = 0;
+      }
+      return newIndex;
     });
   }, [messages.length]);
 
   const dimension = toCssSize(spinnerSize);
-  const hasMessages = messages.length > 0;
-  const message = messages[index] ?? "";
 
   // Unique keyframe name so multiple instances never collide.
   const keyframeId = React.useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const pulseKeyframe = `pulsate-${keyframeId}`;
 
   return (
-    <div
-      className={cn("flex flex-col items-center justify-center", className)}
-      role="status"
-      aria-live="polite"
-      aria-busy="true"
-    >
+    <div className="flex flex-col items-center justify-center" {...otherProps}>
       <span
-        className="block shrink-0 animate-spin rounded-full border-solid border-primary border-t-transparent"
+        role="progressbar"
+        className="block shrink-0 animate-spin rounded-full border-solid border-primary-blue-500 border-t-transparent"
         style={{
           width: dimension,
           height: dimension,
@@ -98,7 +108,7 @@ export function InteractiveSpinner({
         aria-hidden="true"
       />
 
-      {hasMessages ? (
+      {messages.length > 0 && (
         <>
           <style>{`
             @keyframes ${pulseKeyframe} {
@@ -108,29 +118,22 @@ export function InteractiveSpinner({
             }
           `}</style>
           <p
-            key={index}
-            onAnimationIteration={advance}
-            className={cn(
-              "mt-2.5 text-center text-sm text-gray-700",
-              messageClassName
-            )}
+            onAnimationIteration={handleAnimationIteration}
+            className={cn("mt-2.5 text-center", messageClassName)}
             style={{
               animationName: pulseKeyframe,
               animationDuration: `${pulseDuration}s`,
               animationTimingFunction: "ease-in-out",
               animationIterationCount: "infinite",
+              ...messageStyle,
             }}
           >
-            {message}
+            {messages[index]}
           </p>
-          {/* Screen readers get the live message without the visual pulse noise. */}
-          <span className="sr-only">{message}</span>
         </>
-      ) : (
-        <span className="sr-only">Loading</span>
       )}
     </div>
   );
-}
+};
 
 export default InteractiveSpinner;

@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Lightbulb, FileText } from "lucide-react";
 
 import { PendingStateCM } from "./PendingStateCM";
+import { KeyTakeawaysCM } from "./KeyTakeawaysCM";
+import { FullSummaryCM } from "./FullSummaryCM";
 
 const meta: Meta<typeof PendingStateCM> = {
   title: "Experience/Published Summaries/PendingStateCM",
@@ -30,44 +32,41 @@ export const CustomCopy: Story = {
 };
 
 /**
- * Shown the way it really appears: as the body of a published-summary
- * section card, header preserved while the content is still generating.
- * The card chrome here is a lightweight stand-in for KeyTakeawaysCM /
- * FullSummaryCM (header + body slot).
+ * Renders the placeholder as the body of `KeyTakeawaysCM` and `FullSummaryCM`,
+ * with populated counterparts for visual comparison. Mirrors the lib's
+ * `InContext` story / the Figma in-progress frames — section header preserved,
+ * body replaced.
  */
 export const InContext: Story = {
   render: () => (
     <div className="flex max-w-[800px] flex-col gap-4">
-      <SectionCard
-        icon={<Lightbulb className="size-5" />}
+      <KeyTakeawaysCM
+        icon={<Lightbulb className="text-primary-blue-400" />}
         title="Key Takeaways"
-      >
-        <PendingStateCM />
-      </SectionCard>
-
-      <SectionCard icon={<FileText className="size-5" />} title="Full Summary">
-        <PendingStateCM />
-      </SectionCard>
+        body={<PendingStateCM />}
+      />
+      <KeyTakeawaysCM
+        icon={<Lightbulb className="text-primary-blue-400" />}
+        title="Key Takeaways"
+        items={[
+          "AI tools are becoming democratized and accessible to everyone",
+          "Sustainable computing is no longer optional—it’s a business imperative",
+          "Human-AI collaboration will define the next era of productivity",
+        ]}
+      />
+      <FullSummaryCM
+        icon={<FileText className="text-primary-blue-400" />}
+        title="Full Summary"
+        body={<PendingStateCM />}
+      />
+      <FullSummaryCM
+        icon={<FileText className="text-primary-blue-400" />}
+        title="Full Summary"
+        paragraphs={[
+          "Dr. Chen opened the conference with a compelling vision of technology’s trajectory over the next decade.",
+          "A significant portion of the talk focused on the democratization of AI tools, predicting that by 2030 AI assistants will be standard.",
+        ]}
+      />
     </div>
   ),
 };
-
-function SectionCard({
-  icon,
-  title,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <div className="mb-2 flex items-center gap-2 text-primary">
-        {icon}
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
-}

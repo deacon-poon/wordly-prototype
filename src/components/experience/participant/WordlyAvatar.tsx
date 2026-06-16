@@ -3,22 +3,29 @@
 /**
  * WordlyAvatar
  *
- * React/shadcn migration of the production wordly-react-components-lib
- * `WordlyAvatar` (originally built on MUI 6 + an Emotion-styled Avatar) at
- * src/components/app/dialogs/participant/WordlyAvatar.tsx.
+ * Faithful 1:1 port of the production wordly-react-components-lib component
+ * `src/components/app/dialogs/participant/WordlyAvatar.tsx` (MUI 6 + Emotion),
+ * rebuilt on the shared shadcn `Avatar` primitive (Radix).
  *
- * Renders a participant/presenter avatar showing the person's initials.
- * The MUI original applied colors via raw hex props (`color` / `textColor`).
- * To honor the lab's "design tokens only, no raw hex" rule, we replace those
- * with a token-backed `variant` palette (Brand Blue stays primary). An image
- * source is also supported, falling back to initials.
+ * Lib structure (mirrored exactly):
+ *   const AvatarComponent = hidden ? HiddenAvatar : StyledAvatar;
+ *   <AvatarComponent small color textColor alt={name} {...otherProps}>{initials}</AvatarComponent>
  *
- * Built on the shared shadcn Avatar primitive (Radix). In production the name /
- * image would be fetched from the participants API.
+ * StyledAvatar sizing (kept in em so it scales with surrounding font-size):
+ *   height/width 2.1875em (small) / 2.5em
+ *   fontSize     0.75em   (small) / 0.875em
+ *   color: textColor   backgroundColor: color
+ * HiddenAvatar adds visibility:hidden.
+ *
+ * Color parity: the lib `color` / `textColor` props were raw hex (defaults
+ * white bubble / black text). To honor the lab's "design tokens only, no raw
+ * hex" rule, these props keep the SAME NAMES but accept Tailwind classes:
+ *   color     → background class (default `bg-muted`, lib white)
+ *   textColor → text class       (default `text-foreground`, lib black)
+ * Brand Blue stays primary and is available via class (e.g. color="bg-primary").
  */
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -31,8 +38,8 @@ const MINIMUM_NAME_CHARACTERS = 3;
 
 /**
  * Extract initials from a name, assuming a given name followed by a family
- * name. For non-space-delimited / syllabic languages this falls back to the
- * first 3 characters. (Ported verbatim from the lib's `extractInitials`.)
+ * name. For other syllabic languages this just takes the first 3 characters.
+ * (Ported verbatim from the lib's `extractInitials`.)
  */
 export function extractInitials(name: string): string {
   const names = name.trim().toUpperCase().split(" ");
@@ -54,44 +61,6 @@ export function extractInitials(name: string): string {
   return names[0].slice(0, 1) + names[names.length - 1].slice(0, 1);
 }
 
-// ---------------------------------------------------------------------------
-// Token-backed color variants (replaces the MUI `color`/`textColor` hex props).
-// Brand Blue is primary; the rest map the lib palette to our tokens.
-// ---------------------------------------------------------------------------
-
-const wordlyAvatarVariants = cva("select-none font-medium", {
-  variants: {
-    variant: {
-      // Brand Blue primary CTA color.
-      primary: "bg-primary text-primary-foreground",
-      // Action Teal (lib's wordlyBlue/teal family).
-      teal: "bg-action-teal-500 text-white",
-      // Accent Green success.
-      success: "bg-accent-green-500 text-white",
-      // Error / destructive.
-      destructive: "bg-destructive text-destructive-foreground",
-      // Neutral gray (lib default gray73 bubble).
-      neutral: "bg-gray-200 text-gray-700",
-      // Muted (matches the bare shadcn fallback look).
-      muted: "bg-muted text-muted-foreground",
-    },
-    size: {
-      // ~2.5em bubble / 0.875em text in the original.
-      default: "h-10 w-10 text-sm",
-      // ~2.1875em bubble / 0.75em text (the original `small` prop).
-      small: "h-9 w-9 text-xs",
-    },
-  },
-  defaultVariants: {
-    variant: "neutral",
-    size: "default",
-  },
-});
-
-export type WordlyAvatarVariant = NonNullable<
-  VariantProps<typeof wordlyAvatarVariants>["variant"]
->;
-
 export interface WordlyAvatarProps extends Omit<
   React.ComponentPropsWithoutRef<typeof Avatar>,
   "color"
@@ -102,20 +71,26 @@ export interface WordlyAvatarProps extends Omit<
   /** Optional image source. When it loads, it replaces the initials. */
   src?: string;
 
-  /**
-   * Decreases the avatar + typography size (the lib's `small` prop).
-   * Equivalent to `size="small"`.
-   */
+  /** If small, decreases the avatar + typography size. */
   small?: boolean;
 
   /**
-   * If true, the avatar is visually hidden but still consumes layout space
-   * (mirrors the lib's `hidden` HiddenAvatar variant).
+   * If true, sets the avatar's visibility to "hidden": it is not displayed but
+   * still consumes layout space (mirrors the lib `HiddenAvatar`).
    */
   hidden?: boolean;
 
-  /** Token-backed color palette for the bubble (replaces hex `color`). */
-  variant?: WordlyAvatarVariant;
+  /**
+   * Color of the avatar bubble. Lib accepted a hex string; here it accepts a
+   * Tailwind background class. Defaults to `bg-muted` (lib white).
+   */
+  color?: string;
+
+  /**
+   * Color of the avatar text. Lib accepted a hex string; here it accepts a
+   * Tailwind text-color class. Defaults to `text-foreground` (lib black).
+   */
+  textColor?: string;
 }
 
 /**
@@ -126,21 +101,33 @@ export function WordlyAvatar({
   src,
   small,
   hidden,
-  variant = "neutral",
+  color = "bg-muted",
+  textColor = "text-foreground",
   className,
-  ...props
+  ...otherProps
 }: WordlyAvatarProps) {
   const initials = React.useMemo(() => extractInitials(name), [name]);
-  const size = small ? "small" : "default";
 
   return (
     <Avatar
       aria-label={name || undefined}
-      className={cn(hidden && "invisible", className)}
-      {...props}
+      className={cn(
+        // StyledAvatar size (em-based, lib parity).
+        small ? "h-[2.1875em] w-[2.1875em]" : "h-[2.5em] w-[2.5em]",
+        hidden && "invisible",
+        className
+      )}
+      {...otherProps}
     >
       {src ? <AvatarImage src={src} alt={name} /> : null}
-      <AvatarFallback className={cn(wordlyAvatarVariants({ variant, size }))}>
+      <AvatarFallback
+        className={cn(
+          "select-none font-medium",
+          small ? "text-[0.75em]" : "text-[0.875em]",
+          color,
+          textColor
+        )}
+      >
         {initials}
       </AvatarFallback>
     </Avatar>

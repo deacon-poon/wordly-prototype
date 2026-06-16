@@ -3,59 +3,67 @@
 /**
  * AudioPill
  *
- * React migration of the production library `AudioPill`
+ * Faithful 1:1 port of the production library `AudioPill`
  * (wordly-react-components-lib: src/components/library/feedback/AudioPill.tsx),
  * originally an MUI `<Box>` styled via the `sx` prop with Emotion.
  *
  * A single vertical bar whose height animates to represent one frequency band
- * of an audio level meter. It is the atomic unit composed by an audio input
- * indicator (one pill per frequency band).
+ * of an audio level meter. It is the atomic unit composed by `AudioInputIndicator`
+ * (one pill per frequency band).
  *
- * Port notes:
- * - MUI `<Box sx={{...}}>` → plain `<div>` with Tailwind utilities for the
- *   static anatomy (fixed 12px width, 6px radius, centered, smooth height
- *   transition). The two genuinely dynamic values — the animated `height` and
- *   the caller-controlled `animationDuration` — stay as inline styles because
- *   they are arbitrary runtime numbers, not design tokens.
- * - The original keyed the CSS transition off `animationDuration`; we preserve
- *   that one-way "set height on prop change, clear on unmount" behavior.
- * - Color: the library defaulted to `WordlyColors.wordlyBlue` (a hex). Here the
- *   default maps to our Brand Blue primary token via `hsl(var(--primary))`, so
- *   no raw hex ships. Callers may still pass any CSS color string (e.g. a
- *   disabled gray) exactly as the production indicator does.
+ * Port notes (mirroring the lib exactly):
+ * - Lib anatomy: `width: 12px`, `borderRadius: 6px`, `margin: 0 auto`,
+ *   `backgroundColor: color`, `transition: height ${animationDuration}ms ease-in-out`,
+ *   `height: currentHeight`. Reproduced here on a plain `<div>` with Tailwind for
+ *   the static anatomy (`w-3` = 12px, `rounded-md` = 6px, `mx-auto`) and inline
+ *   styles for the two genuinely dynamic runtime values (animated `height` and
+ *   the caller-controlled `animationDuration`) — neither are design tokens.
+ * - Lib behavior: a `useState`/`useEffect` pair sets `currentHeight` to the prop
+ *   and resets it to `null` on unmount. Preserved verbatim.
+ * - Lib is wrapped in `React.memo`. Preserved.
+ * - Color: the lib `color` prop is a required CSS color string (no default; the
+ *   indicator always passes one). To honour the no-raw-hex rule, our default is
+ *   the Brand Blue primary token (`hsl(var(--primary-blue-500))`). Callers may
+ *   still pass any CSS color string exactly as the production indicator does.
  */
 
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Props for the Audio Pill component.
+ */
 export interface AudioPillProps {
-  /** Target height of the pill in pixels; the bar animates to this value. */
+  /** Determines the height of the pill in pixels. */
   height: number;
   /**
-   * Bar color as any CSS color string. Defaults to the Brand Blue primary
-   * token. The production audio indicator overrides this with a muted gray
-   * when disabled.
+   * Determines the color of the indicator. Any CSS color string. Defaults to
+   * the Brand Blue primary token; the production indicator overrides this (e.g.
+   * with a muted gray when disabled).
    */
   color?: string;
-  /** Duration of the height transition in milliseconds. */
+  /** Determines the duration of the animation in milliseconds. */
   animationDuration?: number;
   className?: string;
 }
 
+/**
+ * Represents a visual indicator for audio levels whose pill height is animated.
+ */
 function AudioPillBase({
   height,
-  color = "hsl(var(--primary))",
+  color = "hsl(var(--primary-blue-500))",
   animationDuration = 250,
   className,
 }: AudioPillProps) {
-  // Mirrors the original: drive height off the prop, reset on unmount.
   const [currentHeight, setCurrentHeight] = React.useState<number | null>(
     height
   );
 
   React.useEffect(() => {
     setCurrentHeight(height);
+    // Configures a cleanup function to reset the height to null on unmount.
     return () => {
       setCurrentHeight(null);
     };
@@ -63,8 +71,7 @@ function AudioPillBase({
 
   return (
     <div
-      aria-hidden="true"
-      className={cn("mx-auto w-3 rounded-full", className)}
+      className={cn("mx-auto w-3 rounded-md", className)}
       style={{
         height: currentHeight ?? undefined,
         backgroundColor: color,
@@ -76,3 +83,5 @@ function AudioPillBase({
 
 /** Memoized to match the production component (`React.memo`). */
 export const AudioPill = React.memo(AudioPillBase);
+
+export default AudioPill;

@@ -41,9 +41,41 @@ export interface AccordionSummaryStyles {
   fontSize?: number | string;
   /** Font weight for the summary text. Default: "bold". */
   fontWeight?: "normal" | "bold" | "lighter" | "bolder" | number;
+  /**
+   * Typography variant for the summary text. Mirrors the lib's MUI Typography
+   * variant prop; mapped to a matching Tailwind type scale here.
+   */
+  variant?:
+    | "body1"
+    | "body2"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "subtitle1"
+    | "subtitle2";
   /** Color for the summary text (CSS value). Default: gray-900 token. */
   color?: string;
 }
+
+// Mirrors MUI's Typography variant scale onto Tailwind type utilities.
+const VARIANT_CLASS: Record<
+  NonNullable<AccordionSummaryStyles["variant"]>,
+  string
+> = {
+  h1: "text-5xl",
+  h2: "text-4xl",
+  h3: "text-3xl",
+  h4: "text-2xl",
+  h5: "text-xl",
+  h6: "text-lg",
+  subtitle1: "text-base",
+  subtitle2: "text-sm font-medium",
+  body1: "text-base",
+  body2: "text-sm",
+};
 
 export interface AccordionIconStyles {
   /** Size for the expand/collapse icon (CSS value). Default: 1rem. */
@@ -146,6 +178,7 @@ export function Accordion({
           <span
             className={cn(
               "py-3 text-gray-900",
+              summaryStyles.variant && VARIANT_CLASS[summaryStyles.variant],
               !summaryStyles.color && "text-gray-900"
             )}
             style={{

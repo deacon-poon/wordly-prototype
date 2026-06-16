@@ -3,161 +3,112 @@
 /**
  * Participant
  *
- * Port of the production `Participant` component family from
- * wordly-react-components-lib (MUI 6 + Emotion):
- *   src/components/app/dialogs/participant/{Participant,ParticipantName,WordlyAvatar}.tsx
+ * Faithful 1:1 port of the production wordly-react-components-lib component
+ * `src/components/app/dialogs/participant/Participant.tsx` (MUI 6 + Emotion),
+ * rebuilt on our Tailwind / shadcn stack.
  *
- * The original is three co-located pieces:
- *  - WordlyAvatar  — MUI <Avatar> with extracted initials, sizable, hideable.
- *  - ParticipantName — MUI <Typography> name with an optional "Presenter"
- *    label stacked above it.
- *  - Participant   — composes the name + an optional presenter indicator dot.
+ * Lib structure (mirrored exactly):
+ *   <Root display:inline-flex; align-items:center; width:100%>
+ *     {renderParticipantName(...)}   // <Name> wrapper → <ParticipantName/>, hidden when compact
+ *     {presenter && <Indicator/>}    // 12x12 circle
  *
- * This rebuild folds all three onto the shared shadcn `Avatar` primitive plus
- * Tailwind utilities. All the original MUI/Emotion styled code has been removed.
- * Theme colors are mapped to our brand tokens:
- *   lib wordlyBlue/brand → Brand Blue primary (primary / primary-blue-*)
- *   lib success green indicator (bobbleGreen) → accent-green-*
- *   lib grays (label) → gray-*
+ * NOTE: the lib `Participant` does NOT render an avatar — it composes only the
+ * name block + the presenter indicator dot. (The avatar lives in the separate
+ * `WordlyAvatar` component.) This rebuild matches that.
  *
- * Data arrives via props with small inline mock defaults (in production these
- * would be fetched from the participants API).
+ * Color mapping (lib raw hex → our design tokens; no raw hex):
+ *   indicatorColor default '#52fa6e' (green) → bg-accent-green-400 token
+ *   labelColor      default '#8F8F8F' (gray) → text-gray-500 (via ParticipantName)
+ * Both props remain overridable; callers pass a Tailwind class to stay on tokens.
  */
 
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
-// ---------------------------------------------------------------------------
-// Initials helper — ported 1:1 from WordlyAvatar.extractInitials
-// ---------------------------------------------------------------------------
-
-/** Minimum chars to keep before falling back to "first 3 characters". */
-const MINIMUM_NAME_CHARACTERS = 3;
-
-/**
- * Extract initials from a name, assuming "given family" order. For other
- * syllabic languages (single contiguous token), takes up to the first 3 chars.
- */
-export function extractInitials(name: string): string {
-  const names = name.trim().toUpperCase().split(" ");
-
-  // Single token (also handles empty strings): first 3 characters.
-  if (names.length === 1) {
-    return names[0].slice(0, MINIMUM_NAME_CHARACTERS);
-  }
-
-  // 2–3 tokens: first initial of each.
-  if (names.length <= 3) {
-    return names
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 3);
-  }
-
-  // 4+ tokens: first initial of the first and last names.
-  return names[0].slice(0, 1) + names[names.length - 1].slice(0, 1);
-}
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+import { ParticipantName } from "./ParticipantName";
 
 export interface ParticipantProps {
-  /** The name of the participant. Empty/blank renders as "Anonymous". */
-  name?: string;
+  /** The name of the participant. */
+  name: string;
 
-  /** Optional avatar image URL; falls back to the initials bubble. */
-  avatarSrc?: string;
-
-  /** Shrink the avatar, indicator, label, and margins. */
+  /** If true, this will shrink the presenter indicator circle and margins. */
   small?: boolean;
 
-  /** Render the "Presenter" label above the name + the indicator dot. */
+  /** If true, display the presenter indicator circle. */
   presenter?: boolean;
 
-  /** Hide the name; render only the avatar (+ indicator). */
+  /** If true, this will not render the ParticipantName component. */
   compact?: boolean;
 
-  /** Localized presenter label. Defaults to "Presenter". */
-  presenterLabel?: string;
+  /**
+   * Color of the presenter indicator circle. Lib accepted a hex string; here it
+   * accepts a Tailwind background class (token-based). Defaults to the accent
+   * green token (lib default '#52fa6e').
+   */
+  indicatorColor?: string;
 
   /**
-   * Keep the avatar's footprint but make it invisible (mirrors WordlyAvatar's
-   * `hidden`: occupies space, visibility hidden).
+   * Color of the presenter label. Lib accepted a hex string; here it accepts a
+   * Tailwind text-color class. Defaults to neutral gray (lib default '#8F8F8F').
    */
-  avatarHidden?: boolean;
+  labelColor?: string;
 
   className?: string;
 }
 
 /**
- * Participant (presenter or attendee): avatar + optional name/presenter label
- * + optional presenter indicator dot.
+ * Helper that renders the name of the participant if compact=false.
+ * Mirrors the lib `renderParticipantName` + `<Name>` styled wrapper.
+ *
+ * @returns Participant's name block, or null when compact.
+ */
+function renderParticipantName(
+  name: string,
+  presenter?: boolean,
+  labelColor?: string,
+  small: boolean = false,
+  compact: boolean = false
+): JSX.Element | null {
+  if (!compact) {
+    return (
+      // <Name>: display inherit (not compact), marginLeft 10px small / 15px.
+      <div className={cn(small ? "ml-2.5" : "ml-[15px]")}>
+        <ParticipantName
+          name={name}
+          small={small}
+          presenter={presenter}
+          labelColor={labelColor}
+        />
+      </div>
+    );
+  }
+  return null;
+}
+
+/**
+ * React component for the participant (presenter or attendee).
  */
 export function Participant({
-  name = "Bob Belcher", // mock default; in production, fetched from the API
-  avatarSrc,
+  name,
   small = false,
   presenter = false,
   compact = false,
-  presenterLabel = "Presenter",
-  avatarHidden = false,
+  indicatorColor = "bg-accent-green-400",
+  labelColor,
   className,
 }: ParticipantProps) {
-  const trimmed = (name ?? "").trim();
-  const formattedName = trimmed === "" ? "Anonymous" : trimmed;
-  const initials = React.useMemo(
-    () => extractInitials(formattedName),
-    [formattedName]
-  );
-
   return (
+    // <Root>: inline-flex, items-center, full width.
     <div className={cn("inline-flex w-full items-center", className)}>
-      {/* Avatar — shadcn primitive replacing MUI WordlyAvatar. */}
-      <Avatar
-        aria-label={formattedName}
-        className={cn(
-          "bg-primary-blue-50 text-primary-blue-700",
-          small ? "h-9 w-9 text-xs" : "h-10 w-10 text-sm",
-          avatarHidden && "invisible"
-        )}
-      >
-        {avatarSrc ? <AvatarImage src={avatarSrc} alt={formattedName} /> : null}
-        <AvatarFallback className="bg-transparent font-medium text-primary-blue-700">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
-
-      {/* Name block — replaces MUI ParticipantName; hidden when compact. */}
-      {!compact ? (
-        <div className={cn(small ? "ml-2.5" : "ml-4")}>
-          {presenter ? (
-            <div
-              className={cn(
-                "-mb-1 leading-none text-gray-500",
-                small ? "text-[0.625rem]" : "text-xs"
-              )}
-            >
-              {presenterLabel}
-            </div>
-          ) : null}
-          <div className={cn("text-gray-900", small ? "text-sm" : "text-base")}>
-            {formattedName}
-          </div>
-        </div>
-      ) : null}
-
-      {/* Presenter indicator dot — lib success green → accent-green token.
-          Sits inline after the name (or after the avatar when compact),
-          matching the original styled Indicator margin (15px / 10px compact). */}
+      {renderParticipantName(name, presenter, labelColor, small, compact)}
       {presenter ? (
+        // <Indicator>: 12x12 circle, marginLeft 10px compact / 15px otherwise.
         <span
           aria-hidden="true"
           className={cn(
-            "block h-3 w-3 shrink-0 rounded-full bg-accent-green-400",
-            compact ? "ml-2.5" : "ml-4"
+            "block h-3 w-3 shrink-0 rounded-full",
+            indicatorColor,
+            compact ? "ml-2.5" : "ml-[15px]"
           )}
         />
       ) : null}

@@ -1,94 +1,46 @@
 /**
  * PendingStateCM
  *
- * Port of the production `wordly-react-components-lib` PendingStateCM
- * (MUI 6 + Emotion `styled` + CSS Module) onto this repo's shadcn/Tailwind
- * foundation.
+ * Faithful 1:1 port of the lib's `PendingStateCM`
+ * (library/display/published-summaries/PendingStateCM.tsx) — the CSS-Module
+ * variant of `PendingState`. In the lib it differs from the base only in styling
+ * source (`PendingState.module.css`); the rendered result is identical. Mirrors
+ * the lib by reusing `PendingIcon` and `PendingStateProps` from `./PendingState`.
  *
- * Body-only placeholder rendered inside a published-summary section card
- * (e.g. the `body` slot of KeyTakeaways / FullSummary) while that section is
- * still being generated. Renders a centered calendar-with-clock glyph plus a
- * heading and subtitle — it relies on its host card for outer chrome.
+ * Token mapping (CSS module → our tokens, no raw hex):
+ *   heading  #343A40 (lightnessGray23) → text-gray-700
+ *   subtitle #646E78 (lightnessGray43) → text-gray-500
+ *   icon stroke #646E78 → text-gray-500 (via currentColor)
  *
- * Original styling notes preserved:
- * - root: flex column, centered, gap 8px, padding 24px vertical
- * - icon: 40x40, muted gray stroke (lib lightnessGray82 -> text-gray-300)
- * - heading: 500 / 16px / 24px, lib lightnessGray43 -> text-gray-600
- * - subtitle: 400 / 14px, lib lightnessGray64 -> text-muted-foreground
- *
- * All MUI/Emotion replaced with semantic HTML + Tailwind token classes.
- * Pure presentational; copy arrives via props with inline defaults (in
- * production the surrounding summary data would be fetched from the API).
+ * Body-only placeholder rendered inside a published-summary section card while
+ * that section is still being generated.
  */
 
-import * as React from "react";
+import { FC } from "react";
 
 import { cn } from "@/lib/utils";
-
-export interface PendingStateCMProps {
-  /** Heading copy. Defaults to "Summary is being created". */
-  heading?: string;
-  /** Subtitle copy. Defaults to "The summary will be available soon.". */
-  subtitle?: string;
-  /** Optional class name for external styling. */
-  className?: string;
-}
+import { PendingIcon, PendingStateProps } from "./PendingState";
 
 /**
- * Calendar-with-clock glyph used by the pending-state placeholder.
- * Sourced from the Figma design (node 1114:643). Stroke inherits
- * `currentColor` so the surrounding muted-gray text color drives it.
+ * Body-only placeholder used inside a published-summary section card while the
+ * section is still being generated. CSS Module variant of PendingState.
  */
-function PendingIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      width="100%"
-      height="100%"
-      viewBox="0 0 40 40"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      role="presentation"
-      aria-hidden="true"
-      className={className}
-    >
-      <g
-        stroke="currentColor"
-        strokeWidth="3.33333"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M35 12.5V10C35 9.11595 34.6488 8.2681 34.0237 7.64298C33.3986 7.01786 32.5507 6.66667 31.6667 6.66667H8.33333C7.44928 6.66667 6.60143 7.01786 5.97631 7.64298C5.35119 8.2681 5 9.11595 5 10V33.3333C5 34.2174 5.35119 35.0652 5.97631 35.6904C6.60143 36.3155 7.44928 36.6667 8.33333 36.6667H14.1667" />
-        <path d="M26.6667 3.33333V10" />
-        <path d="M13.3333 3.33333V10" />
-        <path d="M5 16.6667H13.3333" />
-        <path d="M29.1667 29.1667L26.6667 27.0833V23.3333" />
-        <path d="M36.6667 26.6667C36.6667 29.3188 35.6131 31.8624 33.7377 33.7377C31.8624 35.6131 29.3188 36.6667 26.6667 36.6667C24.0145 36.6667 21.471 35.6131 19.5956 33.7377C17.7202 31.8624 16.6667 29.3188 16.6667 26.6667C16.6667 24.0145 17.7202 21.471 19.5956 19.5956C21.471 17.7202 24.0145 16.6667 26.6667 16.6667C29.3188 16.6667 31.8624 17.7202 33.7377 19.5956C35.6131 21.471 36.6667 24.0145 36.6667 26.6667Z" />
-      </g>
-    </svg>
-  );
-}
-
-export function PendingStateCM({
+export const PendingStateCM: FC<PendingStateProps> = ({
   heading = "Summary is being created",
   subtitle = "The summary will be available soon.",
   className,
-}: PendingStateCMProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center gap-2 py-6 text-center",
-        className
-      )}
-    >
-      <div className="h-10 w-10 text-gray-300">
-        <PendingIcon />
-      </div>
-      <p className="text-base font-medium leading-6 text-gray-600">{heading}</p>
-      <p className="text-sm font-normal leading-[19.6px] text-muted-foreground">
-        {subtitle}
-      </p>
+}) => (
+  <div className={cn("flex flex-col items-center gap-2 py-6", className)}>
+    <div className="h-10 w-10 text-gray-500">
+      <PendingIcon />
     </div>
-  );
-}
+    <p className="text-center text-base font-medium leading-6 text-gray-700">
+      {heading}
+    </p>
+    <p className="text-center text-sm font-normal leading-[19.6px] text-gray-500">
+      {subtitle}
+    </p>
+  </div>
+);
 
 export default PendingStateCM;

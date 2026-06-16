@@ -2,40 +2,42 @@ import type { Meta, StoryObj } from "@storybook/react";
 import * as React from "react";
 
 import { TranscriptBubble } from "./TranscriptBubble";
+import { TranscriptText } from "./TranscriptText";
 
+/**
+ * Mirrors the lib stories `App/Meeting/Transcript/TranscriptBubble/Component`
+ * (LTRText, RTLText, NewSpeakerLTR, NewSpeakerRTL, WithBorder, WithHoverEffect,
+ * AllCombinations), kept under our `Experience/Transcript` namespace.
+ *
+ * The lib stories pass `WordlyColors.lightGrayish` (the default neutral fill,
+ * mapped to our `bg-gray-100` token by leaving `color` unset) and
+ * `WordlyColors.wordlyBlue` (the teal "your speech" fill). Per the lab no-raw-hex
+ * guardrail and "keep Brand Blue primary", the blue bubble uses our Brand Blue
+ * primary token via className instead of a raw hex `color`.
+ */
 const meta: Meta<typeof TranscriptBubble> = {
   title: "Experience/Transcript/TranscriptBubble",
   component: TranscriptBubble,
   tags: ["autodocs"],
-  parameters: {
-    docs: {
-      description: {
-        component:
-          "Chat-style bubble for a line of live transcription. Ported from the MUI library `TranscriptBubble`; the raw-hex `color`/`borderColor` props were replaced with a token-backed `tone` variant (Brand Blue stays primary). Supports left/right alignment, an optional border, a hover scrim, and a new-speaker indicator with a directional arrow.",
-      },
-    },
-  },
   argTypes: {
-    tone: {
-      control: "select",
-      options: ["muted", "primary", "success", "teal"],
-    },
-    alignRight: { control: "boolean" },
+    className: { control: false },
+    color: { control: "color" },
+    borderColor: { control: "color" },
     showBorder: { control: "boolean" },
     showHoverEffect: { control: "boolean" },
-    isNewSpeaker: { control: "boolean" },
-    rtl: { control: "boolean" },
-    children: { control: false },
-  },
-  args: {
-    children:
-      "Welcome everyone — today we'll walk through the new live-translation flow.",
-    tone: "muted",
-    alignRight: false,
-    showBorder: false,
-    showHoverEffect: false,
-    isNewSpeaker: false,
-    rtl: false,
+    isNewSpeaker: {
+      control: "boolean",
+      description: "If true, renders a new speaker indicator above the bubble",
+    },
+    rtl: {
+      control: "boolean",
+      description: "Indicates if the language is right-to-left",
+    },
+    alignRight: {
+      control: "boolean",
+      description: "Aligns the bubble to the right side",
+    },
+    children: { table: { disable: true } },
   },
 };
 
@@ -43,60 +45,129 @@ export default meta;
 
 type Story = StoryObj<typeof TranscriptBubble>;
 
-/** Another presenter's line — left-aligned, muted gray. */
-export const OtherSpeaker: Story = {};
+const DefaultText = <TranscriptText>Lorem ipsum</TranscriptText>;
+const RtlText = <TranscriptText rtl>هذا نص نموذجي</TranscriptText>;
 
-/** Your own speech — right-aligned, Brand Blue primary tone. */
-export const YourSpeech: Story = {
+export const LTRText: Story = {
   args: {
-    children: "Sounds great, I can see the captions updating in real time.",
-    tone: "primary",
-    alignRight: true,
+    children: DefaultText,
+    isNewSpeaker: false,
+    rtl: false,
+    alignRight: false,
   },
 };
 
-/** New-speaker indicator above a left-aligned bubble. */
-export const NewSpeakerLTR: Story = {
-  args: { isNewSpeaker: true },
+export const RTLText: Story = {
+  args: {
+    children: RtlText,
+    alignRight: true,
+    rtl: true,
+    isNewSpeaker: false,
+  },
 };
 
-/** Right-to-left language: the arrow flips and the bubble aligns right. */
+export const NewSpeakerLTR: Story = {
+  args: {
+    children: DefaultText,
+    isNewSpeaker: true,
+    rtl: false,
+    alignRight: false,
+  },
+};
+
 export const NewSpeakerRTL: Story = {
   args: {
-    children: "مرحبا بالجميع، شكرا لانضمامكم إلى هذه الجلسة.",
-    tone: "primary",
+    children: RtlText,
     alignRight: true,
     rtl: true,
     isNewSpeaker: true,
   },
 };
 
-/** Bordered variant (Brand Blue 2px border). */
 export const WithBorder: Story = {
-  args: { showBorder: true },
+  args: {
+    children: DefaultText,
+    showBorder: true,
+    isNewSpeaker: false,
+  },
 };
 
-/** Clickable bubble with the darken-on-hover scrim. */
 export const WithHoverEffect: Story = {
-  args: { showHoverEffect: true },
+  args: {
+    children: DefaultText,
+    showHoverEffect: true,
+    isNewSpeaker: false,
+  },
 };
 
-/** A short conversation showing the two primary tones side by side. */
-export const Conversation: Story = {
+/**
+ * Demo showing all combinations of alignRight and rtl with new-speaker
+ * indicators (mirrors the lib `AllCombinations` story). "Your speech" bubbles
+ * use the Brand Blue primary token in place of the lib's teal `wordlyBlue`.
+ */
+export const AllCombinations: Story = {
   render: () => (
-    <div className="flex flex-col gap-2">
-      <TranscriptBubble tone="muted" isNewSpeaker>
-        Thanks for joining — can everyone see the shared slides?
-      </TranscriptBubble>
-      <TranscriptBubble tone="muted">
-        The captions are translating into Spanish for me, looks perfect.
-      </TranscriptBubble>
-      <TranscriptBubble tone="primary" alignRight isNewSpeaker>
-        Great. I&apos;ll switch my output language to French now.
-      </TranscriptBubble>
-      <TranscriptBubble tone="primary" alignRight>
-        Et voilà — the transcript follows along instantly.
-      </TranscriptBubble>
+    <div className="flex flex-col gap-4">
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">LTR Language (rtl=false)</h3>
+        <div className="flex flex-col gap-2">
+          <div>
+            <p className="text-xs text-gray-500">
+              Another presenter (alignRight=false, gray):
+            </p>
+            <TranscriptBubble alignRight={false} rtl={false} isNewSpeaker>
+              {DefaultText}
+            </TranscriptBubble>
+            <TranscriptBubble alignRight={false} rtl={false} isNewSpeaker>
+              {DefaultText}
+            </TranscriptBubble>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">
+              Your speech (alignRight=true, Brand Blue):
+            </p>
+            <TranscriptBubble
+              alignRight
+              rtl={false}
+              isNewSpeaker
+              className="bg-primary text-primary-foreground"
+            >
+              <TranscriptText className="text-primary-foreground">
+                Lorem ipsum
+              </TranscriptText>
+            </TranscriptBubble>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">RTL Language (rtl=true)</h3>
+        <div className="flex flex-col gap-2">
+          <div>
+            <p className="text-xs text-gray-500">
+              Another presenter (alignRight=false, gray):
+            </p>
+            <TranscriptBubble alignRight={false} rtl isNewSpeaker>
+              {RtlText}
+            </TranscriptBubble>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500">
+              Your speech (alignRight=true, Brand Blue):
+            </p>
+            <TranscriptBubble
+              alignRight
+              rtl
+              isNewSpeaker
+              className="bg-primary text-primary-foreground"
+            >
+              <TranscriptText rtl className="text-primary-foreground">
+                هذا نص نموذجي
+              </TranscriptText>
+            </TranscriptBubble>
+          </div>
+        </div>
+      </div>
     </div>
   ),
 };

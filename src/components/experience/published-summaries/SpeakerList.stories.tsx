@@ -8,8 +8,6 @@ const meta: Meta<typeof SpeakerList> = {
   tags: ["autodocs"],
   argTypes: {
     className: { control: false },
-    iconClassName: { control: false },
-    textClassName: { control: false },
   },
 };
 
@@ -34,10 +32,15 @@ export const Empty: Story = {
   },
 };
 
+/**
+ * Mirrors the lib's `CustomColors` story: the Emotion-only `iconColor` /
+ * `textColor` overrides. The hex values are Storybook demo inputs (not component
+ * styling), matching the lib story exactly (brand pink icon, onyx text).
+ */
 export const CustomColors: Story = {
   args: {
     speakers: ["Dr. Sarah Chen", "John Smith"],
-    iconClassName: "text-action-teal-500",
-    textClassName: "text-gray-900",
+    iconColor: "#E6007E",
+    textColor: "#121416",
   },
 };

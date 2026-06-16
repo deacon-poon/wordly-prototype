@@ -7,15 +7,18 @@
  * The MUI/Emotion original is a static branding footer: a home link, a
  * Privacy Policy | Terms of Service sub-link row, a copyright line, and an
  * optional version line. We drop MUI (Box/Link/Typography + `styled`) and the
- * `sx` prop and rebuild on plain semantic HTML + Tailwind utilities, mapping
- * the lib palette to our tokens:
- *   - link/brand color  → `text-primary` (Brand Blue, primary-blue-500)
- *   - footer body text  → `text-muted-foreground` / `text-gray-*`
+ * `sx` prop and rebuild on plain semantic HTML + Tailwind utilities, faithfully
+ * mirroring the lib's `styled` rules:
+ *   - root `<footer>`  → `color: 'grey'`, centered, 20px top padding
+ *   - links (MUI Link) → Brand Blue primary token (`text-primary-blue-400`,
+ *     == lib newWordlyBlue #017CFF); main link 0.875rem, sub-links 0.8125rem;
+ *     no underline, underline on hover
+ *   - copyright/version (MetadataText) → 0.625rem, block; color INHERITS the
+ *     root grey (the lib sets no explicit color on these)
  *
- * The public surface is preserved: `version` (optional version line),
+ * The public surface is preserved exactly: `version` (optional version line),
  * `translations` (overridable link/label copy), and `ariaLabels` (home-link
- * aria-label). Copy defaults inline; in production this text would be
- * localized via the app's i18n layer.
+ * aria-label). The MUI `sx` prop is replaced by `className`.
  */
 
 import * as React from "react";
@@ -55,7 +58,7 @@ const DEFAULT_TRANSLATIONS: WordlyFooterTranslations = {
 const getCurrentYear = () => new Date().getFullYear();
 
 const linkClasses =
-  "text-primary no-underline transition-colors hover:underline focus-visible:underline focus-visible:outline-none";
+  "text-primary-blue-400 no-underline transition-colors hover:underline focus-visible:underline focus-visible:outline-none";
 
 /**
  * Standard Wordly branding footer: home link, Privacy Policy / Terms of
@@ -106,12 +109,12 @@ export function WordlyFooter({
         </a>
       </span>
 
-      <span className="block text-[0.625rem] text-muted-foreground">
+      <span className="block text-[0.625rem]">
         Copyright © 2019-{getCurrentYear()} Wordly, Inc.
       </span>
 
       {version ? (
-        <span className="block text-[0.625rem] text-muted-foreground">
+        <span className="block text-[0.625rem]">
           {t.version} {version}
         </span>
       ) : null}

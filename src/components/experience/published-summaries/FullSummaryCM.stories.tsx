@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { FullSummaryCM } from "./FullSummaryCM";
+import { PendingStateCM } from "./PendingStateCM";
 
 const meta: Meta<typeof FullSummaryCM> = {
   title: "Experience/Published Summaries/FullSummaryCM",
@@ -47,20 +48,7 @@ export const SingleParagraph: Story = {
  */
 export const Pending: Story = {
   args: {
-    body: (
-      <div className="flex flex-col items-center gap-2 px-5 pb-[21px] pt-6 text-center">
-        <Loader2
-          className="size-6 animate-spin text-action-teal-500"
-          aria-hidden="true"
-        />
-        <p className="text-base font-medium text-gray-900">
-          Summary is being created
-        </p>
-        <p className="text-sm text-gray-500">
-          The summary will be available soon.
-        </p>
-      </div>
-    ),
+    body: <PendingStateCM />,
   },
 };
 

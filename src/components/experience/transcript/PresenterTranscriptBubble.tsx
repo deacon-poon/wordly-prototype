@@ -3,252 +3,207 @@
 /**
  * PresenterTranscriptBubble
  *
- * React/shadcn migration of the production `PresenterTranscriptBubble` from
- * wordly-react-components-lib (MUI 6 + Emotion `styled`). It renders a single
- * presenter's transcription as a chat-style bubble: an optional mic-name label,
- * an optional "new speaker" indicator (double-arrow), the bubble body holding
- * the transcribed text, and — toggled by clicking the bubble — a metadata row
- * (speaker name + language) at the bottom.
+ * Faithful 1:1 port of the production library component
+ * `wordly-react-components-lib/src/components/app/meeting/transcript/PresenterTranscriptBubble.tsx`
+ * (MUI 6 + Emotion `styled`) onto our Tailwind/shadcn stack.
  *
- * Port notes:
- * - All Material UI and Emotion styled-component usage is removed. The original
- *   styled divs (Root, AlignedContainer,
- *   MicName, Bubble, StyledDiv hover `:before`, SpeakerIndicator) are folded
- *   into Tailwind utility classes. The MUI `KeyboardDoubleArrowRight/Left`
- *   icons become lucide-react `ChevronsRight`/`ChevronsLeft`.
- * - The original composed `TranscriptText` + `TranscriptMetadata` via
- *   `children` + a runtime `getComponentByType` validator. For a self-contained
- *   prototype component we take the transcript via the `text` prop and the
- *   metadata via `name`/`language` props (in production these arrive from the
- *   live transcription stream / API).
- * - Theme mapping (lib palette → our tokens): the lib's `wordlyBlue` (a teal)
- *   maps to `action-teal-*`; the neutral bubble fill `lightGrayish`
- *   maps to `gray-100`; metadata grays map to `gray-*` / `muted-foreground`.
- *   Brand Blue remains the product primary (not used as the bubble fill here).
+ * Composition model reproduced exactly: the lib takes a `<TranscriptText>` (and
+ * optional `<TranscriptMetadata>`) via `children`, pulls each out with a
+ * `getComponentByType` helper, renders the text inside a `TranscriptBubble`, and
+ * toggles the metadata row at the bottom of the bubble on click. The earlier
+ * prototype port had switched to a flat `text`/`name`/`language` prop API — this
+ * version restores the lib's children-composition contract (no external
+ * consumers import this component, so the API change breaks nothing).
+ *
+ * Lib structure:
+ *   - Root: inline-block, fit-content, max-w-full, text-align per alignRight.
+ *   - AlignedContainer: flex column, items per alignRight, w-full.
+ *   - MicName (when isNewMicName): 0.75rem / 500 / 1.125rem line, Roboto, padding
+ *     12px on the leading side, text-align per side, inline-block, my-1.
+ *   - Bubble wrapper: mx 5px.
+ *   - TranscriptBubble (showHoverEffect, onClick=toggle, rtl, isNewSpeaker) holds
+ *     `{text}` and, when expanded, a MetadataContainer:
+ *       mt 6px, pt 4px, w-full, flex, justify per side, items-center, Roboto,
+ *       0.85rem, padding 0 1px → wrapping the `<TranscriptMetadata>` child.
+ *
+ * Theme: the lib's `color`/`borderColor` hex props are PRESERVED for parity and
+ * forwarded to TranscriptBubble; their defaults resolve to our tokens there
+ * (`gray-100` fill / `action-teal-500` border for the teal `wordlyBlue`).
  */
 
 import * as React from "react";
-import { ChevronsRight, ChevronsLeft } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-// ---------------------------------------------------------------------------
-// Bubble fill variants — replaces the MUI `color` hex prop with token classes.
-// The lib defaulted to `lightGrayish` (neutral) with an optional `wordlyBlue`
-// (teal) border. We expose semantic variants instead of raw hex.
-// ---------------------------------------------------------------------------
-
-export type TranscriptBubbleVariant = "neutral" | "teal" | "green";
-
-const bubbleFill: Record<TranscriptBubbleVariant, string> = {
-  neutral: "bg-gray-100 text-gray-900",
-  teal: "bg-action-teal-50 text-action-teal-900",
-  green: "bg-accent-green-50 text-accent-green-900",
-};
-
-const bubbleBorder: Record<TranscriptBubbleVariant, string> = {
-  neutral: "border-action-teal-500",
-  teal: "border-action-teal-500",
-  green: "border-accent-green-500",
-};
-
-// ---------------------------------------------------------------------------
-// Data contract (mirrors the lib props; metadata folded in from children).
-// In production, `text`, `name`, and `language` arrive from the live
-// transcription stream / API.
-// ---------------------------------------------------------------------------
+import { TranscriptBubble } from "./TranscriptBubble";
+import { TranscriptText } from "./TranscriptText";
+import {
+  TranscriptMetadata,
+  type TranscriptMetadataProps,
+} from "./TranscriptMetadata";
 
 export interface PresenterTranscriptBubbleProps {
-  /** The transcribed text shown inside the bubble. */
-  text: React.ReactNode;
-  /** Speaker / mic name. Shown as the label above the bubble and in metadata. */
-  micName?: string;
-  /** Language label shown (italic) in the metadata row. */
-  language?: string;
-
-  /** Align the whole bubble (and its corner radius) to the right. */
-  alignRight?: boolean;
-  /** Render the transcript text right-to-left. */
-  rtl?: boolean;
-
-  /** Bubble fill/border color. Defaults to the neutral gray fill. */
-  variant?: TranscriptBubbleVariant;
-  /** Draw a colored border around the bubble (lib `showBorder`). */
-  showBorder?: boolean;
-
-  /** Show the mic-name label above the bubble (lib `isNewMicName`). */
-  isNewMicName?: boolean;
-  /** Show the new-speaker indicator (double-arrow) above the bubble. */
-  isNewSpeaker?: boolean;
-
-  /**
-   * Whether the metadata row starts expanded. The bubble is also click-to-
-   * toggle (uncontrolled) like the original.
-   */
-  defaultMetadataOpen?: boolean;
-
-  /** Forwarded click handler (fires in addition to the metadata toggle). */
-  onClick?: (e: React.SyntheticEvent) => void;
-
+  /** Class name for styling the root container. */
   className?: string;
+  /** If true, aligns all components to the right of the bubble. */
+  alignRight?: boolean;
+  /** Color of the transcript bubble (forwarded to TranscriptBubble). */
+  color?: string;
+  /** Color of the border when showBorder is true. */
+  borderColor?: string;
+  /** Controls whether to show a border around the transcript bubble. */
+  showBorder?: boolean;
+  /** Callback function for when the bubble is clicked. */
+  onClick?: (e: React.SyntheticEvent) => void;
+  /** Name of the speaker to display above the bubble. */
+  micName: string;
+  /** Language of the transcript (shown in the TranscriptMetadata child). */
+  language: string;
+  /** Indicates if the language is right-to-left. */
+  rtl?: boolean;
+  /** If true, indicates the micName changed and should be shown above the bubble. */
+  isNewMicName?: boolean;
+  /** If true, renders a new-speaker indicator above the bubble. */
+  isNewSpeaker?: boolean;
+  /**
+   * Child components. A `TranscriptText` is required; a `TranscriptMetadata` is
+   * optional and is shown at the bottom of the bubble when it is clicked.
+   */
+  children: React.ReactNode;
 }
 
-export function PresenterTranscriptBubble({
-  text,
+/**
+ * Finds the first child element of a given component type — a faithful inline
+ * copy of the lib's `src/util/getComponentByType` helper.
+ */
+function getComponentByType(
+  componentsList: React.ReactNode,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accepts any React component type
+  type: any
+) {
+  return React.Children.toArray(componentsList).find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- React child elements need any to access .type
+    (el: any) => el.type === type
+  );
+}
+
+/**
+ * Validates children in development: a `TranscriptText` child is required.
+ * Mirrors the lib's `validateChildren`.
+ */
+function validateChildren(children: React.ReactNode) {
+  if (
+    typeof process === "undefined" ||
+    process?.env?.NODE_ENV === "production"
+  ) {
+    return;
+  }
+  if (children === null) {
+    throw new Error("No required children were provided. Validation failed.");
+  }
+  const text = getComponentByType(children, TranscriptText);
+  if (text == null) {
+    throw new Error(
+      "Children passed to PresenterTranscriptBubble are invalid. TranscriptText is a required child component."
+    );
+  }
+}
+
+/**
+ * Shows a presenter's transcription: the mic name, the transcribed text, and
+ * (toggled by clicking the bubble) the speaker/language metadata at the bottom.
+ */
+export const PresenterTranscriptBubble: React.FC<
+  PresenterTranscriptBubbleProps
+> = ({
+  className = "",
+  alignRight,
+  color,
+  borderColor,
+  showBorder = false,
   micName,
   language,
-  alignRight = false,
   rtl = false,
-  variant = "neutral",
-  showBorder = false,
   isNewMicName = false,
   isNewSpeaker = false,
-  defaultMetadataOpen = false,
+  children,
   onClick,
-  className,
-}: PresenterTranscriptBubbleProps) {
-  const [showMetadata, setShowMetadata] = React.useState(defaultMetadataOpen);
+  ...otherProps
+}) => {
+  validateChildren(children);
+
+  const metadata = getComponentByType(
+    children,
+    TranscriptMetadata
+  ) as React.ReactElement<TranscriptMetadataProps> | null;
+  const text = getComponentByType(children, TranscriptText);
+
+  const [showMetadataAtBottom, setShowMetadataAtBottom] = React.useState(false);
 
   const handleClick = (e: React.SyntheticEvent) => {
-    setShowMetadata((prev) => !prev);
+    setShowMetadataAtBottom((prev) => !prev);
     onClick?.(e);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      handleClick(e);
-    }
-  };
-
-  const SpeakerIcon = rtl ? ChevronsLeft : ChevronsRight;
-  const displayName = micName || "";
+  const shouldShowSpeakerIndicator = isNewSpeaker;
 
   return (
-    // Root: inline-block, fit-content width, text alignment per side (lib Root).
+    // Root: inline-block, fit-content, max-w-full, text-align per side.
     <div
       className={cn(
         "inline-block w-fit max-w-full",
         alignRight ? "text-right" : "text-left",
         className
       )}
+      {...otherProps}
     >
-      {/* AlignedContainer: column stack, items aligned per side. */}
+      {/* AlignedContainer */}
       <div
         className={cn(
           "flex w-full flex-col",
           alignRight ? "items-end" : "items-start"
         )}
       >
-        {/* MicName label (lib MicName: 0.75rem, medium, side padding). */}
-        {isNewMicName && displayName ? (
+        {/* MicName */}
+        {isNewMicName ? (
           <div
             className={cn(
-              "my-1 inline-block box-border w-auto text-xs font-medium leading-[1.125rem] text-gray-700",
+              "my-1 inline-block w-auto box-border text-xs font-medium leading-[1.125rem]",
               alignRight ? "pr-3 text-right" : "pl-3 text-left"
             )}
           >
-            {displayName}
+            {micName}
           </div>
         ) : null}
 
-        {/* Bubble wrapper (lib Bubble: 5px horizontal margin). */}
+        {/* Bubble wrapper: mx 5px */}
         <div className="mx-[5px]">
-          <div
-            className={cn(
-              "flex w-fit flex-col",
-              alignRight ? "items-end" : "items-start"
-            )}
+          <TranscriptBubble
+            alignRight={alignRight}
+            color={color}
+            borderColor={borderColor}
+            showBorder={showBorder}
+            onClick={handleClick}
+            showHoverEffect
+            rtl={rtl}
+            isNewSpeaker={shouldShowSpeakerIndicator}
           >
-            {/* New-speaker indicator (lib SpeakerIndicator + icon). */}
-            {isNewSpeaker ? (
+            {text}
+            {showMetadataAtBottom && metadata ? (
+              // MetadataContainer
               <div
                 className={cn(
-                  "my-1 flex w-full items-center",
+                  "mt-1.5 flex w-full items-center px-px pt-1 text-[0.85rem]",
                   alignRight ? "justify-end" : "justify-start"
                 )}
-                aria-hidden="true"
               >
-                <span
-                  className={cn(
-                    "flex h-4 items-center leading-none text-action-teal-500",
-                    alignRight ? "pr-2" : "pl-2"
-                  )}
-                >
-                  <SpeakerIcon className="size-4" />
-                </span>
+                {metadata}
               </div>
             ) : null}
-
-            {/* The bubble itself (lib StyledDiv). Group enables the hover
-                overlay that the original drew with a `:before` pseudo-element. */}
-            <div
-              role="button"
-              tabIndex={0}
-              aria-expanded={showMetadata}
-              onClick={handleClick}
-              onKeyDown={handleKeyDown}
-              className={cn(
-                "group relative inline-block h-fit cursor-pointer px-2 py-1.5 outline-none transition-colors",
-                "focus-visible:ring-2 focus-visible:ring-action-teal-500 focus-visible:ring-offset-1",
-                bubbleFill[variant],
-                // Corner radius: tail on the top-left, unless aligned right
-                // (then the tail is top-right) — matches the lib radii.
-                alignRight
-                  ? "rounded-[12px_0_12px_12px]"
-                  : "rounded-[0_12px_12px_12px]",
-                showBorder && cn("border-2", bubbleBorder[variant])
-              )}
-            >
-              {/* Hover overlay (lib `:before` rgba(0,0,0,0.1)). */}
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "pointer-events-none absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-200 group-hover:opacity-100",
-                  alignRight
-                    ? "rounded-[10px_0_10px_10px]"
-                    : "rounded-[0_10px_10px_10px]"
-                )}
-              />
-
-              {/* Transcript text (lib TranscriptText). */}
-              <div
-                dir={rtl ? "rtl" : "ltr"}
-                className={cn(
-                  "relative h-auto w-full text-base",
-                  rtl ? "text-right" : "text-left"
-                )}
-              >
-                {text}
-              </div>
-
-              {/* Metadata row, toggled on click (lib MetadataContainer +
-                  TranscriptMetadata: name + italic language). */}
-              {showMetadata && (displayName || language) ? (
-                <div
-                  className={cn(
-                    "relative mt-1.5 flex w-full items-center gap-2 px-px pt-1 text-xs",
-                    alignRight ? "justify-end" : "justify-start"
-                  )}
-                >
-                  {displayName ? (
-                    <span className="max-w-full truncate text-gray-900">
-                      {displayName}
-                    </span>
-                  ) : null}
-                  {language ? (
-                    <span className="truncate italic text-gray-500">
-                      {language}
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          </div>
+          </TranscriptBubble>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default PresenterTranscriptBubble;

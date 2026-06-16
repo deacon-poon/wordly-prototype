@@ -3,135 +3,117 @@
 /**
  * TranscriptMetadata
  *
- * React/shadcn migration of the production lib component
- * (wordly-react-components-lib: src/components/app/meeting/transcript/TranscriptMetadata.tsx).
+ * Faithful 1:1 port of the production library component
+ * `wordly-react-components-lib/src/components/app/meeting/transcript/TranscriptMetadata.tsx`
+ * (MUI 6 + Emotion `styled`) onto our Tailwind/shadcn stack.
  *
- * The original was a thin Emotion `styled(Typography)` row: a speaker name +
- * an italic language label, with `alignRight` to right-justify and reverse the
- * order, plus `boldName` and per-element hex color props.
+ * Lib structure reproduced exactly:
+ *   - Root: `display:flex; flex-direction:row; justify-content: flex-end|flex-start
+ *     (alignRight); align-items:center; width:100%; padding:0; gap:8px`.
+ *     NOTE: the lib only flips `justify-content` for alignRight — it does NOT
+ *     reverse the name/language order — so this port no longer reverses either.
+ *   - Name: `color:<nameColor>; display: inline|none (name present?); font-weight:
+ *     bold|normal (boldName); text-overflow:ellipsis; overflow:hidden;
+ *     max-width:100%; white-space:nowrap`.
+ *   - Language: `color:<languageColor>; display:inline; font-style:italic;
+ *     text-overflow:ellipsis; overflow:hidden; white-space:nowrap` — rendered
+ *     only when `language` is truthy.
+ *   - MUI Typography `variant` defaults to `caption` (→ text-xs here).
  *
- * Port notes:
- *  - All @mui/material (Typography, styled) removed. The two styled atoms (Name,
- *    Language) fold into Tailwind utility classes inline.
- *  - The lib exposed free-form `nameColor` / `languageColor` hex props. To stay
- *    on design tokens (no raw hex), those become a small `tone` enum mapped to
- *    our token classes (default / muted / primary / success / destructive /
- *    teal). The default mirrors the lib look: solid name text + muted language.
- *  - MUI `variant` (caption/body2/...) collapses to a `size` prop (xs/sm/base)
- *    on text-* utilities.
- *
- * In production the name/language/micName would be fetched from the transcript
- * stream API; here they arrive via props with small inline mock defaults.
+ * The lib's `nameColor`/`languageColor` hex props are PRESERVED for 1:1 API
+ * parity, but per the lab no-raw-hex guardrail their DEFAULTS use our tokens
+ * (gray-900 / gray-500, matching the lib's #000 / #999) and a passed value is
+ * applied via inline color only when provided.
  */
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-// ---------------------------------------------------------------------------
-// Tone → token class mapping. Replaces the lib's free-form hex color props.
-// Brand Blue stays primary; success → accent-green; error → destructive.
-// ---------------------------------------------------------------------------
+/** MUI Typography variants → Tailwind text size. Lib default is `caption`. */
+export type TranscriptMetadataVariant =
+  | "caption"
+  | "body1"
+  | "body2"
+  | "subtitle1"
+  | "subtitle2"
+  | "overline";
 
-const NAME_TONE: Record<string, string> = {
-  default: "text-gray-900",
-  muted: "text-gray-500",
-  primary: "text-primary",
-  success: "text-accent-green-600",
-  destructive: "text-destructive",
-  teal: "text-action-teal-600",
+const VARIANT_SIZE: Record<TranscriptMetadataVariant, string> = {
+  caption: "text-xs",
+  body2: "text-sm",
+  subtitle2: "text-sm",
+  body1: "text-base",
+  subtitle1: "text-base",
+  overline: "text-xs uppercase tracking-widest",
 };
 
-const LANGUAGE_TONE: Record<string, string> = {
-  default: "text-gray-900",
-  muted: "text-gray-500",
-  primary: "text-primary",
-  success: "text-accent-green-600",
-  destructive: "text-destructive",
-  teal: "text-action-teal-600",
-};
-
-export type TranscriptMetadataTone = keyof typeof NAME_TONE;
-
-const rootVariants = cva("flex w-full flex-row items-center gap-2 p-0", {
-  variants: {
-    alignRight: {
-      true: "justify-end flex-row-reverse",
-      false: "justify-start",
-    },
-  },
-  defaultVariants: {
-    alignRight: false,
-  },
-});
-
-const textSizeVariants = cva("", {
-  variants: {
-    size: {
-      xs: "text-xs",
-      sm: "text-sm",
-      base: "text-base",
-    },
-  },
-  defaultVariants: {
-    size: "xs",
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Props — same public surface as the lib component, minus raw-hex color props
-// (replaced by tone tokens).
-// ---------------------------------------------------------------------------
-
-export interface TranscriptMetadataProps
-  extends
-    Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
-    VariantProps<typeof textSizeVariants> {
+export interface TranscriptMetadataProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "color"
+> {
   /** The name of the user who spoke this phrase. */
   name?: string;
-  /** The name of the microphone associated with the speaker (fallback for name). */
+  /** The name of the microphone associated with the speaker. */
   micName?: string;
-  /** Align metadata to the right and reverse the display order of name + language. */
+  /** If true, aligns the metadata to the right (lib: only changes justify-content). */
   alignRight?: boolean;
   /** Language associated with this phrase. */
   language?: string;
-  /** Token tone for the name text (replaces the lib's `nameColor` hex). */
-  nameTone?: TranscriptMetadataTone;
-  /** Token tone for the language text (replaces the lib's `languageColor` hex). */
-  languageTone?: TranscriptMetadataTone;
+  /**
+   * Text color for the name (lib prop, same name/type). Defaults to a token
+   * (gray-900, matching the lib's #000); apply a token via className when you can.
+   */
+  nameColor?: string;
+  /**
+   * Text color for the language (lib prop, same name/type). Defaults to a token
+   * (gray-500, matching the lib's #999).
+   */
+  languageColor?: string;
+  /** String indicating the Typography variant to use. */
+  variant?: TranscriptMetadataVariant;
   /** Whether to bold the name. */
   boldName?: boolean;
 }
 
 /**
- * Displays metadata about a transcript phrase: the speaker name (or mic name
- * fallback) and their language. `alignRight` right-justifies and reverses order.
+ * React component for displaying metadata regarding the speaker and their
+ * language. `alignRight` right-justifies the row. Also supports per-element
+ * name/language colors (defaulted to design tokens).
  */
-export function TranscriptMetadata({
-  name = "Michael Scott",
+export const TranscriptMetadata: React.FC<TranscriptMetadataProps> = ({
+  alignRight,
+  name = "",
   micName = "",
-  language = "English",
-  alignRight = false,
-  nameTone = "default",
-  languageTone = "muted",
+  language = "",
+  nameColor,
+  languageColor,
+  variant = "caption",
   boldName = false,
-  size = "xs",
   className,
-  ...rest
-}: TranscriptMetadataProps) {
+  ...otherProps
+}) => {
   const displayName = name || micName || "";
+  const sizeClass = VARIANT_SIZE[variant];
 
   return (
-    <div className={cn(rootVariants({ alignRight }), className)} {...rest}>
+    <div
+      className={cn(
+        "flex w-full flex-row items-center gap-2 p-0",
+        alignRight ? "justify-end" : "justify-start",
+        className
+      )}
+      {...otherProps}
+    >
       {displayName ? (
         <span
           className={cn(
             "max-w-full overflow-hidden truncate whitespace-nowrap",
-            textSizeVariants({ size }),
-            NAME_TONE[nameTone],
+            sizeClass,
+            nameColor ? undefined : "text-gray-900",
             boldName ? "font-bold" : "font-normal"
           )}
+          style={nameColor ? { color: nameColor } : undefined}
         >
           {displayName}
         </span>
@@ -140,15 +122,16 @@ export function TranscriptMetadata({
         <span
           className={cn(
             "overflow-hidden truncate whitespace-nowrap italic",
-            textSizeVariants({ size }),
-            LANGUAGE_TONE[languageTone]
+            sizeClass,
+            languageColor ? undefined : "text-gray-500"
           )}
+          style={languageColor ? { color: languageColor } : undefined}
         >
           {language}
         </span>
       ) : null}
     </div>
   );
-}
+};
 
 export default TranscriptMetadata;

@@ -8,8 +8,6 @@ const meta: Meta<typeof EventTimestamp> = {
   tags: ["autodocs"],
   argTypes: {
     className: { control: false },
-    iconClassName: { control: false },
-    textClassName: { control: false },
   },
   args: {
     // Pin the time zone so Storybook output is deterministic across viewers.
@@ -47,14 +45,15 @@ export const Localized: Story = {
 };
 
 /**
- * The lib's Emotion-only `iconColor` / `textColor` overrides are ported to
- * token-class overrides (no raw hex): here the icon uses Action Teal and the
- * text uses near-black gray-900.
+ * Mirrors the lib's `CustomColors` story: the Emotion-only `iconColor` /
+ * `textColor` overrides. The hex values below are Storybook demo inputs (not
+ * component styling) proving the runtime override works — they match the lib
+ * story exactly (brand pink icon, onyx text).
  */
 export const CustomColors: Story = {
   args: {
     dateTime: "2026-03-10T09:00:00Z",
-    iconClassName: "text-action-teal-600",
-    textClassName: "text-gray-900",
+    iconColor: "#E6007E",
+    textColor: "#121416",
   },
 };

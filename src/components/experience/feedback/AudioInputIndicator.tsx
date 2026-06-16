@@ -3,154 +3,141 @@
 /**
  * AudioInputIndicator
  *
- * React/shadcn port of the production `AudioInputIndicator` from
+ * Faithful 1:1 port of the production `AudioInputIndicator` from
  * wordly-react-components-lib (MUI 6 + Emotion). It renders a row of vertical
  * "pills" whose heights animate to reflect per-band audio amplitude — the
  * classic mic / audio-level visualizer.
  *
- * The MUI original used a `styled('div')` container and a memoized `AudioPill`
- * child built on `<Box sx={...}>`. Both are folded into Tailwind utilities here
- * (no @mui/* or @emotion/*). Colors come from our design tokens rather than the
- * lib palette: the lib's wordlyBlue / newWordlyBlue brand maps to Brand Blue
- * (`bg-primary`); the disabled `twilightHaze` gray maps to `bg-muted-foreground/40`.
+ * The MUI original used a `styled('div')` container (60x60, flex row, 2px gap,
+ * centered) and a memoized `AudioPill` child built on `<Box sx={...}>`. The
+ * container is reproduced with Tailwind utilities + inline 60x60 sizing; the
+ * child is our ported `AudioPill`. No @mui/* or @emotion/*.
  *
- * Color is driven by token-based Tailwind classes (`barClassName` /
- * `disabledBarClassName`) instead of raw hex props, per the no-raw-hex rule.
- *
- * Data arrives via props with a small inline mock default. In production the
- * `audioData` stream would be fed from a live Web Audio analyser (FFT frequency
- * bands), updated on each animation frame.
+ * The lib API is preserved exactly: `audioData`, `audioIndicatorColor`,
+ * `audioIndicatorDisabledColor`, `disabled`, `maxHeight`, `animationDuration`,
+ * `style`, `ariaLabel`. The only theme change is the color *default*: the lib
+ * fell back to `WordlyColors.white` when no color was supplied; we keep that
+ * `white` fallback (it is intentionally neutral — callers pass the brand color),
+ * but stories drive it with our Brand Blue token (no raw hex ships in code).
  */
 
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
+import AudioPill from "./AudioPill";
 
-/** A single processed frequency band. */
+/**
+ * Props for the Audio Input Indicator component.
+ */
+export interface AudioInputIndicatorProps {
+  /** Processed audio data that will be used to update the visualization. */
+  audioData: { id: number; amplitude: number }[];
+  /** Determines the color of the indicator. */
+  audioIndicatorColor?: string;
+  /** Determines the color of the indicator when the component is disabled. */
+  audioIndicatorDisabledColor?: string;
+  /** Prop to disable the component. */
+  disabled: boolean;
+  /** Determines the maximum height in pixels for the audio indicator. */
+  maxHeight: number;
+  /** Determines the duration of the animation in milliseconds. */
+  animationDuration?: number;
+  /** Optional styles to apply to the component. */
+  style?: React.CSSProperties;
+  /** Aria label for the component */
+  ariaLabel: string;
+}
+
+// Maximum amplitude for the audio indicator.
+const maxAmplitude = 1;
+// Minimum amplitude to avoid division by zero.
+const minAmplitude = 0.1;
+
 export interface FrequencyBand {
-  /** Stable id for the band (used as the React key). */
+  /** Determines the id of the frequency band. */
   id: number;
-  /** Normalized amplitude in the range [0, 1]. */
+  /** Determines the amplitude of the frequency band. */
   amplitude: number;
 }
 
-export interface AudioInputIndicatorProps {
+/**
+ * Audio data model representing the processed frequency bands.
+ */
+export interface AudioDataModel {
   /**
-   * Processed audio data driving the visualization. Each entry is one bar.
-   * In production this is fed from a live Web Audio analyser.
+   * Array of frequency bands, where each band contains an ID and an amplitude.
    */
-  audioData?: FrequencyBand[];
-  /** Disables the indicator (renders in the muted/disabled color). */
-  disabled?: boolean;
-  /** Maximum bar height in pixels. Bars never fall below maxHeight / 5. */
-  maxHeight?: number;
-  /** Animation duration in milliseconds for height transitions. */
-  animationDuration?: number;
-  /** Tailwind classes for the bar color when enabled (token-based). */
-  barClassName?: string;
-  /** Tailwind classes for the bar color when disabled (token-based). */
-  disabledBarClassName?: string;
-  /** Accessible label for the visualization (rendered as role="img"). */
-  ariaLabel?: string;
-  className?: string;
+  frequencyBands: FrequencyBand[];
 }
 
-// Amplitude bounds mirrored from the MUI original.
-const MAX_AMPLITUDE = 1;
-const MIN_AMPLITUDE = 0.1;
-
 /**
- * Mock data — a flat (silent) 5-band signal. In production, fetched/streamed
- * from a live Web Audio analyser.
+ * Calculate the height of the pills based on the amplitude and maximum height
+ * allowed.
  */
-export const MOCK_AUDIO_DATA: FrequencyBand[] = [
-  { id: 1, amplitude: 0 },
-  { id: 2, amplitude: 0 },
-  { id: 3, amplitude: 0 },
-  { id: 4, amplitude: 0 },
-  { id: 5, amplitude: 0 },
-];
-
-/**
- * Convert amplitudes to pixel heights, clamped to a floor of maxHeight / 5
- * (matches the lib's calculatePillHeights).
- */
-function calculatePillHeights(
-  frequencyBands: FrequencyBand[],
+const calculatePillHeights = (
+  frequencyBands: { id: number; amplitude: number }[],
   maxHeight: number
-): { id: number; height: number }[] {
+) => {
   const minHeight = maxHeight / 5;
   return frequencyBands.map((band) => {
-    if (band.amplitude < MIN_AMPLITUDE) {
-      return { id: band.id, height: minHeight };
+    if (band.amplitude < minAmplitude) {
+      return {
+        id: band.id,
+        height: minHeight,
+      };
     }
-    const normalized = band.amplitude / MAX_AMPLITUDE;
-    const height = normalized * maxHeight;
-    return { id: band.id, height: Math.max(height, minHeight) };
+
+    // Normalize the amplitude of the audio signal onto a relative scale.
+    const normalizeAmplitude = band.amplitude / maxAmplitude;
+    // Calculate the height of the audio indicator.
+    const height = normalizeAmplitude * maxHeight;
+    return {
+      id: band.id,
+      height: Math.max(height, minHeight),
+    };
   });
-}
+};
 
 /**
- * A single animated bar. Replaces the MUI `AudioPill` (`<Box sx>` + useState/
- * useEffect height settling) with a Tailwind div + inline transition timing.
+ * Audio Input Indicator component.
  */
-function AudioPill({
-  height,
-  animationDuration,
-  colorClassName,
-}: {
-  height: number;
-  animationDuration: number;
-  colorClassName: string;
-}) {
-  return (
-    <div
-      className={cn("mx-auto w-3 shrink-0 rounded-full", colorClassName)}
-      style={{
-        height,
-        transition: `height ${animationDuration}ms ease-in-out`,
-      }}
-    />
-  );
-}
-
-export function AudioInputIndicator({
-  audioData = MOCK_AUDIO_DATA,
+const AudioInputIndicator: React.FC<AudioInputIndicatorProps> = ({
+  audioData,
+  audioIndicatorColor,
+  audioIndicatorDisabledColor,
   disabled = false,
-  maxHeight = 50,
   animationDuration = 250,
-  barClassName = "bg-primary",
-  disabledBarClassName = "bg-muted-foreground/40",
-  ariaLabel = "Audio input level",
-  className,
-}: AudioInputIndicatorProps) {
-  const pillHeights = React.useMemo(
+  maxHeight = 50,
+  style = {},
+  ariaLabel,
+}) => {
+  const colorIndicator = disabled
+    ? audioIndicatorDisabledColor
+    : audioIndicatorColor;
+
+  const memoizedPillHeights = React.useMemo(
     () => calculatePillHeights(audioData, maxHeight),
     [audioData, maxHeight]
   );
 
-  const colorClassName = disabled ? disabledBarClassName : barClassName;
-
   return (
     <div
-      role="img"
+      className="flex flex-row items-center justify-center gap-0.5"
+      style={{ width: 60, height: 60, ...style }}
       aria-label={ariaLabel}
-      className={cn(
-        "flex flex-row items-center justify-center gap-0.5",
-        className
-      )}
-      style={{ width: 60, height: 60 }}
+      role="img"
     >
-      {pillHeights.map((pill) => (
+      {memoizedPillHeights.map((pill) => (
         <AudioPill
           key={pill.id}
           height={pill.height}
+          // Lib fallback is WordlyColors.white when no color is supplied.
+          color={colorIndicator ?? "hsl(var(--primary-foreground))"}
           animationDuration={animationDuration}
-          colorClassName={colorClassName}
         />
       ))}
     </div>
   );
-}
+};
 
 export default React.memo(AudioInputIndicator);
+export { AudioInputIndicator };

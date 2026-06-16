@@ -1,55 +1,43 @@
 /**
  * CapsuleSummaryCM
  *
- * Ported from the production wordly-react-components-lib
- * (`src/components/library/display/published-summaries/CapsuleSummaryCM.tsx`),
- * which used a MUI Paper + Typography pairing themed via a CSS module.
- * Rebuilt on this repo's shadcn/Tailwind foundation.
+ * Faithful 1:1 port of the lib's `CapsuleSummaryCM`
+ * (library/display/published-summaries/CapsuleSummaryCM.tsx) — the CSS-Module
+ * variant of `CapsuleSummary`. In the lib it differs from the Emotion base only
+ * in styling source (`CapsuleSummary.module.css`); the rendered result is
+ * identical. On our Tailwind stack both variants resolve to the same classes.
  *
- * Displays a brief capsule summary in a highlighted container. Part of the
- * Published Summaries component family.
+ * Mirrors the lib by reusing `CapsuleSummaryProps` from `./CapsuleSummary`.
  *
- * Original theme mapping (lib palette -> our tokens):
- *   - lightnessBlue97 background  -> primary-blue-25
- *   - lightnessBlue85 border      -> primary-blue-100
- *   - lightnessGray15 text        -> gray-900
- *
- * Pure presentational component: content arrives via the `text` prop. In
- * production this text is fetched from the published-summary API.
+ * Token mapping (no raw hex):
+ *   lightnessBlue97 (fill)   #F0F7FF → primary-blue-25
+ *   lightnessBlue85 (border) #B2D8FF → primary-blue-100
+ *   lightnessGray15 (text)   #212529 → gray-800
  */
 
-import * as React from "react";
+import { FC } from "react";
 
 import { cn } from "@/lib/utils";
+import { CapsuleSummaryProps } from "./CapsuleSummary";
 
-export interface CapsuleSummaryCMProps {
-  /** Content to display. Accepts plain text or React nodes for inline formatting. */
-  text?: React.ReactNode;
-
-  /** Optional class name for external styling. */
-  className?: string;
-}
-
-// Mock default — in production this is fetched from the published-summary API.
-const MOCK_TEXT =
-  "AI assistants will be standard for knowledge workers by 2030, fundamentally changing how we approach problem-solving and creativity.";
-
-export function CapsuleSummaryCM({
-  text = MOCK_TEXT,
+/**
+ * Displays a brief capsule summary in a highlighted container.
+ * CSS Module variant of CapsuleSummary.
+ */
+export const CapsuleSummaryCM: FC<CapsuleSummaryProps> = ({
+  text,
   className,
-}: CapsuleSummaryCMProps) {
-  return (
-    <div
-      className={cn(
-        "rounded-xl border border-primary-blue-100 bg-primary-blue-25 p-[25px]",
-        className
-      )}
-    >
-      <p className="text-[20px] font-medium leading-[32.5px] text-gray-900">
-        {text}
-      </p>
-    </div>
-  );
-}
+}) => (
+  <div
+    className={cn(
+      "rounded-xl border border-primary-blue-100 bg-primary-blue-25 p-[25px] shadow-none",
+      className
+    )}
+  >
+    <p className="text-[1.125rem] font-medium leading-[1.75rem] text-gray-800">
+      {text}
+    </p>
+  </div>
+);
 
 export default CapsuleSummaryCM;

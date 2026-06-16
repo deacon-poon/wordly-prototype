@@ -33,11 +33,6 @@ import * as React from "react";
 import { Sparkles, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Aria labels (mirrors the original `ariaLabels` prop)
@@ -70,11 +65,19 @@ export interface LanguageChipProps {
   onRemove?: () => void;
   /** Called when the user clicks the chip body. */
   onSelected?: () => void;
+  /** Icon display size (parity with the lib; only "small" is meaningful). */
+  iconSize?: "small";
   /** Aria labels for the component. */
   ariaLabels?: LanguageChipAriaLabels;
   /** Optional dynamic aria-label that overrides the default. */
   announcementAriaLabel?: string;
+  /** Inline style (parity with the lib's Chip `style` passthrough). */
+  style?: React.CSSProperties;
   className?: string;
+  /** Fired when the chip receives focus (parity with the lib's ChipProps). */
+  onFocus?: (e: React.FocusEvent<HTMLDivElement>) => void;
+  /** Fired when the chip loses focus (parity with the lib's ChipProps). */
+  onBlur?: (e: React.FocusEvent<HTMLDivElement>) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,9 +95,13 @@ export const LanguageChip = React.forwardRef<HTMLDivElement, LanguageChipProps>(
       hideRemoveButton = false,
       onRemove,
       onSelected,
+      iconSize: _iconSize = "small",
       ariaLabels = {},
       announcementAriaLabel,
+      style,
       className,
+      onFocus,
+      onBlur,
     },
     ref
   ) {
@@ -145,6 +152,9 @@ export const LanguageChip = React.forwardRef<HTMLDivElement, LanguageChipProps>(
         aria-invalid={hasError || undefined}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        style={style}
         className={cn(
           // Base anatomy — compact pill (MUI Chip dimensions: 32px tall).
           "inline-flex h-8 max-w-full select-none items-center gap-1 rounded-full border px-3 text-sm font-normal leading-none transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue-500 focus-visible:ring-offset-1",
@@ -171,25 +181,21 @@ export const LanguageChip = React.forwardRef<HTMLDivElement, LanguageChipProps>(
           className
         )}
       >
-        {/* ALS (Automatic Language Selection) decorator — MUI AutoAwesome. */}
+        {/* ALS (Automatic Language Selection) leading decorator — MUI AutoAwesome.
+            The lib renders it inline with no tooltip; the icon color follows the
+            chip's content color (white on the selected fill). */}
         {isALSSupported ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="flex shrink-0 items-center" aria-hidden="true">
-                <Sparkles
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    contentIsLight
-                      ? "text-white"
-                      : hasError
-                        ? "text-destructive"
-                        : "text-primary-blue-700"
-                  )}
-                />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>Automatic Language Selection</TooltipContent>
-          </Tooltip>
+          <Sparkles
+            className={cn(
+              "h-4 w-4 shrink-0",
+              contentIsLight
+                ? "text-white"
+                : hasError
+                  ? "text-destructive"
+                  : "text-current"
+            )}
+            aria-hidden="true"
+          />
         ) : null}
 
         <span className="min-w-0 truncate">{label}</span>

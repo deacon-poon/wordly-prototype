@@ -13,8 +13,9 @@ const meta: Meta<typeof Participant> = {
     compact: false,
   },
   argTypes: {
-    presenterLabel: { control: "text" },
-    avatarSrc: { control: "text" },
+    indicatorColor: { control: false },
+    labelColor: { control: false },
+    className: { control: false },
   },
 };
 
@@ -22,20 +23,20 @@ export default meta;
 
 type Story = StoryObj<typeof Participant>;
 
-/** Attendee: avatar + name, no presenter label or indicator. */
+/** Attendee: just the name, no presenter label or indicator. */
 export const Default: Story = {};
 
-/** Presenter: adds the "Presenter" label above the name and the green dot. */
+/** Presenter: adds the "Presenter" label above the name and the indicator dot. */
 export const Presenter: Story = {
   args: { presenter: true },
 };
 
-/** Small variant: shrinks the avatar, label, name, and indicator. */
+/** Small variant: shrinks the label, name, and indicator margins. */
 export const Small: Story = {
   args: { small: true, presenter: true },
 };
 
-/** Compact: hides the name, rendering only the avatar (+ indicator). */
+/** Compact: hides the name, rendering only the presenter indicator. */
 export const Compact: Story = {
   args: { compact: true, presenter: true },
 };
@@ -45,8 +46,8 @@ export const Anonymous: Story = {
   args: { name: "   " },
 };
 
-/** Initials handling across single, multi, and very long names. */
-export const InitialsVariants: Story = {
+/** Initials/name handling across single, multi, and very long names. */
+export const NameVariants: Story = {
   render: (args) => (
     <div className="flex flex-col gap-4">
       <Participant {...args} name="Tina" />
@@ -55,17 +56,4 @@ export const InitialsVariants: Story = {
       <Participant {...args} name="Jimmy Junior Pesto Junior" />
     </div>
   ),
-};
-
-/** Avatar image with initials fallback. */
-export const WithAvatarImage: Story = {
-  args: {
-    name: "Gene Belcher",
-    avatarSrc: "https://i.pravatar.cc/80?img=12",
-  },
-};
-
-/** Localized presenter label. */
-export const LocalizedPresenterLabel: Story = {
-  args: { presenter: true, presenterLabel: "Presentador" },
 };

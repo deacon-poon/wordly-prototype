@@ -10,11 +10,14 @@
  * Port notes:
  * - MUI `<Link>` → plain semantic `<a>` styled with Tailwind.
  * - `Footer.module.css` folded into inline Tailwind utilities.
- * - Colors mapped to OUR tokens: lib blueLink → Brand Blue primary
- *   (`text-primary`); lib gray (lightnessGray43) → `text-gray-500`.
+ * - Colors mapped to OUR tokens: lib `.blueLink` → Brand Blue primary
+ *   (`text-primary-blue-400`, == lib newWordlyBlue #017CFF); lib `.grayLink`/
+ *   `.metaText`/`.pipe` gray (lightnessGray43 #646E78) → `text-gray-500`.
  *   No raw hex.
- * - Responsive separators reproduced with Tailwind: pipes show at `sm:`/`md:`,
- *   full-width breakers (`basis-full`) force wraps below those breakpoints.
+ * - Responsive separators reproduced with Tailwind arbitrary breakpoints that
+ *   match the lib's exact media queries: pipes show at `min-[576px]:` /
+ *   `min-[768px]:`, full-width breakers (`basis-full`) force wraps below those
+ *   breakpoints (lib `.breakerMobile` 576px / `.breakerTablet` 768px).
  *
  * Pure presentational component (no state/effects), so no "use client".
  * Data arrives via props with inline mock defaults; in production the labels
@@ -24,19 +27,16 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import type { FooterProps } from "./Footer";
 
-export interface FooterCMProps {
-  aiInterpretationLabel?: string;
-  aiInterpretationHref?: string;
-  privacyPolicyLabel?: string;
-  privacyPolicyHref?: string;
-  termsOfServiceLabel?: string;
-  termsOfServiceHref?: string;
-  companyName?: string;
-  /** Optional build/version string; when present, renders a "Version X" segment. */
-  version?: string;
-  className?: string;
-}
+/**
+ * FooterCM shares Footer's prop surface. The lib types this as
+ * `Omit<FooterProps, 'sx'>`; our `Footer` never had an `sx` prop (it was
+ * dropped during the MUI→Tailwind port), so `FooterCMProps` is simply
+ * `FooterProps`. Kept as a re-derived alias to mirror the lib's relationship
+ * and stay in sync if `FooterProps` changes.
+ */
+export type FooterCMProps = FooterProps;
 
 const getCurrentYear = (): number => new Date().getFullYear();
 
@@ -62,7 +62,7 @@ export function FooterCM({
       )}
     >
       <a
-        className={cn(linkBase, "text-primary")}
+        className={cn(linkBase, "text-primary-blue-400")}
         href={aiInterpretationHref}
         target="_blank"
         rel="noopener noreferrer"
@@ -70,14 +70,14 @@ export function FooterCM({
         {aiInterpretationLabel}
       </a>
 
-      {/* pipe visible from tablet up; breaker forces a wrap on mobile */}
+      {/* pipe visible from tablet up (576px); breaker forces a wrap on mobile */}
       <span
-        className="hidden font-sans text-sm leading-[21px] text-gray-500 sm:inline"
+        className="hidden font-sans text-sm leading-[21px] text-gray-500 min-[576px]:inline"
         aria-hidden="true"
       >
         |
       </span>
-      <span className="h-0 basis-full sm:hidden" aria-hidden="true" />
+      <span className="h-0 basis-full min-[576px]:hidden" aria-hidden="true" />
 
       <a
         className={cn(linkBase, "text-gray-500")}
@@ -105,14 +105,14 @@ export function FooterCM({
         {termsOfServiceLabel}
       </a>
 
-      {/* pipe visible from desktop up; breaker forces a wrap on tablet */}
+      {/* pipe visible from desktop up (768px); breaker forces a wrap on tablet */}
       <span
-        className="hidden font-sans text-sm leading-[21px] text-gray-500 md:inline"
+        className="hidden font-sans text-sm leading-[21px] text-gray-500 min-[768px]:inline"
         aria-hidden="true"
       >
         |
       </span>
-      <span className="h-0 basis-full md:hidden" aria-hidden="true" />
+      <span className="h-0 basis-full min-[768px]:hidden" aria-hidden="true" />
 
       <span className="font-sans text-xs leading-[18px] tracking-[0.03px] text-gray-500">
         {`Copyright © 2019 - ${getCurrentYear()} ${companyName}`}
@@ -121,12 +121,15 @@ export function FooterCM({
       {version && (
         <>
           <span
-            className="hidden font-sans text-sm leading-[21px] text-gray-500 sm:inline"
+            className="hidden font-sans text-sm leading-[21px] text-gray-500 min-[576px]:inline"
             aria-hidden="true"
           >
             |
           </span>
-          <span className="h-0 basis-full sm:hidden" aria-hidden="true" />
+          <span
+            className="h-0 basis-full min-[576px]:hidden"
+            aria-hidden="true"
+          />
           <span className="font-sans text-xs leading-[18px] tracking-[0.03px] text-gray-500">
             {`Version ${version}`}
           </span>

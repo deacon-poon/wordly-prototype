@@ -68,13 +68,37 @@ export const Controlled: Story = {
   },
 };
 
+/** Mirrors lib `WithCustomColors`: full color override set. */
 export const WithCustomColors: Story = {
   args: {
     colors: {
-      label: "var(--primary)",
-      text: "var(--primary)",
-      border: "var(--primary)",
-      placeholder: "var(--muted-foreground)",
+      label: "hsl(var(--primary))",
+      text: "hsl(var(--primary))",
+      border: "hsl(var(--primary))",
+      borderHover: "hsl(var(--primary))",
+      borderFocused: "hsl(var(--primary))",
+      placeholder: "hsl(var(--muted-foreground))",
+    },
+  },
+};
+
+/** Mirrors lib `WithDarkTheme`: dark color overrides on a dark surface. */
+export const WithDarkTheme: Story = {
+  args: {
+    colors: {
+      label: "#ffffff",
+      background: "#000000",
+      text: "#ffffff",
+      border: "#757575",
+      borderHover: "#9e9e9e",
+      borderFocused: "#bdbdbd",
+      placeholder: "#9e9e9e",
+    },
+  },
+  parameters: {
+    backgrounds: {
+      default: "custom",
+      values: [{ name: "custom", value: "#000000" }],
     },
   },
 };

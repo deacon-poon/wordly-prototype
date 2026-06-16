@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Lightbulb, Loader2 } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 
 import { KeyTakeawaysCM } from "./KeyTakeawaysCM";
+import { PendingStateCM } from "./PendingStateCM";
 
 /**
  * `KeyTakeawaysCM` — a numbered list of key takeaways inside a summary card.
@@ -65,17 +66,12 @@ export const EmptyItems: Story = {
 /**
  * In-progress placeholder state — section header preserved, body replaced
  * with an inline pending placeholder. Mirrors the digest page when a section's
- * status is `in_progress`. (The lib used a shared `PendingStateCM`; here it is
- * inlined to avoid a cross-component dependency in this single-component port.)
+ * status is `in_progress`. Uses the shared `PendingStateCM` in the `body` slot,
+ * matching the lib.
  */
 export const Pending: Story = {
   args: {
-    body: (
-      <div className="flex items-center gap-3 px-5 pb-[21px] pt-5 text-sm text-muted-foreground">
-        <Loader2 className="size-4 shrink-0 animate-spin text-primary-blue-400" />
-        <span>Generating key takeaways from the session transcript…</span>
-      </div>
-    ),
+    body: <PendingStateCM />,
   },
 };
 

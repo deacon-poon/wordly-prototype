@@ -79,25 +79,39 @@ export const Interactive: Story = {
   },
 };
 
-export const CustomStyling: Story = {
+// Mirrors the lib's `Custom` story: all customization options exercised.
+// (The lib used raw hex for divider/text/icon colors; here those map to brand
+// tokens — Brand Blue accents — to honor the no-raw-hex rule.)
+export const Custom: Story = {
   args: {
-    summaryText: "Customized accordion",
+    summaryText: "Customized Accordion",
     defaultExpanded: true,
     showDivider: true,
     summaryStyles: {
-      padding: "0 16px 0 36px",
+      padding: "0px 16px 0px 36px",
       fontSize: "1.2rem",
       fontWeight: "normal",
+      variant: "h6",
     },
     iconStyles: { size: 28 },
     contentPadding: "8px 16px 24px 36px",
     children: (
-      <ul className="m-0 list-disc pl-4">
-        <li>Custom summary padding (left-indented)</li>
-        <li>Custom summary font size and weight</li>
-        <li>Larger expand icon (still Brand Blue by default)</li>
-        <li>Custom content padding</li>
-      </ul>
+      <div>
+        <p>This accordion demonstrates all customization options:</p>
+        <ul className="m-0 list-disc pl-4">
+          <li>Expanded with a divider</li>
+          <li>
+            Custom summary padding (top: 0px, right: 16px, bottom: 0px, left:
+            36px)
+          </li>
+          <li>
+            Custom content padding (top: 8px, right: 16px, bottom: 24px, left:
+            36px)
+          </li>
+          <li>Custom summary text size, variant, and weight</li>
+          <li>Custom icon size (color stays Brand Blue by default)</li>
+        </ul>
+      </div>
     ),
   },
 };

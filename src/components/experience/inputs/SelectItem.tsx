@@ -72,6 +72,10 @@ export interface SelectItemColors {
   placeholder?: string;
   /** Border color in the default state. */
   border?: string;
+  /** Border color on hover state. */
+  borderHover?: string;
+  /** Border color when focused. */
+  borderFocused?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -147,15 +151,31 @@ export function SelectItem({
   }
 
   // Explicit overrides → inline styles; otherwise token classes carry the look.
+  // borderHover / borderFocused are exposed as CSS custom properties and applied
+  // via arbitrary hover/focus variants below (no global CSS needed).
   const labelStyle = colors?.label ? { color: colors.label } : undefined;
-  const triggerStyle: React.CSSProperties | undefined =
-    colors?.background || colors?.text || colors?.border
-      ? {
-          ...(colors.background ? { backgroundColor: colors.background } : {}),
-          ...(colors.text ? { color: colors.text } : {}),
-          ...(colors.border ? { borderColor: colors.border } : {}),
-        }
-      : undefined;
+  const hasTriggerOverride = Boolean(
+    colors?.background ||
+    colors?.text ||
+    colors?.border ||
+    colors?.borderHover ||
+    colors?.borderFocused
+  );
+  const triggerStyle: React.CSSProperties | undefined = hasTriggerOverride
+    ? ({
+        ...(colors?.background ? { backgroundColor: colors.background } : {}),
+        ...(colors?.text ? { color: colors.text } : {}),
+        ...(colors?.border ? { borderColor: colors.border } : {}),
+        ...(colors?.borderHover
+          ? ({ "--si-border-hover": colors.borderHover } as React.CSSProperties)
+          : {}),
+        ...(colors?.borderFocused
+          ? ({
+              "--si-border-focused": colors.borderFocused,
+            } as React.CSSProperties)
+          : {}),
+      } as React.CSSProperties)
+    : undefined;
   const placeholderStyle = colors?.placeholder
     ? { color: colors.placeholder }
     : undefined;
@@ -184,6 +204,11 @@ export function SelectItem({
           className={cn(
             "h-9 min-h-9 bg-background text-base text-gray-900",
             "focus:ring-2 focus:ring-ring focus:ring-offset-0",
+            // Honor borderHover / borderFocused overrides when supplied.
+            colors?.borderHover &&
+              "hover:[border-color:var(--si-border-hover)]",
+            colors?.borderFocused &&
+              "focus:[border-color:var(--si-border-focused)]",
             !hasSelection && "text-gray-700"
           )}
         >

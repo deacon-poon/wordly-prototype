@@ -1,151 +1,87 @@
 /**
  * FullSummary
  *
- * React migration of the production lib component
- * (wordly-react-components-lib: src/components/library/display/published-summaries/FullSummary.tsx).
+ * Faithful 1:1 port of the lib's `FullSummary`
+ * (wordly-react-components-lib: library/display/published-summaries/FullSummary.tsx),
+ * MUI 6 + Emotion → shadcn/Tailwind.
  *
- * The original was MUI 6 + Emotion: a `Paper` root with a styled header
- * (icon + title) and a styled body (stacked `Typography` paragraphs), plus an
- * optional `body` slot used to inject placeholder states (e.g. PendingState).
- * This port rebuilds it on the shared Card primitive + Tailwind, dropping all
- * @mui/* and @emotion/* deps.
+ * Anatomy preserved 1:1: a `Paper elevation={1}` rounded-12px card (porcelain
+ * border, overflow hidden) with a header band (icon 20x20 + title) and a body of
+ * stacked paragraphs (26px gap, 26px line-height). An optional `body` slot
+ * replaces the paragraphs (used for in-progress / empty placeholders, e.g.
+ * <PendingState />). `titleAs` defaults to `'h6'` (MUI's variantMapping for
+ * subtitle1).
  *
- * Theme mapping (lib palette name -> our token class):
- *   porcelain (root border)        -> border-gray-200
- *   header bg (translucent slate)  -> bg-gray-50/50
- *   lightGrayish (header rule)     -> border-gray-100
- *   onyx (title)                   -> text-gray-900
- *   lightnessGray23 (body)         -> text-gray-700
- *   muted grays (pending state)    -> text-gray-500 / text-muted-foreground
- *
- * Content arrives via props with small inline mock defaults; in production the
- * summary paragraphs would be fetched from the summaries API.
+ * Token mapping (no raw hex):
+ *   porcelain (root border)   #E3E6E8 → border-gray-200
+ *   header bg (rgba slate 50%)        → bg-gray-50/50
+ *   lightGrayish (header rule) #EEF0F2 → border-gray-100
+ *   onyx (title)              #121416 → text-gray-900
+ *   lightnessGray23 (body)    #343A40 → text-gray-700
  */
 
-import * as React from "react";
-import { CalendarClock } from "lucide-react";
+import { ElementType, FC, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-
-// ---------------------------------------------------------------------------
-// PendingState — body-only placeholder shown while a section is generating.
-// Ported from the lib's sibling PendingState component (centered glyph +
-// heading + subtitle). Rendered into FullSummary's `body` slot.
-// ---------------------------------------------------------------------------
-
-export interface PendingStateProps {
-  /** Heading copy. */
-  heading?: string;
-  /** Subtitle copy. */
-  subtitle?: string;
-  className?: string;
-}
-
-export function PendingState({
-  heading = "Summary is being created",
-  subtitle = "The summary will be available soon.",
-  className,
-}: PendingStateProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center gap-2 px-5 py-6 text-center",
-        className
-      )}
-    >
-      <CalendarClock
-        className="h-10 w-10 text-gray-300"
-        strokeWidth={1.75}
-        aria-hidden="true"
-      />
-      <p className="text-base font-medium leading-6 text-gray-500">{heading}</p>
-      <p className="text-sm leading-relaxed text-gray-400">{subtitle}</p>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// FullSummary
-// ---------------------------------------------------------------------------
 
 export interface FullSummaryProps {
-  /** Icon element displayed in the header, rendered at 20x20. */
-  icon?: React.ReactNode;
+  /** Icon element displayed in the header, rendered at 20x20 */
+  icon: ReactNode;
 
-  /** Title text displayed next to the icon in the header. */
+  /** Title text displayed next to the icon in the header */
   title: string;
 
-  /**
-   * Paragraph nodes to display in the body. Accepts plain text or React nodes
-   * for inline formatting. Ignored when `body` is provided.
-   */
-  paragraphs?: React.ReactNode[];
+  /** Array of paragraph nodes to display in the body. Accepts plain text or React nodes for inline formatting. Ignored when `body` is provided. */
+  paragraphs?: ReactNode[];
 
-  /**
-   * Override for the card body. When provided, takes the place of `paragraphs`
-   * — useful for in-progress / empty placeholders (e.g. <PendingState />).
-   */
-  body?: React.ReactNode;
+  /** Optional override for the card body. When provided, takes the place of the `paragraphs` content — useful for in-progress / empty placeholders. */
+  body?: ReactNode;
 
-  /**
-   * DOM element type for the title heading. Defaults to `'h2'`. Pass `'h3'`
-   * etc. to render the title at a different semantic level without changing
-   * its visual styling.
-   */
-  titleAs?: React.ElementType;
-
+  /** Optional CSS class name for external styling */
   className?: string;
-}
 
-const MOCK_PARAGRAPHS: React.ReactNode[] = [
-  "Dr. Chen opened the conference with a compelling vision of technology’s trajectory over the next decade. She emphasized three key themes: the democratization of AI tools, the shift toward sustainable computing, and the growing importance of human-AI collaboration.",
-  "The keynote began with a historical perspective on technological revolutions, drawing parallels between the current AI transformation and previous industrial shifts. Dr. Chen noted that unlike previous revolutions, the AI era will affect knowledge workers most profoundly.",
-];
+  /** Optional DOM element type for the title. Defaults to `'h6'`. Pass `'h2'` etc. to render the title as a real heading at a different level without changing its visual styling. */
+  titleAs?: ElementType;
+}
 
 /**
  * Displays a published full summary with an icon, title, and paragraph content.
  * Part of the Published Summaries component family.
  */
-export function FullSummary({
+export const FullSummary: FC<FullSummaryProps> = ({
   icon,
   title,
-  paragraphs = MOCK_PARAGRAPHS,
+  paragraphs,
   body,
-  titleAs: TitleTag = "h2",
   className,
-}: FullSummaryProps) {
-  return (
-    <Card
-      className={cn(
-        "overflow-hidden rounded-xl border-gray-200 shadow-sm",
-        className
-      )}
-    >
-      <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-5 pb-[17px] pt-4">
-        {icon ? (
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
-            {icon}
-          </span>
-        ) : null}
-        <TitleTag className="text-base font-semibold text-gray-900">
-          {title}
-        </TitleTag>
+  titleAs: TitleTag = "h6",
+}) => (
+  <div
+    className={cn(
+      "overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm",
+      className
+    )}
+  >
+    <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-5 pb-[17px] pt-4">
+      <span className="flex size-5 shrink-0 items-center justify-center [&>*]:size-full">
+        {icon}
+      </span>
+      <TitleTag className="text-base font-semibold text-gray-900">
+        {title}
+      </TitleTag>
+    </div>
+    {body !== undefined ? (
+      body
+    ) : paragraphs && paragraphs.length > 0 ? (
+      <div className="flex flex-col gap-[26px] px-5 pb-[21px] pt-5">
+        {paragraphs.map((paragraph, index) => (
+          <p key={index} className="text-base leading-[1.625rem] text-gray-700">
+            {paragraph}
+          </p>
+        ))}
       </div>
-
-      {body !== undefined ? (
-        body
-      ) : paragraphs && paragraphs.length > 0 ? (
-        <div className="flex flex-col gap-[26px] px-5 pb-[21px] pt-5">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index} className="text-base leading-[26px] text-gray-700">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-      ) : null}
-    </Card>
-  );
-}
+    ) : null}
+  </div>
+);
 
 export default FullSummary;

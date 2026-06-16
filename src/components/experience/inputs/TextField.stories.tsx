@@ -13,7 +13,7 @@ const meta: Meta<typeof TextField> = {
     disabled: false,
     required: false,
     isPassword: false,
-    variant: "outlined",
+    variant: "standard",
   },
   argTypes: {
     variant: {

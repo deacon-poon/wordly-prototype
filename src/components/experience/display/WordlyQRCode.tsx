@@ -290,8 +290,21 @@ const qrFrameVariants = cva(
 export interface WordlyQRCodeProps extends VariantProps<
   typeof qrFrameVariants
 > {
-  /** Link to encode into the QR code. In production, the session join URL. */
+  /**
+   * Link to encode into the QR code, in the form of a string. In production,
+   * the session join URL. (Lib parity: `link` is the primary required prop.)
+   */
   link?: string;
+  /**
+   * Hex/CSS color for the QR code background (lib parity: `backgroundColor`).
+   * Caller-supplied color; takes precedence over `variant`/`backgroundColorClass`.
+   */
+  backgroundColor?: string;
+  /**
+   * Hex/CSS color for the dark modules of the QR code (lib parity: `codeColor`).
+   * Caller-supplied color; takes precedence over `variant`/`codeColorClass`.
+   */
+  codeColor?: string;
   /** Semantic color variant mapped to brand tokens. Default "default". */
   variant?: WordlyQRCodeVariant;
   /**
@@ -304,7 +317,7 @@ export interface WordlyQRCodeProps extends VariantProps<
    * the lib's `backgroundColor`. Use a token class (e.g. `fill-primary-blue-25`).
    */
   backgroundColorClass?: string;
-  /** Pixel length of one side of the rendered QR code. */
+  /** Number of pixels for the length of a side of the QR code. */
   size?: number;
   /** Accessible label for the QR image. */
   alt?: string;
@@ -317,6 +330,8 @@ export interface WordlyQRCodeProps extends VariantProps<
  */
 export function WordlyQRCode({
   link = "https://attend.wordly.ai/join/WRDL-2026",
+  backgroundColor,
+  codeColor,
   variant = "default",
   codeColorClass,
   backgroundColorClass,
@@ -326,8 +341,12 @@ export function WordlyQRCode({
   className,
 }: WordlyQRCodeProps) {
   const palette = qrColors[variant] ?? qrColors.default;
-  const fg = codeColorClass ?? palette.fg;
-  const bg = backgroundColorClass ?? palette.bg;
+  // Resolution order mirrors the lib: an explicit caller-supplied color wins,
+  // then a token `fill-*` class, then the brand-token variant default.
+  const fgClass = codeColor ? undefined : (codeColorClass ?? palette.fg);
+  const bgClass = backgroundColor
+    ? undefined
+    : (backgroundColorClass ?? palette.bg);
 
   const matrix = React.useMemo(() => buildMatrix(link), [link]);
   const { size: count, modules } = matrix;
@@ -344,7 +363,12 @@ export function WordlyQRCode({
         aria-label={alt ?? `QR code for ${link}`}
         shapeRendering="crispEdges"
       >
-        <rect width={total} height={total} className={bg} />
+        <rect
+          width={total}
+          height={total}
+          className={bgClass}
+          fill={backgroundColor}
+        />
         {modules.flatMap((row, r) =>
           row.map((dark, c) =>
             dark ? (
@@ -354,7 +378,8 @@ export function WordlyQRCode({
                 y={r + quiet}
                 width={1}
                 height={1}
-                className={fg}
+                className={fgClass}
+                fill={codeColor}
               />
             ) : null
           )
