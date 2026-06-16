@@ -177,7 +177,7 @@ export function TranscriptSelector({
   options = MOCK_TRANSCRIPT_OPTIONS,
   placeholder = "Select transcript mode",
   size = "default",
-  triggerClass = "",
+  triggerClass = "w-full",
   disabled = false,
   readonly = false,
   loading = false,

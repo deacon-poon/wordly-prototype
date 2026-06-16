@@ -227,7 +227,7 @@ export function AccountSelector({
   labelFormatter = defaultLabelFormatter,
   placeholder = "Select account",
   size = "default",
-  triggerClass = "",
+  triggerClass = "w-full",
   disabled = false,
   readonly = false,
   loading = false,

@@ -219,7 +219,7 @@ export function WorkspaceSelector({
   searchable = false,
   clearable = false,
   size = "default",
-  triggerClass = "",
+  triggerClass = "w-full",
   disabled = false,
   readonly = false,
   loading = false,

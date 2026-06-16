@@ -172,7 +172,7 @@ export function GlossarySelector({
   noneOptionText = "None",
   placeholder = "Select glossary",
   size = "default",
-  triggerClass = "",
+  triggerClass = "w-full",
   disabled = false,
   readonly = false,
   loading = false,

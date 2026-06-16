@@ -172,7 +172,7 @@ export function LocaleSelector({
   labelFormatter = defaultLabelFormatter,
   placeholder = "Select locale",
   size = "default",
-  triggerClass = "",
+  triggerClass = "w-full",
   disabled = false,
   readonly = false,
   loading = false,
