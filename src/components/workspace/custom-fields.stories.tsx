@@ -1,188 +1,77 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import * as React from "react";
 
-import {
-  CustomFields,
-  MOCK_PROFILE_FIELDS,
-  MOCK_SESSION_FIELDS,
-  type CustomField,
-} from "./custom-fields";
+import { CustomFields, type CustomField } from "./custom-fields";
 
+/**
+ * Mirrors the portal Overview story 1:1:
+ *   wordly_portal: stories/business/wordly-custom-fields/story-1.Overview.stories.ts
+ *
+ * Single "Overview" story: a header + description, then a "Basic Usage" block
+ * rendering <app-wordly-custom-fields> bound to the controllable args (label,
+ * helperText, required, disabled, readonly, addFieldLabel, fieldNamePlaceholder,
+ * fieldValuePlaceholder), emitting valueChange. The `title:` namespace is kept as
+ * the existing "Workspace Kit/CustomFields".
+ */
 const meta: Meta<typeof CustomFields> = {
   title: "Workspace Kit/CustomFields",
   component: CustomFields,
-  parameters: {
-    layout: "centered",
-    docs: {
-      description: {
-        component:
-          "React migration of the production Angular `wordly-custom-fields`. " +
-          "Two contexts: PROFILE (user authors name+value pairs with add/remove " +
-          "and duplicate detection) and SESSION (system-defined names with " +
-          "type-aware value controls: text, numeric, single- and multi-select). " +
-          "Controlled via props (mock by default); no Angular DI/forms layer.",
-      },
-    },
-  },
-  tags: ["autodocs"],
   argTypes: {
-    context: { control: "inline-radio", options: ["profile", "session"] },
-    stacked: { control: "boolean" },
-    showError: { control: "boolean" },
+    // Common form control properties
+    label: { control: "text" },
+    helperText: { control: "text" },
     required: { control: "boolean" },
     disabled: { control: "boolean" },
     readonly: { control: "boolean" },
+    // Component specific properties
+    addFieldLabel: { control: "text" },
+    fieldNamePlaceholder: { control: "text" },
+    fieldValuePlaceholder: { control: "text" },
+    // Events
+    onValueChange: { action: "valueChange" },
+  },
+  args: {
+    label: "Custom Fields",
+    helperText: "Add custom fields for additional information",
+    required: false,
+    disabled: false,
+    readonly: false,
+    addFieldLabel: "Add Field",
+    fieldNamePlaceholder: "Field name",
+    fieldValuePlaceholder: "Field value",
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof CustomFields>;
 
-/** Controlled wrapper so the stories reflect real edit state. */
-function Controlled(props: React.ComponentProps<typeof CustomFields>) {
-  const [value, setValue] = React.useState<CustomField[]>(props.value ?? []);
-  return (
-    <div className="w-[520px]">
-      <CustomFields {...props} value={value} onValueChange={setValue} />
-    </div>
-  );
-}
+// Basic Overview Story
+export const Overview: Story = {
+  name: "Overview",
+  render: (args) => {
+    const [value, setValue] = React.useState<CustomField[]>([]);
+    return (
+      <div className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Custom Fields Component</h3>
+        <p className="text-gray-600 mb-6">
+          This component allows users to dynamically add and manage custom field
+          pairs (name and value). It integrates with Angular forms and supports
+          validation.
+        </p>
 
-export const Basic: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Custom Fields",
-    context: "profile",
-    value: MOCK_PROFILE_FIELDS,
-  },
-};
-
-export const ProfileEmpty: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Custom Fields",
-    context: "profile",
-    helperText: "Add name/value pairs to describe this profile.",
-  },
-};
-
-export const ProfileDuplicateError: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Custom Fields",
-    context: "profile",
-    value: [
-      { name: "Region", value: "EMEA", labelType: { typeId: "TEXT" } },
-      { name: "Region", value: "APAC", labelType: { typeId: "TEXT" } },
-    ],
-  },
-};
-
-export const Session: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Session Details",
-    context: "session",
-    value: MOCK_SESSION_FIELDS,
-  },
-};
-
-export const SessionStacked: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Session Details",
-    context: "session",
-    stacked: true,
-    value: MOCK_SESSION_FIELDS,
-  },
-};
-
-export const SessionRequiredError: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Session Details",
-    context: "session",
-    showError: true,
-    value: [
-      {
-        name: "Session Title",
-        value: "",
-        required: true,
-        labelType: { typeId: "TEXT" },
-      },
-      {
-        name: "Room",
-        value: "",
-        required: true,
-        labelType: {
-          typeId: "SINGLE_SELECT_OPTION",
-          choices: ["Auditorium A", "Auditorium B", "Breakout 1"],
-        },
-      },
-    ],
-  },
-};
-
-/** PROFILE showError: incomplete rows redden the name input + value (empty) input. */
-export const ProfileRequiredError: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Custom Fields",
-    context: "profile",
-    required: true,
-    showError: true,
-    value: [
-      { name: "Department", value: "", labelType: { typeId: "TEXT" } },
-      { name: "", value: "EMEA", labelType: { typeId: "TEXT" } },
-    ],
-  },
-};
-
-/** SESSION stacked + required error: type-aware controls all show the invalid border. */
-export const SessionStackedRequiredError: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Session Details",
-    context: "session",
-    stacked: true,
-    showError: true,
-    value: [
-      {
-        name: "Expected Attendees",
-        value: "",
-        required: true,
-        labelType: { typeId: "NUMERIC" },
-      },
-      {
-        name: "Languages",
-        selectedValues: [],
-        required: true,
-        labelType: {
-          typeId: "MULTI_SELECT_OPTION",
-          choices: ["English", "Spanish", "French"],
-        },
-      },
-    ],
-  },
-};
-
-export const Disabled: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Custom Fields",
-    context: "profile",
-    disabled: true,
-    value: MOCK_PROFILE_FIELDS,
-  },
-};
-
-/** Readonly: values are visible but locked; no add/remove affordances (portal parity). */
-export const ProfileReadonly: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Custom Fields",
-    context: "profile",
-    readonly: true,
-    value: MOCK_PROFILE_FIELDS,
+        {/* Basic Usage */}
+        <div>
+          <h4 className="text-md font-medium mb-3">Basic Usage</h4>
+          <CustomFields
+            {...args}
+            value={value}
+            onValueChange={(next) => {
+              setValue(next);
+              args.onValueChange?.(next);
+            }}
+          />
+        </div>
+      </div>
+    );
   },
 };

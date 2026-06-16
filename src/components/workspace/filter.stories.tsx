@@ -1,14 +1,59 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import * as React from "react";
 
-import {
-  WorkspaceFilter,
-  FILTER_TYPES,
-  MOCK_FILTER_FIELDS,
-  MOCK_WORKSPACE_OPTIONS,
-  type FilterField,
-  type FilterValues,
-} from "./filter";
+import { WorkspaceFilter, type FilterField, type FilterValues } from "./filter";
+
+/**
+ * Stories mirror the production Angular Overview story 1:1:
+ *   wordly_portal: stories/business/wordly-filter/story-1.Overview.stories.ts
+ * (Overview / WithFieldOptions / WithWorkspaceSelector). The Angular original
+ * pulls its date-range initial value from `DateRangePresets last30`
+ * (`[daysAgo(29), endOfDay()]`); `last30()` below reproduces that range.
+ */
+
+// Mirrors the portal mockWorkspaceOptions used by the Overview story's bridge.
+const mockWorkspaceOptions = [
+  { label: "Personal Workspace", value: "65b7a1cfa5f3b021c5a909e7" },
+  { label: "Engineering", value: "65b7a253a5f3b021c5a90b20" },
+  { label: "Marketing Team", value: "65b7a253a5f3b021c5a90b21" },
+  { label: "Product Development", value: "65b7a253a5f3b021c5a90b22" },
+  { label: "Design Team", value: "65b7a253a5f3b021c5a90b23" },
+  { label: "Customer Success", value: "65b7a253a5f3b021c5a90b24" },
+];
+
+/** Reproduces the portal `DateRangePresets last30` compute: [daysAgo(29), today]. */
+function last30() {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - 29);
+  return { from, to };
+}
+
+const baseFields: FilterField[] = [
+  {
+    key: "dateRange",
+    type: "date-range",
+    label: "Date Range",
+    initialValue: last30(),
+  },
+  {
+    key: "workspaceId",
+    type: "ws-selector",
+    label: "Workspace",
+    config: {
+      includeAllOption: true,
+      defaultOption: "ALL",
+      options: mockWorkspaceOptions,
+    },
+  },
+  {
+    key: "search",
+    type: "input",
+    label: "Search",
+    placeholder: "ID, Title, Label, or Custom...",
+  },
+  { key: "active", type: "checkbox", label: "Active" },
+];
 
 const meta: Meta<typeof WorkspaceFilter> = {
   title: "Workspace Kit/WorkspaceFilter",
@@ -18,11 +63,10 @@ const meta: Meta<typeof WorkspaceFilter> = {
     docs: {
       description: {
         component:
-          "React migration of the production Angular `wordly-filter`. A " +
-          "config-driven filter bar built from a `fields` contract " +
-          "(date-range, ws-selector, checkbox, input) that emits collected " +
-          "values via `onSearch`. Built on shadcn primitives (Input, Checkbox, " +
-          "Calendar + Popover, Command + Popover, Button); no Angular DI layer.",
+          "Data-driven filter. Pass a `FilterField[]` to configure which " +
+          "controls appear (date-range, search, ws-selector, checkbox). Emits " +
+          "a `FilterValues` record keyed by field key when the Search button " +
+          "is clicked. React migration of the production Angular `wordly-filter`.",
       },
     },
   },
@@ -32,8 +76,9 @@ const meta: Meta<typeof WorkspaceFilter> = {
 export default meta;
 type Story = StoryObj<typeof WorkspaceFilter>;
 
-/** Controlled wrapper that surfaces the submitted values below the bar. */
-function Controlled(props: React.ComponentProps<typeof WorkspaceFilter>) {
+/** Surfaces the submitted values below the bar (the Angular story uses the
+ *  searchFilterParams action; here we render the emitted record). */
+function Render(props: React.ComponentProps<typeof WorkspaceFilter>) {
   const [submitted, setSubmitted] = React.useState<FilterValues | null>(null);
   return (
     <div className="flex flex-col gap-4">
@@ -53,134 +98,81 @@ function Controlled(props: React.ComponentProps<typeof WorkspaceFilter>) {
   );
 }
 
-export const Basic: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: MOCK_FILTER_FIELDS },
+export const Overview: Story = {
+  render: (args) => <Render {...args} />,
+  args: {
+    fields: baseFields,
+    submitButtonLabel: "Search",
+  },
 };
 
-export const CustomSubmitLabel: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: MOCK_FILTER_FIELDS, submitButtonLabel: "Apply filters" },
-};
-
-const INPUT_ONLY_FIELDS: FilterField[] = [
-  {
-    key: "name",
-    type: FILTER_TYPES.input,
-    label: "Name",
-    placeholder: "Search by name",
-  },
-  {
-    key: "host",
-    type: FILTER_TYPES.input,
-    label: "Host",
-    placeholder: "Search by host",
-  },
-];
-
-export const InputsOnly: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: INPUT_ONLY_FIELDS },
-};
-
-const WORKSPACE_PICKER_FIELDS: FilterField[] = [
-  {
-    key: "workspace",
-    type: FILTER_TYPES.wsSelector,
-    label: "Workspace",
-    placeholder: "Select workspace",
-    config: {
-      searchable: true,
-      clearable: true,
-      includeAllOption: true,
-      options: MOCK_WORKSPACE_OPTIONS,
-    },
-  },
-];
-
-export const WorkspacePicker: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: WORKSPACE_PICKER_FIELDS },
-};
-
-const REQUIRED_FIELDS: FilterField[] = [
-  {
-    key: "dateRange",
-    type: FILTER_TYPES.dateRange,
-    label: "Date range",
-    required: true,
-  },
-  { key: "search", type: FILTER_TYPES.input, label: "Search", required: true },
-  {
-    key: "activeOnly",
-    type: FILTER_TYPES.checkbox,
-    label: "Active only",
-    required: true,
-  },
-];
-
-export const RequiredFields: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: REQUIRED_FIELDS },
-};
-
-/**
- * Submit with every required field empty to see the error/invalid state
- * (destructive border on inputs, the date-range/workspace triggers, and the
- * checkbox) — mirrors the Angular form-control-wrapper `showError` behavior
- * after `markAsSubmitted()`.
- */
-export const ErrorState: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: REQUIRED_FIELDS, submitButtonLabel: "Filter" },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Click Filter without filling the required fields to reveal the " +
-          "portal-aligned invalid state (destructive borders, blocked submit).",
+export const WithFieldOptions: Story = {
+  name: "With Field Options (disabled / initialValue / hidden)",
+  render: (args) => <Render {...args} />,
+  args: {
+    fields: [
+      {
+        key: "dateRange",
+        type: "date-range",
+        label: "Date Range",
+        initialValue: last30(),
       },
-    },
+      {
+        key: "search",
+        type: "input",
+        label: "Search",
+        placeholder: "ID, Title, Label, or Custom...",
+        initialValue: "pre-filled query",
+      },
+      {
+        key: "workspaceId",
+        type: "ws-selector",
+        label: "Workspace",
+        hidden: true,
+      },
+      {
+        key: "active",
+        type: "checkbox",
+        label: "Active",
+        disabled: true,
+      },
+    ],
+    submitButtonLabel: "Search",
   },
 };
 
-const DISABLED_FIELDS: FilterField[] = [
-  {
-    key: "dateRange",
-    type: FILTER_TYPES.dateRange,
-    label: "Date range",
-    disabled: true,
+export const WithWorkspaceSelector: Story = {
+  name: "With Workspace Selector",
+  render: (args) => <Render {...args} />,
+  args: {
+    fields: [
+      {
+        key: "dateRange",
+        type: "date-range",
+        label: "Date Range",
+        initialValue: last30(),
+      },
+      {
+        key: "workspaceId",
+        type: "ws-selector",
+        label: "Workspace",
+        config: {
+          searchable: true,
+          clearable: true,
+          includeAllOption: true,
+          defaultOption: "65b7a253a5f3b021c5a90b24",
+          options: mockWorkspaceOptions,
+        },
+      },
+      {
+        key: "search",
+        type: "input",
+        label: "Search",
+        placeholder: "ID, Title, Label, or Custom...",
+      },
+      { key: "active", type: "checkbox", label: "Active" },
+    ],
+    submitButtonLabel: "Search",
+    containerClass: "md:flex-nowrap",
   },
-  {
-    key: "workspace",
-    type: FILTER_TYPES.wsSelector,
-    label: "Workspace",
-    placeholder: "Select workspace",
-    disabled: true,
-    config: { options: MOCK_WORKSPACE_OPTIONS },
-  },
-  {
-    key: "search",
-    type: FILTER_TYPES.input,
-    label: "Search",
-    placeholder: "Search by name",
-    disabled: true,
-  },
-  {
-    key: "activeOnly",
-    type: FILTER_TYPES.checkbox,
-    label: "Active only",
-    disabled: true,
-  },
-];
-
-/** Every field disabled — exercises the disabled state across control types. */
-export const DisabledFields: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: DISABLED_FIELDS },
-};
-
-export const Empty: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { fields: [] },
 };

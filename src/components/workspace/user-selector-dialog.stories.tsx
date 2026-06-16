@@ -1,16 +1,21 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
 import {
   UserSelectorDialog,
-  MOCK_USERS,
-  dialogButtonVariants,
   type UserSelectorOption,
-  type DialogButtonVariant,
-  type DialogButtonSize,
 } from "./user-selector-dialog";
 
+/**
+ * Mirrors the portal story:
+ *   wordly_portal: stories/business/wordly-user-selector-dialog/
+ *     story-1.Overview.stories.ts  (title 'Business/WordlyUserSelectorDialog')
+ *
+ * The existing `Workspace Kit/...` namespace is preserved for this repo. The
+ * portal's Overview / WithCustomLabels / LimitedSelection / DynamicDialog
+ * stories are reproduced; each portal story `alert()`s the selected users, so
+ * we keep the same `onUsersSelected` alert handler.
+ */
 const meta: Meta<typeof UserSelectorDialog> = {
   title: "Workspace Kit/UserSelectorDialog",
   component: UserSelectorDialog,
@@ -19,178 +24,221 @@ const meta: Meta<typeof UserSelectorDialog> = {
     docs: {
       description: {
         component:
-          "React migration of the production Angular `wordly-user-selector-dialog`. " +
-          "Opens a dialog to search a user directory, multi-select users (with an " +
-          "optional max-users cap and excluded users), and confirm. Data via props " +
-          "(mock by default); the Angular DI/service search layer is dropped and " +
-          "search is filtered client-side.",
+          "A reusable dialog component for searching and selecting users from " +
+          "a list. Features: search by name or email, multi-selection, " +
+          "real-time filtering, full keyboard navigation / screen-reader " +
+          "support, responsive. The component emits selected users through the " +
+          "`onUsersSelected` event. React migration of the production Angular " +
+          "`wordly-user-selector-dialog`.",
       },
     },
   },
   tags: ["autodocs"],
   argTypes: {
-    loading: { control: "boolean" },
-    maxUsers: { control: "number" },
+    buttonText: {
+      control: "text",
+      description: "Text displayed on the trigger button",
+    },
+    dialogTitle: {
+      control: "text",
+      description: "Title shown in the dialog header",
+    },
+    searchPlaceholder: {
+      control: "text",
+      description: "Placeholder text for the search input",
+    },
+    cancelButtonText: {
+      control: "text",
+      description: "Text for the cancel button",
+    },
+    addButtonText: {
+      control: "text",
+      description: "Text for the add/confirm button",
+    },
+    maxUsers: {
+      control: "number",
+      description:
+        "Maximum number of users that can be selected (optional, no limit if not set)",
+    },
+    onUsersSelected: { action: "usersSelected" },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof UserSelectorDialog>;
 
-/** Wrapper that surfaces the confirmed selection so stories feel real. */
-function Controlled(props: React.ComponentProps<typeof UserSelectorDialog>) {
-  const [added, setAdded] = React.useState<UserSelectorOption[]>([]);
-  return (
-    <div className="flex flex-col items-start gap-4">
-      <UserSelectorDialog
-        {...props}
-        onUsersSelected={(users) => {
-          setAdded(users);
-          props.onUsersSelected?.(users);
-        }}
-      />
-      {added.length > 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Added: {added.map((u) => u.name).join(", ")}
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Open the dialog and search (e.g. &ldquo;a&rdquo;) to select users.
-        </p>
-      )}
-    </div>
+/** Portal `render` parity: each story alerts the selected users on confirm. */
+function alertSelected(users: UserSelectorOption[]) {
+  // eslint-disable-next-line no-alert
+  alert(
+    `Selected ${users.length} user(s):\n${users
+      .map((u) => `${u.name} (${u.email})`)
+      .join("\n")}`
   );
 }
 
-export const Basic: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {},
-};
-
-export const MaxTwoUsers: Story = {
-  render: (args) => <Controlled {...args} />,
+export const Overview: Story = {
   args: {
-    maxUsers: 2,
-    dialogDescription:
-      "Added users will be given access. You can add up to 2 users.",
+    buttonText: "Select Users",
+    dialogTitle: "Choose Users",
+    searchPlaceholder: "Search users by name or email...",
+    cancelButtonText: "Cancel",
+    addButtonText: "Add Selected Users",
+    onUsersSelected: alertSelected,
   },
 };
 
-export const WithExcludedUsers: Story = {
-  render: (args) => <Controlled {...args} />,
+export const WithCustomLabels: Story = {
   args: {
-    // Already-members appear disabled in search results.
-    excludedUsers: [MOCK_USERS[0], MOCK_USERS[1]],
+    buttonText: "Invite Team Members",
+    dialogTitle: "Invite People to Project",
+    searchPlaceholder: "Find colleagues to invite...",
+    cancelButtonText: "Not Now",
+    addButtonText: "Send Invitations",
+    onUsersSelected: (users) =>
+      // eslint-disable-next-line no-alert
+      alert(
+        `Sending invitations to ${users.length} user(s):\n${users
+          .map((u) => `${u.name} (${u.email})`)
+          .join("\n")}`
+      ),
   },
 };
 
-export const Loading: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { loading: true },
-};
-
-export const Empty: Story = {
-  render: (args) => <Controlled {...args} />,
+export const LimitedSelection: Story = {
   args: {
-    // No directory -> any search lands on the "no users found" empty state.
-    users: [],
-  },
-};
-
-export const CustomCopy: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    buttonText: "Invite teammates",
-    dialogTitle: "Invite teammates",
-    dialogDescription: "Invited teammates can collaborate on this workspace.",
-    addButtonText: "Send invites",
-    selectedUsersText: "Teammates to invite",
+    buttonText: "Choose 3 Users Max",
+    dialogTitle: "Select Team Leaders",
+    searchPlaceholder: "Search for team leaders...",
+    cancelButtonText: "Cancel",
+    addButtonText: "Assign Roles",
+    maxUsers: 3,
+    onUsersSelected: (users) =>
+      // eslint-disable-next-line no-alert
+      alert(
+        `Assigned leadership roles to ${users.length} user(s):\n${users
+          .map((u) => `${u.name} (${u.email})`)
+          .join("\n")}`
+      ),
   },
 };
 
 /**
- * Button anatomy parity check - exercises the dialog's internal
- * `dialogButtonVariants`, which mirrors the portal core button
- * (wordly-button.component.scss): variants primary/secondary/destructive/
- * outline/icon and sizes sm/default/lg/block, plus the disabled state.
- * The dialog itself only uses primary (trigger + Add) and outline (Cancel);
- * the rest are shown so the portal anatomy is visible/regression-tested.
+ * Portal `DynamicDialog`: opened programmatically (no trigger button) via the
+ * WordlyUserSelectorDialogService, with config passed as context and the result
+ * surfaced after close. There is no service layer in this React port, so we
+ * reproduce the behavior with the controlled `open` prop driven by external
+ * buttons, mirroring the portal demo's three variations + result panel.
  */
-export const ButtonAnatomy: StoryObj = {
-  parameters: { layout: "padded" },
+export const DynamicDialog: StoryObj = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Demonstrates opening the dialog programmatically (no trigger button) " +
+          "and handling the returned selection — the React analogue of the " +
+          "portal's WordlyUserSelectorDialogService.open() flow.",
+      },
+    },
+  },
   render: () => {
-    const variants: DialogButtonVariant[] = [
-      "primary",
-      "secondary",
-      "destructive",
-      "outline",
-    ];
-    const sizes: DialogButtonSize[] = ["sm", "default", "lg", "block"];
-    return (
-      <div className="flex flex-col gap-8">
-        <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-800">Variants</h4>
-          <div className="flex flex-wrap items-center gap-3">
-            {variants.map((variant) => (
-              <button
-                key={variant}
-                type="button"
-                className={cn(dialogButtonVariants({ variant }))}
-              >
-                {variant}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-label="Icon button"
-              className={cn(
-                dialogButtonVariants({ variant: "icon", size: "icon" })
-              )}
-            >
-              +
-            </button>
-          </div>
-        </div>
+    function Demo() {
+      const [config, setConfig] = React.useState<{
+        dialogTitle?: string;
+        dialogDescription?: string;
+        searchPlaceholder?: string;
+        selectedUsersText?: string;
+        addButtonText?: string;
+        cancelButtonText?: string;
+        maxUsers?: number;
+      } | null>(null);
+      const [lastResult, setLastResult] = React.useState<
+        UserSelectorOption[] | null
+      >(null);
 
-        <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-800">Sizes</h4>
-          <div className="flex flex-col items-start gap-3">
-            {sizes.map((size) => (
-              <button
-                key={size}
-                type="button"
-                className={cn(
-                  dialogButtonVariants({ variant: "primary", size })
-                )}
-              >
-                size: {size}
-              </button>
-            ))}
-          </div>
-        </div>
+      return (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Dynamic User Selector Demo</h3>
+          <p className="text-gray-600 mb-2">
+            This story demonstrates the <strong>dynamic mode</strong> of the
+            UserSelectorDialog: it is opened programmatically rather than by a
+            trigger button, and the selection is returned after close.
+          </p>
+          <p className="text-gray-600">
+            Click the buttons below to open different variations of the dialog:
+          </p>
 
-        <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-800">
-            Disabled state
-          </h4>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="space-y-2">
             <button
               type="button"
-              disabled
-              className={cn(dialogButtonVariants({ variant: "primary" }))}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary-blue-600 mr-2"
+              onClick={() => setConfig({})}
             >
-              Disabled
+              Open Basic Dialog
             </button>
             <button
               type="button"
-              disabled
-              className={cn(dialogButtonVariants({ variant: "outline" }))}
+              className="px-4 py-2 bg-accent-green-600 text-white rounded-md hover:bg-accent-green-700 mr-2"
+              onClick={() =>
+                setConfig({
+                  dialogTitle: "Choose Project Members",
+                  dialogDescription:
+                    "Select users who will have access to this project.",
+                  searchPlaceholder: "Search by name or email...",
+                  selectedUsersText: "Project Members",
+                  addButtonText: "Add to Project",
+                  cancelButtonText: "Not Now",
+                })
+              }
             >
-              Disabled outline
+              Open Customized Dialog
+            </button>
+            <button
+              type="button"
+              className="px-4 py-2 bg-secondary-navy-700 text-white rounded-md hover:bg-secondary-navy-800"
+              onClick={() =>
+                setConfig({
+                  dialogTitle: "Select Team Leads",
+                  dialogDescription: "Choose up to 2 users to be team leads.",
+                  maxUsers: 2,
+                  addButtonText: "Assign as Leads",
+                })
+              }
+            >
+              Open Limited Dialog (Max 2)
             </button>
           </div>
+
+          {config !== null ? (
+            <UserSelectorDialog
+              {...config}
+              open
+              onOpenChange={(next) => {
+                if (!next) setConfig(null);
+              }}
+              onUsersSelected={(users) => setLastResult(users)}
+            />
+          ) : null}
+
+          <div className="mt-4 p-4 bg-gray-100 rounded-md">
+            <h4 className="font-semibold">Last Selection Result:</h4>
+            {lastResult && lastResult.length > 0 ? (
+              <ul className="mt-2 space-y-1">
+                {lastResult.map((user) => (
+                  <li key={user.id} className="text-sm">
+                    {user.name} ({user.email})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-gray-500 text-sm mt-2">
+                No users selected
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    return <Demo />;
   },
 };

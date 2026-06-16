@@ -3,53 +3,46 @@
 /**
  * WorkspaceManager
  *
- * React migration of the production Angular `wordly-workspace-manager`
- * (wordly_portal: libs/components/business/wordly-workspace-manager).
+ * EXACT React mirror of the production Angular `wordly-workspace-manager`
+ *   wordly_portal:
+ *     libs/components/business/wordly-workspace-manager/
+ *       wordly-workspace-manager.component.{ts,html}
  *
- * The Angular original is a business component wrapping the core
- * `wordly-combobox`: it lists the user's workspaces, appends an "Add workspace"
- * action plus a user menu (Edit profile / Log out), and opens a "Create New
- * Workspace" dialog with a name input (max 50 chars). Here we keep the same
- * public surface (workspace list, selection, the three actions, create dialog,
- * loading/error/empty states) but drop the Angular DI/service layer
- * (bridge + data services, translation, form builder): data arrives via props,
- * defaulting to mock data. In production these workspaces would be fetched from
- * the workspaces API.
+ * The Angular original is a business component that wraps the core
+ * `app-wordly-combobox` (libs/components/core/combobox): it lists the user's
+ * workspaces, appends an "Add workspace" action plus a user menu
+ * (Edit profile / Log out), and opens a "Create New Workspace" dialog with a
+ * name input (max 50 chars, with an info tooltip).
  *
- * Built on the shared shadcn primitives (Command + Popover for the combobox,
- * Dialog + Input for the create flow) per the WorkspaceSelector proof.
+ * This mirrors the combobox template (wordly-combobox.component.html) 1:1:
+ *   - Wrapped in the shared FormControlWrapper (label / required / helper /
+ *     error / layout) — exactly like the Angular combobox, which renders inside
+ *     `app-wordly-form-control-wrapper`.
+ *   - The trigger is the `hlmBtn variant="outline"` anatomy:
+ *     `w-full justify-between font-normal`, placeholder via the
+ *     `.wordly-combobox-placeholder` rule (muted-foreground when no selection),
+ *     `border-destructive` on error, with a trailing `lucideChevronsUpDown`
+ *     icon (`opacity-50 flex-shrink-0`).
+ *   - The popover content is a Command list: a search input, an empty state, the
+ *     workspace options group (with "Add workspace" appended) + a separator,
+ *     then the user-menu group (Edit profile / Log out). Each item renders an
+ *     optional leading icon, a `truncate flex-1 min-w-0 text-left` label, and a
+ *     trailing `lucideCheck` (`ml-auto`, `opacity-0` when not the current value).
  *
- * VISUAL PARITY (vs. portal core anatomy):
- *  - The combobox trigger uses the portal SELECT-trigger anatomy
- *    (`hlm-select-trigger`), identical to our validated AccountSelector reference:
- *    h-9 (default) / h-8 (sm), px-3 py-2, gap-2, rounded-md, border border-input,
- *    bg-transparent, text-sm, shadow-xs, single ChevronDown indicator (size-4,
- *    opacity-50 via muted-foreground), NO hover background on the trigger, focus
- *    ring [3px] with focus-visible:border-ring and no offset, error ->
- *    border-destructive text-destructive focus-visible:ring-destructive/20.
- *    Placeholder = muted-foreground; readonly keeps appearance + blocks interaction.
- *  - The create button is the portal `wordly-button` `variant="primary"` at the
- *    default size (38px / 8px 16px / 16px text). Portal primary Teal maps to our
- *    Brand Blue, so: bg-primary, hover brand-blue-600, active brand-blue-700.
- *  - Disabled mirrors the portal button: gray-100 bg, gray-500 text, opacity-50.
- *  - All buttons: Roboto (inherited), font-weight 500 (font-medium), rounded-md
- *    (= 6px at our --radius), transition-colors, focus-visible ring = Brand Blue.
+ * The Angular DI/service layer (bridge + data services, translation, form
+ * builder) is dropped: data arrives via props, defaulting to mock data; in
+ * production these workspaces would be fetched from the workspaces API.
+ *
+ * Grouping mirrors `WordlyWorkspaceDataService.generateWorkspaceManagerData`:
+ *   group 1 = [...workspaces, addWorkspace?] (showSeparator)
+ *   group 2 = [editProfile, logOut]
  */
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { selectTriggerVariants } from "@/components/ui/select-trigger";
-import {
-  Check,
-  ChevronDown,
-  Info,
-  Loader2,
-  LogOut,
-  Plus,
-  UserCog,
-} from "lucide-react";
+import { Check, ChevronsUpDown, LogOut, Plus, UserCog } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -73,84 +66,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-// ---------------------------------------------------------------------------
-// Portal-aligned button anatomy
-//
-// Mirrors wordly-button.component.scss 1:1 (variant + size set, px sizing, and
-// per-state colors), with the portal's primary Teal remapped to our Brand Blue
-// and only token classes used (no raw hex). The combobox trigger uses the
-// `outline` variant; the create button uses the `primary` variant. The full
-// variant/size set is declared so the anatomy stays portable and self-documents
-// the parity contract even though this business component renders two of them.
-// ---------------------------------------------------------------------------
-
-export const workspaceButtonVariants = cva(
-  // base: portal `button` rule — inline-flex, centered, 500 weight, 6px radius,
-  // smooth transition, focus ring (Brand Blue via --ring): portal uses a 3px ring
-  // with focus-visible:border-ring and NO ring offset.
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-100 disabled:text-gray-500 disabled:pointer-events-none",
-  {
-    variants: {
-      variant: {
-        // portal teal primary -> Brand Blue
-        primary:
-          "bg-primary text-primary-foreground hover:bg-primary-blue-600 active:bg-primary-blue-700",
-        // portal navy secondary -> our navy tokens (alias to Brand Blue family)
-        secondary:
-          "bg-secondary-navy-50 text-secondary-navy-700 hover:bg-secondary-navy-100 active:bg-secondary-navy-200",
-        destructive:
-          "bg-error-600 text-white hover:bg-error-700 active:bg-error-800",
-        outline:
-          "border border-gray-200 bg-white text-gray-800 hover:bg-primary-blue-50 active:bg-primary-blue-100",
-        "outline-primary":
-          "border border-primary-blue-200 bg-white text-primary-blue-700 hover:bg-primary-blue-50 active:bg-primary-blue-100",
-        ghost:
-          "bg-transparent text-gray-800 hover:bg-primary-blue-50 active:bg-primary-blue-100",
-        link: "bg-transparent text-primary p-0 font-normal underline-offset-4 hover:underline",
-        icon: "w-[38px] min-w-[38px] h-[38px] border border-gray-200 p-0 hover:bg-primary-blue-50 active:bg-primary-blue-100",
-      },
-      size: {
-        // portal size-sm: 36px / 8px 12px / 14px
-        sm: "min-h-9 px-3 py-2 text-sm",
-        // portal size-default: 38px / 8px 16px / 16px
-        default: "min-h-[38px] px-4 py-2 text-base",
-        // portal size-lg: 44px / 10px 32px / 16px
-        lg: "min-h-11 px-8 py-2.5 text-base",
-        // portal size-block: full-width, default height
-        block: "w-full min-h-[38px] px-4 py-2 text-base",
-      },
-    },
-    defaultVariants: {
-      variant: "primary",
-      size: "default",
-    },
-  }
-);
-
-export type WorkspaceButtonVariant = NonNullable<
-  VariantProps<typeof workspaceButtonVariants>["variant"]
->;
-export type WorkspaceButtonSize = NonNullable<
-  VariantProps<typeof workspaceButtonVariants>["size"]
->;
-
-// ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal `selectTriggerVariants`
-// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts), identical to our
-// validated AccountSelector reference. The combobox trigger renders the SELECT
-// trigger, not the generic button: border-input, rounded-md, px-3 py-2, text-sm,
-// shadow-xs, gap-2, sizes default=h-9 / sm=h-8, NO hover background, focus ring
-// [3px] on ring with focus-visible:border-ring (no offset), and on error
-// border-destructive + text-destructive + ring-destructive/20.
-// ---------------------------------------------------------------------------
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WorkspaceManagerComboboxOption / WorkspaceGroup)
@@ -165,7 +81,7 @@ export interface WorkspaceItem {
   type?: string;
 }
 
-/** Reserved action values, mirroring the Angular WorkspaceAction enum. */
+/** Reserved action values, mirroring the Angular workspace.constants. */
 export const WORKSPACE_ACTIONS = {
   ADD_WORKSPACE: "addWorkspace",
   EDIT_PROFILE: "editProfile",
@@ -173,7 +89,8 @@ export const WORKSPACE_ACTIONS = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// Mock data — in production, fetched from the workspaces API
+// Mock data — in production, fetched from the workspaces API. Mirrors the
+// shape used by the portal Overview story (bridge service mock).
 // ---------------------------------------------------------------------------
 
 export const MOCK_WORKSPACE_ITEMS: WorkspaceItem[] = [
@@ -207,27 +124,31 @@ export interface WorkspaceManagerProps {
   hideAddWorkspace?: boolean;
 
   // ----- @Input mirrors -----
+  /** Combobox label (Angular: workspaceManagerLabel, default "Workspace Manager"). */
   label?: string;
-  /** Create-dialog title (Angular: dialogTitle). */
-  dialogTitle?: string;
-  /** Create-dialog description (Angular: dialogDescription). */
+  /**
+   * Create-dialog description (Angular: dialogDescription, default
+   * "New Workspace Name").
+   *
+   * Note: the Angular `computedDialogTitle` is hardcoded to the translation
+   * "Create New Workspace" and IGNORES the `dialogTitle` @Input, so the dialog
+   * title is fixed here too (mirrored 1:1).
+   */
   dialogDescription?: string;
-  /** Create-dialog submit button text (Angular: createButtonText). */
+  /** Create-dialog submit button text (Angular: createButtonText, default "Create"). */
   createButtonText?: string;
-  /** Max length for the new workspace name (Angular: wsNameMaxLength). */
+  /** Max length for the new workspace name (Angular: wsNameMaxLength, default 50). */
   wsNameMaxLength?: number;
 
+  /** Combobox placeholder (Angular: searchPlaceholder). */
   searchPlaceholder?: string;
   disabled?: boolean;
   /** Render the trigger as read-only (Angular combobox readonly): no popover. */
   readonly?: boolean;
-  loading?: boolean;
+  /** Error/invalid state (Angular combobox displayError → border-destructive). */
   error?: boolean;
 
-  loadingText?: string;
-  errorLoadingText?: string;
   noWorkspacesText?: string;
-  noSearchResultsText?: string;
 
   className?: string;
 }
@@ -241,19 +162,14 @@ export function WorkspaceManager({
   onLogOut,
   hideAddWorkspace = false,
   label = "Workspace Manager",
-  dialogTitle = "Create New Workspace",
   dialogDescription = "New Workspace Name",
   createButtonText = "Create",
   wsNameMaxLength = 50,
   searchPlaceholder = "Search all workspaces",
   disabled = false,
   readonly = false,
-  loading = false,
   error = false,
-  loadingText = "Loading workspaces...",
-  errorLoadingText = "Failed to load workspaces",
-  noWorkspacesText = "No workspaces available",
-  noSearchResultsText = "No workspaces match that search query",
+  noWorkspacesText = "No results found",
   className,
 }: WorkspaceManagerProps) {
   const [open, setOpen] = React.useState(false);
@@ -262,18 +178,10 @@ export function WorkspaceManager({
   const [isCreating, setIsCreating] = React.useState(false);
 
   const selected = workspaces.find((w) => w.value === value);
-  const hasWorkspaces = workspaces.length > 0;
-  const triggerDisabled = disabled || loading || error;
+  const triggerLabel = selected?.label ?? searchPlaceholder;
 
-  const triggerLabel = loading
-    ? loadingText
-    : error
-      ? errorLoadingText
-      : (selected?.label ?? searchPlaceholder);
-
-  // Placeholder state (no selection) -> muted-foreground, per the portal
-  // `.wordly-combobox-placeholder` rule.
-  const showPlaceholder = !selected && !loading && !error;
+  // `.wordly-combobox-placeholder`: no selection → muted-foreground text.
+  const showPlaceholder = !selected;
 
   function selectWorkspace(next: string) {
     onValueChange?.(next);
@@ -296,6 +204,7 @@ export function WorkspaceManager({
     }
   }
 
+  // Mirrors onCreateWorkspace(): trim, validate (required + maxLength), emit.
   function handleCreate() {
     const name = newWorkspace.trim();
     if (!name || name.length > wsNameMaxLength || isCreating) return;
@@ -312,55 +221,35 @@ export function WorkspaceManager({
     newWorkspace.trim().length > wsNameMaxLength ||
     isCreating;
 
-  // Portal combobox trigger = the SELECT trigger (hlm-select-trigger) anatomy.
-  // Placeholder text -> muted-foreground; error -> destructive border/text/ring
-  // (handled by the variant).
-  const triggerClasses = cn(
-    selectTriggerVariants({ size: "default", error }),
-    showPlaceholder && "text-muted-foreground"
+  // Combobox trigger = `hlmBtn variant="outline"` with `w-full justify-between
+  // font-normal`, muted-foreground placeholder, border-destructive on error.
+  const trigger = (
+    <Button
+      type="button"
+      variant="outline"
+      role={readonly ? undefined : "combobox"}
+      aria-haspopup="listbox"
+      aria-expanded={readonly ? false : open}
+      disabled={disabled}
+      className={cn(
+        "w-full justify-between font-normal",
+        showPlaceholder && "text-muted-foreground",
+        error && "border-destructive",
+        readonly && "pointer-events-none"
+      )}
+    >
+      <span className="truncate mr-2">{triggerLabel}</span>
+      <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+    </Button>
   );
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-      ) : null}
-
+    <FormControlWrapper label={label} showError={false} className={className}>
       {readonly ? (
-        // Readonly trigger: portal renders the same outline button with no
-        // popover trigger.
-        <button
-          type="button"
-          disabled={triggerDisabled}
-          aria-haspopup="listbox"
-          aria-expanded={false}
-          className={cn(triggerClasses, "pointer-events-none")}
-        >
-          <span className="flex min-w-0 items-center gap-2 truncate">
-            <span className="truncate">{triggerLabel}</span>
-          </span>
-          <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
-        </button>
+        trigger
       ) : (
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              role="combobox"
-              aria-haspopup="listbox"
-              aria-expanded={open}
-              disabled={triggerDisabled}
-              className={triggerClasses}
-            >
-              <span className="flex min-w-0 items-center gap-2 truncate">
-                {loading ? (
-                  <Loader2 className="size-4 shrink-0 animate-spin" />
-                ) : null}
-                <span className="truncate">{triggerLabel}</span>
-              </span>
-              <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
-            </button>
-          </PopoverTrigger>
+          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
 
           <PopoverContent
             className="w-[var(--radix-popover-trigger-width)] p-0"
@@ -369,10 +258,9 @@ export function WorkspaceManager({
             <Command>
               <CommandInput placeholder={searchPlaceholder} />
               <CommandList>
-                <CommandEmpty>
-                  {hasWorkspaces ? noSearchResultsText : noWorkspacesText}
-                </CommandEmpty>
+                <CommandEmpty>{noWorkspacesText}</CommandEmpty>
 
+                {/* Group 1: workspace options (+ "Add workspace") — showSeparator */}
                 <CommandGroup>
                   {workspaces.map((ws) => (
                     <CommandItem
@@ -398,14 +286,18 @@ export function WorkspaceManager({
                         handleAction(WORKSPACE_ACTIONS.ADD_WORKSPACE)
                       }
                     >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add workspace
+                      <Plus className="h-4 w-4" />
+                      <span className="truncate flex-1 min-w-0 text-left">
+                        Add workspace
+                      </span>
+                      <Check className="ml-auto h-4 w-4 opacity-0" />
                     </CommandItem>
                   ) : null}
                 </CommandGroup>
 
                 <CommandSeparator />
 
+                {/* Group 2: user menu (Edit profile / Log out) */}
                 <CommandGroup>
                   <CommandItem
                     value="Edit profile"
@@ -413,15 +305,21 @@ export function WorkspaceManager({
                       handleAction(WORKSPACE_ACTIONS.EDIT_PROFILE)
                     }
                   >
-                    <UserCog className="mr-2 h-4 w-4" />
-                    Edit profile
+                    <UserCog className="h-4 w-4" />
+                    <span className="truncate flex-1 min-w-0 text-left">
+                      Edit profile
+                    </span>
+                    <Check className="ml-auto h-4 w-4 opacity-0" />
                   </CommandItem>
                   <CommandItem
                     value="Log out"
                     onSelect={() => handleAction(WORKSPACE_ACTIONS.LOGOUT)}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                    <LogOut className="h-4 w-4" />
+                    <span className="truncate flex-1 min-w-0 text-left">
+                      Log out
+                    </span>
+                    <Check className="ml-auto h-4 w-4 opacity-0" />
                   </CommandItem>
                 </CommandGroup>
               </CommandList>
@@ -430,7 +328,7 @@ export function WorkspaceManager({
         </Popover>
       )}
 
-      {/* Create a new workspace dialog */}
+      {/* Create a new workspace dialog (app-wordly-dialog) */}
       <Dialog
         open={dialogOpen}
         onOpenChange={(next) => {
@@ -440,33 +338,23 @@ export function WorkspaceManager({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogTitle>Create New Workspace</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="create-ws-input" className="text-gray-700">
-                  New Workspace Name
-                </Label>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex items-center justify-center rounded-full text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        aria-label="Name length info"
-                      >
-                        <Info className="h-3.5 w-3.5" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Max length is {wsNameMaxLength} characters
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+          <div className="space-y-6 min-w-[170px] md:min-w-[400px]">
+            {/* app-wordly-input, stacked layout, with info tooltip */}
+            <FormControlWrapper
+              controlId="create-ws-input"
+              label="New Workspace Name"
+              layoutVariant="stacked"
+              labelContextVariant="stacked"
+              contentContextVariant="stacked"
+              helperTextContextVariant="stacked"
+              errorContextVariant="stacked"
+              showInfoIcon
+              infoTooltipText={`Max length is ${wsNameMaxLength} characters`}
+            >
               <Input
                 id="create-ws-input"
                 value={newWorkspace}
@@ -477,27 +365,26 @@ export function WorkspaceManager({
                   if (e.key === "Enter") handleCreate();
                 }}
               />
-            </div>
+            </FormControlWrapper>
           </div>
 
           <DialogFooter>
-            {/* Portal create button: wordly-button variant="primary" size default. */}
-            <button
+            {/* app-wordly-button variant="primary" (portal teal → Brand Blue). */}
+            <Button
               type="button"
+              variant="default"
               onClick={handleCreate}
               disabled={createDisabled}
               aria-busy={isCreating}
-              className={workspaceButtonVariants({
-                variant: "primary",
-                size: "default",
-              })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") handleCreate();
+              }}
             >
-              {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {createButtonText}
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </FormControlWrapper>
   );
 }

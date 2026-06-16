@@ -3,18 +3,32 @@
 /**
  * UserSelectorDialog
  *
- * React migration of the production Angular `wordly-user-selector-dialog`
- * (wordly_portal: libs/components/business/wordly-user-selector-dialog).
+ * EXACT React mirror of the production Angular `wordly-user-selector-dialog`
+ *   wordly_portal:
+ *     libs/components/business/wordly-user-selector-dialog/
+ *       wordly-user-selector-dialog.component.{ts,html}
  *
  * The Angular original opens a dialog with a debounced, service-backed user
- * search; selected users accumulate in a list and are emitted on confirm. Here
- * we keep the same public surface (configurable copy, optional max-users cap,
- * excluded users, multi-select with removable rows, searching/empty states) but
- * drop the Angular DI/service layer (BrnDialogRef + bridge search stream):
- * the user directory arrives via props and search is filtered client-side.
+ * search. Results render in an *absolutely-positioned dropdown* below the
+ * search input (shown on focus / while a query exists, hidden on blur);
+ * selecting a user appends it to a scrollable "Selected Users" list, and the
+ * accumulated list is emitted on confirm. This port keeps the same public
+ * surface (configurable copy, optional max-users cap, excluded users,
+ * multi-select with removable rows, searching / no-results states) and mirrors
+ * the Angular template's DOM/layout/Tailwind classes 1:1.
  *
- * Built on the shared shadcn primitives (Dialog + Input + Avatar + Badge) and
- * lucide-react icons. In production the directory would be fetched from the API.
+ * Deviations from the Angular source (see RETURN notes):
+ *   - The Angular DI/service search layer (BrnDialogRef + bridge stream) is
+ *     dropped: the directory arrives via props and search is filtered
+ *     client-side, behind the same isSearching / hasSearched / showResults
+ *     state machine + a 300ms debounce (Angular's debounceTime(300)).
+ *   - Angular renders avatars as <img src="assets/v2/user-generic-avatar*.svg">.
+ *     Those assets do not exist in this repo, so we substitute the shared
+ *     <Avatar>/<AvatarFallback> atom inside the same DOM/classes (w-8 h-8
+ *     rounded-full). The no-results illustration likewise uses the atom.
+ *
+ * Built on the shared shadcn primitives (Dialog + Input + Avatar) and
+ * lucide-react icons.
  */
 
 import * as React from "react";
@@ -154,7 +168,7 @@ export interface UserSelectorDialogProps {
   /** The searchable user directory. */
   users?: UserSelectorOption[];
 
-  /** Label on the trigger button that opens the dialog. */
+  /** Label on the trigger button that opens the dialog (Angular @Input buttonText). */
   buttonText?: string;
   dialogTitle?: string;
   dialogDescription?: string;
@@ -165,20 +179,20 @@ export interface UserSelectorDialogProps {
   noUserFoundText?: string;
   tryAgainText?: string;
 
+  /** id forwarded to the search input (Angular @Input({required:true}) id). */
+  id?: string;
+
   /** Maximum number of users that can be selected (optional, no cap when unset). */
   maxUsers?: number;
   /** Users to exclude from selection (rendered disabled in results). */
   excludedUsers?: UserSelectorOption[];
 
-  /** Fired with the chosen users when the dialog is confirmed. */
+  /** Fired with the chosen users when the dialog is confirmed (Angular usersSelected). */
   onUsersSelected?: (users: UserSelectorOption[]) => void;
 
   /** Controlled open state for the dialog (optional). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-
-  /** Simulate the service search latency / spinner. */
-  loading?: boolean;
 
   className?: string;
 }
@@ -194,79 +208,155 @@ export function UserSelectorDialog({
   cancelButtonText = "Cancel",
   noUserFoundText = "No users found",
   tryAgainText = "Try searching for a different name or check the user list..",
+  id = "user-selector-search",
   maxUsers,
   excludedUsers = [],
   onUsersSelected,
   open,
   onOpenChange,
-  loading = false,
   className,
 }: UserSelectorDialogProps) {
   const [internalOpen, setInternalOpen] = React.useState(false);
   const isControlled = open !== undefined;
   const dialogOpen = isControlled ? open : internalOpen;
 
+  // ===== STATE MANAGEMENT (mirrors the Angular component fields) =====
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchResults, setSearchResults] = React.useState<
+    UserSelectorOption[]
+  >([]);
   const [selectedUsers, setSelectedUsers] = React.useState<
     UserSelectorOption[]
   >([]);
+  const [isSearching, setIsSearching] = React.useState(false);
+  const [showResults, setShowResults] = React.useState(false);
+  const [hasSearched, setHasSearched] = React.useState(false);
+
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blurRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // resetSearchState()
+  const resetSearchState = React.useCallback(() => {
+    setSearchTerm("");
+    setSearchResults([]);
+    setIsSearching(false);
+    setShowResults(false);
+    setHasSearched(false);
+  }, []);
 
   function setDialogOpen(next: boolean) {
     if (!isControlled) setInternalOpen(next);
     onOpenChange?.(next);
-    if (!next) {
-      // Reset all dialog state on close (mirrors resetDialogState()).
-      setSearchTerm("");
+    if (next) {
+      // openDialog(): reset search state when opening.
+      resetSearchState();
+    } else {
+      // resetDialogState(): clear search + selected users on close.
+      resetSearchState();
       setSelectedUsers([]);
     }
   }
 
-  const query = searchTerm.trim().toLowerCase();
-  const hasSearched = query.length > 0;
+  // setupSearchStream(): client-side stand-in for the debounced bridge stream.
+  // onSearchInput() → debounce 300ms → produce results, flip the same flags.
+  function onSearchInput(value: string) {
+    setSearchTerm(value);
+    setHasSearched(false);
 
-  const searchResults = React.useMemo(() => {
-    if (!hasSearched) return [];
-    return users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(query) ||
-        u.email.toLowerCase().includes(query)
-    );
-  }, [users, query, hasSearched]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-  const hasNoResults = hasSearched && !loading && searchResults.length === 0;
-  const hasReachedMaxUsers =
-    maxUsers !== undefined && selectedUsers.length >= maxUsers;
+    if (value.trim().length === 0) {
+      setIsSearching(false);
+      setShowResults(false);
+      setSearchResults([]);
+      setHasSearched(false);
+      return;
+    }
 
-  function isUserSelected(userId: string): boolean {
-    return [...selectedUsers, ...excludedUsers].some((u) => u.id === userId);
+    setIsSearching(true);
+    const query = value.trim().toLowerCase();
+    debounceRef.current = setTimeout(() => {
+      const results = users.filter(
+        (u) =>
+          u.name.toLowerCase().includes(query) ||
+          u.email.toLowerCase().includes(query)
+      );
+      setSearchResults(results);
+      setIsSearching(false);
+      setHasSearched(true);
+      setShowResults(value.trim().length > 0);
+    }, 300);
   }
 
+  function onInputFocus() {
+    if (blurRef.current) clearTimeout(blurRef.current);
+    // Show results if there's a search term and we have results.
+    if (searchTerm.trim().length > 0 && searchResults.length > 0) {
+      setShowResults(true);
+    }
+  }
+
+  function onInputBlur() {
+    // Delay hiding to allow clicking on a result.
+    blurRef.current = setTimeout(() => setShowResults(false), 150);
+  }
+
+  React.useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (blurRef.current) clearTimeout(blurRef.current);
+    };
+  }, []);
+
+  // ===== COMPUTED PROPERTIES (mirror the Angular getters) =====
+  const hasResults = hasSearched && searchResults.length > 0;
+  const hasNoResults =
+    hasSearched && searchResults.length === 0 && searchTerm.trim().length > 0;
+
+  function isUserSelected(userId: string): boolean {
+    return [...selectedUsers, ...(excludedUsers ?? [])].some(
+      (u) => u.id === userId
+    );
+  }
+
+  // selectUser(): add if not already selected. Keep results visible to allow
+  // selecting more users (don't hide). Angular does NOT enforce maxUsers here.
   function selectUser(user: UserSelectorOption) {
-    if (isUserSelected(user.id) || hasReachedMaxUsers) return;
+    if (isUserSelected(user.id)) return;
     setSelectedUsers((prev) => [...prev, { ...user }]);
   }
 
-  function removeUser(userId: string) {
+  function removeUser(userId: string, event?: React.MouseEvent) {
+    if (event) event.stopPropagation();
     setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
   }
 
+  // get isAddButtonDisabled
   const isAddButtonDisabled =
     selectedUsers.length === 0 ||
     (maxUsers !== undefined && selectedUsers.length > maxUsers);
 
+  // get addButtonLabel
   const addButtonLabel =
     selectedUsers.length === 0
       ? addButtonText
       : `${addButtonText} (${selectedUsers.length})`;
 
+  // addSelectedUsers(): emit and close.
   function addSelectedUsers() {
     if (selectedUsers.length === 0) return;
     onUsersSelected?.([...selectedUsers]);
     setDialogOpen(false);
   }
 
+  // cancelSelection() → onModalClosed() → closeDialog()
+  function cancelSelection() {
+    setDialogOpen(false);
+  }
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* Trigger Button */}
       <DialogTrigger asChild>
         <Button
           type="button"
@@ -279,152 +369,178 @@ export function UserSelectorDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      {/* Modal Dialog — contentClass mirrors the Angular [contentClass] */}
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] min-h-[300px] overflow-y-visible">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="pl-10"
-              aria-label={searchPlaceholder}
-            />
+        <div className="space-y-4 relative">
+          {/* Search Input (app-wordly-input, showLeadingIcon lucideSearch) */}
+          <div className="search-container relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none h-4 w-4" />
+              <Input
+                id={id}
+                value={searchTerm}
+                onChange={(e) => onSearchInput(e.target.value)}
+                onFocus={onInputFocus}
+                onBlur={onInputBlur}
+                placeholder={searchPlaceholder}
+                className="pl-10"
+                aria-label={searchPlaceholder}
+              />
+            </div>
           </div>
 
           {/* Loading State */}
-          {hasSearched && loading ? (
+          {isSearching ? (
             <div className="flex items-center justify-center py-8">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-primary" />
+              <div className="flex items-center space-x-2 text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
                 <span className="text-sm">Searching...</span>
               </div>
             </div>
           ) : null}
 
-          {/* Search Results */}
-          {hasSearched && !loading && searchResults.length > 0 ? (
-            <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-xs">
-              <div className="max-h-[250px] overflow-y-auto">
-                {searchResults.map((user) => {
-                  // Mirrors Angular: a row is disabled only when the user is
-                  // already selected/excluded. The max-users cap is enforced in
-                  // selectUser(), not by greying out every remaining row.
-                  const disabled = isUserSelected(user.id);
-                  return (
-                    <button
-                      key={user.id}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => selectUser(user)}
-                      aria-label={`Select user ${user.name}`}
-                      className={cn(
-                        "mb-4 flex w-full items-center gap-3 rounded border-0 bg-transparent p-2 text-left transition-colors duration-150 ease-in-out last:mb-0",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-current"
-                      )}
-                    >
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback>{initials(user.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {user.name}
-                        </p>
-                        <p className="truncate text-sm text-muted-foreground">
-                          {user.email}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
+          {/* Search Results — absolutely-positioned dropdown */}
+          {showResults && !isSearching ? (
+            <div className="absolute left-0 right-0 z-10">
+              <div className="w-full bg-card border p-6 rounded-xl shadow-sm text-card-foreground">
+                {hasResults ? (
+                  <div className="max-h-[250px] overflow-y-auto">
+                    {searchResults.map((user) => {
+                      const disabled = isUserSelected(user.id);
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => selectUser(user)}
+                          aria-label={`Select user ${user.name}`}
+                          className={cn(
+                            "mb-4 w-full cursor-pointer text-left border-0 bg-transparent p-2 rounded hover:bg-accent hover:text-accent-foreground transition-colors duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-current",
+                            disabled && "userDisabled"
+                          )}
+                        >
+                          <div className="flex items-center space-x-3">
+                            {/* User Icon */}
+                            <div className="flex-shrink-0">
+                              <Avatar className="w-8 h-8 rounded-full">
+                                <AvatarFallback>
+                                  {initials(user.name)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
 
-          {/* No Results State */}
-          {hasNoResults ? (
-            <div className="rounded-xl border bg-card p-6 text-card-foreground shadow-xs">
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <Search className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <p className="mb-1 text-sm font-medium text-foreground">
-                  {noUserFoundText}
-                </p>
-                <p className="text-sm text-muted-foreground">{tryAgainText}</p>
+                            {/* User Info */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {user.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                {/* No Results State */}
+                {hasNoResults ? (
+                  <div className="w-full">
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Avatar className="w-12 h-12 rounded-full opacity-50 mb-2">
+                        <AvatarFallback aria-label="No users found">
+                          <Search className="h-5 w-5 text-muted-foreground" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        {noUserFoundText}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {tryAgainText}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}
 
           {/* Selected Users List */}
           {selectedUsers.length > 0 ? (
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <h4 className="text-sm font-medium text-foreground">
-                  {selectedUsersText}
-                </h4>
-                {maxUsers !== undefined ? (
-                  <span className="text-xs text-muted-foreground">
-                    {selectedUsers.length} / {maxUsers}
-                  </span>
-                ) : null}
-              </div>
-              <div className="max-h-[150px] overflow-y-auto rounded-md border border-input">
-                {selectedUsers.map((user, i) => (
-                  <div
-                    key={user.id}
-                    className={cn(
-                      "flex items-center justify-between p-3",
-                      i < selectedUsers.length - 1 && "border-b border-border"
-                    )}
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback>{initials(user.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {user.name}
-                        </p>
-                        <p className="truncate text-sm text-muted-foreground">
-                          {user.email}
-                        </p>
+            <div className="selected-users">
+              <h4 className="text-sm font-medium text-foreground mb-3">
+                {selectedUsersText}
+              </h4>
+              <div className="max-h-[150px] overflow-y-auto border-regular border border-input rounded-md">
+                {selectedUsers.map((user, i) => {
+                  const last = i === selectedUsers.length - 1;
+                  return (
+                    <div
+                      key={user.id}
+                      className={cn(
+                        "selected-user-item p-3",
+                        !last && "border-b border-border"
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          {/* User Icon */}
+                          <Avatar className="w-8 h-8 rounded-full">
+                            <AvatarFallback>
+                              {initials(user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          {/* User Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {user.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          className="remove-user-btn ml-2 shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          onClick={(e) => removeUser(user.id, e)}
+                          aria-label={`Remove ${user.name}`}
+                          title={`Remove ${user.name}`}
+                        >
+                          <X className="w-4 h-4" />
+                          <span className="sr-only">Remove {user.name}</span>
+                        </button>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => removeUser(user.id)}
-                      aria-label={`Remove ${user.name}`}
-                      title={`Remove ${user.name}`}
-                      className="ml-2 shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Remove {user.name}</span>
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : null}
         </div>
 
+        {/* Dialog Actions */}
         <DialogFooter>
           <Button
             type="button"
             className={cn(
               dialogButtonVariants({ variant: "outline", size: "default" })
             )}
-            onClick={() => setDialogOpen(false)}
+            onClick={cancelSelection}
           >
             {cancelButtonText}
           </Button>
+
           <Button
             type="button"
             disabled={isAddButtonDisabled}

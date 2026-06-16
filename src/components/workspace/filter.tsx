@@ -15,9 +15,23 @@
  * the translation service, UtilsService, and SubmittableFormBuilder are gone;
  * form state is plain React state and data arrives via props.
  *
+ * Template anatomy is ported 1:1 from wordly-filter.component.html:
+ *   - <form> with flex-wrap items-end gap-4 w-full max-w-[1000px] (+ containerClass).
+ *   - Each non-checkbox field sits in `<div class="flex-1 min-w-24/40 flex flex-col">`
+ *     and proxies the shared FormControlWrapper with `layoutVariant="card"` +
+ *     `contentContextVariant="stacked"` (exactly as the Angular template feeds
+ *     those variants into app-wordly-date-range-picker / -workspace-selector /
+ *     -input — each of which renders the wrapper internally). The label/required
+ *     chrome therefore comes from FormControlWrapper, not a hand-rolled <label>.
+ *   - Checkboxes + the submit button share a `flex items-end gap-4 flex-shrink-0`
+ *     wrapper so they always wrap as a unit. Each checkbox keeps its own bold
+ *     label (the Angular template renders that label outside app-wordly-checkbox,
+ *     which itself uses `layoutVariant="compact"` with no label).
+ *
  * Built on the shared shadcn primitives (Input, Checkbox, Calendar + Popover,
- * Command + Popover for the workspace selector, Button, Label).
- * In production the workspace options would be fetched from the API.
+ * Command + Popover for the workspace selector, Button) wrapped by the shared
+ * FormControlWrapper. In production the workspace options would be fetched from
+ * the API.
  */
 
 import * as React from "react";
@@ -48,6 +62,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular wordly-filter.model.ts)
@@ -92,6 +107,8 @@ export interface WsSelectorFilterField extends FilterFieldBase {
     searchable?: boolean;
     clearable?: boolean;
     includeAllOption?: boolean;
+    /** Pre-selected value (e.g. "ALL"); seeds the control's initial value. */
+    defaultOption?: string | null;
     /** Options for this selector (mirrors the workspace bridge data). */
     options?: WorkspaceOption[];
   };
@@ -184,7 +201,13 @@ function initialValueFor(field: FilterField): FilterValue {
     case FILTER_TYPES.dateRange:
       return field.initialValue ?? null;
     case FILTER_TYPES.wsSelector:
-      return field.initialValue ?? "";
+      // Mirror the Angular ws-selector: `defaultOption` seeds the selection;
+      // `includeAllOption` with no other default normalizes "" → "ALL".
+      return (
+        field.initialValue ??
+        field.config?.defaultOption ??
+        (field.config?.includeAllOption ? ALL_OPTION_VALUE : "")
+      );
   }
 }
 
@@ -330,31 +353,42 @@ export const WorkspaceFilter = React.forwardRef<
             field.type === FILTER_TYPES.dateRange ? "min-w-24" : "min-w-40"
           )}
         >
-          <FieldLabel field={field} />
-          {field.type === FILTER_TYPES.dateRange ? (
-            <DateRangeField
-              field={field}
-              values={values}
-              setValue={setValue}
-              error={fieldHasError(field)}
-            />
-          ) : field.type === FILTER_TYPES.wsSelector ? (
-            <WsSelectorField
-              field={field}
-              values={values}
-              setValue={setValue}
-              error={fieldHasError(field)}
-            />
-          ) : (
-            <Input
-              id={field.key}
-              placeholder={field.placeholder}
-              disabled={field.disabled}
-              aria-invalid={fieldHasError(field) || undefined}
-              value={(values[field.key] as string) ?? ""}
-              onChange={(e) => setValue(field.key, e.target.value)}
-            />
-          )}
+          {/* Mirrors the Angular app-wordly-* proxy: each control renders the
+              shared FormControlWrapper with layoutVariant="card" +
+              contentContextVariant="stacked". */}
+          <FormControlWrapper
+            controlId={field.key}
+            label={field.label}
+            required={field.required}
+            showError={fieldHasError(field)}
+            layoutVariant="card"
+            contentContextVariant="stacked"
+          >
+            {field.type === FILTER_TYPES.dateRange ? (
+              <DateRangeField
+                field={field}
+                values={values}
+                setValue={setValue}
+                error={fieldHasError(field)}
+              />
+            ) : field.type === FILTER_TYPES.wsSelector ? (
+              <WsSelectorField
+                field={field}
+                values={values}
+                setValue={setValue}
+                error={fieldHasError(field)}
+              />
+            ) : (
+              <Input
+                id={field.key}
+                placeholder={field.placeholder}
+                disabled={field.disabled}
+                aria-invalid={fieldHasError(field) || undefined}
+                value={(values[field.key] as string) ?? ""}
+                onChange={(e) => setValue(field.key, e.target.value)}
+              />
+            )}
+          </FormControlWrapper>
         </div>
       ))}
 
@@ -398,21 +432,6 @@ export const WorkspaceFilter = React.forwardRef<
 // ---------------------------------------------------------------------------
 // Field sub-components
 // ---------------------------------------------------------------------------
-
-function FieldLabel({ field }: { field: FilterField }) {
-  if (!field.label) return null;
-  return (
-    <label
-      htmlFor={field.key}
-      className="mb-1.5 text-sm font-medium text-gray-700"
-    >
-      {field.label}
-      {field.required ? (
-        <span className="ml-0.5 text-destructive">*</span>
-      ) : null}
-    </label>
-  );
-}
 
 function DateRangeField({
   field,
