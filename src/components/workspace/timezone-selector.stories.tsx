@@ -3,111 +3,78 @@ import * as React from "react";
 
 import { TimezoneSelector } from "./timezone-selector";
 
+/**
+ * 1:1 mirror of the production Angular Overview story
+ *   wordly_portal: stories/business/wordly-timezone-selector/story-1.Overview.stories.ts
+ *
+ * Same single `Overview` story + the same args (compact false, value
+ * "America/Los_Angeles", label "Timezone", required true, helperText
+ * "Select the timezone for your event", placeholder "Select timezone"). The
+ * `id` arg from Angular is dropped (no equivalent prop). Timezone data arrives
+ * via props (mock by default) rather than the Angular bridge / moment-timezone
+ * provider.
+ *
+ * Title namespace kept as "Workspace Kit/TimezoneSelector" to match the
+ * existing sibling stories on this branch.
+ */
 const meta: Meta<typeof TimezoneSelector> = {
   title: "Workspace Kit/TimezoneSelector",
   component: TimezoneSelector,
   parameters: {
-    layout: "centered",
+    layout: "padded",
     docs: {
       description: {
         component:
-          "React migration of the production Angular `wordly-timezone-selector`. " +
-          "Grouped by IANA region, searchable (city/abbreviation/id), optional " +
-          "compact trigger (abbreviation), clearable, and loading/error/empty " +
-          "states. Data via props (mock by default); no Angular DI / " +
-          "moment-timezone layer.",
+          "EXACT React mirror of the production Angular `wordly-timezone-selector`. " +
+          "A thin proxy that renders the shared FormControlWrapper (label / " +
+          "required / helper / error / responsive label-beside-control layout) " +
+          "around a combobox (outline trigger + searchable Command popover), " +
+          "matching the Angular proxy to `wordly-combobox` " +
+          "(enableValueSearch=true, indentGroupedOptions=true, forwarded " +
+          "compact). IANA timezones are grouped by region; compact mode shows " +
+          "the abbreviation in the trigger. Data via props (mock by default); " +
+          "no Angular DI / moment-timezone layer.",
       },
     },
   },
-  tags: ["autodocs"],
   argTypes: {
-    size: { control: "inline-radio", options: ["default", "sm"] },
     compact: { control: "boolean" },
-    searchable: { control: "boolean" },
-    clearable: { control: "boolean" },
-    showLeadingIcon: { control: "boolean" },
-    loading: { control: "boolean" },
-    error: { control: "boolean" },
+    value: { control: "text" },
     disabled: { control: "boolean" },
     readonly: { control: "boolean" },
+    label: { control: "text" },
+    required: { control: "boolean" },
+    helperText: { control: "text" },
+    placeholder: { control: "text" },
+    extraInfo: { control: "text" },
+    showInfoIcon: { control: "boolean" },
+    infoTooltipText: { control: "text" },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof TimezoneSelector>;
 
-/** Controlled wrapper so the stories reflect real selection state. */
+/** Controlled wrapper so the story reflects real selection state. */
 function Controlled(props: React.ComponentProps<typeof TimezoneSelector>) {
   const [value, setValue] = React.useState(props.value ?? "");
-  return (
-    <div className="w-80">
-      <TimezoneSelector {...props} value={value} onValueChange={setValue} />
-    </div>
-  );
+  return <TimezoneSelector {...props} value={value} onValueChange={setValue} />;
 }
 
-export const Basic: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Timezone" },
-};
-
-export const Searchable: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { searchable: true, clearable: true },
-};
-
-export const Compact: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { compact: true, value: "America/Los_Angeles" },
-};
-
-export const Required: Story = {
-  render: (args) => <Controlled {...args} />,
+export const Overview: Story = {
+  name: "Overview",
   args: {
+    compact: false,
+    value: "America/Los_Angeles",
+    disabled: false,
+    readonly: false,
     label: "Timezone",
     required: true,
-    helperText: "Used for session start times.",
+    helperText: "Select the timezone for your event",
+    placeholder: "Select timezone",
+    extraInfo: "",
+    showInfoIcon: false,
+    infoTooltipText: "",
   },
-};
-
-export const Loading: Story = {
   render: (args) => <Controlled {...args} />,
-  args: { loading: true },
-};
-
-export const Error: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { error: true, errorMessage: "Failed to load timezones" },
-};
-
-export const Empty: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { groups: [] },
-};
-
-/** Disabled trigger - portal `disabled` (opacity-50, no interaction). */
-export const Disabled: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Timezone", disabled: true, value: "America/New_York" },
-};
-
-/**
- * Read-only - mirrors the Angular combobox `readonly`: the trigger renders but
- * does not open (a non-interactive button, not a disabled one).
- */
-export const Readonly: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Timezone", readonly: true, value: "Europe/London" },
-};
-
-/** Opt-in leading clock icon (off by default to match the portal trigger). */
-export const WithLeadingIcon: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Timezone", showLeadingIcon: true, value: "Asia/Tokyo" },
-};
-
-/** Small trigger height (h-8) - mirrors the portal `data-size="sm"`. */
-export const Small: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Timezone", size: "sm", value: "Europe/Paris" },
 };

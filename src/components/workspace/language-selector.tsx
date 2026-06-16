@@ -3,40 +3,55 @@
 /**
  * LanguageSelector
  *
- * React migration of the production Angular `wordly-language-selector`
- * (wordly_portal: libs/components/business/language-selector).
+ * EXACT React mirror of the production Angular `wordly-language-selector`
+ *   wordly_portal:
+ *     libs/components/business/language-selector/
+ *       wordly-language-selector.component.{ts,html}
  *
- * The Angular original is a proxy control that wraps either a chip selector
- * (multiple selection, with an "add more" dialog) or a select (single
- * selection), populated by a `WordlyLanguageSelectorService` that bridges the
- * app's `LanguageService`. Here we keep the same public surface — single vs
- * multiple selection, searchable picker, max-selectable cap, detectable-only
- * filter, a "sparkles" remark for detectable languages, and loading/error/empty
- * states — but drop the Angular DI/service/caching layer: data arrives via
- * props, defaulting to mock data.
+ * Like the Angular original, this is a *proxy control*: the template renders
+ * EITHER `<app-wordly-chip-selector>` (multiple selection — the DEFAULT) OR
+ * `<app-wordly-select>` (single selection, when `singleSelection` is true).
+ * BOTH proxied controls wrap the shared `wordly-form-control-wrapper`, so the
+ * label / required / helper / error / info-icon / extra-info + the responsive
+ * label-beside-control grid layout come from that wrapper — exactly like the
+ * validated AccountSelector / WorkspaceSelector references.
  *
- * Built on the shared shadcn primitives: Command + Popover for single mode
- * (matching WorkspaceSelector), Dialog + Command for the multi-select picker,
- * and pill chips matching the portal's wordly-chip "selected" anatomy. cn from
- * "@/lib/utils"; lucide-react for icons.
+ *   Angular (multi):  language-selector → chip-selector → form-control-wrapper
+ *   Angular (single): language-selector → wordly-select → form-control-wrapper + hlm-select-trigger
+ *   React:            LanguageSelector  → FormControlWrapper + (chip container | radix Select)
  *
- * In production these languages would be fetched from the API.
+ * The chip-selector anatomy is ported from
+ *   wordly_portal: libs/components/core/chip-selector/wordly-chip-selector.component.html
+ *   wordly_portal: libs/components/core/chip/wordly-chip.component.{html,scss}
+ * (selected chip = Action Teal — portal `--teal-500` ≈ action-teal-400; 22px
+ * rounded-full close button on a gray-100/gray-200 hit target; "+ add more"
+ * link button; a dialog with a search input, an info banner, and a checkbox
+ * list of options).
+ *
+ * The trigger class string (single mode) is ported verbatim from
+ *   wordly_portal: libs/ui/select/src/lib/hlm-select-trigger.ts.
+ *
+ * The Angular DI / WordlyLanguageSelectorService / caching layer is dropped:
+ * language data arrives via props (mock default). The Angular value contract
+ * (`string` in single mode, `string[]` in multiple mode) and the
+ * `languageSelectionChanged` @Output (rich language objects) are preserved.
  */
 
 import * as React from "react";
 import { cva } from "class-variance-authority";
-import { Check, ChevronDown, Sparkles, X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -45,38 +60,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
 // ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal `selectTriggerVariants`
-// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The single-
-// selection mode proxies wordly-language-selector -> wordly-select ->
-// hlm-select-trigger, so the real control anatomy lives there: border-input,
-// rounded-md, px-3 py-2, text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8,
-// focus ring [3px] on ring (no offset) with focus-visible:border-ring, no hover
-// background, destructive border+text+ring on error. ChevronDown indicator
-// (size-4). Identical to the validated account-selector reference.
+// Trigger anatomy (single mode) — ported verbatim from the portal
+// `selectTriggerVariants` (wordly_portal libs/ui/select/src/lib/
+// hlm-select-trigger.ts). Identical to the validated AccountSelector reference;
+// the radix chevron svg is targeted via [&>svg] where Angular targets [&>ng-icon].
 // ---------------------------------------------------------------------------
 
 const selectTriggerVariants = cva(
-  "flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:pointer-events-none [&>svg]:text-muted-foreground",
+  "border-input [&>svg]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
-      size: {
-        default: "h-9",
-        sm: "h-8",
-      },
       error: {
-        true: "border-destructive text-destructive focus-visible:ring-destructive/20",
+        true: "text-destructive border-destructive focus-visible:ring-destructive/20",
         false: "",
       },
     },
     defaultVariants: {
-      size: "default",
       error: false,
     },
   }
@@ -91,7 +94,7 @@ export interface LanguageOption {
   code: string;
   /** Localized display name shown to the user. */
   displayName: string;
-  /** Native name of the language (used as helper text). */
+  /** Native name of the language. */
   nativeName?: string;
   isTranscribable?: boolean;
   isTranslatable?: boolean;
@@ -99,7 +102,7 @@ export interface LanguageOption {
 }
 
 // ---------------------------------------------------------------------------
-// Mock data — in production, fetched from the languages API
+// Mock data — in production, fetched from the LanguageService.
 // ---------------------------------------------------------------------------
 
 export const MOCK_LANGUAGES: LanguageOption[] = [
@@ -159,8 +162,8 @@ export const MOCK_LANGUAGES: LanguageOption[] = [
 
 export interface LanguageSelectorProps {
   /**
-   * Controlled selected value. A single code string in single mode, an array
-   * of codes in multiple mode (matches the Angular `string | string[]` value).
+   * Controlled value. A single code string in single mode, an array of codes
+   * in multiple mode (matches the Angular `string | string[]` value).
    */
   value?: string | string[];
   /** Fired when the selection changes (codes), mirroring the Angular value. */
@@ -174,12 +177,14 @@ export interface LanguageSelectorProps {
   /** Available languages. */
   languages?: LanguageOption[];
 
-  /** Single-select (dropdown) vs multi-select (chips + dialog). */
+  /** Single-select (wordly-select) vs multi-select (chip-selector). Default false. */
   singleSelection?: boolean;
   /** Cap the number of selectable languages (multi mode only). */
   maxSelectable?: number;
-  /** Show a search input in the picker. Default true (as in Angular). */
+  /** Show a search input in the dialog. Default true (as in Angular). */
   searchable?: boolean;
+  /** Hide already-selected options from the dialog list. Default true. */
+  hideSelectedOptions?: boolean;
   /** Only offer detectable languages. */
   onlyDetectable?: boolean;
   /** Mark detectable languages with a sparkles icon. */
@@ -188,10 +193,20 @@ export interface LanguageSelectorProps {
   placeholder?: string;
   label?: string;
   required?: boolean;
-
   disabled?: boolean;
+  readonly?: boolean;
   loading?: boolean;
   error?: boolean;
+  /** Error text shown below the control when `error` is set. */
+  errorMessage?: string;
+  /** Helper text shown below the control when not in an error state. */
+  helperText?: string;
+  helperTextOnTop?: boolean;
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
 
   selectMoreText?: string;
   dialogTitle?: string;
@@ -206,6 +221,14 @@ export interface LanguageSelectorProps {
   errorLoadingText?: string;
   noResultsText?: string;
 
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
+
   className?: string;
 }
 
@@ -217,14 +240,22 @@ export function LanguageSelector({
   singleSelection = false,
   maxSelectable,
   searchable = true,
+  hideSelectedOptions = true,
   onlyDetectable = false,
   remarkSelectable = false,
   placeholder = "Select language",
   label,
   required = false,
   disabled = false,
+  readonly = false,
   loading = false,
   error = false,
+  errorMessage,
+  helperText,
+  helperTextOnTop = false,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
   selectMoreText = "Add more languages",
   dialogTitle = "Select Languages",
   dialogDescription = "Choose the languages you want to enable. You can select multiple options.",
@@ -237,6 +268,12 @@ export function LanguageSelector({
   loadingText = "Loading languages...",
   errorLoadingText = "Failed to load languages",
   noResultsText = "No languages match that search query",
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
   className,
 }: LanguageSelectorProps) {
   const available = React.useMemo(
@@ -250,11 +287,35 @@ export function LanguageSelector({
     return m;
   }, [available]);
 
-  function emit(codes: string[]) {
-    onLanguageSelectionChanged?.(
-      codes.map((c) => byCode.get(c)).filter(Boolean) as LanguageOption[]
-    );
-  }
+  // Mirrors getLanguagesByIds() -> languageSelectionChanged.emit().
+  const emit = React.useCallback(
+    (codes: string[]) => {
+      onLanguageSelectionChanged?.(
+        codes.map((c) => byCode.get(c)).filter(Boolean) as LanguageOption[]
+      );
+    },
+    [byCode, onLanguageSelectionChanged]
+  );
+
+  // Shared wrapper props (both proxied controls wrap form-control-wrapper).
+  const wrapperProps = {
+    label,
+    required,
+    helperText: !error ? helperText : undefined,
+    helperTextOnTop,
+    showError: error,
+    currentErrorMessage: errorMessage,
+    extraInfo,
+    showInfoIcon,
+    infoTooltipText,
+    layoutVariant,
+    labelStyleVariant,
+    labelSizeVariant,
+    labelContextVariant,
+    spacingVariant,
+    contentContextVariant,
+    className,
+  };
 
   if (singleSelection) {
     return (
@@ -265,19 +326,16 @@ export function LanguageSelector({
           emit(code ? [code] : []);
         }}
         available={available}
-        searchable={searchable}
         remarkSelectable={remarkSelectable}
         placeholder={placeholder}
-        label={label}
-        required={required}
         disabled={disabled}
+        readonly={readonly}
         loading={loading}
         error={error}
-        searchPlaceholder={searchPlaceholder}
         loadingText={loadingText}
         errorLoadingText={errorLoadingText}
         noResultsText={noResultsText}
-        className={className}
+        wrapperProps={wrapperProps}
       />
     );
   }
@@ -292,10 +350,10 @@ export function LanguageSelector({
       available={available}
       maxSelectable={maxSelectable}
       searchable={searchable}
+      hideSelectedOptions={hideSelectedOptions}
       remarkSelectable={remarkSelectable}
-      label={label}
-      required={required}
       disabled={disabled}
+      readonly={readonly}
       loading={loading}
       error={error}
       selectMoreText={selectMoreText}
@@ -310,34 +368,17 @@ export function LanguageSelector({
       loadingText={loadingText}
       errorLoadingText={errorLoadingText}
       noResultsText={noResultsText}
-      className={className}
+      wrapperProps={wrapperProps}
     />
   );
 }
 
-// ---------------------------------------------------------------------------
-// Field label
-// ---------------------------------------------------------------------------
-
-function FieldLabel({
-  label,
-  required,
-}: {
-  label?: string;
-  required?: boolean;
-}) {
-  if (!label) return null;
-  return (
-    <label className="text-sm font-medium text-gray-700">
-      {label}
-      {required ? <span className="ml-0.5 text-destructive">*</span> : null}
-    </label>
-  );
-}
+// Wrapper props shared by both modes (props passed straight to FormControlWrapper).
+type WrapperProps = React.ComponentProps<typeof FormControlWrapper>;
 
 // ---------------------------------------------------------------------------
 // Portal-matched spinner (animate-spin rounded-full border-2 border-primary
-// border-t-transparent) — replaces lucide Loader2 to match wordly-* anatomy.
+// border-t-transparent) — matches the chip-selector loading state.
 // ---------------------------------------------------------------------------
 
 function Spinner({ className }: { className?: string }) {
@@ -353,136 +394,106 @@ function Spinner({ className }: { className?: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Single selection — Command + Popover (matches WorkspaceSelector)
+// Single selection — wordly-select proxy (FormControlWrapper + radix Select)
 // ---------------------------------------------------------------------------
 
 interface SingleProps {
   value: string;
   onValueChange: (code: string) => void;
   available: LanguageOption[];
-  searchable: boolean;
   remarkSelectable: boolean;
   placeholder: string;
-  label?: string;
-  required: boolean;
   disabled: boolean;
+  readonly: boolean;
   loading: boolean;
   error: boolean;
-  searchPlaceholder: string;
   loadingText: string;
   errorLoadingText: string;
   noResultsText: string;
-  className?: string;
+  wrapperProps: WrapperProps;
 }
 
 function SingleLanguageSelect({
   value,
   onValueChange,
   available,
-  searchable,
   remarkSelectable,
   placeholder,
-  label,
-  required,
   disabled,
+  readonly,
   loading,
   error,
-  searchPlaceholder,
   loadingText,
   errorLoadingText,
   noResultsText,
-  className,
+  wrapperProps,
 }: SingleProps) {
-  const [open, setOpen] = React.useState(false);
-  const selected = available.find((l) => l.code === value);
   const hasOptions = available.length > 0;
-
-  const triggerLabel = loading
+  const interactionBlocked = disabled || loading || error || readonly;
+  const triggerPlaceholder = loading
     ? loadingText
     : error
       ? errorLoadingText
-      : (selected?.displayName ?? placeholder);
+      : placeholder;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      <FieldLabel label={label} required={required} />
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            role="combobox"
-            aria-expanded={open}
-            aria-invalid={error || undefined}
-            aria-required={required || undefined}
-            disabled={disabled || loading || error}
-            className={cn(selectTriggerVariants({ error }))}
-          >
-            <span
-              className={cn(
-                "flex min-w-0 items-center gap-2 truncate",
-                !selected && "text-muted-foreground"
-              )}
-            >
-              {loading ? <Spinner className="h-4 w-4 shrink-0" /> : null}
-              <span className="truncate">{triggerLabel}</span>
-            </span>
-            <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] p-0"
-          align="start"
+    <FormControlWrapper {...wrapperProps}>
+      <Select
+        value={value || undefined}
+        onValueChange={(next) => onValueChange(next)}
+        disabled={interactionBlocked}
+      >
+        <SelectTrigger
+          data-size="default"
+          aria-invalid={error || undefined}
+          aria-readonly={readonly || undefined}
+          aria-required={wrapperProps.required || undefined}
+          className={cn(
+            selectTriggerVariants({ error }),
+            readonly && "pointer-events-none"
+          )}
         >
-          <Command>
-            {searchable ? (
-              <CommandInput placeholder={searchPlaceholder} />
-            ) : null}
-            <CommandList>
-              <CommandEmpty>
-                {hasOptions ? noResultsText : "No languages available"}
-              </CommandEmpty>
-              <CommandGroup>
-                {available.map((lang) => (
-                  <CommandItem
-                    key={lang.code}
-                    value={lang.displayName}
-                    onSelect={() => {
-                      onValueChange(lang.code === value ? "" : lang.code);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4 text-primary",
-                        value === lang.code ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <span className="flex-1">{lang.displayName}</span>
-                    {lang.nativeName ? (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {lang.nativeName}
-                      </span>
-                    ) : null}
-                    {remarkSelectable && lang.isDetectable ? (
-                      <Sparkles className="ml-2 h-3.5 w-3.5 text-accent-green-500" />
-                    ) : null}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
+          <SelectValue
+            placeholder={
+              <span className="text-muted-foreground line-clamp-1 truncate">
+                {triggerPlaceholder}
+              </span>
+            }
+          />
+        </SelectTrigger>
+        <SelectContent className="max-h-96 min-w-[325px] pt-0 pb-0">
+          {hasOptions ? (
+            available.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code}>
+                <span className="flex items-center gap-2">
+                  <span>{lang.displayName}</span>
+                  {lang.nativeName ? (
+                    <span className="text-xs text-muted-foreground">
+                      {lang.nativeName}
+                    </span>
+                  ) : null}
+                  {remarkSelectable && lang.isDetectable ? (
+                    <Sparkles className="size-3.5 text-accent-green-500" />
+                  ) : null}
+                </span>
+              </SelectItem>
+            ))
+          ) : (
+            <div className="py-1.5 px-2 text-sm italic text-muted-foreground">
+              {noResultsText}
+            </div>
+          )}
+        </SelectContent>
+      </Select>
+    </FormControlWrapper>
   );
 }
 
 // ---------------------------------------------------------------------------
 // Language chip — pill matching wordly-chip "selected" anatomy.
-// Portal selected chip = Teal background; per the brand mapping, the portal's
-// primary Teal maps to OUR Brand Blue primary, so selected = bg-primary.
-//   rounded-2xl pill, gap-1 px-1 py-1, text-sm; close button is a 22px
-//   rounded-full bg-gray-100 hover:bg-gray-200 hit target.
+// Portal selected chip = Action Teal (scss `--teal-500` ≈ action-teal-400),
+// white text, rounded-2xl pill, gap-1 px-1 py-1, text-sm; the close button is a
+// 22px rounded-full bg-gray-100 hover:bg-gray-200 hit target.
 // ---------------------------------------------------------------------------
 
 function LanguageChip({
@@ -498,7 +509,7 @@ function LanguageChip({
 }) {
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-2xl border border-primary bg-primary py-1 pl-2 pr-1 text-primary-foreground"
+      className="inline-flex items-center gap-1 rounded-2xl border border-action-teal-400 bg-action-teal-400 py-1 pl-2 pr-1 text-white"
       role="presentation"
     >
       {showSparkle ? <Sparkles className="h-3.5 w-3.5 shrink-0" /> : null}
@@ -518,7 +529,7 @@ function LanguageChip({
   );
 }
 
-// Add-more trigger — matches the chip-selector's link/ghost "+ text" button.
+// Add-more trigger — matches the chip-selector's link "+ text" button.
 function AddMoreButton({
   text,
   disabled,
@@ -544,7 +555,8 @@ function AddMoreButton({
 }
 
 // ---------------------------------------------------------------------------
-// Multiple selection — chips + a Dialog picker (Command)
+// Multiple selection — chip-selector proxy (FormControlWrapper + chip container
+// + a Dialog picker with search, info banner and a checkbox list)
 // ---------------------------------------------------------------------------
 
 interface MultiProps {
@@ -553,10 +565,10 @@ interface MultiProps {
   available: LanguageOption[];
   maxSelectable?: number;
   searchable: boolean;
+  hideSelectedOptions: boolean;
   remarkSelectable: boolean;
-  label?: string;
-  required: boolean;
   disabled: boolean;
+  readonly: boolean;
   loading: boolean;
   error: boolean;
   selectMoreText: string;
@@ -571,7 +583,7 @@ interface MultiProps {
   loadingText: string;
   errorLoadingText: string;
   noResultsText: string;
-  className?: string;
+  wrapperProps: WrapperProps;
 }
 
 function MultiLanguageSelect({
@@ -580,10 +592,10 @@ function MultiLanguageSelect({
   available,
   maxSelectable,
   searchable,
+  hideSelectedOptions,
   remarkSelectable,
-  label,
-  required,
   disabled,
+  readonly,
   loading,
   error,
   selectMoreText,
@@ -598,14 +610,18 @@ function MultiLanguageSelect({
   loadingText,
   errorLoadingText,
   noResultsText,
-  className,
+  wrapperProps,
 }: MultiProps) {
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<string[]>(value);
+  const [searchTerm, setSearchTerm] = React.useState("");
 
-  // Re-seed the draft each time the dialog opens.
+  // Re-seed the draft (tempSelectedValues) each time the dialog opens.
   React.useEffect(() => {
-    if (open) setDraft(value);
+    if (open) {
+      setDraft(value);
+      setSearchTerm("");
+    }
   }, [open, value]);
 
   const selectedLangs = value
@@ -614,6 +630,20 @@ function MultiLanguageSelect({
 
   const atLimit =
     typeof maxSelectable === "number" && draft.length >= maxSelectable;
+  // hasReachedMaxChips() — disables the "+ add more" button.
+  const reachedMaxChips =
+    typeof maxSelectable === "number" && value.length >= maxSelectable;
+
+  // hideSelectedOptions: hide currently-committed selections from the dialog.
+  const dialogOptions = hideSelectedOptions
+    ? available.filter((l) => !value.includes(l.code))
+    : available;
+
+  const filteredOptions = searchTerm
+    ? dialogOptions.filter((l) =>
+        l.displayName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : dialogOptions;
 
   function removeChip(code: string) {
     onValueChange(value.filter((c) => c !== code));
@@ -630,10 +660,8 @@ function MultiLanguageSelect({
   }
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      <FieldLabel label={label} required={required} />
-
-      {/* Container styled like an input field (matches wordly-chip-selector). */}
+    <FormControlWrapper {...wrapperProps}>
+      {/* Chips container styled like an input field (wordly-chip-selector). */}
       <div
         className={cn(
           "min-h-[2.5rem] w-full rounded-md border bg-background px-3 py-2 shadow-xs transition-[color,box-shadow] has-[:focus-visible]:border-ring has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50",
@@ -657,11 +685,13 @@ function MultiLanguageSelect({
             <span className="text-muted-foreground text-sm">
               {emptyStateText}
             </span>
-            <AddMoreButton
-              text={selectMoreText}
-              disabled={disabled}
-              onClick={() => setOpen(true)}
-            />
+            {!readonly ? (
+              <AddMoreButton
+                text={selectMoreText}
+                disabled={disabled}
+                onClick={() => setOpen(true)}
+              />
+            ) : null}
           </div>
         ) : (
           <div className="flex flex-wrap gap-2 items-center">
@@ -670,88 +700,109 @@ function MultiLanguageSelect({
                 key={lang.code}
                 label={lang.displayName}
                 showSparkle={remarkSelectable && !!lang.isDetectable}
-                showClose={!disabled}
+                showClose={!disabled && !readonly}
                 onClose={() => removeChip(lang.code)}
               />
             ))}
-            <AddMoreButton
-              text={selectMoreText}
-              disabled={disabled || atLimit}
-              onClick={() => setOpen(true)}
-            />
+            {!readonly ? (
+              <AddMoreButton
+                text={selectMoreText}
+                disabled={disabled || reachedMaxChips}
+                onClick={() => setOpen(true)}
+              />
+            ) : null}
           </div>
         )}
       </div>
 
+      {/* Selection dialog (wordly-dialog) */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[80vh] p-0 sm:max-w-[500px]">
-          <DialogHeader className="px-6 pt-6">
+        <DialogContent className="max-h-[80vh] sm:max-w-[500px]">
+          <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 
-          {/* Selection-info banner (matches chip-selector). The portal uses the
-              informational `info` semantic token (bg-info / border-info-border /
-              text-info-foreground); those map to the prototype's informational
-              blue scale: bg-blue-50 / border-blue-100 / text-blue-700. */}
-          <div className="mx-6 rounded-md border border-blue-100 bg-blue-50 p-3">
-            <div className="flex items-center gap-1 text-sm font-medium text-blue-700">
-              {typeof maxSelectable === "number" && maxSelectable > 0 ? (
-                <>
-                  <span>
-                    {selectionLimitText} {maxSelectable} {itemTypeName}
-                  </span>
-                  <span>({draft.length} selected)</span>
-                </>
-              ) : (
-                <span>
-                  {draft.length} {itemTypeName} selected
-                </span>
-              )}
-            </div>
-          </div>
-
-          <Command className="border-t">
+          <div className="py-2">
+            {/* Search input */}
             {searchable ? (
-              <CommandInput placeholder={searchPlaceholder} />
+              <div className="mb-4">
+                <Input
+                  value={searchTerm}
+                  placeholder={searchPlaceholder}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             ) : null}
-            <CommandList>
-              <CommandEmpty>{noResultsText}</CommandEmpty>
-              <CommandGroup>
-                {available.map((lang) => {
+
+            {/* Selection info banner. Portal: bg-info / border-info-border /
+                text-info-foreground; mapped to the prototype informational blue
+                scale. Limited case shows two-color text; unlimited a single line. */}
+            <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3">
+              <div className="flex items-center gap-1 text-sm font-medium">
+                {typeof maxSelectable === "number" && maxSelectable > 0 ? (
+                  <>
+                    <span className="text-blue-700">
+                      {selectionLimitText} {maxSelectable} {itemTypeName}
+                    </span>
+                    <span className="text-blue-500">
+                      ({draft.length} selected)
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-blue-700">
+                    {draft.length} {itemTypeName} selected
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Checkbox list of options, or a no-results message */}
+            {filteredOptions.length > 0 ? (
+              <div className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
+                {filteredOptions.map((lang) => {
                   const checked = draft.includes(lang.code);
                   const blocked = !checked && atLimit;
                   return (
-                    <CommandItem
+                    <label
                       key={lang.code}
-                      value={lang.displayName}
-                      disabled={blocked}
-                      onSelect={() => toggleDraft(lang.code)}
-                      className={cn(blocked && "opacity-40")}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md border border-input px-3 py-2 text-sm",
+                        blocked
+                          ? "cursor-not-allowed opacity-40"
+                          : "cursor-pointer hover:bg-accent"
+                      )}
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4 text-primary",
-                          checked ? "opacity-100" : "opacity-0"
-                        )}
+                      <Checkbox
+                        checked={checked}
+                        disabled={blocked}
+                        onCheckedChange={() => toggleDraft(lang.code)}
                       />
                       <span className="flex-1">{lang.displayName}</span>
                       {lang.nativeName ? (
-                        <span className="ml-2 text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {lang.nativeName}
                         </span>
                       ) : null}
                       {remarkSelectable && lang.isDetectable ? (
-                        <Sparkles className="ml-2 h-3.5 w-3.5 text-accent-green-500" />
+                        <Sparkles className="h-3.5 w-3.5 text-accent-green-500" />
                       ) : null}
-                    </CommandItem>
+                    </label>
                   );
                 })}
-              </CommandGroup>
-            </CommandList>
-          </Command>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <span className="text-sm text-muted-foreground">
+                  {searchTerm
+                    ? `No ${itemTypeName} found matching ${searchTerm}`
+                    : noResultsText}
+                </span>
+              </div>
+            )}
+          </div>
 
-          <DialogFooter className="px-6 pb-6">
+          <DialogFooter className="flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -771,6 +822,6 @@ function MultiLanguageSelect({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </FormControlWrapper>
   );
 }

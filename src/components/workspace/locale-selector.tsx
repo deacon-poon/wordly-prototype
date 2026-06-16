@@ -3,61 +3,81 @@
 /**
  * LocaleSelector
  *
- * React migration of the production Angular `wordly-locale-selector`
- * (wordly_portal: libs/components/business/wordly-locale-selector).
+ * EXACT React mirror of the production Angular `wordly-locale-selector`
+ *   wordly_portal:
+ *     libs/components/business/wordly-locale-selector/
+ *       wordly-locale-selector.component.{ts,html}
  *
- * The Angular original is a proxy over the core `wordly-select`, populated with
- * supported-locale data from a bridge service (ConstantsService.SUPPORTED_LOCALES).
- * Here we keep the same public surface (label, placeholder, required, disabled,
- * readonly, helper text, and loading/error/empty states) but drop the Angular
- * DI/service layer: locales arrive via props, defaulting to mock data.
+ * Like the Angular original, this is a *thin proxy*: it renders the shared
+ * FormControlWrapper (label / required / helper / error / info / extra-info /
+ * layout) wrapping a Select control, exactly the way the Angular component
+ * proxies through `app-wordly-select` → `app-wordly-form-control-wrapper` +
+ * `hlm-select-trigger`.
  *
- * Built on the shared shadcn primitives (Command + Popover) per the
- * WorkspaceSelector proof. In production these locales would be fetched from the
- * API / ConstantsService.SUPPORTED_LOCALES.
+ *   Angular:  locale-selector → wordly-select → form-control-wrapper + hlm-select-trigger
+ *   React:    LocaleSelector  → FormControlWrapper + (radix Select w/ hlm trigger anatomy)
+ *
+ * The Angular template pins the proxied select to `multiple=false`,
+ * `scrollable=true`, `searchable=false` — so this React proxy is a single,
+ * non-searchable select (matching account-selector). The trigger class string
+ * is ported verbatim from
+ *   wordly_portal: libs/ui/select/src/lib/hlm-select-trigger.ts (selectTriggerVariants)
+ *
+ * The default LAYOUT is the responsive label-beside-control grid (design
+ * variant "default"), matching the portal — NOT a bespoke vertical flex-col.
+ *
+ * Locale data arrives via props (mock default mirroring the Overview story's
+ * bridge-service mock). The Angular DI/bridge-service layer
+ * (ConstantsService.SUPPORTED_LOCALES) is dropped; the `LocaleOption` shape
+ * ({ label, value, use }) and the `value`-keyed option list are preserved.
  */
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { selectTriggerVariants } from "@/components/ui/select-trigger";
-// AlertCircle is this lucide-react version's name for the portal's lucideAlertCircle glyph.
-import { AlertCircle, Check, ChevronDown, Loader2, X } from "lucide-react";
+import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
 // ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal `selectTriggerVariants`
-// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
-// proxies wordly-locale-selector → wordly-select → hlm-select-trigger, so the
-// real control anatomy lives there: border-input, rounded-md, px-3 py-2,
-// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
-// ring (no offset) with focus-visible:border-ring, destructive border+text+ring
-// on error. No hover state on the trigger.
+// Trigger anatomy — ported verbatim from the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). Angular targets
+// `[&>ng-icon]`; the React radix trigger renders its chevron as an svg, so the
+// icon-targeting utilities are mapped to `[&>svg]` while every other token
+// (border-input, rounded-md, px-3 py-2, text-sm, shadow-xs, gap-2, the
+// data-[size] heights, the focus ring [3px], destructive on error) is identical.
 // ---------------------------------------------------------------------------
 
-export type LocaleSelectorSize = NonNullable<
-  VariantProps<typeof selectTriggerVariants>["size"]
->;
+const selectTriggerVariants = cva(
+  "border-input [&>svg]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0",
+  {
+    variants: {
+      error: {
+        true: "text-destructive border-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      error: false,
+    },
+  }
+);
+
+export type LocaleSelectorSize = "default" | "sm";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular LocaleOption model)
 // ---------------------------------------------------------------------------
 
 export interface LocaleOption {
-  /** Display label for the locale (e.g., "English", "Espanol"). */
+  /** Display label for the locale (e.g., "English", "Español"). */
   label: string;
   /** Short locale code (e.g., "en", "es"). */
   value: string;
@@ -65,17 +85,20 @@ export interface LocaleOption {
   use?: string;
 }
 
+/** Default label: the locale label (matches the Angular default behavior). */
+export const defaultLabelFormatter = (locale: LocaleOption): string =>
+  locale.label;
+
 // ---------------------------------------------------------------------------
-// Mock data — in production, fetched from the API (ConstantsService.SUPPORTED_LOCALES)
+// Mock data — in production, fetched from ConstantsService.SUPPORTED_LOCALES via
+// the bridge service. Mirrors the dataset used by the portal Overview story.
 // ---------------------------------------------------------------------------
 
 export const MOCK_LOCALES: LocaleOption[] = [
   { label: "English", value: "en", use: "en-US" },
   { label: "Español", value: "es", use: "es-419" },
   { label: "Français", value: "fr", use: "fr-FR" },
-  { label: "Deutsch", value: "de", use: "de-DE" },
   { label: "日本語", value: "ja", use: "ja-JP" },
-  { label: "中文", value: "zh", use: "zh-CN" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -87,35 +110,57 @@ export interface LocaleSelectorProps {
   value?: string;
   /** Fired when the selection changes (empty string when cleared). */
   onValueChange?: (value: string) => void;
-  /** Available locale options. */
+
+  /** Available locale options. Defaults to mock data. */
   locales?: LocaleOption[];
+  /** Customize how each locale label renders. Defaults to `locale.label`. */
+  labelFormatter?: (locale: LocaleOption) => string;
 
   placeholder?: string;
-  /** Show a search input to filter locales. */
+  /**
+   * Accepted for API compatibility. The Angular locale-selector proxies
+   * `wordly-select` with `searchable=false` (fixed), so this is a no-op here.
+   */
   searchable?: boolean;
-  /** Allow clearing the current selection. */
-  clearable?: boolean;
 
   /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
   size?: LocaleSelectorSize;
+  /** CSS class(es) applied to the select trigger (portal `triggerClass`). */
+  triggerClass?: string;
 
   disabled?: boolean;
   /** Read-only: shows the value but blocks interaction (portal `readonly`). */
   readonly?: boolean;
   loading?: boolean;
+  /** Error/invalid state (portal `displayError`). */
   error?: boolean;
+  /** Error text shown below the control when `error` is set (portal errorMessage). */
+  errorMessage?: string;
+  /** Helper text shown below the control when not in an error state. */
+  helperText?: string;
+  /** Place helper text above the control (stacked layout only). */
+  helperTextOnTop?: boolean;
 
   label?: string;
   required?: boolean;
-  /** Helper text shown beneath the field (Angular `helperText`). */
-  helperText?: string;
-  /** Error message shown beneath the field when `error` is set (Angular `errorMessage`). */
-  errorMessage?: string;
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
 
   loadingText?: string;
   errorLoadingText?: string;
   noLocalesText?: string;
-  noSearchResultsText?: string;
+
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  /** Container layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
 
   className?: string;
 }
@@ -124,172 +169,113 @@ export function LocaleSelector({
   value,
   onValueChange,
   locales = MOCK_LOCALES,
+  labelFormatter = defaultLabelFormatter,
   placeholder = "Select locale",
-  searchable = false,
-  clearable = false,
   size = "default",
+  triggerClass = "",
   disabled = false,
   readonly = false,
   loading = false,
   error = false,
+  errorMessage,
+  helperText,
+  helperTextOnTop = false,
   label,
   required = false,
-  helperText,
-  errorMessage,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
   loadingText = "Loading locales...",
   errorLoadingText = "Failed to load locales",
   noLocalesText = "No locales available",
-  noSearchResultsText = "No locales match that search query",
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
   className,
 }: LocaleSelectorProps) {
-  const [open, setOpen] = React.useState(false);
+  // Build the select option list (mirrors `localeOptions: WordlySelectOption[]`
+  // mapped from LocaleOption in the Angular component's loadData()).
+  const localeOptions = React.useMemo(
+    () =>
+      locales.map((locale) => ({
+        value: locale.value,
+        label: labelFormatter(locale),
+      })),
+    [locales, labelFormatter]
+  );
 
-  const selected = locales.find((o) => o.value === value);
-  const hasOptions = locales.length > 0;
+  const hasOptions = localeOptions.length > 0;
+  const showError = error;
 
-  const triggerLabel = loading
+  // Loading / error / readonly block interaction (portal isLoading + readonly).
+  const interactionBlocked = disabled || loading || error || readonly;
+
+  const triggerPlaceholder = loading
     ? loadingText
     : error
       ? errorLoadingText
-      : (selected?.label ?? placeholder);
-
-  // Loading / error block the trigger; readonly keeps appearance but blocks open.
-  const interactionBlocked = disabled || loading || error || readonly;
-
-  function handleSelect(next: string) {
-    onValueChange?.(next === value ? "" : next);
-    setOpen(false);
-  }
-
-  function handleClear(e: React.MouseEvent) {
-    e.stopPropagation();
-    onValueChange?.("");
-  }
-
-  const showClear = clearable && !!selected && !loading && !error && !readonly;
+      : placeholder;
 
   return (
-    // Container — portal wordlyContainerVariants default: flex flex-col gap-4
-    <div className={cn("flex flex-col gap-4", className)}>
-      {label ? (
-        // Label — portal wordlyLabelVariants base:
-        // flex items-center gap-2.5 font-bold text-sm tracking-wider text-black
-        // (portal "bold" = 600 = font-semibold; required indicator = text-destructive)
-        <label className="flex items-center gap-2.5 font-semibold text-sm tracking-wider text-black">
-          {label}
-          {required ? <span className="text-destructive">*</span> : null}
-        </label>
-      ) : null}
-
-      {/* Content — portal wordlyContentVariants default: flex flex-col gap-3 */}
-      <div className="flex flex-col gap-3">
-        <Popover
-          open={open}
-          onOpenChange={interactionBlocked ? undefined : setOpen}
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={!error ? helperText : undefined}
+      helperTextOnTop={helperTextOnTop}
+      showError={showError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      layoutVariant={layoutVariant}
+      labelStyleVariant={labelStyleVariant}
+      labelSizeVariant={labelSizeVariant}
+      labelContextVariant={labelContextVariant}
+      spacingVariant={spacingVariant}
+      contentContextVariant={contentContextVariant}
+      className={className}
+    >
+      <Select
+        value={value || undefined}
+        onValueChange={(next) => onValueChange?.(next)}
+        disabled={interactionBlocked}
+      >
+        <SelectTrigger
+          data-size={size}
+          aria-invalid={error || undefined}
+          aria-readonly={readonly || undefined}
+          aria-required={required || undefined}
+          className={cn(
+            selectTriggerVariants({ error: showError }),
+            readonly && "pointer-events-none",
+            triggerClass
+          )}
         >
-          <div className="relative">
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                role="combobox"
-                aria-expanded={open}
-                aria-invalid={error || undefined}
-                aria-readonly={readonly || undefined}
-                aria-required={required || undefined}
-                disabled={disabled || loading || error}
-                className={cn(
-                  selectTriggerVariants({ size, error }),
-                  // placeholder uses muted-foreground (wordly-select-placeholder)
-                  !selected && "text-muted-foreground",
-                  // Make room for the clear button + chevron when clearable.
-                  showClear && "pr-12",
-                  readonly && "pointer-events-none"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex min-w-0 items-center gap-2 truncate",
-                    !selected && "text-muted-foreground"
-                  )}
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                  ) : null}
-                  <span className="truncate">{triggerLabel}</span>
-                </span>
-                <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
-              </button>
-            </PopoverTrigger>
-
-            {/* Clear button: portal places it absolutely at right-8, before the chevron. */}
-            {showClear ? (
-              <button
-                type="button"
-                aria-label="Clear selection"
-                onClick={handleClear}
-                className="absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:bg-muted"
-              >
-                <X className="size-3.5" />
-              </button>
-            ) : null}
-          </div>
-
-          <PopoverContent
-            className="min-w-[8rem] w-[var(--radix-popover-trigger-width)] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
-            align="start"
-          >
-            <Command>
-              {searchable ? <CommandInput placeholder={placeholder} /> : null}
-              <CommandList>
-                <CommandEmpty className="py-1.5 text-sm italic text-muted-foreground">
-                  {hasOptions ? noSearchResultsText : noLocalesText}
-                </CommandEmpty>
-                <CommandGroup>
-                  {locales.map((option) => {
-                    const isSelected = value === option.value;
-                    return (
-                      <CommandItem
-                        key={option.value}
-                        value={option.label}
-                        onSelect={() => handleSelect(option.value)}
-                        className="relative cursor-default gap-2 rounded-sm py-1.5 pl-2 pr-8 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
-                      >
-                        <span className="flex-1 truncate">{option.label}</span>
-                        {option.use ? (
-                          <span className="ml-2 text-xs text-muted-foreground">
-                            {option.use}
-                          </span>
-                        ) : null}
-                        <span className="absolute right-2 flex size-3.5 items-center justify-center">
-                          {isSelected ? (
-                            <Check className="size-4 shrink-0 text-primary" />
-                          ) : null}
-                        </span>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {/* Error — portal wordlyErrorVariants base:
-            font-normal text-sm flex items-center gap-2 leading-5 text-destructive,
-            with lucideAlertCircle icon, indented pl-3 by the wrapper. */}
-        {error && errorMessage ? (
-          <div className="flex items-center gap-2 pl-3 text-sm font-normal leading-5 text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        ) : helperText ? (
-          // Helper — portal wordlyHelperTextVariants base:
-          // font-normal text-sm text-muted-foreground, indented pl-3 by wrapper.
-          <p className="pl-3 text-sm font-normal leading-5 text-muted-foreground">
-            {helperText}
-          </p>
-        ) : null}
-      </div>
-    </div>
+          <SelectValue
+            placeholder={
+              <span className="text-muted-foreground line-clamp-1 truncate">
+                {triggerPlaceholder}
+              </span>
+            }
+          />
+        </SelectTrigger>
+        <SelectContent className="max-h-96 min-w-[325px] pt-0 pb-0">
+          {hasOptions ? (
+            localeOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))
+          ) : (
+            <div className="py-1.5 px-2 text-sm italic text-muted-foreground">
+              {noLocalesText}
+            </div>
+          )}
+        </SelectContent>
+      </Select>
+    </FormControlWrapper>
   );
 }

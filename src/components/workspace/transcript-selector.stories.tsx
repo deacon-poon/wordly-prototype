@@ -3,107 +3,75 @@ import * as React from "react";
 
 import { TranscriptSelector } from "./transcript-selector";
 
+/**
+ * 1:1 mirror of the production Angular Overview story
+ *   wordly_portal: stories/business/wordly-transcript-selector/story-1.Overview.stories.ts
+ *
+ * Same single `Overview` story with the same args (label "Transcript", the
+ * "Choose how transcripts are saved for this session" helper text, the
+ * "Select transcript mode" placeholder, triggerClass "w-full", and the
+ * disabled/readonly/required/showInfoIcon/infoTooltipText/extraInfo flags).
+ * The three transcript-mode options come from the component's
+ * MOCK_TRANSCRIPT_OPTIONS default rather than the Angular ConstantsService
+ * provider.
+ *
+ * Title namespace kept as "Workspace Kit/TranscriptSelector" to match the
+ * existing sibling stories on this branch.
+ */
 const meta: Meta<typeof TranscriptSelector> = {
   title: "Workspace Kit/TranscriptSelector",
   component: TranscriptSelector,
   parameters: {
-    layout: "centered",
+    layout: "padded",
     docs: {
       description: {
         component:
-          "React migration of the production Angular `wordly-transcript-selector`. " +
-          "Single-select of transcript-save modes (None / Private / Public) with " +
-          "label, helper text, required marker, and loading/error/empty states. " +
-          "Data via props (mock by default); no Angular DI layer.",
+          "Transcript selector component that displays available transcript save modes (None, Private, Workspace). " +
+          "Extends WordlyProxyControlBase for transparent form integration. " +
+          "Options are built from ConstantsService transcript mode configuration.",
       },
     },
   },
-  tags: ["autodocs"],
   argTypes: {
-    size: {
-      control: "inline-radio",
-      options: ["default", "sm"],
-      description:
-        "Trigger height - portal data-size (default = h-9, sm = h-8).",
-    },
-    searchable: { control: "boolean" },
-    required: { control: "boolean" },
-    loading: { control: "boolean" },
-    error: { control: "boolean" },
+    value: { control: "text" },
     disabled: { control: "boolean" },
     readonly: { control: "boolean" },
+    label: { control: "text" },
+    required: { control: "boolean" },
+    helperText: { control: "text" },
+    placeholder: { control: "text" },
+    triggerClass: { control: "text" },
+    extraInfo: { control: "text" },
+    showInfoIcon: { control: "boolean" },
+    infoTooltipText: { control: "text" },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof TranscriptSelector>;
 
-/** Controlled wrapper so the stories reflect real selection state. */
+/** Controlled wrapper so the story reflects real selection state. */
 function Controlled(props: React.ComponentProps<typeof TranscriptSelector>) {
   const [value, setValue] = React.useState(props.value ?? "");
   return (
-    <div className="w-80">
-      <TranscriptSelector {...props} value={value} onValueChange={setValue} />
-    </div>
+    <TranscriptSelector {...props} value={value} onValueChange={setValue} />
   );
 }
 
-export const Basic: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript" },
-};
-
-export const Required: Story = {
-  render: (args) => <Controlled {...args} />,
+export const Overview: Story = {
+  name: "Overview",
   args: {
+    value: "",
+    disabled: false,
+    readonly: false,
     label: "Transcript",
-    required: true,
-    helperText: "Choose who can access the saved transcript.",
+    required: false,
+    helperText: "Choose how transcripts are saved for this session",
+    placeholder: "Select transcript mode",
+    triggerClass: "w-full",
+    extraInfo: "",
+    showInfoIcon: false,
+    infoTooltipText: "",
   },
-};
-
-export const Searchable: Story = {
   render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", searchable: true },
-};
-
-export const Preselected: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", value: "all" },
-};
-
-/** Portal `data-size="sm"` trigger (h-8). */
-export const Small: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", size: "sm", value: "all" },
-};
-
-export const Disabled: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", value: "presenter", disabled: true },
-};
-
-/** Readonly mirrors the portal `wordly-select-readonly` state (no interaction). */
-export const Readonly: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", value: "presenter", readonly: true },
-};
-
-export const Loading: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", loading: true },
-};
-
-export const Error: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: {
-    label: "Transcript",
-    error: true,
-    errorMessage: "Transcript mode is required.",
-  },
-};
-
-export const Empty: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Transcript", options: [] },
 };

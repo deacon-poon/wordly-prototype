@@ -3,88 +3,110 @@
 /**
  * TranscriptSelector
  *
- * React migration of the production Angular `wordly-transcript-selector`
- * (wordly_portal: libs/components/business/wordly-transcript-selector).
+ * EXACT React mirror of the production Angular `wordly-transcript-selector`
+ *   wordly_portal:
+ *     libs/components/business/wordly-transcript-selector/
+ *       wordly-transcript-selector.component.{ts,html}
  *
- * The Angular original is a proxy over the core `wordly-select`, populated with
- * the three transcript-save modes (none / private / public) that come from the
- * ConstantsService + WordlyTranslationService. Here we keep the same public
- * surface (a single-select of transcript modes with label/placeholder/helper +
- * error and disabled/readonly states) but drop the Angular DI/service layer:
- * the options and copy arrive via props, defaulting to mock data.
+ * In Angular this is a *thin proxy* over the core `wordly-select`
+ * (`WordlyProxyControlBase`): the template is a single `<app-wordly-select>`
+ * that forwards every form-control input/output and is fed a fixed list of
+ * three transcript-save-mode options built in `loadData()` from
+ * `ConstantsService.transcriptMode` + `transcriptLabels` (resolved through the
+ * translation service).
  *
- * Built on the shared shadcn primitives (Command + Popover) per DEC-003, matching
- * the WorkspaceSelector proof. In production the option labels would be resolved
- * from the translation/constants layer (see DEC-007).
+ *   Angular:  transcript-selector → wordly-select → form-control-wrapper + hlm-select-trigger
+ *   React:    TranscriptSelector  → FormControlWrapper + (radix Select w/ hlm trigger anatomy)
+ *
+ * Mirrors the validated AccountSelector reference exactly: the trigger class
+ * string is ported verbatim from
+ *   wordly_portal: libs/ui/select/src/lib/hlm-select-trigger.ts (selectTriggerVariants)
+ * and the default LAYOUT is the responsive label-beside-control grid (design
+ * variant "default"), matching the portal.
+ *
+ * The transcript options arrive via props (mock default mirrors the production
+ * ConstantsService labels); the Angular DI/constants/translation layer is
+ * dropped, but the option set (nosave / presenter / all) is preserved 1:1.
  */
 
 import * as React from "react";
 import { cva } from "class-variance-authority";
-import { selectTriggerVariants } from "@/components/ui/select-trigger";
-import { Check, ChevronDown, AlertCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
 // ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal `selectTriggerVariants`
-// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
-// proxies wordly-transcript-selector -> wordly-select -> hlm-select-trigger, so
-// the real control anatomy lives there: border-input, rounded-md, px-3 py-2,
-// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
-// ring (no offset), destructive border+text+ring on error. No hover state.
-// Identical to the validated AccountSelector reference.
+// Trigger anatomy — ported verbatim from the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts), identical to
+// the validated AccountSelector reference. Angular targets `[&>ng-icon]`; the
+// React radix trigger renders its chevron as an svg, so the icon-targeting
+// utilities are mapped to `[&>svg]` while every other token is identical.
 // ---------------------------------------------------------------------------
 
+const selectTriggerVariants = cva(
+  "border-input [&>svg]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0",
+  {
+    variants: {
+      error: {
+        true: "text-destructive border-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      error: false,
+    },
+  }
+);
+
+export type TranscriptSelectorSize = "default" | "sm";
+
 // ---------------------------------------------------------------------------
-// Data contract (mirrors the Angular WordlySelectOption + transcriptMode enum)
+// Data contract (mirrors the Angular WordlySelectOption built in loadData())
 // ---------------------------------------------------------------------------
 
 export interface TranscriptOption {
-  label: string;
+  /** Option value (mirrors ConstantsService.transcriptMode). */
   value: string;
-  /** Optional secondary line describing what the mode does. */
-  description?: string;
+  /** Display label (mirrors ConstantsService.transcriptLabels). */
+  label: string;
 }
 
-/** Transcript-save modes — matches ConstantsService.transcriptMode. */
+/**
+ * Transcript-save modes — matches ConstantsService.transcriptMode.
+ * (presenterNonSSO exists in constants but the selector only uses these three.)
+ */
 export const TRANSCRIPT_MODE = {
-  none: "nosave",
-  private: "presenter",
-  public: "all",
+  nosave: "NONE",
+  presenter: "PRESENTER",
+  all: "ALL",
 } as const;
 
 // ---------------------------------------------------------------------------
-// Mock data — in production, fetched from the constants/translation API (DEC-007)
+// Mock data — in production, built in loadData() from ConstantsService
+// transcriptMode + transcriptLabels (resolved via the translation service).
+// Labels ported verbatim from the production ConstantsService.transcriptLabels.
 // ---------------------------------------------------------------------------
 
 export const MOCK_TRANSCRIPT_OPTIONS: TranscriptOption[] = [
   {
-    label: "None",
-    value: TRANSCRIPT_MODE.none,
-    description: "Don't save a transcript of this session",
+    label: "Do not save transcript",
+    value: TRANSCRIPT_MODE.nosave,
   },
   {
-    label: "Private",
-    value: TRANSCRIPT_MODE.private,
-    description: "Only the presenter can view the transcript",
+    label: "Save transcript to workspace",
+    value: TRANSCRIPT_MODE.presenter,
   },
   {
-    label: "Public",
-    value: TRANSCRIPT_MODE.public,
-    description: "All attendees can view the transcript",
+    label: "Save and allow attendees to copy full transcript",
+    value: TRANSCRIPT_MODE.all,
   },
 ];
 
@@ -95,43 +117,56 @@ export const MOCK_TRANSCRIPT_OPTIONS: TranscriptOption[] = [
 export interface TranscriptSelectorProps {
   /** Controlled selected transcript-mode value. */
   value?: string;
-  /** Fired when the selection changes (empty string when cleared). */
+  /** Fired when the selection changes (Angular `valueChanged`). */
   onValueChange?: (value: string) => void;
-  /** Transcript-mode options. */
+
+  /** Transcript-mode options. Defaults to mock data. */
   options?: TranscriptOption[];
 
-  /** Mirrors the Angular `triggerClass` input — extra classes on the trigger. */
-  triggerClass?: string;
-  /**
-   * Trigger height, matching the portal `hlm-select-trigger` `data-size`:
-   * `default` → h-9, `sm` → h-8.
-   */
-  size?: "default" | "sm";
-
   placeholder?: string;
-  /** Show a search input to filter options. */
-  searchable?: boolean;
+  /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
+  size?: TranscriptSelectorSize;
+  /** CSS class(es) applied to the select trigger (portal `triggerClass`). */
+  triggerClass?: string;
+
+  disabled?: boolean;
+  /** Read-only: shows the value but blocks interaction (portal `readonly`). */
+  readonly?: boolean;
+  loading?: boolean;
+  /** Error/invalid state (portal `displayError`). */
+  error?: boolean;
+  /** Error text shown below the control when `error` is set (portal errorMessage). */
+  errorMessage?: string;
+  /** Helper text shown below the control when not in an error state. */
+  helperText?: string;
+  /** Place helper text above the control (stacked layout only). */
+  helperTextOnTop?: boolean;
 
   label?: string;
   required?: boolean;
-  /** Helper text rendered under the trigger. */
-  helperText?: string;
-
-  disabled?: boolean;
-  readonly?: boolean;
-  loading?: boolean;
-  error?: boolean;
-  /** Mirrors Angular `errorMessage` — shown when `error`/`displayError`. */
-  errorMessage?: string;
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
 
   loadingText?: string;
+  errorLoadingText?: string;
   noOptionsText?: string;
-  noSearchResultsText?: string;
 
   /** Fired when the trigger loses focus (Angular `inputBlur`). */
   onBlur?: () => void;
   /** Fired when the trigger gains focus (Angular `inputFocus`). */
   onFocus?: () => void;
+
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  /** Container layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
 
   className?: string;
 }
@@ -140,148 +175,105 @@ export function TranscriptSelector({
   value,
   onValueChange,
   options = MOCK_TRANSCRIPT_OPTIONS,
-  triggerClass,
-  size = "default",
   placeholder = "Select transcript mode",
-  searchable = false,
-  label,
-  required = false,
-  helperText,
+  size = "default",
+  triggerClass = "",
   disabled = false,
   readonly = false,
   loading = false,
   error = false,
   errorMessage,
+  helperText,
+  helperTextOnTop = false,
+  label,
+  required = false,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
   loadingText = "Loading transcript options...",
+  errorLoadingText = "Failed to load transcript options",
   noOptionsText = "No transcript options available",
-  noSearchResultsText = "No options match that search query",
   onBlur,
   onFocus,
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
   className,
 }: TranscriptSelectorProps) {
-  const [open, setOpen] = React.useState(false);
-
-  const selected = options.find((o) => o.value === value);
   const hasOptions = options.length > 0;
+  const showError = error;
 
-  const triggerLabel = selected?.label ?? placeholder;
+  // Loading / error / readonly block interaction (portal isLoading + readonly).
+  const interactionBlocked = disabled || loading || error || readonly;
 
-  function handleSelect(next: string) {
-    onValueChange?.(next === value ? "" : next);
-    setOpen(false);
-  }
-
-  const showLoading = loading;
+  const triggerPlaceholder = loading
+    ? loadingText
+    : error
+      ? errorLoadingText
+      : placeholder;
 
   return (
-    // Portal container: form-control-wrapper stacked layout → flex flex-col gap-3.
-    <div className={cn("flex flex-col gap-3", className)}>
-      {label ? (
-        // Portal label variant: bold (600 → font-semibold), text-sm, tracking-wider,
-        // text-black, with a flex/gap-2.5 row; required marker is text-destructive.
-        <label
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={!error ? helperText : undefined}
+      helperTextOnTop={helperTextOnTop}
+      showError={showError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      layoutVariant={layoutVariant}
+      labelStyleVariant={labelStyleVariant}
+      labelSizeVariant={labelSizeVariant}
+      labelContextVariant={labelContextVariant}
+      spacingVariant={spacingVariant}
+      contentContextVariant={contentContextVariant}
+      className={className}
+    >
+      <Select
+        value={value || undefined}
+        onValueChange={(next) => onValueChange?.(next)}
+        disabled={interactionBlocked}
+      >
+        <SelectTrigger
+          data-size={size}
+          aria-invalid={error || undefined}
+          aria-readonly={readonly || undefined}
+          aria-required={required || undefined}
+          onBlur={onBlur}
+          onFocus={onFocus}
           className={cn(
-            "flex items-center gap-2.5 font-semibold text-sm tracking-wider text-black"
+            selectTriggerVariants({ error: showError }),
+            readonly && "pointer-events-none",
+            triggerClass
           )}
         >
-          {label}
-          {required ? <span className="text-destructive">*</span> : null}
-        </label>
-      ) : null}
-
-      {showLoading ? (
-        // Portal loadingState template: spinner (border-primary) + muted text.
-        <div className="flex items-center gap-2 min-h-[1.5rem]">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <span className="text-sm text-muted-foreground">{loadingText}</span>
-        </div>
-      ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              role="combobox"
-              aria-expanded={open}
-              aria-invalid={error || undefined}
-              aria-required={required || undefined}
-              aria-readonly={readonly || undefined}
-              disabled={disabled || readonly}
-              onBlur={onBlur}
-              onFocus={onFocus}
-              className={cn(
-                selectTriggerVariants({ size, error }),
-                readonly && "pointer-events-none",
-                triggerClass
-              )}
-            >
-              <span
-                className={cn(
-                  "flex min-w-0 items-center gap-2 truncate",
-                  !selected && "text-muted-foreground"
-                )}
-              >
-                <span className="truncate">{triggerLabel}</span>
+          <SelectValue
+            placeholder={
+              <span className="text-muted-foreground line-clamp-1 truncate">
+                {triggerPlaceholder}
               </span>
-              <ChevronDown className="ml-2 size-4 shrink-0 flex-none text-muted-foreground" />
-            </button>
-          </PopoverTrigger>
-
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] min-w-[325px] p-0"
-            align="start"
-          >
-            <Command>
-              {searchable ? (
-                <CommandInput placeholder="Search transcript options..." />
-              ) : null}
-              <CommandList>
-                <CommandEmpty>
-                  {hasOptions ? noSearchResultsText : noOptionsText}
-                </CommandEmpty>
-                <CommandGroup>
-                  {options.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      value={option.label}
-                      onSelect={() => handleSelect(option.value)}
-                    >
-                      <span className="flex flex-col">
-                        <span>{option.label}</span>
-                        {option.description ? (
-                          <span className="text-xs text-muted-foreground">
-                            {option.description}
-                          </span>
-                        ) : null}
-                      </span>
-                      {/* Portal selected indicator: lucideCheck, text-primary, right-aligned */}
-                      <Check
-                        className={cn(
-                          "ml-auto size-4 shrink-0 text-primary",
-                          value === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      )}
-
-      {error && errorMessage ? (
-        // Portal error row: flex/gap-2, leading-5, text-sm, text-destructive,
-        // lucideAlertCircle icon, pl-3 indent.
-        <div className="flex items-center gap-2 pl-3 text-sm leading-5 text-destructive">
-          <AlertCircle className="size-4 shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
-      ) : helperText ? (
-        // Portal helper row: text-sm, leading-5, text-muted-foreground, pl-3.
-        <p className="pl-3 text-sm leading-5 text-muted-foreground">
-          {helperText}
-        </p>
-      ) : null}
-    </div>
+            }
+          />
+        </SelectTrigger>
+        <SelectContent className="max-h-96 min-w-[325px] pt-0 pb-0">
+          {hasOptions ? (
+            options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))
+          ) : (
+            <div className="py-1.5 px-2 text-sm italic text-muted-foreground">
+              {noOptionsText}
+            </div>
+          )}
+        </SelectContent>
+      </Select>
+    </FormControlWrapper>
   );
 }

@@ -3,28 +3,50 @@
 /**
  * TimezoneSelector
  *
- * React migration of the production Angular `wordly-timezone-selector`
- * (wordly_portal: libs/components/business/wordly-timezone-selector).
+ * EXACT React mirror of the production Angular `wordly-timezone-selector`
+ *   wordly_portal:
+ *     libs/components/business/wordly-timezone-selector/
+ *       wordly-timezone-selector.component.{ts,html}
  *
- * The Angular original is a proxy over the core `wordly-combobox`, populated
- * with IANA timezone data by a bridge service (moment-timezone → grouped
- * options by region, each with value/label/shortLabel). Here we keep the same
- * public surface (grouped, searchable, a `compact` trigger using the
- * abbreviation, clearable, and loading/error/empty states) but drop the Angular
- * DI/service/moment-timezone layer: data arrives via props, defaulting to a
- * small mock set.
+ * Like the Angular original, this is a *thin proxy*: it renders the shared
+ * FormControlWrapper (label / required / helper / error / info / extra-info /
+ * layout) wrapping a combobox control, exactly the way the Angular component
+ * proxies through `app-wordly-combobox` → `app-wordly-form-control-wrapper` +
+ * an outline trigger + an `hlm-command` popover.
  *
- * Built on the shared shadcn primitives (Command + Popover) per the
- * WorkspaceSelector proof. In production these zones would be derived from
- * moment-timezone via an API (see the Angular bridge service).
+ *   Angular:  timezone-selector → wordly-combobox → form-control-wrapper + (outline btn + hlm-command popover)
+ *   React:    TimezoneSelector  → FormControlWrapper + (outline btn + radix Popover + Command popover)
+ *
+ * The Angular template pins the proxied combobox to `enableValueSearch=true`
+ * and `indentGroupedOptions=true`, and forwards `compact`. Those are preserved
+ * here. The trigger anatomy is ported from the combobox template:
+ *   button: variant="outline" + `w-full justify-between font-normal`,
+ *           a truncated label span, and a `lucideChevronsUpDown`
+ *           (`opacity-50 flex-shrink-0`) trailing icon;
+ *   readonly: same button without the popover trigger (non-interactive, NOT
+ *           disabled), matching the `*ngIf="readonly"` branch;
+ *   placeholder/destructive: `wordly-combobox-placeholder` → muted text,
+ *           `showError` → `border-destructive`.
+ * The dropdown is `hlm-command`: a search input, grouped options with a
+ * `hlm-command-group-label` heading, `pl-6` indent on grouped options
+ * (indentGroupedOptions), a truncated left-aligned label, and a trailing
+ * `lucideCheck` (`ml-auto`, opacity-0 when unselected). Note the Angular
+ * dropdown shows only `option.label` (not the shortLabel) — the shortLabel is
+ * trigger-only (compact mode).
+ *
+ * The default LAYOUT is the responsive label-beside-control grid (design
+ * variant "default"), matching the portal — NOT a bespoke vertical flex-col.
+ *
+ * Timezone data arrives via props (mock default). The Angular DI / bridge /
+ * moment-timezone layer is dropped; the grouped `{ groupLabel, options:
+ * [{ value, label, shortLabel }] }` shape is preserved.
  */
 
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { selectTriggerVariants } from "@/components/ui/select-trigger";
-import { AlertCircle, Check, ChevronDown, Clock, X } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -38,19 +60,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
 
-// ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal `selectTriggerVariants`
-// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). The portal
-// proxies wordly-timezone-selector → wordly-combobox → hlm-select-trigger, so
-// the real control anatomy lives there: border-input, rounded-md, px-3 py-2,
-// text-sm, shadow-xs, gap-2, sizes default=h-9 / sm=h-8, focus ring [3px] on
-// ring (no offset), destructive border+text+ring on error.
-// ---------------------------------------------------------------------------
-
-export type TimezoneSelectorSize = NonNullable<
-  VariantProps<typeof selectTriggerVariants>["size"]
->;
+export type TimezoneSelectorSize = "default" | "sm";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WordlyComboboxOption / OptionGroup types)
@@ -72,8 +85,8 @@ export interface TimezoneOptionGroup {
 }
 
 // ---------------------------------------------------------------------------
-// Mock data — in production, fetched from API (derived from moment-timezone,
-// grouped by IANA region, in the Angular bridge service)
+// Mock data — in production, derived from moment-timezone, grouped by IANA
+// region, in the Angular bridge service (getTimezoneGroups()).
 // ---------------------------------------------------------------------------
 
 export const MOCK_TIMEZONE_GROUPS: TimezoneOptionGroup[] = [
@@ -107,19 +120,15 @@ export interface TimezoneSelectorProps {
   value?: string;
   /** Fired when the selection changes (empty string when cleared). */
   onValueChange?: (value: string) => void;
+  /** Fired with the newly selected IANA value (mirrors the Angular `onSelect` output). */
+  onSelect?: (value: string) => void;
   /** Grouped timezone options by IANA region. */
   groups?: TimezoneOptionGroup[];
 
-  /** Show the abbreviation (shortLabel) in the trigger instead of the city. */
+  /** Show the abbreviation (shortLabel) in the trigger instead of the city (Angular `compact`). */
   compact?: boolean;
 
   placeholder?: string;
-  /** Show a search input to filter timezones (Angular `enableValueSearch`). */
-  searchable?: boolean;
-  /** Allow clearing the current selection. */
-  clearable?: boolean;
-  /** Show the leading clock icon in the trigger. Off by default to match the portal. */
-  showLeadingIcon?: boolean;
 
   /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
   size?: TimezoneSelectorSize;
@@ -127,23 +136,36 @@ export interface TimezoneSelectorProps {
   disabled?: boolean;
   /**
    * Read-only: renders the trigger but does not open the popover (mirrors the
-   * Angular combobox `readonly` input — a non-interactive button, not disabled).
+   * Angular combobox `readonly` branch — a non-interactive button, not disabled).
    */
   readonly?: boolean;
-  loading?: boolean;
+  /** Error/invalid state (portal `displayError`). */
   error?: boolean;
+  /** Error text shown below the control when `error` is set (portal errorMessage). */
+  errorMessage?: string;
+  /** Helper text shown below the control when not in an error state. */
+  helperText?: string;
+  /** Place helper text above the control (stacked layout only). */
+  helperTextOnTop?: boolean;
 
   label?: string;
   required?: boolean;
-  /** Mirrors the Angular `errorMessage`; shown when `error` is set. */
-  errorMessage?: string;
-  /** Mirrors the Angular `helperText`. */
-  helperText?: string;
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
 
-  loadingText?: string;
-  errorLoadingText?: string;
-  noTimezonesText?: string;
-  noSearchResultsText?: string;
+  noResultsText?: string;
+
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  /** Container layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
 
   className?: string;
 }
@@ -151,25 +173,29 @@ export interface TimezoneSelectorProps {
 export function TimezoneSelector({
   value,
   onValueChange,
+  onSelect,
   groups = MOCK_TIMEZONE_GROUPS,
   compact = false,
   placeholder = "Select timezone",
-  searchable = true,
-  clearable = false,
-  showLeadingIcon = false,
   size = "default",
   disabled = false,
   readonly = false,
-  loading = false,
   error = false,
-  label,
-  required = false,
   errorMessage,
   helperText,
-  loadingText = "Loading timezones...",
-  errorLoadingText = "Failed to load timezones",
-  noTimezonesText = "No timezones available",
-  noSearchResultsText = "No timezones match that search query",
+  helperTextOnTop = false,
+  label,
+  required = false,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
+  noResultsText = "No results found.",
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
   className,
 }: TimezoneSelectorProps) {
   const [open, setOpen] = React.useState(false);
@@ -178,160 +204,131 @@ export function TimezoneSelector({
     () => groups.flatMap((g) => g.options),
     [groups]
   );
-  const selected = allOptions.find((o) => o.value === value);
-  const hasOptions = allOptions.length > 0;
+  const currentOption = allOptions.find((o) => o.value === value);
 
-  const selectedLabel = selected
+  const showError = error;
+
+  // Trigger text: city (or shortLabel||label in compact), else placeholder —
+  // verbatim from the combobox template's currentOption expression.
+  const triggerLabel = currentOption
     ? compact
-      ? selected.shortLabel
-      : selected.label
-    : null;
-
-  const triggerLabel = loading
-    ? loadingText
-    : error
-      ? errorLoadingText
-      : (selectedLabel ?? placeholder);
-
-  // Loading / error block the trigger; readonly keeps appearance but blocks open.
-  const interactionBlocked = disabled || loading || error || readonly;
+      ? currentOption.shortLabel || currentOption.label
+      : currentOption.label
+    : placeholder;
 
   function handleSelect(next: string) {
     const resolved = next === value ? "" : next;
     onValueChange?.(resolved);
+    onSelect?.(resolved);
     setOpen(false);
   }
 
-  function handleClear(e: React.MouseEvent) {
-    e.stopPropagation();
-    onValueChange?.("");
-  }
+  // Shared outline-trigger anatomy (combobox `variant="outline"` button).
+  const triggerClassName = cn(
+    buttonVariants({ variant: "outline" }),
+    "w-full justify-between font-normal",
+    size === "sm" ? "h-8" : "h-9",
+    !currentOption && "text-muted-foreground",
+    showError && "border-destructive"
+  );
 
-  const showClear = clearable && !!selected && !readonly && !loading && !error;
+  const triggerInner = (
+    <>
+      <span className="truncate mr-2">{triggerLabel}</span>
+      <ChevronsUpDown className="size-4 opacity-50 flex-shrink-0" />
+    </>
+  );
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <label className="text-sm font-medium text-gray-700">
-          {label}
-          {required ? <span className="ml-0.5 text-destructive">*</span> : null}
-        </label>
-      ) : null}
-
-      <Popover
-        open={open}
-        onOpenChange={interactionBlocked ? undefined : setOpen}
-      >
-        <div className="relative">
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={!error ? helperText : undefined}
+      helperTextOnTop={helperTextOnTop}
+      showError={showError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      layoutVariant={layoutVariant}
+      labelStyleVariant={labelStyleVariant}
+      labelSizeVariant={labelSizeVariant}
+      labelContextVariant={labelContextVariant}
+      spacingVariant={spacingVariant}
+      contentContextVariant={contentContextVariant}
+      className={className}
+    >
+      {readonly ? (
+        // Angular *ngIf="readonly": same outline button, no popover trigger.
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={false}
+          aria-readonly
+          aria-required={required || undefined}
+          aria-invalid={error || undefined}
+          className={cn(triggerClassName, "pointer-events-none")}
+        >
+          {triggerInner}
+        </button>
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
               type="button"
-              role="combobox"
-              aria-expanded={readonly ? false : open}
               aria-haspopup="listbox"
-              aria-invalid={error || undefined}
-              aria-readonly={readonly || undefined}
+              aria-expanded={open}
               aria-required={required || undefined}
-              disabled={disabled || loading || error}
-              className={cn(
-                selectTriggerVariants({ size, error }),
-                // Make room for the clear button + chevron when clearable.
-                showClear && "pr-12",
-                readonly && "pointer-events-none"
-              )}
+              aria-invalid={error || undefined}
+              disabled={disabled}
+              className={triggerClassName}
             >
-              <span
-                className={cn(
-                  "flex min-w-0 items-center gap-2 truncate",
-                  !selected && "text-muted-foreground"
-                )}
-              >
-                {loading ? (
-                  <span
-                    className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent"
-                    aria-hidden="true"
-                  />
-                ) : showLeadingIcon ? (
-                  <Clock className="size-4 shrink-0 text-muted-foreground" />
-                ) : null}
-                <span className="truncate">{triggerLabel}</span>
-              </span>
-              <ChevronDown className="ml-2 size-4 shrink-0 text-muted-foreground" />
+              {triggerInner}
             </button>
           </PopoverTrigger>
-
-          {/* Clear button: portal places it absolutely at right-8, before the chevron. */}
-          {showClear ? (
-            <button
-              type="button"
-              aria-label="Clear selection"
-              onClick={handleClear}
-              className="absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:bg-muted"
-            >
-              <X className="size-3.5" />
-            </button>
-          ) : null}
-        </div>
-
-        <PopoverContent
-          className="min-w-[8rem] w-[var(--radix-popover-trigger-width)] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
-          align="start"
-        >
-          <Command>
-            {searchable ? <CommandInput placeholder={placeholder} /> : null}
-            <CommandList>
-              <CommandEmpty className="py-1.5 text-sm italic text-muted-foreground">
-                {hasOptions ? noSearchResultsText : noTimezonesText}
-              </CommandEmpty>
-              {groups.map((group, i) => (
-                <CommandGroup
-                  key={group.groupLabel || `group-${i}`}
-                  heading={group.groupLabel || undefined}
-                  // Group heading mirrors portal hlm-select-label:
-                  // text-sm font-semibold text-muted-foreground.
-                  className="[&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground"
-                >
-                  {group.options.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      // Search by city, abbreviation, and IANA id (Angular value search).
-                      value={`${option.label} ${option.shortLabel} ${option.value}`}
-                      // Indent options under a group label (Angular indentGroupedOptions).
-                      className={cn(
-                        "relative cursor-default gap-2 rounded-sm py-1.5 pl-2 pr-8 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground",
-                        group.groupLabel && "pl-6"
-                      )}
-                      onSelect={() => handleSelect(option.value)}
-                    >
-                      <span className="min-w-0 flex-1 truncate text-left">
-                        {option.label}
-                      </span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {option.shortLabel}
-                      </span>
-                      <Check
-                        className={cn(
-                          "ml-auto size-4",
-                          value === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              ))}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-
-      {error && errorMessage ? (
-        <p className="flex items-center gap-1 pl-3 text-xs text-destructive">
-          <AlertCircle className="size-3.5 shrink-0" />
-          <span>{errorMessage}</span>
-        </p>
-      ) : helperText && !error ? (
-        <p className="pl-3 text-xs text-muted-foreground">{helperText}</p>
-      ) : null}
-    </div>
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] p-0"
+            align="start"
+          >
+            <Command>
+              {/* enableValueSearch=true on the proxied combobox */}
+              <CommandInput placeholder={placeholder} />
+              <CommandList>
+                <CommandEmpty>{noResultsText}</CommandEmpty>
+                {groups.map((group, i) => (
+                  <CommandGroup
+                    key={group.groupLabel || `group-${i}`}
+                    heading={group.groupLabel || undefined}
+                  >
+                    {group.options.map((option) => (
+                      <CommandItem
+                        key={option.value}
+                        // Value search spans city, abbreviation, and IANA id.
+                        value={`${option.label} ${option.shortLabel} ${option.value}`}
+                        onSelect={() => handleSelect(option.value)}
+                        // indentGroupedOptions: pl-6 when under a group label.
+                        className={cn(group.groupLabel && "pl-6")}
+                      >
+                        <span className="truncate flex-1 min-w-0 text-left">
+                          {option.label}
+                        </span>
+                        <Check
+                          className={cn(
+                            "ml-auto size-4",
+                            currentOption?.value === option.value
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                ))}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      )}
+    </FormControlWrapper>
   );
 }

@@ -3,51 +3,76 @@
 /**
  * GlossarySelector
  *
- * React migration of the production Angular `wordly-glossary-selector`
- * (wordly_portal: libs/components/business/wordly-glossary-selector).
+ * EXACT React mirror of the production Angular `wordly-glossary-selector`
+ *   wordly_portal:
+ *     libs/components/business/wordly-glossary-selector/
+ *       wordly-glossary-selector.component.{ts,html}
  *
- * The Angular original is a proxy over the core `wordly-select`, populated with
- * glossary data from a bridge service that calls the glossary API. Here we keep
- * the same public surface (single-select, optional "None" entry, label /
- * placeholder / helper text / error message, required, disabled, loading and
- * empty states) but drop the Angular DI/service layer: data arrives via props,
- * defaulting to mock data.
+ * Like the Angular original, this is a *thin proxy*: it renders the shared
+ * FormControlWrapper (label / required / helper / error / info icon / extra
+ * info / layout) wrapping a Select control, exactly the way the Angular
+ * component proxies through `app-wordly-select` → `app-wordly-form-control-wrapper`
+ * + `hlm-select-trigger`.
  *
- * Visual anatomy is matched 1:1 to the portal's core `wordly-select` trigger
- * (spartan/ui `selectTriggerVariants` + `hlm-select-trigger`):
- *   - trigger: `border border-input bg-transparent rounded-md px-3 py-2 text-sm
- *     shadow-xs gap-2`, sizes default `h-9` / sm `h-8`
- *   - focus-visible: `border-ring ring-ring/50 ring-[3px]`
- *   - disabled: `cursor-not-allowed opacity-50`
- *   - error: `text-destructive border-destructive ring-destructive/20`
- *   - chevron: `lucideChevronDown`, `size-4 text-muted-foreground ml-2 flex-none`
- *   - placeholder: `text-muted-foreground line-clamp-1 truncate`
- *   - selected check / spinner: `text-primary` / `border-primary` (Brand Blue —
- *     the portal's primary Teal maps to our Brand Blue primary)
- *   - dropdown content: `max-h-96 min-w-[325px]`
+ *   Angular:  glossary-selector → wordly-select → form-control-wrapper + hlm-select-trigger
+ *   React:    GlossarySelector  → FormControlWrapper + (radix Select w/ hlm trigger anatomy)
  *
- * Built on the shared shadcn primitives (Command + Popover) per the
- * WorkspaceSelector proof. In production these glossaries would be fetched from
- * the glossary API.
+ * The Angular template binds the select as single-select:
+ *   [multiple]="false" [scrollable]="true" [searchable]="false"
+ * so this is a SINGLE-select control (not multi). The `displayNoneOption`
+ * input prepends a "None" entry (value === 'none'), mirroring loadData().
+ *
+ * The trigger class string is ported verbatim from
+ *   wordly_portal: libs/ui/select/src/lib/hlm-select-trigger.ts (selectTriggerVariants)
+ * identical to the validated-exact account-selector reference.
+ *
+ * The default LAYOUT is the responsive label-beside-control grid (design
+ * variant "default"), matching the portal — NOT a bespoke vertical flex-col.
+ *
+ * Glossary data arrives via props (mock default); the Angular DI/bridge-service
+ * layer is dropped, but the bridge dataset shape and `displayNoneOption`
+ * behavior are preserved.
  */
 
 import * as React from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import type { WordlyDesignVariants } from "@/components/ui/design-variants";
+
+// ---------------------------------------------------------------------------
+// Trigger anatomy — ported verbatim from the portal `selectTriggerVariants`
+// (wordly_portal libs/ui/select/src/lib/hlm-select-trigger.ts). Angular targets
+// `[&>ng-icon]`; the React radix trigger renders its chevron as an svg, so the
+// icon-targeting utilities are mapped to `[&>svg]` while every other token
+// (border-input, rounded-md, px-3 py-2, text-sm, shadow-xs, gap-2, the
+// data-[size] heights, the focus ring [3px], destructive on error) is identical.
+// ---------------------------------------------------------------------------
+
+const selectTriggerVariants = cva(
+  "border-input [&>svg]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 [&>svg]:pointer-events-none [&>svg]:size-4 [&>svg]:shrink-0",
+  {
+    variants: {
+      error: {
+        true: "text-destructive border-destructive focus-visible:ring-destructive/20",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      error: false,
+    },
+  }
+);
+
+export type GlossarySelectorSize = "default" | "sm";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular GlossaryOption / WordlySelectOption type)
@@ -58,33 +83,20 @@ export interface GlossaryOption {
   value: string;
 }
 
+/** Value used for the optional "None" entry (mirrors the Angular literal). */
 export const NONE_OPTION_VALUE = "none";
 
 // ---------------------------------------------------------------------------
-// Trigger anatomy — mirrors the portal's spartan `selectTriggerVariants`
-// (libs/ui/select/src/lib/hlm-select-trigger.ts). Primary Teal maps to our
-// Brand Blue primary; everything else matches the portal exactly.
-// ---------------------------------------------------------------------------
-
-const selectTriggerSizes = {
-  /** data-[size=default]:h-9 */
-  default: "h-9",
-  /** data-[size=sm]:h-8 */
-  sm: "h-8",
-} as const;
-
-export type GlossarySelectorSize = keyof typeof selectTriggerSizes;
-
-// ---------------------------------------------------------------------------
-// Mock data — in production, fetched from the glossary API
+// Mock data — in production, fetched from the glossary API via the bridge
+// service. Mirrors the dataset used by the portal Overview story.
 // ---------------------------------------------------------------------------
 
 export const MOCK_GLOSSARIES: GlossaryOption[] = [
-  { label: "Medical Terminology", value: "gl-medical" },
-  { label: "Legal & Compliance", value: "gl-legal" },
-  { label: "Financial Services", value: "gl-finance" },
-  { label: "Product Brand Names", value: "gl-brand" },
-  { label: "Technical / Engineering", value: "gl-technical" },
+  { label: "Marketing Glossary (abc12)", value: "glossary-marketing-abc12" },
+  { label: "Technical Terms (def34)", value: "glossary-technical-def34" },
+  { label: "Legal Documents (ghi56)", value: "glossary-legal-ghi56" },
+  { label: "Product Catalog (jkl78)", value: "glossary-product-jkl78" },
+  { label: "Brand Guidelines (mno90)", value: "glossary-brand-mno90" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -92,41 +104,63 @@ export const MOCK_GLOSSARIES: GlossaryOption[] = [
 // ---------------------------------------------------------------------------
 
 export interface GlossarySelectorProps {
-  /** Controlled selected glossary value (empty string when none). */
+  /** Controlled selected glossary value. */
   value?: string;
   /** Fired when the selection changes (empty string when cleared). */
   onValueChange?: (value: string) => void;
-  /** Available glossaries. Defaults to mock data. */
-  glossaries?: GlossaryOption[];
 
-  placeholder?: string;
-  /** Trigger height variant. Portal: data-size default (h-9) / sm (h-8). */
-  size?: GlossarySelectorSize;
-  /** Show a search input to filter glossaries. */
-  searchable?: boolean;
+  /** Glossary list. Defaults to mock data. */
+  glossaries?: GlossaryOption[];
   /** Prepend a "None" entry (value === NONE_OPTION_VALUE). Angular: displayNoneOption. */
   displayNoneOption?: boolean;
-  /** Label for the "None" entry. Angular: noneOptionText. */
+  /** Label for the "None" entry. Angular: noneOptionText (defaults "None"). */
   noneOptionText?: string;
 
+  placeholder?: string;
+  /**
+   * Accepted for API compatibility. The Angular glossary-selector proxies
+   * `wordly-select` with `searchable=false` (fixed), so this is a no-op here.
+   */
+  searchable?: boolean;
+
+  /** Control height. Matches the portal `data-size`: default (h-9) or sm (h-8). */
+  size?: GlossarySelectorSize;
+  /** CSS class(es) applied to the select trigger (portal `triggerClass`). */
+  triggerClass?: string;
+
   disabled?: boolean;
-  /** Read-only: rendered but not interactive. Angular: readonly. */
+  /** Read-only: shows the value but blocks interaction (portal `readonly`). */
   readonly?: boolean;
   loading?: boolean;
+  /** Error/invalid state (portal `displayError`). */
+  error?: boolean;
+  /** Error text shown below the control when `error` is set (portal errorMessage). */
+  errorMessage?: string;
+  /** Helper text shown below the control when not in an error state. */
+  helperText?: string;
+  /** Place helper text above the control (stacked layout only). */
+  helperTextOnTop?: boolean;
 
   label?: string;
   required?: boolean;
-  /** Helper text shown beneath the control. Angular: helperText. */
-  helperText?: string;
-  /** Error message; when set the control renders in its error state. */
-  errorMessage?: string;
+  /** Show an info icon beside the label (portal `showInfoIcon`). */
+  showInfoIcon?: boolean;
+  infoTooltipText?: string;
+  /** Extra info block below the control (portal `extraInfo`). */
+  extraInfo?: string;
 
   loadingText?: string;
   noGlossariesText?: string;
-  noSearchResultsText?: string;
 
-  /** Extra classes applied to the trigger button. Angular: triggerClass. */
-  triggerClass?: string;
+  // ===== DESIGN VARIANT INPUTS (forwarded to the wrapper, like Angular) =====
+  /** Container layout. Default "default" = portal responsive label-beside grid. */
+  layoutVariant?: WordlyDesignVariants["layout"];
+  labelStyleVariant?: WordlyDesignVariants["labelStyle"];
+  labelSizeVariant?: WordlyDesignVariants["labelSize"];
+  labelContextVariant?: WordlyDesignVariants["labelContext"];
+  spacingVariant?: WordlyDesignVariants["spacing"];
+  contentContextVariant?: WordlyDesignVariants["contentContext"];
+
   className?: string;
 }
 
@@ -134,142 +168,105 @@ export function GlossarySelector({
   value,
   onValueChange,
   glossaries = MOCK_GLOSSARIES,
-  placeholder = "Select glossary",
-  size = "default",
-  searchable = false,
   displayNoneOption = false,
   noneOptionText = "None",
+  placeholder = "Select glossary",
+  size = "default",
+  triggerClass = "",
   disabled = false,
   readonly = false,
   loading = false,
+  error = false,
+  errorMessage,
+  helperText,
+  helperTextOnTop = false,
   label,
   required = false,
-  helperText,
-  errorMessage,
+  showInfoIcon = false,
+  infoTooltipText,
+  extraInfo,
   loadingText = "Loading glossaries...",
   noGlossariesText = "No glossaries available",
-  noSearchResultsText = "No glossaries match that search query",
-  triggerClass,
+  layoutVariant = "default",
+  labelStyleVariant,
+  labelSizeVariant,
+  labelContextVariant,
+  spacingVariant,
+  contentContextVariant,
   className,
 }: GlossarySelectorProps) {
-  const [open, setOpen] = React.useState(false);
-
-  const error = Boolean(errorMessage);
-
-  // Prepend the optional "None" entry, mirroring the Angular displayNoneOption.
-  const options: GlossaryOption[] = React.useMemo(() => {
+  // Build the select option list (mirrors `glossaryOptions: WordlySelectOption[]`),
+  // prepending the optional "None" entry exactly like the Angular loadData().
+  const glossaryOptions = React.useMemo(() => {
     if (!displayNoneOption) return glossaries;
     return [{ label: noneOptionText, value: NONE_OPTION_VALUE }, ...glossaries];
   }, [glossaries, displayNoneOption, noneOptionText]);
 
-  const selected = options.find((o) => o.value === value);
-  const hasOptions = options.length > 0;
-  const showPlaceholder = !selected && !loading;
+  const hasOptions = glossaryOptions.length > 0;
+  const showError = error;
 
-  function handleSelect(next: string) {
-    onValueChange?.(next === value ? "" : next);
-    setOpen(false);
-  }
+  // Loading / error / readonly block interaction (portal isLoading + readonly).
+  const interactionBlocked = disabled || loading || error || readonly;
+
+  const triggerPlaceholder = loading ? loadingText : placeholder;
 
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
-      {label ? (
-        <label className="text-sm font-medium text-gray-700">
-          {label}
-          {required ? <span className="ml-0.5 text-destructive">*</span> : null}
-        </label>
-      ) : null}
-
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            role="combobox"
-            aria-expanded={open}
-            aria-invalid={error || undefined}
-            aria-readonly={readonly || undefined}
-            aria-required={required || undefined}
-            disabled={disabled || readonly || loading}
-            data-size={size}
-            className={cn(
-              // selectTriggerVariants base (spartan/ui)
-              "flex w-full items-center justify-between gap-2 whitespace-nowrap",
-              "rounded-md border border-input bg-transparent px-3 py-2",
-              "text-sm shadow-xs outline-none transition-[color,box-shadow]",
-              selectTriggerSizes[size],
-              // focus-visible ring
-              "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-              // disabled
-              "disabled:cursor-not-allowed disabled:opacity-50",
-              // readonly keeps normal appearance, no pointer interaction
-              readonly && !disabled && "pointer-events-none",
-              // error state — token-based (portal: border/text-destructive)
-              error &&
-                "border-destructive text-destructive focus-visible:ring-destructive/20",
-              triggerClass
-            )}
-          >
-            <span className="flex items-center gap-2 line-clamp-1 truncate">
-              {loading ? (
-                <span
-                  className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary border-t-transparent"
-                  aria-hidden
-                />
-              ) : null}
-              <span
-                className={cn(
-                  "line-clamp-1 truncate",
-                  showPlaceholder && "text-muted-foreground"
-                )}
-              >
-                {loading ? loadingText : (selected?.label ?? placeholder)}
-              </span>
-            </span>
-            <ChevronDown className="ml-2 size-4 flex-none text-muted-foreground" />
-          </button>
-        </PopoverTrigger>
-
-        <PopoverContent
-          className="max-h-96 w-[var(--radix-popover-trigger-width)] min-w-[325px] p-0"
-          align="start"
+    <FormControlWrapper
+      label={label}
+      required={required}
+      helperText={!error ? helperText : undefined}
+      helperTextOnTop={helperTextOnTop}
+      showError={showError}
+      currentErrorMessage={errorMessage}
+      extraInfo={extraInfo}
+      showInfoIcon={showInfoIcon}
+      infoTooltipText={infoTooltipText}
+      layoutVariant={layoutVariant}
+      labelStyleVariant={labelStyleVariant}
+      labelSizeVariant={labelSizeVariant}
+      labelContextVariant={labelContextVariant}
+      spacingVariant={spacingVariant}
+      contentContextVariant={contentContextVariant}
+      className={className}
+    >
+      <Select
+        value={value || undefined}
+        onValueChange={(next) => onValueChange?.(next)}
+        disabled={interactionBlocked}
+      >
+        <SelectTrigger
+          data-size={size}
+          aria-invalid={error || undefined}
+          aria-readonly={readonly || undefined}
+          aria-required={required || undefined}
+          className={cn(
+            selectTriggerVariants({ error: showError }),
+            readonly && "pointer-events-none",
+            triggerClass
+          )}
         >
-          <Command>
-            {searchable ? (
-              <CommandInput placeholder="Search glossaries..." />
-            ) : null}
-            <CommandList>
-              <CommandEmpty>
-                {hasOptions ? noSearchResultsText : noGlossariesText}
-              </CommandEmpty>
-              <CommandGroup>
-                {options.map((option) => (
-                  <CommandItem
-                    key={option.value}
-                    value={option.label}
-                    onSelect={() => handleSelect(option.value)}
-                  >
-                    {option.label}
-                    <Check
-                      className={cn(
-                        "ml-auto size-4 shrink-0 text-primary",
-                        value === option.value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-
-      {errorMessage ? (
-        <p className="text-xs text-destructive" role="alert" aria-live="polite">
-          {errorMessage}
-        </p>
-      ) : helperText ? (
-        <p className="text-xs text-muted-foreground">{helperText}</p>
-      ) : null}
-    </div>
+          <SelectValue
+            placeholder={
+              <span className="text-muted-foreground line-clamp-1 truncate">
+                {triggerPlaceholder}
+              </span>
+            }
+          />
+        </SelectTrigger>
+        <SelectContent className="max-h-96 min-w-[325px] pt-0 pb-0">
+          {hasOptions ? (
+            glossaryOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))
+          ) : (
+            <div className="py-1.5 px-2 text-sm italic text-muted-foreground">
+              {noGlossariesText}
+            </div>
+          )}
+        </SelectContent>
+      </Select>
+    </FormControlWrapper>
   );
 }
