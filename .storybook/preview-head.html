@@ -1,0 +1,23 @@
+<!--
+  Load real Roboto directly into the Storybook preview iframe.
+  @storybook/nextjs 7.6's next/font handling does not reliably fetch Google
+  fonts, so without this the canvas falls back to a system font and looks
+  "off" compared to the real Next app. This guarantees parity with the app,
+  including the 500/600 weights used across the UI.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Bind the Tailwind --font-roboto variable (font-sans) to the real font,
+     so it applies even if next/font returns an empty className in Storybook. */
+  :root {
+    --font-roboto: "Roboto", system-ui, -apple-system, sans-serif;
+  }
+  body {
+    font-family: var(--font-roboto);
+  }
+</style>

@@ -49,3 +49,7 @@ next-env.d.ts
 
 # Design system static export (built from apps/design-system)
 public/design-system/
+
+# visual testing / storybook build
+.lostpixel/
+storybook-static/
