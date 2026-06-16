@@ -3,37 +3,58 @@ import * as React from "react";
 
 import { AccountSelector, type Account } from "./account-selector";
 
+/**
+ * 1:1 mirror of the production Angular Overview stories
+ *   wordly_portal: stories/business/wordly-account-selector/Overview.stories.ts
+ *
+ * Same story variants/states (Overview, FullWidthTrigger, CustomLabelWithOwner,
+ * CustomLabelWithMinutes, CustomLabelComplex) and the same mock account dataset
+ * (provided here via the component's MOCK_ACCOUNTS default rather than the
+ * Angular bridge-service provider).
+ *
+ * Title namespace kept as "Workspace Kit/AccountSelector" to match the existing
+ * sibling stories on this branch.
+ */
 const meta: Meta<typeof AccountSelector> = {
   title: "Workspace Kit/AccountSelector",
   component: AccountSelector,
   parameters: {
-    layout: "centered",
-    docs: {
-      description: {
-        component:
-          "React migration of the production Angular `wordly-account-selector`. " +
-          "Single-select over accounts with an `ownAccounts` filter, a " +
-          "customizable `labelFormatter`, an optional owner/minutes detail line, " +
-          "and loading/error/empty states. Data via props (mock by default); no " +
-          "Angular DI or AccountService layer.",
-      },
-    },
+    layout: "padded",
   },
-  tags: ["autodocs"],
   argTypes: {
-    size: {
-      control: "inline-radio",
-      options: ["default", "sm"],
-      description: "Control height — portal data-size (default h-9 / sm h-8).",
+    ownAccounts: {
+      control: "boolean",
+      description: "When true, shows only accounts owned by current user",
     },
-    ownAccounts: { control: "boolean" },
-    showDetail: { control: "boolean" },
-    searchable: { control: "boolean" },
-    clearable: { control: "boolean" },
-    loading: { control: "boolean" },
-    error: { control: "boolean" },
-    disabled: { control: "boolean" },
-    readonly: { control: "boolean" },
+    placeholder: {
+      control: "text",
+      description: "Placeholder text for the select field",
+    },
+    label: {
+      control: "text",
+      description: "Label for the select field",
+    },
+    required: {
+      control: "boolean",
+      description: "Whether the field is required",
+    },
+    disabled: {
+      control: "boolean",
+      description: "Whether the field is disabled",
+    },
+    triggerClass: {
+      control: "text",
+      description:
+        'CSS class(es) applied to the select trigger element (e.g. "w-full")',
+    },
+    helperText: {
+      control: "text",
+      description: "Helper text shown below the field",
+    },
+    labelFormatter: {
+      control: false,
+      description: "Function to customize how account labels are displayed",
+    },
   },
 };
 
@@ -43,105 +64,122 @@ type Story = StoryObj<typeof AccountSelector>;
 /** Controlled wrapper so the stories reflect real selection state. */
 function Controlled(props: React.ComponentProps<typeof AccountSelector>) {
   const [value, setValue] = React.useState(props.value ?? "");
-  return (
-    <div className="w-80">
-      <AccountSelector {...props} value={value} onValueChange={setValue} />
-    </div>
-  );
+  return <AccountSelector {...props} value={value} onValueChange={setValue} />;
 }
 
-export const Basic: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Account" },
-};
-
-export const Searchable: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { searchable: true, clearable: true },
-};
-
-export const WithDetail: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { showDetail: true, searchable: true, label: "Account" },
-};
-
-export const OwnAccountsOnly: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { ownAccounts: true, label: "Your accounts" },
-};
-
-/** Mirrors the Angular `labelFormatter` @Input (title + remaining minutes). */
-export const CustomLabel: Story = {
-  render: (args) => <Controlled {...args} />,
+/**
+ * Default account selector showing all accounts
+ */
+export const Overview: Story = {
   args: {
-    label: "Account",
-    labelFormatter: (a: Account) =>
-      `${a.title} — ${a.availableMinutes.toLocaleString()} min`,
+    label: "Select Account",
+    placeholder: "Choose an account",
+    ownAccounts: false,
+    required: false,
+    disabled: false,
+    helperText: "Select an account from the available options",
   },
-};
-
-export const Required: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Account", required: true },
-};
-
-/** Both portal sizes side by side — default (h-9) and sm (h-8). */
-export const Sizes: Story = {
   render: (args) => (
-    <div className="flex w-80 flex-col gap-4">
-      <Controlled {...args} size="default" label="Default (h-9)" />
-      <Controlled {...args} size="sm" label="Small (h-8)" />
+    <div style={{ maxWidth: 400 }}>
+      <Controlled {...args} />
     </div>
   ),
 };
 
-/** Selected + clearable shows the clear button at right-8 before the chevron. */
-export const Clearable: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Account", clearable: true, value: "acct-acme" },
-};
-
-export const Disabled: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Account", disabled: true, value: "acct-acme" },
-};
-
-/** Read-only: keeps the selected value visible but blocks interaction. */
-export const Readonly: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { label: "Account", readonly: true, value: "acct-acme" },
-};
-
-export const WithHelperText: Story = {
-  render: (args) => <Controlled {...args} />,
+/**
+ * Account selector with full-width trigger via triggerClass
+ */
+export const FullWidthTrigger: Story = {
   args: {
-    label: "Account",
-    helperText: "Pick the account this event bills against.",
+    label: "Select Account",
+    placeholder: "Choose an account",
+    ownAccounts: false,
+    required: false,
+    disabled: false,
+    triggerClass: "w-full",
+    helperText: "The trigger expands to fill the container width",
   },
+  render: (args) => (
+    <div style={{ width: 600 }}>
+      <p style={{ marginBottom: 16, fontSize: 14, color: "#666" }}>
+        With triggerClass=&quot;w-full&quot; — trigger fills container
+      </p>
+      <Controlled {...args} />
+
+      <hr style={{ margin: "24px 0" }} />
+
+      <p style={{ marginBottom: 16, fontSize: 14, color: "#666" }}>
+        Without triggerClass — default trigger width
+      </p>
+      <Controlled {...args} triggerClass="" />
+    </div>
+  ),
 };
 
-export const Loading: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { loading: true },
-};
-
-export const Error: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { error: true },
-};
-
-/** Invalid state with an inline error message (portal errorMessage). */
-export const ErrorWithMessage: Story = {
-  render: (args) => <Controlled {...args} />,
+/**
+ * Account selector with custom label formatter showing title and owner
+ */
+export const CustomLabelWithOwner: Story = {
   args: {
-    label: "Account",
-    required: true,
-    error: true,
-    errorMessage: "Please select an account",
+    label: "Select Account",
+    placeholder: "Choose an account",
+    ownAccounts: false,
+    required: false,
+    disabled: false,
+    helperText:
+      "Account selector with custom formatting showing title and owner",
+    labelFormatter: (account: Account) =>
+      `${account.title} (Owner: ${account.ownerName})`,
   },
+  render: (args) => (
+    <div style={{ maxWidth: 500 }}>
+      <Controlled {...args} />
+    </div>
+  ),
 };
 
-export const Empty: Story = {
-  render: (args) => <Controlled {...args} />,
-  args: { accounts: [] },
+/**
+ * Account selector with custom label formatter showing minutes available
+ */
+export const CustomLabelWithMinutes: Story = {
+  args: {
+    label: "Select Account",
+    placeholder: "Choose an account",
+    ownAccounts: false,
+    required: false,
+    disabled: false,
+    helperText: "Account selector showing available minutes for each account",
+    labelFormatter: (account: Account) =>
+      `${account.title} - ${account.availableMinutes} mins available`,
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 500 }}>
+      <Controlled {...args} />
+    </div>
+  ),
+};
+
+/**
+ * Account selector with complex custom formatting
+ */
+export const CustomLabelComplex: Story = {
+  args: {
+    label: "Select Account",
+    placeholder: "Choose an account",
+    ownAccounts: false,
+    required: false,
+    disabled: false,
+    helperText:
+      "Account selector with complex formatting showing multiple properties",
+    labelFormatter: (account: Account) => {
+      const hours = Math.floor(account.availableMinutes / 60);
+      const mins = account.availableMinutes % 60;
+      return `${account.title} | ${account.ownerName} | ${hours}h ${mins}m left`;
+    },
+  },
+  render: (args) => (
+    <div style={{ maxWidth: 600 }}>
+      <Controlled {...args} />
+    </div>
+  ),
 };
