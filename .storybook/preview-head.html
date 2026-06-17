@@ -20,4 +20,13 @@
   body {
     font-family: var(--font-roboto);
   }
+  /* globals.css sets `html, body { height:100%; overflow:hidden }` for the Next
+     app shell (which owns its own internal scroll). That rule leaks into the
+     Storybook preview iframe via preview.js and clips any story taller than the
+     viewport with no scrollbar. Re-enable natural scrolling in the canvas only. */
+  html,
+  body {
+    height: auto;
+    overflow: auto;
+  }
 </style>
