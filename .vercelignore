@@ -6,4 +6,8 @@ mobile-app/node_modules/
 
 # Exclude mobile app build artifacts
 mobile-app/.expo/
-mobile-app/dist/ 
+mobile-app/dist/
+
+# Local pre-built Storybook output (Vercel rebuilds via buildCommand);
+# uploading the 48M/5k-file dir as source aborts the upload.
+storybook-static/ 

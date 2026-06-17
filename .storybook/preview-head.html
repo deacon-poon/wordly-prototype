@@ -23,10 +23,13 @@
   /* globals.css sets `html, body { height:100%; overflow:hidden }` for the Next
      app shell (which owns its own internal scroll). That rule leaks into the
      Storybook preview iframe via preview.js and clips any story taller than the
-     viewport with no scrollbar. Re-enable natural scrolling in the canvas only. */
+     viewport with no scrollbar. Re-enable natural scrolling in the canvas only.
+     `!important` is required: Tailwind flattens the globals @layer base rule to a
+     plain rule that webpack injects AFTER this <style>, so it wins on source order
+     at equal specificity unless we force it here. */
   html,
   body {
-    height: auto;
-    overflow: auto;
+    height: auto !important;
+    overflow: auto !important;
   }
 </style>
