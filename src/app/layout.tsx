@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { roboto } from "./font";
 import "./globals.css";
 import { Providers } from "@/store/providers";
+import { ChromeProvider } from "@/components/chrome/chrome-context";
+import { ChromeSwitcher } from "@/components/chrome/ChromeSwitcher";
 import { AppShellProvider } from "@/components/layouts/AppShellProvider";
 import { VercelToolbar } from "@/components/VercelToolbar";
 import { Toaster } from "sonner";
@@ -21,7 +23,10 @@ export default function RootLayout({
     <html lang="en" className={`${roboto.variable}`}>
       <body className={`font-sans antialiased`}>
         <Providers>
-          <AppShellProvider>{children}</AppShellProvider>
+          <ChromeProvider>
+            <AppShellProvider>{children}</AppShellProvider>
+            <ChromeSwitcher />
+          </ChromeProvider>
         </Providers>
         <Toaster position="top-right" richColors closeButton />
         <VercelToolbar />
