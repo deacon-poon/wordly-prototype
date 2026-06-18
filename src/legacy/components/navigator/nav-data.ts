@@ -151,7 +151,7 @@ function createNavItems() {
       AccessType.ADMIN_USER
     ),
     sessionsDefault: new Navigator(
-      "/wssessions-default",
+      "/workspace/defaults",
       "Session Defaults",
       [],
       "rectangle-ellipsis"
@@ -168,10 +168,17 @@ function createNavItems() {
       return nav;
     })(),
     workspaceUser: new Navigator(
-      "/workspace-users",
+      "/workspace/users",
       "Workspace Users",
       [],
       "users"
+    ),
+    // Net-new (no Angular equivalent): the [WS] Edit & Delete Workspace surface.
+    workspaceSettings: new Navigator(
+      "/workspace/settings",
+      "Workspace Settings",
+      [],
+      "settings"
     ),
   };
 }
@@ -240,6 +247,7 @@ export function buildNavSections(ctx: NavContextValue): NavigatorSection[] {
   const workspaceAdminNavigation: Navigator[] = [
     n.sessionsDefault,
     ...(ctx.isSharedWorkspace && !ctx.nonAdminSSO ? [n.workspaceUser] : []),
+    n.workspaceSettings,
   ];
   navSections = navSections.filter((s) => s.title !== workspaceAdminTitle);
   if (canShowWorkspaceAdmin) {

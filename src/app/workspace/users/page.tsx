@@ -1,155 +1,80 @@
 "use client";
 
 /**
- * Workspace Users — faithful port of the Angular portal
- * (wordly_portal: src/app/modules/v2/workspace-users/workspace-users.component).
+ * Workspace Users — 1:1 port of the deployed Angular screen.
  *
- * Anatomy: MainContainer with title "{workspace}'s Users", a description, an
- * "Add Users to Workspace" primary action, and a simple list of users (name +
- * email + destructive delete). No role column and no workspace-delete here —
- * those are net-new / belong to the settings danger zone.
+ *   wordly_portal@origin/main:
+ *     src/app/modules/v2/workspace-users/workspace-users.component.html / .ts
+ *
+ * Canonical route: /workspace/users (consolidated from the former
+ * /workspace-users duplicate). Anatomy (mirrors the template): MainContainer
+ * with title "{workspace}'s Users", a description, a primary "Add Users to
+ * Workspace" action, and content that is either an empty state or a list of
+ * users (name + email + destructive delete). Add uses the ported
+ * UserSelectorDialog; delete uses ConfirmationDialog.
+ *
+ * Angular DI (WorkspaceState/Api/Data services, i18next, form builder) is dropped:
+ * users are mock state. The Angular guard redirects personal workspaces to
+ * /dashboard; not modelled here (mock workspace is shared).
  */
 
-import { useState } from "react";
+import * as React from "react";
 import { Trash2 } from "lucide-react";
 
 import { MainContainer } from "@/components/ui/main-container";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
-  InviteUsersDialog,
-  SelectedUser,
-  UserRole,
-  UserData,
-} from "@/components/workspace/invite-users-dialog";
+  UserSelectorDialog,
+  UserSelectorOption,
+  MOCK_USERS,
+} from "@/components/workspace/user-selector-dialog";
+import { useWorkspace } from "@/contexts/workspace-context";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  // Retained for the Add-Users dialog default; not surfaced in the list (Angular
-  // workspace-users shows no role column).
-  role: UserRole;
-}
+export default function WorkspaceUsersPage() {
+  const { activeWorkspace } = useWorkspace();
 
-// Existing org users offered in the "Add Users to Workspace" picker.
-const existingOrganizationUsers: UserData[] = [
-  {
-    id: "101",
-    name: "Emily Chen",
-    email: "emily.chen@example.com",
-    role: "Editor",
-  },
-  {
-    id: "102",
-    name: "Marcus Johnson",
-    email: "marcus.johnson@example.com",
-    role: "Viewer",
-  },
-  {
-    id: "103",
-    name: "Sophia Lee",
-    email: "sophia.lee@example.com",
-    role: "Administrator",
-  },
-  {
-    id: "104",
-    name: "David Rodriguez",
-    email: "david.rodriguez@example.com",
-    role: "Editor",
-  },
-  {
-    id: "105",
-    name: "Aiden Patel",
-    email: "aiden.patel@example.com",
-    role: "Viewer",
-  },
-];
+  // Seed with a couple of members (Angular fetches via the API service).
+  const [users, setUsers] = React.useState<UserSelectorOption[]>(() =>
+    MOCK_USERS.slice(0, 2)
+  );
+  const [pendingDelete, setPendingDelete] =
+    React.useState<UserSelectorOption | null>(null);
 
-export default function UsersPage() {
-  const workspaceName = "Main HQ";
-  const usersLoaded = true;
-
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "Aisha Patel",
-      email: "aisha.patel@example.com",
-      role: "Administrator",
-    },
-    {
-      id: "2",
-      name: "Carlos Mendoza",
-      email: "carlos.mendoza@example.com",
-      role: "Editor",
-    },
-    {
-      id: "3",
-      name: "Jamal Johnson",
-      email: "jamal.johnson@example.com",
-      role: "Viewer",
-    },
-  ]);
-
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [isDeletingUser, setIsDeletingUser] = useState(false);
-
-  const handleRemoveUser = (userId: string) => {
-    setUserToDelete(userId);
-    setIsDeleteUserDialogOpen(true);
+  const addUsers = (selected: UserSelectorOption[]) => {
+    setUsers((prev) => {
+      const existing = new Set(prev.map((u) => u.id));
+      return [...prev, ...selected.filter((u) => !existing.has(u.id))];
+    });
   };
 
-  const handleConfirmRemoveUser = async () => {
-    if (!userToDelete) return;
-    try {
-      setIsDeletingUser(true);
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
-      setUserToDelete(null);
-    } finally {
-      setIsDeletingUser(false);
+  const confirmDelete = () => {
+    if (pendingDelete) {
+      setUsers((prev) => prev.filter((u) => u.id !== pendingDelete.id));
     }
-  };
-
-  const handleInviteUsers = async (
-    selectedUsers: SelectedUser[],
-    role: UserRole
-  ) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    const newUsers: User[] = selectedUsers.map((user) => ({
-      id: user.id || `new-${user.email}`,
-      name: user.name || user.email.split("@")[0],
-      email: user.email,
-      role,
-    }));
-    setUsers((prev) => [...prev, ...newUsers]);
   };
 
   return (
     <div className="p-8">
       <MainContainer
         showContentPadding={false}
-        title={
-          <h1 className="text-2xl font-bold">{workspaceName}&rsquo;s Users</h1>
-        }
+        title={<span className="font-bold">{activeWorkspace}’s Users</span>}
         description="These users can use the same Sessions and Glossaries as you in this workspace"
         action={
-          <Button onClick={() => setIsInviteDialogOpen(true)}>
-            Add Users to Workspace
-          </Button>
+          <UserSelectorDialog
+            buttonText="Add Users to Workspace"
+            excludedUsers={users}
+            onUsersSelected={addUsers}
+          />
         }
       >
         {users.length === 0 ? (
-          <p className="p-6 text-sm text-muted-foreground">
-            {usersLoaded
-              ? "No users found in this workspace."
-              : "Loading workspace users..."}
+          <p className="text-sm text-muted-foreground p-6">
+            No users found in this workspace.
           </p>
         ) : (
           users.map((user) => (
-            <div key={user.id} className="flex border-b border-border p-4">
+            <div key={user.id} className="p-4 border-b border-border flex">
               <div className="flex-1">
                 <h2 className="text-lg font-medium">{user.name}</h2>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -158,9 +83,9 @@ export default function UsersPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Remove user"
-                  className="text-destructive hover:bg-red-50 hover:text-destructive"
-                  onClick={() => handleRemoveUser(user.id)}
+                  aria-label={`Remove ${user.name}`}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => setPendingDelete(user)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -170,30 +95,16 @@ export default function UsersPage() {
         )}
       </MainContainer>
 
+      {/* Delete confirmation (Angular: WordlyConfirmDialog) */}
       <ConfirmationDialog
-        open={isDeleteUserDialogOpen}
-        onOpenChange={setIsDeleteUserDialogOpen}
-        title="Remove User from Workspace"
-        description={`Are you sure you want to remove ${
-          (userToDelete && users.find((u) => u.id === userToDelete)?.name) ||
-          "this user"
-        } from the workspace? They will lose access to all workspace resources.`}
-        onConfirm={handleConfirmRemoveUser}
-        confirmText="Remove User"
-        cancelText="Cancel"
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
         variant="destructive"
-        isLoading={isDeletingUser}
-        icon={<Trash2 className="h-12 w-12" />}
-      />
-
-      <InviteUsersDialog
-        open={isInviteDialogOpen}
-        onOpenChange={setIsInviteDialogOpen}
-        contextName={workspaceName}
-        existingUsers={existingOrganizationUsers}
-        onInvite={handleInviteUsers}
-        defaultRole="Editor"
-        allowEmailInvites={false}
+        icon={<Trash2 className="h-8 w-8" />}
+        title={`Remove ${pendingDelete?.name ?? "user"}?`}
+        description={`This removes ${pendingDelete?.name ?? "the user"} from ${activeWorkspace}. They’ll lose access to this workspace’s sessions and glossaries.`}
+        confirmText="Remove user"
+        onConfirm={confirmDelete}
       />
     </div>
   );

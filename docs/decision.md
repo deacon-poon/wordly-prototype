@@ -189,3 +189,13 @@ Total Commits: ~298
 - **Context**: Accidental deletions of sessions and rooms needed prevention. The prototype initially lacked confirmation for destructive actions.
 - **Decision**: Created a reusable `ConfirmationDialog` component (`src/components/ui/confirmation-dialog.tsx`) built on Radix AlertDialog. Used for session deletion (Jan 14) and room deletion (Feb 11).
 - **Consequences**: Consistent destructive action pattern across the app. The dialog is generic enough to be reused for any confirmation need. Follows the Radix AlertDialog accessibility pattern with proper focus trap and keyboard handling.
+
+---
+
+### DEC-019: Centralized Design System — Rebuild Portal Components 1:1 on shadcn (not Angular-in-React)
+
+- **Date**: 2026-06-09
+- **Status**: Proposed
+- **Context**: Wordly is centralizing its design system into `wordly-prototype` as the single React source of truth. Two reproduction strategies were considered: (a) render the production Angular portal components inside React via `@angular/elements` / Module Federation / single-spa, or (b) rebuild them 1:1 in React. The decisive finding: the portal's 28 core primitives are built on **Spartan UI** (`@spartan-ng/brain` + `/helm`), which is "shadcn/ui for Angular" — the same headless-primitive + Tailwind model this repo already uses (DEC-003). Portal and Lab are effectively the same design system in two frameworks.
+- **Decision**: **Rebuild 1:1 on shadcn/Radix.** Reject Angular-in-React: it ships the Angular+zone.js runtime, breaks Next.js SSR/RSC, fights Tailwind theming via Shadow DOM, requires the (currently blocked) GCP private registry, and produces black-box wrappers that don't feed the reusability flywheel. Canonical primary token = Wordly **Brand Blue `#017CFF`** (diverges intentionally from the prod portal's Teal `#128197`). Phased: P0 tokens → P1 parity-sweep ~18 existing primitives → P2 build ~10 net-new core → P3 14 business composites → P4 experience components (ported from `wordly-react-components-lib`, MUI→shadcn). Full plan in `docs/ds-migration.md`.
+- **Consequences**: Source-only reproduction means the unresolved portal GCP Artifact Registry auth blocker does NOT block this work. The Spartan↔shadcn sibling relationship makes transliteration near-mechanical. Lands in owner-gated `@/components/ui/*` via Deacon's review. Open: whether the lib also publishes to `packages/ui` (`@wordly/ui`) for `apps/*` (Track B) reuse.

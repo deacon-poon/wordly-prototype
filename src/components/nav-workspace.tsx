@@ -112,6 +112,12 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
       href: "/workspace/users",
       icon: Users,
     },
+    {
+      id: "workspace-settings",
+      title: "Workspace Settings",
+      href: "/workspace/settings",
+      icon: Settings,
+    },
   ];
 
   // Organization admin items (renamed from Org-wide admin)

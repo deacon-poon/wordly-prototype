@@ -3,11 +3,15 @@
 /**
  * Workspace Settings — [WS] Edit & Delete Workspaces (net-new design).
  *
- * Iteration surface for the workspace edit/delete flows. Renders inside the legacy
- * site-nav shell. Reuses shared atoms (@/components/ui/*). Mock-only: no backend.
+ * Styled to mimic the Angular workspace app: v2-wrapper (`p-8`) → MainContainer
+ * (title / description / content / footer), with the wordly-form FormControlWrapper
+ * for the rename field — the same anatomy as workspace-users and sessions-default.
+ * This is the base surface for mocking up the deletion design.
  *
  *   - General: rename the workspace (max 50, mirrors the create-dialog rule)
  *   - Danger Zone: delete the workspace (type-to-confirm via ConfirmationDialog)
+ *
+ * Mock-only: no backend.
  */
 
 import * as React from "react";
@@ -15,17 +19,10 @@ import { useRouter } from "next/navigation";
 import { Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
+import { MainContainer } from "@/components/ui/main-container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useWorkspace } from "@/contexts/workspace-context";
 
@@ -63,46 +60,13 @@ export default function WorkspaceSettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Workspace Settings
-        </h1>
-        <p className="text-sm text-gray-700 mt-1">
-          Manage settings for{" "}
-          <span className="font-medium">{activeWorkspace}</span>.
-        </p>
-      </div>
-
-      {/* General -------------------------------------------------------- */}
-      <Card>
-        <CardHeader>
-          <CardTitle>General</CardTitle>
-          <CardDescription>
-            Change how this workspace appears across the portal.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="workspace-name" className="text-gray-700">
-              Workspace name
-            </Label>
-            <Input
-              id="workspace-name"
-              value={name}
-              maxLength={NAME_MAX + 10}
-              onChange={(e) => setName(e.target.value)}
-              aria-invalid={!!nameError}
-              className="max-w-md"
-            />
-            <div className="flex items-center justify-between max-w-md">
-              <span className="text-xs text-red-600">{nameError ?? ""}</span>
-              <span className="text-xs text-gray-500">
-                {trimmed.length}/{NAME_MAX}
-              </span>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 max-w-md">
+    <div className="p-8">
+      <MainContainer
+        title={<span className="font-bold">Workspace Settings</span>}
+        description={`Manage settings for ${activeWorkspace}.`}
+        footerAlignment="right"
+        footer={
+          <>
             <Button
               variant="outline"
               onClick={() => setName(activeWorkspace)}
@@ -113,44 +77,71 @@ export default function WorkspaceSettingsPage() {
             <Button onClick={handleSave} disabled={!canSave}>
               Save changes
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </>
+        }
+      >
+        <div className="wordly-form-group flex flex-col gap-8 px-4 py-2">
+          {/* General -------------------------------------------------- */}
+          <FormControlWrapper
+            label="Workspace name"
+            layoutVariant="stacked"
+            labelContextVariant="stacked"
+            contentContextVariant="stacked"
+            required
+            showError={false}
+          >
+            <div className="max-w-md">
+              <Input
+                id="workspace-name"
+                value={name}
+                maxLength={NAME_MAX + 10}
+                onChange={(e) => setName(e.target.value)}
+                aria-invalid={!!nameError}
+              />
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-xs text-destructive">
+                  {nameError ?? ""}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {trimmed.length}/{NAME_MAX}
+                </span>
+              </div>
+            </div>
+          </FormControlWrapper>
 
-      {/* Danger Zone ---------------------------------------------------- */}
-      <Card className="border-red-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-700">
-            <AlertTriangle className="h-5 w-5" />
-            Danger Zone
-          </CardTitle>
-          <CardDescription>
-            Deleting a workspace is permanent and cannot be undone.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Separator className="mb-4" />
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                Delete this workspace
-              </p>
-              <p className="text-sm text-gray-700">
-                Removes the workspace and all of its sessions, transcripts, and
-                settings.
+          {/* Danger Zone --------------------------------------------- */}
+          <section className="rounded-lg border border-red-200 bg-red-50/40">
+            <div className="border-b border-red-100 px-4 py-3">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-red-700">
+                <AlertTriangle className="h-5 w-5" />
+                Danger Zone
+              </h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Deleting a workspace is permanent and cannot be undone.
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 shrink-0"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete workspace
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex items-center justify-between gap-4 px-4 py-4">
+              <div>
+                <p className="text-sm font-medium text-gray-900">
+                  Delete this workspace
+                </p>
+                <p className="text-sm text-gray-600">
+                  Removes the workspace and all of its sessions, transcripts,
+                  and settings.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="shrink-0 border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete workspace
+              </Button>
+            </div>
+          </section>
+        </div>
+      </MainContainer>
 
       <ConfirmationDialog
         open={deleteOpen}
@@ -160,7 +151,7 @@ export default function WorkspaceSettingsPage() {
         title={`Delete “${activeWorkspace}”?`}
         description="This permanently deletes the workspace and everything in it. This action cannot be undone."
         confirmText="Delete workspace"
-        validationLabel={`Type the workspace name to confirm`}
+        validationLabel="Type the workspace name to confirm"
         validationText={activeWorkspace}
         onConfirm={handleDelete}
       />
