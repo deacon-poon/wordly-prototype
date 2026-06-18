@@ -87,12 +87,12 @@ export function LegacyNav({
       >
         <div className={styles["header-logos"]}>
           <div className={`${styles["header-icon"]} cursor`}>
-            {/* Angular renders assets/logo_blue_text.png; img is visibility:hidden
-                per source — the header is a brand-colored spacer bar at ≥lg. */}
+            {/* Rebrand (per Deacon): brand-blue Wordly wordmark on the white nav
+                top bar, top-left, per the Organizations/Workspaces Figma. */}
             <img
               className={styles["wordly-img"]}
-              src="/logo/wordly-logo-rebrand-white.svg"
-              alt=""
+              src="/logo/wordly-logo-rebrand-blue.svg"
+              alt="Wordly Logo"
             />
           </div>
           <div className={styles.htfix} />

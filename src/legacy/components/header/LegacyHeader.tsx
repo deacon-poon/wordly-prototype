@@ -6,13 +6,14 @@
  *   wordly_portal@origin/main:
  *     src/app/components/header/header.component.html / .scss / .ts
  *
- * Desktop anatomy: a 70px bar with a left-aligned Wordly logo and a right-aligned
- * cluster of notifications + a user menu (avatar initial + name → Profile / Logout).
+ * Desktop anatomy: a 70px bar with a right-aligned cluster of notifications + a
+ * user menu (avatar initial + name → Profile / Logout).
  *
  * Rebrand (per Deacon): the bar is now WHITE with a bottom border (page-background
- * in legacy-shell.module.css) and the logo sits on the LEFT in brand blue — per the
- * Organizations/Workspaces Figma. This intentionally departs from the exact 1:1
- * Angular port (which was a solid #017cff bar with a viewport-centered white logo).
+ * in legacy-shell.module.css) and the bell/username darken to gray-on-white. The
+ * Wordly logo moved to the nav's top-left (LegacyNav) per the Organizations/
+ * Workspaces Figma, so this header no longer renders a logo. Intentional departure
+ * from the exact 1:1 Angular port (a solid #017cff bar with a centered white logo).
  *
  * Angular DI (keycloak, i18next, route-name service, PrimeNG p-menu) is dropped:
  * the user is mock data and the menu uses the shared DropdownMenu atom.
@@ -39,14 +40,6 @@ export function LegacyHeader() {
 
   return (
     <div className={styles["header-main"]}>
-      <div className={styles["wordly-header"]}>
-        <img
-          src="/logo/wordly-logo-rebrand-blue.svg"
-          alt="Wordly Logo"
-          onClick={() => router.push("/dashboard")}
-        />
-      </div>
-
       <div className={styles["right-note"]}>
         <div className={styles.notifications} aria-label="Notifications">
           <Bell className="h-5 w-5" />

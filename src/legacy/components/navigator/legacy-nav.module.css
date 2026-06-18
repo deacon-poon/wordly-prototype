@@ -26,8 +26,8 @@
 .large-nav,
 .header-icon {
   height: 70px; /* $header-height */
-  padding-top: 23px;
-  padding-bottom: 23px;
+  padding-top: 19px; /* rebrand: tighter to fit the larger 32px logo (19+32+19=70) */
+  padding-bottom: 19px;
   padding-left: 20px;
   display: none;
   -webkit-user-select: none;
@@ -36,10 +36,12 @@
 
 .large-nav .wordly-img,
 .header-icon .wordly-img {
-  /* Hidden per Angular: the header bar carries the centered logo; the nav's blue
-     .header-icon is a 70px spacer that lines up with the header's .page-background. */
-  width: 35px;
-  visibility: hidden;
+  /* Rebrand (per Deacon): the nav's top 70px now shows the brand-blue Wordly logo
+     on white. Height 32px + the bar's 19px top/bottom padding = the 70px bar
+     (was a hidden 35px spacer aligning with the old solid-blue header). */
+  height: 32px;
+  width: auto;
+  visibility: visible;
 }
 
 .medium-nav {
@@ -231,7 +233,8 @@
   .large-nav,
   .header-icon {
     display: block;
-    background: #017cff; /* swapped from $primary teal */
+    background: #ffffff; /* rebrand: white logo bar (was solid #017cff) */
+    border-bottom: 1px solid #e9ecef; /* $gray-200 — continues the header border */
   }
 
   .medium-nav {

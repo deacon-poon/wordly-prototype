@@ -13,21 +13,7 @@
   height: 70px; /* $header-height */
   display: flex;
   align-items: center;
-  padding-left: 24px; /* rebrand: gutter for the left-aligned logo */
   padding-right: 32px; /* minLarge: profile-actions padding-right 32px */
-}
-
-/* Rebrand (per Deacon): left-aligned Wordly logo on the white bar, matching the
- * Figma — replaces the legacy viewport-centered placement. */
-.wordly-header {
-  display: flex;
-  align-items: center;
-}
-
-.wordly-header img {
-  height: 30px;
-  width: auto;
-  cursor: pointer;
 }
 
 /* Right cluster: notifications + user menu (Angular: .notifications margin-left:auto). */
