@@ -33,14 +33,18 @@
   position: relative;
 }
 
-/* The 70px colored header bar (Angular: .main-content .page-background). */
+/* The 70px header bar (Angular: .main-content .page-background).
+ * Rebrand (per Deacon): white bar with a bottom border instead of the legacy
+ * solid #017cff — matches the Organizations/Workspaces Figma (white header,
+ * logo on the left). Deviation from the exact Angular port. */
 .page-background {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 70px; /* $header-height */
-  background: #017cff; /* swapped from $primary teal */
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef; /* $gray-200 */
 }
 
 .route-content {

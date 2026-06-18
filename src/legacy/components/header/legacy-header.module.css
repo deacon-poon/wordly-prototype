@@ -13,24 +13,21 @@
   height: 70px; /* $header-height */
   display: flex;
   align-items: center;
+  padding-left: 24px; /* rebrand: gutter for the left-aligned logo */
   padding-right: 32px; /* minLarge: profile-actions padding-right 32px */
 }
 
-/* Centered Wordly logo (Angular: .wordly-header img, viewport-centered). */
+/* Rebrand (per Deacon): left-aligned Wordly logo on the white bar, matching the
+ * Figma — replaces the legacy viewport-centered placement. */
 .wordly-header {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  pointer-events: none;
 }
 
 .wordly-header img {
   height: 30px;
   width: auto;
   cursor: pointer;
-  pointer-events: auto;
 }
 
 /* Right cluster: notifications + user menu (Angular: .notifications margin-left:auto). */
@@ -45,7 +42,7 @@
 .notifications {
   display: inline-flex;
   align-items: center;
-  color: #ffffff;
+  color: #495057; /* rebrand: dark icon on the white bar ($gray-600) */
 }
 
 .menu-button {
@@ -60,20 +57,21 @@
 
 .btn-username {
   font-size: 1rem;
-  color: #f8f9fa; /* $gray-50 */
+  color: #212529; /* rebrand: dark text on the white bar ($gray-800) */
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-/* Avatar circle with the user's initial (Angular: .profile). */
+/* Avatar circle with the user's initial (Angular: .profile).
+ * Rebrand: brand-blue fill + white initial (was gray-on-gray, invisible on white). */
 .profile {
   width: 38px;
   height: 38px;
   min-width: 38px;
   border-radius: 50%;
-  background: #f8f9fa; /* $gray-50 */
-  color: #212529; /* $gray-800 */
+  background: #017cff; /* Brand Blue */
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
