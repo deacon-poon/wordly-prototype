@@ -1,0 +1,243 @@
+/*
+ * EXACT port of wordly_portal@origin/main:
+ *   src/app/components/navigator/navigator.component.scss
+ *
+ * Scoped CSS module (no globals, per repo guardrails). SCSS variables resolved to
+ * their literal values; breakpoints inlined (md=768px, lg=1024px).
+ *
+ * ONLY deviation from source: $primary ($teal-500 #128197) is swapped to the
+ * rebrand blue #017CFF everywhere it appears (active item bg/icon, header bg,
+ * child-arrow). All other values are 1:1.
+ */
+
+.dynamic-nav {
+  height: 100%;
+  position: relative;
+  z-index: 30;
+  background: #ffffff;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.nopointer {
+  pointer-events: none;
+}
+
+.large-nav,
+.header-icon {
+  height: 70px; /* $header-height */
+  padding-top: 19px; /* rebrand: tighter to fit the larger 32px logo (19+32+19=70) */
+  padding-bottom: 19px;
+  padding-left: 20px;
+  display: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.large-nav .wordly-img,
+.header-icon .wordly-img {
+  /* Rebrand (per Deacon): the nav's top 70px now shows the brand-blue Wordly logo
+     on white. Height 32px + the bar's 19px top/bottom padding = the 70px bar
+     (was a hidden 35px spacer aligning with the old solid-blue header). */
+  height: 32px;
+  width: auto;
+  visibility: visible;
+}
+
+.medium-nav {
+  padding-top: 23.5px;
+  padding-left: 34px;
+}
+
+.nav-section {
+  display: block;
+  height: 100%;
+}
+
+.nav-links {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  text-transform: capitalize;
+}
+
+.ws-manager-container {
+  margin: 18px 10px 15px;
+  position: relative;
+}
+
+.ws-floating-label {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  z-index: 1;
+  background: #ffffff;
+  padding: 0 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #495057; /* $gray-600 */
+}
+
+.nav-section-title {
+  padding: 12px 24px;
+  line-height: 28px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #121416;
+}
+
+.nav-children {
+  position: relative;
+}
+
+.nav-children .dropdown-menu-display {
+  display: block;
+  top: calc(100% - 8px);
+  width: 100%;
+}
+
+.nav-children .child-arrow {
+  float: right;
+  position: absolute;
+  right: 4px;
+  top: calc(50% - 10px);
+  color: #017cff; /* swapped from $primary teal */
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  padding: 8px 0px;
+}
+
+.nav-link .nav-icon {
+  /* EXACT Angular: inline-block with font-size 25px + inherited line-height 1.5
+     gives a 37.5px line box → item height 53.5px (+ 8px×2 padding). Measured from
+     the deployed portal: div.nav-link = 206 × 53.5. Must NOT be inline-flex —
+     that collapses the line box to the 24px svg and shrinks the row to 40px. */
+  font-size: 25px;
+  line-height: 1.5;
+  padding-left: 16px;
+  text-align: center;
+  width: 50px;
+  display: inline-block;
+  color: #017cff; /* swapped from $primary teal */
+}
+
+.nav-link .nav-icon .lucid-icon {
+  /* Tailwind preflight sets `svg { display: block }`, which removes the icon from
+     the line box and collapses the row to 24px. Restore inline so the parent's
+     line-height (37.5px) forms the box → 53.5px item height. */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.nav-link .badge {
+  position: absolute;
+  display: inline-block;
+  font-size: 12px;
+  background: #c2410c; /* $warning-text / $orange-700 */
+  border-radius: 0.5rem;
+  padding: 0.166667em 0.5em;
+  color: #ffffff;
+  left: 2rem;
+  top: 0.5rem;
+}
+
+.nav-link .nav-label {
+  margin-left: 16px;
+  display: inline-block;
+}
+
+.nav-link:hover {
+  background: #eef0f2; /* $gray-background-for-black-text / $gray-100 */
+}
+
+/* nav-active ----------------------------------------------------------- */
+.nav-active .nav-children .child-arrow {
+  color: #ffffff;
+}
+
+.nav-active .nav-link {
+  background: #017cff; /* swapped from $primary teal */
+  color: #ffffff;
+}
+
+.nav-active .nav-link .nav-icon {
+  color: #ffffff;
+}
+
+.nav-active .dropdown-item:active,
+.nav-active .dropdown-item.active {
+  background: #017cff; /* swapped from $primary teal */
+  color: #ffffff;
+}
+
+.nav-active .highlighter {
+  position: absolute;
+  width: calc(100% - 6px);
+  background: #ffffff;
+  height: 2px;
+  bottom: 3px;
+  left: 3px;
+}
+
+.nav-link.disabled {
+  pointer-events: none;
+}
+
+.dropdown-menu {
+  display: none;
+}
+
+.dropdown-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.htfix {
+  clear: both;
+}
+
+.lucid-icon {
+  /* lucide-angular default size (24px) — the nav uses the plain .lucid-icon class,
+     which (unlike the .inline-* helpers) does not scale to font-size. */
+  width: 24px;
+  height: 24px;
+}
+
+/* @include breakpoints.minMedium()  ->  min-width: 768px */
+@media only screen and (min-width: 768px) {
+  .medium-nav {
+    padding-top: 25px;
+    padding-left: 32px;
+  }
+}
+
+/* @include breakpoints.minLarge()  ->  min-width: 1024px */
+@media only screen and (min-width: 1024px) {
+  .dynamic-nav {
+    min-width: 70px;
+  }
+
+  .nav-links {
+    height: calc(100% - 70px); /* $header-height */
+    border-right: solid 2px #cdd2d7; /* $gray-300 */
+  }
+
+  .large-nav,
+  .header-icon {
+    display: block;
+    background: #ffffff; /* rebrand: white logo bar (was solid #017cff) */
+    border-bottom: 1px solid #e9ecef; /* $gray-200 — continues the header border */
+  }
+
+  .medium-nav {
+    display: none;
+  }
+}

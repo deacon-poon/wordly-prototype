@@ -66,7 +66,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { FormControlWrapper } from "@/components/ui/form-control-wrapper";
+import {
+  FormControlWrapper,
+  FormControlWrapperProps,
+} from "@/components/ui/form-control-wrapper";
 
 // ---------------------------------------------------------------------------
 // Data contract (mirrors the Angular WorkspaceManagerComboboxOption / WorkspaceGroup)
@@ -150,6 +153,15 @@ export interface WorkspaceManagerProps {
 
   noWorkspacesText?: string;
 
+  /**
+   * Outer FormControlWrapper layout/context passthrough — mirrors the Angular
+   * @Input context variants (e.g. the navigator passes `*ContextVariant="stacked"`
+   * to render the manager compact inside the sidebar).
+   */
+  layoutVariant?: FormControlWrapperProps["layoutVariant"];
+  labelContextVariant?: FormControlWrapperProps["labelContextVariant"];
+  contentContextVariant?: FormControlWrapperProps["contentContextVariant"];
+
   className?: string;
 }
 
@@ -170,6 +182,9 @@ export function WorkspaceManager({
   readonly = false,
   error = false,
   noWorkspacesText = "No results found",
+  layoutVariant,
+  labelContextVariant,
+  contentContextVariant,
   className,
 }: WorkspaceManagerProps) {
   const [open, setOpen] = React.useState(false);
@@ -244,7 +259,14 @@ export function WorkspaceManager({
   );
 
   return (
-    <FormControlWrapper label={label} showError={false} className={className}>
+    <FormControlWrapper
+      label={label}
+      showError={false}
+      layoutVariant={layoutVariant}
+      labelContextVariant={labelContextVariant}
+      contentContextVariant={contentContextVariant}
+      className={className}
+    >
       {readonly ? (
         trigger
       ) : (

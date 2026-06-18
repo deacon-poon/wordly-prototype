@@ -1,0 +1,66 @@
+/*
+ * EXACT port of wordly_portal@origin/main:
+ *   src/app/components/header/header.component.scss  (desktop / ≥lg appearance)
+ *
+ * Scoped CSS module. SCSS vars resolved; $primary teal #128197 swapped → #017CFF.
+ * The mobile hamburger drawer (.left-note) and route-name are display:none at ≥lg,
+ * so only the desktop anatomy (centered logo + right user cluster) is rendered.
+ */
+
+.header-main {
+  position: relative;
+  z-index: 100;
+  height: 70px; /* $header-height */
+  display: flex;
+  align-items: center;
+  padding-right: 32px; /* minLarge: profile-actions padding-right 32px */
+}
+
+/* Right cluster: notifications + user menu (Angular: .notifications margin-left:auto). */
+.right-note {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+  z-index: 10;
+}
+
+.notifications {
+  display: inline-flex;
+  align-items: center;
+  color: #495057; /* rebrand: dark icon on the white bar ($gray-600) */
+}
+
+.menu-button {
+  background-color: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 15px; /* .btn-username margin-right 0.9375rem */
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-username {
+  font-size: 1rem;
+  color: #212529; /* rebrand: dark text on the white bar ($gray-800) */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Avatar circle with the user's initial (Angular: .profile).
+ * Rebrand: brand-blue fill + white initial (was gray-on-gray, invisible on white). */
+.profile {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  background: #017cff; /* Brand Blue */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  text-transform: capitalize;
+}

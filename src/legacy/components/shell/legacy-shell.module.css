@@ -1,0 +1,54 @@
+/*
+ * EXACT port of wordly_portal@origin/main:
+ *   src/app/app.component.html / app.component.scss  (the .base-application shell)
+ *
+ * Scoped CSS module. $primary teal #128197 swapped → #017CFF.
+ * Spec: navigator column = 210px (≥lg); main-content = remainder; a 70px primary
+ * .page-background bar sits behind the header; route-content fills the rest.
+ *
+ * Deviations: Angular uses float + height calc(100vh - 31px) to leave room for
+ * <app-footer> (not ported here) — we use flex + full 100vh so there's no gap.
+ */
+
+.base-application {
+  display: flex;
+  height: 100vh;
+  min-height: 410px;
+  min-width: 320px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.navigator {
+  width: 210px; /* app.component.scss minLarge: .navigator width 210px */
+  flex-shrink: 0;
+  height: 100%;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+}
+
+/* The 70px header bar (Angular: .main-content .page-background).
+ * Rebrand (per Deacon): white bar with a bottom border instead of the legacy
+ * solid #017cff — matches the Organizations/Workspaces Figma (white header,
+ * logo on the left). Deviation from the exact Angular port. */
+.page-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px; /* $header-height */
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef; /* $gray-200 */
+}
+
+.route-content {
+  position: relative;
+  height: calc(100% - 70px); /* calc(100% - $header-height) */
+  overflow: auto;
+}
