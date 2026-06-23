@@ -109,6 +109,7 @@ export function LegacyNav({
                 contentContextVariant="stacked"
                 onCreateWorkspace={() => router.push("/workspace/users")}
                 onEditProfile={() => router.push("/profile")}
+                onWorkspaceSettings={() => router.push("/workspace/settings")}
               />
             </div>
           )}

@@ -39,7 +39,14 @@
  */
 
 import * as React from "react";
-import { Check, ChevronsUpDown, LogOut, Plus, UserCog } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  LogOut,
+  Plus,
+  Settings,
+  UserCog,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -89,6 +96,10 @@ export const WORKSPACE_ACTIONS = {
   ADD_WORKSPACE: "addWorkspace",
   EDIT_PROFILE: "editProfile",
   LOGOUT: "logOut",
+  // Net-new affordance (no Angular equivalent): jump to the workspace settings
+  // surface. Only rendered when an onWorkspaceSettings handler is provided, so
+  // the default component stays a 1:1 mirror of the Angular manager.
+  WORKSPACE_SETTINGS: "workspaceSettings",
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -121,6 +132,11 @@ export interface WorkspaceManagerProps {
   onCreateWorkspace?: (name: string) => void;
   /** Fired when the "Edit profile" action is chosen. */
   onEditProfile?: () => void;
+  /**
+   * Net-new affordance: fired when "Workspace Settings" is chosen. When omitted,
+   * the item is not rendered (keeps the default 1:1 with the Angular manager).
+   */
+  onWorkspaceSettings?: () => void;
   /** Fired when the "Log out" action is chosen. */
   onLogOut?: () => void;
   /** Hide the "Add workspace" action (Angular: non-admin SSO users). */
@@ -171,6 +187,7 @@ export function WorkspaceManager({
   workspaces = MOCK_WORKSPACE_ITEMS,
   onCreateWorkspace,
   onEditProfile,
+  onWorkspaceSettings,
   onLogOut,
   hideAddWorkspace = false,
   label = "Workspace Manager",
@@ -212,6 +229,9 @@ export function WorkspaceManager({
         break;
       case WORKSPACE_ACTIONS.EDIT_PROFILE:
         onEditProfile?.();
+        break;
+      case WORKSPACE_ACTIONS.WORKSPACE_SETTINGS:
+        onWorkspaceSettings?.();
         break;
       case WORKSPACE_ACTIONS.LOGOUT:
         onLogOut?.();
@@ -319,8 +339,22 @@ export function WorkspaceManager({
 
                 <CommandSeparator />
 
-                {/* Group 2: user menu (Edit profile / Log out) */}
+                {/* Group 2: user menu (Workspace Settings? / Edit profile / Log out) */}
                 <CommandGroup>
+                  {onWorkspaceSettings ? (
+                    <CommandItem
+                      value="Workspace Settings"
+                      onSelect={() =>
+                        handleAction(WORKSPACE_ACTIONS.WORKSPACE_SETTINGS)
+                      }
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span className="truncate flex-1 min-w-0 text-left">
+                        Workspace Settings
+                      </span>
+                      <Check className="ml-auto h-4 w-4 opacity-0" />
+                    </CommandItem>
+                  ) : null}
                   <CommandItem
                     value="Edit profile"
                     onSelect={() =>

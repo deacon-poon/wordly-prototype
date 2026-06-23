@@ -203,6 +203,14 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
                   Create New Workspace
                 </span>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/workspace/settings" onClick={onClick}>
+                  <Settings className="mr-2 h-4 w-4 text-primary-blue-600" />
+                  <span className="font-medium text-primary-blue-800">
+                    Workspace Settings
+                  </span>
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           )}
         </DropdownMenu>

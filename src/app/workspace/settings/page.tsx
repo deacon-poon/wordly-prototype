@@ -66,7 +66,7 @@ export default function WorkspaceSettingsPage() {
         description={`Manage settings for ${activeWorkspace}.`}
         footerAlignment="right"
         footer={
-          <>
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               onClick={() => setName(activeWorkspace)}
@@ -77,7 +77,7 @@ export default function WorkspaceSettingsPage() {
             <Button onClick={handleSave} disabled={!canSave}>
               Save changes
             </Button>
-          </>
+          </div>
         }
       >
         <div className="wordly-form-group flex flex-col gap-6 px-4">
