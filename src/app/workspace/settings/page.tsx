@@ -60,7 +60,7 @@ export default function WorkspaceSettingsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <MainContainer
         title={<span className="font-bold">Workspace Settings</span>}
         description={`Manage settings for ${activeWorkspace}.`}
@@ -80,7 +80,7 @@ export default function WorkspaceSettingsPage() {
           </div>
         }
       >
-        <div className="wordly-form-group flex flex-col gap-6 px-4">
+        <div className="wordly-form-group flex flex-col gap-6">
           {/* General -------------------------------------------------- */}
           <FormControlWrapper
             label="Workspace name"

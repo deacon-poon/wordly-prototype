@@ -89,7 +89,7 @@ export default function SessionsDefaultPage() {
   const [dlsEnabled, setDlsEnabled] = React.useState("false");
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <MainContainer
         title={
           <span className="font-bold">
@@ -105,7 +105,7 @@ export default function SessionsDefaultPage() {
           </div>
         }
       >
-        <div className="pl-4 pr-4">
+        <div>
           <div className="flex flex-col gap-6 wordly-form-group">
             <AccountSelector
               value={poolOfMinutes}

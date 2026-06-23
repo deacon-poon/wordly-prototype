@@ -55,7 +55,7 @@ export default function WorkspaceUsersPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-6">
       <MainContainer
         showContentPadding={false}
         title={<span className="font-bold">{activeWorkspace}’s Users</span>}
