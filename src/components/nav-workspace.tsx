@@ -155,8 +155,8 @@ export function NavWorkspace({ pathname, onClick }: NavWorkspaceProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="flex items-center justify-between p-3 mb-3 rounded-md border border-primary-blue-200 cursor-pointer hover:border-primary-blue-300 hover:bg-primary-blue-50 transition-all duration-200 shadow-sm bg-white">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary-blue-600" />
+              <div className="flex items-center gap-3">
+                <Building2 className="h-4 w-4 shrink-0 text-primary-blue-600" />
                 {!isCollapsed && (
                   <div className="flex items-center gap-1">
                     <span className="text-sm font-medium text-gray-600">

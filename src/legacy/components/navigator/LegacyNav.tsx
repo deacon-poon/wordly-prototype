@@ -98,7 +98,7 @@ export function LegacyNav({
           <div className={styles.htfix} />
         </div>
 
-        <div className={styles["nav-links"]}>
+        <div className={`${styles["nav-links"]} scrollbar-none`}>
           {showWorkspaceManager && (
             <div className={styles["ws-manager-container"]}>
               <span className={styles["ws-floating-label"]}>Workspace:</span>
