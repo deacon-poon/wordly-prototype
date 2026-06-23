@@ -80,7 +80,7 @@ export default function WorkspaceSettingsPage() {
           </>
         }
       >
-        <div className="wordly-form-group flex flex-col gap-8 px-4 py-2">
+        <div className="wordly-form-group flex flex-col gap-6 px-4">
           {/* General -------------------------------------------------- */}
           <FormControlWrapper
             label="Workspace name"
