@@ -4,7 +4,7 @@ import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { TranscriptBubble } from "./TranscriptBubble";
 import { useFadeScroll } from "../lib/useFadeScroll";
-import { haptic } from "../lib/haptics";
+import { haptic, useHapticRef } from "../lib/haptics";
 import type { StreamState } from "../lib/useTranscriptStream";
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
@@ -27,6 +27,7 @@ export function Transcript({
   padding: string;
 }) {
   const [atBottom, setAtBottom] = useState(true);
+  const hapticRef = useHapticRef();
   const { ref: scrollRef, onScroll } = useFadeScroll(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -124,6 +125,7 @@ export function Transcript({
 
       {!atBottom ? (
         <button
+          ref={hapticRef}
           onClick={jump}
           aria-label="Jump to latest"
           title="Jump to latest"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
-import { haptic } from "../lib/haptics";
+import { haptic, useHapticRef } from "../lib/haptics";
 
 const dismissHaptic = () => haptic("selection");
 
@@ -77,6 +77,7 @@ export function Coach({
   hasSaved: boolean;
 }) {
   const [dismissed, setDismissed] = useState(false);
+  const hapticRef = useHapticRef();
 
   // B2 auto-dismisses once the user saves their first line.
   useEffect(() => {
@@ -111,6 +112,7 @@ export function Coach({
           {GESTURE}
         </span>
         <button
+          ref={hapticRef}
           onClick={() => {
             dismissHaptic();
             setDismissed(true);
@@ -220,6 +222,7 @@ export function Coach({
             more.
           </div>
           <button
+            ref={hapticRef}
             onClick={() => {
               haptic("success");
               setDismissed(true);

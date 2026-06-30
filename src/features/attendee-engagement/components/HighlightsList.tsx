@@ -3,6 +3,7 @@ import { TRANSCRIPT, clamp } from "../data/transcript";
 import { REACT4 } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
+import { useHapticRef } from "../lib/haptics";
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
@@ -18,6 +19,7 @@ export function HighlightsList({
   hl: Highlights;
   emptyState?: ReactNode;
 }) {
+  const hapticRef = useHapticRef();
   if (!hl.count) {
     return (
       <>
@@ -54,6 +56,7 @@ export function HighlightsList({
             }}
           >
             <button
+              ref={hapticRef}
               onClick={() => hl.remove(s.id)}
               aria-label="Remove"
               style={{
@@ -90,6 +93,7 @@ export function HighlightsList({
                 return (
                   <button
                     key={r.e}
+                    ref={hapticRef}
                     className={styles.rxEmoji}
                     onClick={() => hl.react(s.id, r.e)}
                     aria-label={r.l}

@@ -6,7 +6,7 @@ import { SPK } from "../data/transcript";
 import { REACT5, ICON_FOR } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { Words } from "./Words";
-import { haptic } from "../lib/haptics";
+import { haptic, hapticTrigger, useHapticRef } from "../lib/haptics";
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
@@ -44,6 +44,7 @@ export function TranscriptBubble({
   const [railOpen, setRailOpen] = useState(false);
   const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lpFired = useRef(false);
+  const hapticRef = useHapticRef();
 
   const saved = hl.get(bubble.id);
   const reacted = !!saved && saved.tag !== "📌";
@@ -137,6 +138,7 @@ export function TranscriptBubble({
         <Popover.Anchor asChild>
           <div style={{ position: "relative", maxWidth }}>
             <div
+              ref={hapticTrigger}
               style={bubbleStyle}
               onClick={onBubbleClick}
               onPointerDown={startLp}
@@ -152,6 +154,7 @@ export function TranscriptBubble({
 
             {saved ? (
               <button
+                ref={hapticRef}
                 className={styles.rxChip}
                 title={
                   reacted
@@ -215,6 +218,7 @@ export function TranscriptBubble({
               return (
                 <button
                   key={opt.e}
+                  ref={hapticRef}
                   className={styles.rxEmoji}
                   title={opt.l}
                   aria-label={opt.l}

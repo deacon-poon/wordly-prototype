@@ -2,7 +2,7 @@ import { useState } from "react";
 import { WordlyLogo } from "@/components/experience/branding/WordlyLogo";
 import { Icon, VolumeIcon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
-import { haptic } from "../lib/haptics";
+import { haptic, useHapticRef } from "../lib/haptics";
 
 /**
  * The translucent live-view header: Wordly logo, language selector (target +
@@ -17,6 +17,7 @@ export function Header({
   compact?: boolean;
 }) {
   const [audio, setAudio] = useState(false);
+  const hapticRef = useHapticRef();
 
   return (
     <div
@@ -82,6 +83,7 @@ export function Header({
 
         {/* Audio toggle */}
         <button
+          ref={hapticRef}
           onClick={() => {
             haptic("selection");
             setAudio((a) => !a);

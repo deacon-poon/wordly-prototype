@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import EngagementApp from "./EngagementApp";
 import { COACH_META, type CoachVariant } from "./components/Coach";
-import { haptic } from "./lib/haptics";
+import { haptic, useHapticRef } from "./lib/haptics";
 
 /**
  * Attendee Engagement — native React port of the Claude Design "Current version" board.
@@ -28,6 +28,7 @@ function EngagementRoute() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const hapticRef = useHapticRef();
 
   const raw = (params.get("v") || "b1").toLowerCase();
   const coach: CoachVariant = (VARIANTS as string[]).includes(raw)
@@ -57,6 +58,7 @@ function EngagementRoute() {
         {VARIANTS.map((v) => (
           <button
             key={v}
+            ref={hapticRef}
             onClick={() => select(v)}
             title={COACH_META[v].title}
             className={`rounded-md px-2.5 py-1 text-[12px] font-semibold transition-colors ${
