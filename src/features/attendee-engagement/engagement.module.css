@@ -177,7 +177,11 @@
 .shinyBorder::before {
   content: "";
   position: absolute;
-  inset: -2px;
+  /* inset:0 (not -2px) so the gradient sits EXACTLY behind the card with the same
+     radius — its corners line up perfectly, and because it's fully behind the opaque
+     card it can never paint on top. The blur bleeds the glow outward past every edge
+     and corner, so the halo wraps the rounded corners cleanly. */
+  inset: 0;
   border-radius: inherit;
   background: linear-gradient(
     115deg,
@@ -189,8 +193,8 @@
   );
   background-size: 230% 100%;
   animation: wEngRibbonShift 16s linear infinite;
-  filter: blur(6px);
-  opacity: 0.28;
+  filter: blur(9px);
+  opacity: 0.3;
   z-index: -1;
   pointer-events: none;
   transition:
@@ -198,8 +202,8 @@
     filter 0.4s ease;
 }
 .shinyBorder:hover::before {
-  opacity: 0.42;
-  filter: blur(7px);
+  opacity: 0.44;
+  filter: blur(10px);
 }
 
 /* Aurora accent — a thin, soft brand-gradient line hugging the top edge of the mobile

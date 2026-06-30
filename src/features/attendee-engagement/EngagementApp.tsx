@@ -275,6 +275,7 @@ export default function EngagementApp({
         }}
       >
         <div
+          className={styles.shinyBorder}
           style={{
             position: "relative",
             height: "100%",
@@ -286,7 +287,6 @@ export default function EngagementApp({
             flexDirection: "column",
           }}
         >
-          <span className={styles.auraGlow} />
           <div
             onPointerDown={onHandleDown}
             onPointerMove={onHandleMove}
