@@ -19,6 +19,21 @@ export interface FeatureNav {
   order?: number;
 }
 
+/**
+ * An extra Spotlight (⌘K) search result a feature exposes beyond its main
+ * `/lab/<id>` link — e.g. variant deep-links. Optional and additive.
+ */
+export interface SpotlightEntry {
+  /** Result label, e.g. "Attendee Engagement · Dismissible pill". */
+  label: string;
+  /** Destination, e.g. "/lab/attendee-engagement?v=b2". */
+  href: string;
+  /** Short tag shown on the right of the row, e.g. "B2". */
+  hint?: string;
+  /** Extra space-separated keywords to match against. */
+  keywords?: string;
+}
+
 export interface FeatureConfig {
   /** URL slug + folder name. Route becomes /lab/<id>. */
   id: string;
@@ -27,6 +42,8 @@ export interface FeatureConfig {
   /** GitHub handle of the creator who owns this feature. */
   owner?: string;
   stage?: FeatureStage;
+  /** Optional extra Spotlight search entries (e.g. variant deep-links). */
+  spotlight?: SpotlightEntry[];
   /**
    * How the feature is framed:
    *  - "portal" (default) → renders inside the dashboard shell (sidebar + header).

@@ -1,0 +1,29 @@
+Iterate on an attendee engagement prototype for a live translation/captioning event (Wordly). This is a web-app experience attendees use while actively listening to a presenter, so the #1 constraint is low cognitive load and single-click interaction — people should never have to hunt across the screen for a control while they're listening.
+
+WHAT THE FEATURE DOES (note: renamed from "highlights" — it's now "engagement," covering two things):
+1. Emoji reactions — a fixed icon set: thumbs up, thumbs down, heart, thinking face, question mark. One click to react.
+2. Note-taking / saving — one click to save/highlight a caption bubble.
+
+LAYOUT — hybrid drawer (the direction the team converged on):
+- A split-screen / drawer panel with adjustable height at the bottom (or side) of the live caption view. Captions stream above; the engagement drawer sits below and can be dragged to resize.
+- The active speaker's caption bubble stays highlighted/pinned so the attendee always knows what they're reacting to without scanning.
+- Tapping a caption bubble or an emoji is a single, direct action — one click saves or reacts, no separate "mode" to enter.
+
+COLOR SYSTEM:
+- Blue = attendee actions/identity.
+- Green = presenter.
+- Use Wordly brand tokens: Brand Blue #017CFF, Accent Green #15B743, Action Teal #1BC3E4, Navy #0051A8, Error #E62D21. Roboto font.
+
+UI CLEANUP REQUIREMENTS:
+- Remove redundant exit buttons; move non-essential controls (exit, settings) into an overflow menu.
+- Simplify the toolbar — no clutter competing with the captions.
+
+GIVE ME TWO VARIANTS TO COMPARE (the unresolved debates we need to put in front of stakeholders):
+- Variant A — Persistent toolbar: the 5 reaction icons are always visible in a fixed bar. Maximum discoverability, one tap to react. Risk: visual noise.
+- Variant B — Minimal / collapsed: reactions collapse behind a single smiley-face affordance that expands the suite on tap. Cleaner, less intrusive. Risk: one extra tap, lower discoverability.
+
+For each variant, also show the default resting state (attendee just listening, not reacting) so we can judge how noisy/quiet it feels — there's an open question about whether attendees need a calm "read-only" feel vs. always-inviting interaction.
+
+This is an optional feature an organizer enables per-session — include a small indicator/affordance reflecting that it was turned on for this session (don't design the org settings screen, just the attendee-facing live view).
+
+Deliver as an interactive, responsive web prototype. Mobile-web matters (IMX event ships web-only first).
