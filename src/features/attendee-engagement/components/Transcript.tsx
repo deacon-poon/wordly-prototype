@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { TRANSCRIPT } from "../data/transcript";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
@@ -36,59 +36,44 @@ export function Transcript({
 }) {
   const [atBottom, setAtBottom] = useState(true);
   const hapticRef = useHapticRef();
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [spacer, setSpacer] = useState(0);
   const { ref: scrollRef, onScroll } = useFadeScroll(() => {
     const el = scrollRef.current;
     if (!el) return;
-    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 36);
+    // `column-reverse`: the bottom (newest) is scrollTop ≈ 0; scrolling up toward
+    // older lines grows |scrollTop|. Browsers differ on the sign, so use magnitude.
+    setAtBottom(Math.abs(el.scrollTop) < 36);
   });
 
-  // Deterministic bottom-anchor: measure free space and insert a top spacer so the
-  // newest line sits exactly `padBottom` above the panel — the SAME gap whether 1 line
-  // or 50 have streamed in. (justify-content/auto margins were ignored in this scroll
-  // container, hence the explicit measurement.)
-  const padTop = parseInt(padding.split(" ")[0], 10) || 0;
-  const padBottom =
-    parseInt(padding.split(" ")[2] ?? padding.split(" ")[0], 10) || 0;
-  useLayoutEffect(() => {
-    if (!anchorBottom) {
-      setSpacer(0);
-      return;
-    }
-    const sc = scrollRef.current;
-    const ct = contentRef.current;
-    if (!sc || !ct) return;
-    const free = sc.clientHeight - padTop - padBottom - ct.offsetHeight;
-    setSpacer(Math.max(0, Math.round(free)));
-  }, [eng.bi, eng.wi, anchorBottom, padTop, padBottom, scrollRef]);
+  // The scroll container is `flex-direction: column-reverse`, so the first child in
+  // DOM order is rendered at the BOTTOM and the column packs upward. That gives a
+  // rock-solid bottom anchor for free: the newest line always sits exactly
+  // `padding-bottom` above the panel — the SAME gap whether 1 line or 50 have
+  // streamed — and the browser keeps the bottom pinned as content grows. No spacer
+  // measurement, no manual scroll math (which earlier drifted as content overflowed).
 
-  // Re-pin to the bottom on new words / spacer changes. In the bottom-anchored phone
-  // view we ALWAYS pin (so the gap stays constant even as content crosses from
-  // "fits" to "overflows"); the wide view only pins when already at the bottom.
+  // Belt-and-braces re-pin: when already at the bottom, snap scrollTop to 0 (the
+  // newest line) after new words arrive or the area resizes (e.g. a sheet detent
+  // change), in case the browser's native column-reverse anchoring lags a frame.
   useEffect(() => {
-    if (!anchorBottom && !atBottom) return;
+    if (!atBottom) return;
     const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [eng.bi, eng.wi, atBottom, anchorBottom, padding, spacer, scrollRef]);
+    if (el) el.scrollTop = 0;
+  }, [eng.bi, eng.wi, atBottom, scrollRef]);
 
-  // Re-pin when the transcript area itself resizes (e.g. the sheet detent grows/shrinks
-  // the available height), so the newest line keeps sitting just above the sheet.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(() => {
-      if ((anchorBottom || atBottom) && scrollRef.current)
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      if (atBottom && scrollRef.current) scrollRef.current.scrollTop = 0;
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [atBottom, anchorBottom, scrollRef]);
+  }, [atBottom, scrollRef]);
 
   const jump = () => {
     haptic("light");
     const el = scrollRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    if (el) el.scrollTo({ top: 0, behavior: "smooth" });
     setAtBottom(true);
   };
 
@@ -109,40 +94,37 @@ export function Transcript({
           background: "#F0F7FF",
           padding,
           display: "flex",
-          flexDirection: "column",
+          // Newest line pinned to the bottom: render bubbles newest-first (below) and
+          // reverse the column so DOM-first sits at the bottom and packs upward.
+          flexDirection: "column-reverse",
           WebkitMaskImage:
             "linear-gradient(to bottom, transparent 0, #000 18px)",
           maskImage: "linear-gradient(to bottom, transparent 0, #000 18px)",
         }}
       >
-        {/* measured spacer pushes the newest line to a constant gap above the panel */}
-        <div style={{ flexShrink: 0, height: spacer }} aria-hidden />
-        <div
-          ref={contentRef}
-          style={{ display: "flex", flexDirection: "column" }}
-        >
-          {Array.from({ length: last + 1 }, (_, idx) => {
-            const b = TRANSCRIPT[idx];
-            const prev = idx > 0 ? TRANSCRIPT[idx - 1] : null;
-            const speakerChanged = !prev || prev.sp !== b.sp;
-            return (
-              <TranscriptBubble
-                key={b.id}
-                bubble={b}
-                count={idx < eng.bi ? 9999 : eng.wi}
-                done={idx < eng.bi}
-                isLatest={b.id === latestId}
-                hl={hl}
-                showName={idx === 0}
-                showCaret={speakerChanged && idx !== 0}
-                maxWidth={maxWidth}
-                fontSize={fontSize}
-                railOpen={openRailId === b.id}
-                onRail={(open) => onRail(open ? b.id : null)}
-              />
-            );
-          })}
-        </div>
+        {Array.from({ length: last + 1 }, (_, idx) => {
+          const b = TRANSCRIPT[idx];
+          const prev = idx > 0 ? TRANSCRIPT[idx - 1] : null;
+          const speakerChanged = !prev || prev.sp !== b.sp;
+          return (
+            <TranscriptBubble
+              key={b.id}
+              bubble={b}
+              count={idx < eng.bi ? 9999 : eng.wi}
+              done={idx < eng.bi}
+              isLatest={b.id === latestId}
+              hl={hl}
+              showName={idx === 0}
+              showCaret={speakerChanged && idx !== 0}
+              maxWidth={maxWidth}
+              fontSize={fontSize}
+              railOpen={openRailId === b.id}
+              onRail={(open) => onRail(open ? b.id : null)}
+            />
+          );
+          // column-reverse renders DOM-first at the bottom, so reverse to keep
+          // natural reading order (oldest at top → newest at bottom).
+        }).reverse()}
       </div>
 
       {/* LIVE pill — floats at the top of the transcript area, out of the scroll flow,
