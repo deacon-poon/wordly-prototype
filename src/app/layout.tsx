@@ -3,7 +3,7 @@ import { roboto } from "./font";
 import "./globals.css";
 import { Providers } from "@/store/providers";
 import { ChromeProvider } from "@/components/chrome/chrome-context";
-import { ChromeSwitcher } from "@/components/chrome/ChromeSwitcher";
+import { Spotlight } from "@/components/spotlight/Spotlight";
 import { AppShellProvider } from "@/components/layouts/AppShellProvider";
 import { VercelToolbar } from "@/components/VercelToolbar";
 import { Toaster } from "sonner";
@@ -25,7 +25,7 @@ export default function RootLayout({
         <Providers>
           <ChromeProvider>
             <AppShellProvider>{children}</AppShellProvider>
-            <ChromeSwitcher />
+            <Spotlight />
           </ChromeProvider>
         </Providers>
         <Toaster position="top-right" richColors closeButton />
