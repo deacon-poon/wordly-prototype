@@ -96,3 +96,41 @@ export function haptic(kind: HapticKind | number | number[] = "light") {
     }
   }
 }
+
+// ── Programmatic pulse (for moments NOT tied to a tap, e.g. the reaction rail opening
+// on a long-press) ───────────────────────────────────────────────────────────────────
+// The overlay technique only fires on a real tap, so for a mid-gesture haptic we use
+// the label-click trick (haptics.lochie.me): a hidden, on-screen <label> bound to an
+// <input switch> — clicking the *label* programmatically fires the iOS Taptic Engine.
+// Kept on-screen (1px, opacity 0) rather than off-screen, which iOS honours more reliably.
+let pulseLabel: HTMLLabelElement | null = null;
+function ensurePulse(): HTMLLabelElement | null {
+  if (typeof document === "undefined") return null;
+  if (pulseLabel) return pulseLabel;
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.setAttribute("switch", "");
+  input.id = "wEngPulseSwitch";
+  input.tabIndex = -1;
+  input.setAttribute("aria-hidden", "true");
+  const label = document.createElement("label");
+  label.htmlFor = "wEngPulseSwitch";
+  label.setAttribute("aria-hidden", "true");
+  label.style.cssText =
+    "position:fixed;bottom:0;right:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;";
+  label.appendChild(input);
+  document.body.appendChild(label);
+  pulseLabel = label;
+  return label;
+}
+
+/** A subtle programmatic haptic — iOS Taptic via the label-click trick + a short
+ *  Android vibrate. Use for the reaction rail opening on long-press / swipe. */
+export function pulseHaptic(kind: HapticKind = "light") {
+  try {
+    ensurePulse()?.click();
+  } catch {
+    /* no-op */
+  }
+  haptic(kind);
+}

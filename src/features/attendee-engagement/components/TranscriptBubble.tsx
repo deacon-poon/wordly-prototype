@@ -6,7 +6,12 @@ import { SPK } from "../data/transcript";
 import { REACT5, ICON_FOR, ICON } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { Words } from "./Words";
-import { haptic, hapticTrigger, useHapticRef } from "../lib/haptics";
+import {
+  haptic,
+  pulseHaptic,
+  hapticTrigger,
+  useHapticRef,
+} from "../lib/haptics";
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
@@ -145,7 +150,7 @@ export function TranscriptBubble({
     clearTimeout(lpTimer.current as never);
     lpTimer.current = setTimeout(() => {
       lpFired.current = true;
-      haptic("medium"); // long-press registered → rail opens
+      pulseHaptic("light"); // subtle tap as the reaction rail renders (iOS + Android)
       onRail(true);
     }, 450);
   };
@@ -186,7 +191,7 @@ export function TranscriptBubble({
     const wasSwipe = d?.axis === "h";
     if (wasSwipe && commit && (d?.dx ?? 0) >= SWIPE_THRESHOLD) {
       swipedRef.current = true;
-      haptic("medium");
+      pulseHaptic("light"); // subtle tap as the rail renders from a swipe
       onRail(true);
     }
     if (wasSwipe) {

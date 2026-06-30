@@ -1,16 +1,17 @@
 import type { ReactNode } from "react";
 import { TRANSCRIPT, clamp } from "../data/transcript";
-import { REACT4 } from "../lib/reactions-data";
+import { REACT5, ICON, ICON_FOR } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
-import { ICON } from "../lib/reactions-data";
 import { useHapticRef } from "../lib/haptics";
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
 /**
- * The body of the "My Highlights" panel: one card per saved line, each with the four
- * expressive reactions (👍 👎 💡 ❓) and a remove button. `emptyState` overrides the
- * default empty hint (B1 uses it to show a how-to coach card).
+ * The body of the "My Highlights" panel: one card per saved line, each with the five
+ * reactions (👍 👎 💡 ❓ 📌 Save) and a remove button. The card mirrors the transcript
+ * bubble's treatment — white, a subtle drop shadow, and a coloured ring in the item's
+ * own colour — so a saved card and its bubble read as the same object. `emptyState`
+ * overrides the default empty hint (B1 uses it to show a how-to coach card).
  */
 export function HighlightsList({
   hl,
@@ -43,16 +44,18 @@ export function HighlightsList({
       {hl.sorted.map((s) => {
         const b = TRANSCRIPT.find((t) => t.id === s.id);
         if (!b) return null;
+        const chipR = ICON_FOR[s.tag];
         return (
           <div
             key={s.id}
             style={{
               position: "relative",
               background: "#fff",
-              border: "1px solid var(--border-1)",
               borderRadius: 14,
               padding: "10px 11px",
-              boxShadow: "var(--shadow-xs)",
+              // Same language as the saved bubble: white + a coloured ring in the
+              // item's colour + a subtle drop shadow (no flat grey container border).
+              boxShadow: `0 0 0 1.5px ${chipR.cbdr}, var(--shadow-sm)`,
             }}
           >
             <button
@@ -90,7 +93,7 @@ export function HighlightsList({
               {clamp(b.text)}
             </div>
             <div style={{ display: "flex", gap: 6 }}>
-              {REACT4.map((r) => {
+              {REACT5.map((r) => {
                 const on = s.tag === r.e;
                 return (
                   <button
