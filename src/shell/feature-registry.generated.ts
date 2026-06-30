@@ -4,15 +4,18 @@
 import type { ComponentType } from "react";
 import type { FeatureConfig } from "./types";
 
-import config0 from "@/features/attendee-highlights/feature.config";
+import config0 from "@/features/attendee-engagement/feature.config";
+import config1 from "@/features/attendee-highlights/feature.config";
 
 export const featureConfigs: FeatureConfig[] = [
   config0,
+  config1,
 ];
 
 export const featureLoaders: Record<
   string,
   () => Promise<{ default: ComponentType }>
 > = {
+  "attendee-engagement": () => import("@/features/attendee-engagement"),
   "attendee-highlights": () => import("@/features/attendee-highlights"),
 };
