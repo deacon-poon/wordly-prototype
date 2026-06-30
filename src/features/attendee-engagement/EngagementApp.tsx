@@ -172,11 +172,14 @@ export default function EngagementApp({
   // ── Phone: transcript + bottom-sheet detents ─────────────────────────────────
   const vh = width === 0 ? 720 : Math.max(window?.innerHeight ?? 720, 480);
   const collapsedH = DETENTS.collapsed;
+  // Peek is a compact dock — just the newest highlight + the "+N more" affordance —
+  // not a half-sheet, so plenty of transcript stays visible above it.
+  const peekH = Math.min(300, Math.round(vh * 0.4));
   const targetH =
     detent === "collapsed"
       ? collapsedH
       : detent === "peek"
-        ? vh * DETENTS.peek
+        ? peekH
         : vh * DETENTS.full;
   const sheetH = dragH ?? targetH;
 
@@ -196,7 +199,7 @@ export default function EngagementApp({
       // snap to nearest detent
       const opts: [DetentKey, number][] = [
         ["collapsed", collapsedH],
-        ["peek", vh * DETENTS.peek],
+        ["peek", peekH],
         ["full", vh * DETENTS.full],
       ];
       let best = opts[0];
@@ -249,7 +252,7 @@ export default function EngagementApp({
           hl={hl}
           maxWidth="80%"
           fontSize={15}
-          padding="70px 18px 14px"
+          padding="70px 18px 22px"
           anchorBottom
           openRailId={railId}
           onRail={setRailId}

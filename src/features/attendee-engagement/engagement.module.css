@@ -154,6 +154,17 @@
   transform: scale(0.86);
 }
 
+/* "+N more" pill on the peek panel — subtle lift on hover. */
+.morePill {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.morePill:hover {
+  box-shadow: 0 6px 16px rgba(0, 99, 204, 0.18) !important;
+  transform: translateY(-1px);
+}
+
 /* Touch-target expander (WCAG 2.5.5). Small utility controls — the corner reaction
    chip, the remove ✕, the coach dismiss — stay visually compact but get a ≥44×44
    tappable area via an invisible, centred ::before. The visual never moves. The
