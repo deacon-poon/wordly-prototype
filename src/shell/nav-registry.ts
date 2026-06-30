@@ -44,3 +44,16 @@ export function getFeatureChrome(
 ): "portal" | "standalone" {
   return configs.find((c) => c.id === id)?.chrome ?? "portal";
 }
+
+/**
+ * True when the path is a standalone (full-screen, no-shell) lab experience.
+ * Used to hide dev chrome (Spotlight launcher, Vercel toolbar) so the attendee
+ * view reads like the real product.
+ */
+export function isStandaloneLabPath(
+  pathname: string | null | undefined,
+  configs: FeatureConfig[] = featureConfigs
+): boolean {
+  const m = pathname?.match(/^\/lab\/([^/?#]+)/);
+  return !!m && getFeatureChrome(m[1], configs) === "standalone";
+}

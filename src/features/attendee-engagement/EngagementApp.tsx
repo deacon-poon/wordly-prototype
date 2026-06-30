@@ -232,7 +232,10 @@ export default function EngagementApp({
       <Header logoHeight="20px" compact />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 
-      {/* Bottom sheet */}
+      {/* Bottom sheet — wrapper carries the position/animation/z-index (its own
+          stacking context); the inner panel is statically positioned so the ribbon
+          halo (shinyBorder ::before, z-index -1) glows from *behind* it, peeking out
+          above the top edge instead of sitting on top. */}
       <div
         style={{
           position: "absolute",
@@ -240,70 +243,76 @@ export default function EngagementApp({
           right: 0,
           bottom: 0,
           height: sheetH,
-          background: "#fff",
-          borderRadius: "18px 18px 0 0",
-          boxShadow: "0 -8px 28px rgba(15,23,42,.16)",
-          display: "flex",
-          flexDirection: "column",
           transition: sheetDrag.current
             ? "none"
             : "height .26s cubic-bezier(.32,.72,0,1)",
           zIndex: 25,
         }}
       >
-        {/* aurora glow along the sheet's top edge (parity with the desktop panel halo) */}
-        <span className={styles.auraGlow} />
         <div
-          onPointerDown={onHandleDown}
-          onPointerMove={onHandleMove}
-          onPointerUp={onHandleUp}
-          onClick={cycle}
+          className={styles.shinyBorder}
           style={{
-            flexShrink: 0,
-            padding: "8px 15px 10px",
-            cursor: "grab",
-            touchAction: "none",
+            position: "relative",
+            height: "100%",
+            background: "#fff",
+            borderRadius: "18px 18px 0 0",
+            boxShadow: "0 -8px 28px rgba(15,23,42,.16)",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <div
+            onPointerDown={onHandleDown}
+            onPointerMove={onHandleMove}
+            onPointerUp={onHandleUp}
+            onClick={cycle}
             style={{
-              width: 36,
-              height: 4,
-              borderRadius: 999,
-              background: "var(--gray-300)",
-              margin: "0 auto 10px",
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              flexShrink: 0,
+              padding: "8px 15px 10px",
+              cursor: "grab",
+              touchAction: "none",
             }}
           >
-            <PanelHeader count={hl.count} />
-            <Icon
-              d={detent === "full" ? ICON.minimize2 : ICON.maximize}
-              size={16}
-              color="var(--fg-3)"
+            <div
+              style={{
+                width: 36,
+                height: 4,
+                borderRadius: 999,
+                background: "var(--gray-300)",
+                margin: "0 auto 10px",
+              }}
             />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <PanelHeader count={hl.count} />
+              <Icon
+                d={detent === "full" ? ICON.minimize2 : ICON.maximize}
+                size={16}
+                color="var(--fg-3)"
+              />
+            </div>
           </div>
+          {detent !== "collapsed" ? (
+            <div
+              ref={sheetScroll.ref}
+              onScroll={sheetScroll.onScroll}
+              className={styles.appleScroll}
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                padding: "0 13px 16px",
+              }}
+            >
+              <HighlightsList hl={hl} emptyState={emptyState} />
+            </div>
+          ) : null}
         </div>
-        {detent !== "collapsed" ? (
-          <div
-            ref={sheetScroll.ref}
-            onScroll={sheetScroll.onScroll}
-            className={styles.appleScroll}
-            style={{
-              flex: 1,
-              minHeight: 0,
-              overflowY: "auto",
-              padding: "0 13px 16px",
-            }}
-          >
-            <HighlightsList hl={hl} emptyState={emptyState} />
-          </div>
-        ) : null}
       </div>
     </div>
   );
