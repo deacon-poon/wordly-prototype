@@ -154,6 +154,22 @@
   transform: scale(0.86);
 }
 
+/* Touch-target expander (WCAG 2.5.5). Small utility controls — the corner reaction
+   chip, the remove ✕, the coach dismiss — stay visually compact but get a ≥44×44
+   tappable area via an invisible, centred ::before. The visual never moves. The
+   inset of -11px takes our ~22–24px controls to 44–46px. */
+.rxChip,
+.hitArea {
+  position: relative;
+}
+.rxChip::before,
+.hitArea::before {
+  content: "";
+  position: absolute;
+  inset: -11px;
+  border-radius: inherit;
+}
+
 /* Animated brand ribbon halo around the "My Highlights" card. */
 .shinyBorder {
   position: relative;
@@ -172,9 +188,9 @@
     #3cff52
   );
   background-size: 230% 100%;
-  animation: wEngRibbonShift 13s linear infinite;
-  filter: blur(5px);
-  opacity: 0.42;
+  animation: wEngRibbonShift 16s linear infinite;
+  filter: blur(6px);
+  opacity: 0.28;
   z-index: -1;
   pointer-events: none;
   transition:
@@ -182,32 +198,33 @@
     filter 0.4s ease;
 }
 .shinyBorder:hover::before {
-  opacity: 0.6;
+  opacity: 0.42;
   filter: blur(7px);
 }
 
-/* Aurora glow bar — sits just above the top edge of the mobile highlights sheet
-   (the design's `hl-aura-glow`). Used where a full ::before halo can't sit behind
-   an opaque, stacking-context panel. */
+/* Aurora accent — a thin, soft brand-gradient line hugging the top edge of the mobile
+   highlights sheet. Deliberately subtle: this is a high-traffic, always-visible
+   component, so the accent reads as a gentle brand cue rather than a glowing band.
+   (Replaces the full ::before halo, which cut off harshly against the transcript.) */
 .auraGlow {
   position: absolute;
-  top: -3px;
-  left: 14px;
-  right: 14px;
-  height: 9px;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
   border-radius: 999px;
   background: linear-gradient(
-    115deg,
+    90deg,
     #3cff52,
     #00d0ff,
     #017cff,
     #00d0ff,
     #3cff52
   );
-  background-size: 230% 100%;
-  animation: wEngRibbonShift 13s linear infinite;
-  filter: blur(5px);
-  opacity: 0.6;
+  background-size: 220% 100%;
+  animation: wEngRibbonShift 16s linear infinite;
+  filter: blur(2.5px);
+  opacity: 0.4;
   pointer-events: none;
 }
 

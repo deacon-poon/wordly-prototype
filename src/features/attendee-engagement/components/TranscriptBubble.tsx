@@ -29,9 +29,9 @@ const rubber = (dx: number) => {
  * A single transcript line.
  *  - one click  → save / un-save (plain 📌)
  *  - long-press (or tapping the corner chip) → reaction rail (👍 👎 💡 ❓ 📌)
- *  - saved + reacted lines share one treatment: a background tint in the state's
- *    colour + a corner icon chip (no separate outline). Long-press lifts the bubble
- *    for feedback before the rail opens. Ported from the "Current version" board.
+ *  - saved + reacted lines share one treatment: the bubble stays white with a
+ *    coloured border in the state's colour + a corner icon chip. Long-press lifts the
+ *    bubble for feedback before the rail opens. Ported from the "Current version" board.
  */
 export function TranscriptBubble({
   bubble,
@@ -79,10 +79,11 @@ export function TranscriptBubble({
   const chipR = r ?? ICON_FOR["📌"];
   const reacted = !!saved && saved.tag !== "📌";
 
-  // Saved and reacted share ONE consistent treatment: a soft background tint in the
-  // state's colour + the corner icon chip (below). No separate outline/ring — the
-  // icon + tint carry the meaning, the same way for save and every reaction.
-  const bg = saved ? chipR.cbg : "#fff";
+  // Saved and reacted share ONE consistent treatment: the bubble stays WHITE and gets
+  // a coloured BORDER in the state's colour (📌 = brand blue, each reaction = its own),
+  // plus the corner icon chip. No background fill.
+  const bg = "#fff";
+  const ring = saved ? `0 0 0 1.5px ${chipR.cbdr}` : "";
 
   // Hover OR long-press lifts the bubble (elevation + drop shadow). The press lift is
   // a little stronger so a long-press gives immediate "it registered" feedback the
@@ -91,6 +92,7 @@ export function TranscriptBubble({
   const liftShadow = pressing
     ? "0 12px 30px rgba(1,124,255,.30)"
     : "0 7px 20px rgba(1,124,255,.20)";
+  const baseShadow = lifted ? liftShadow : "var(--shadow-xs)";
 
   const draggingH = dragRef.current?.axis === "h";
   const liftY = pressing ? -3 : lifted ? -2 : 0;
@@ -112,7 +114,7 @@ export function TranscriptBubble({
     lineHeight: 1.46,
     color: "var(--fg-1)",
     cursor: "pointer",
-    boxShadow: lifted ? liftShadow : "var(--shadow-xs)",
+    boxShadow: ring ? `${ring}, ${baseShadow}` : baseShadow,
     transform,
     transition,
     touchAction: "pan-y", // let vertical scroll pass; we own horizontal swipes
@@ -365,8 +367,8 @@ export function TranscriptBubble({
                     onRail(false);
                   }}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: 44,
+                    height: 44,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -378,7 +380,7 @@ export function TranscriptBubble({
                 >
                   {/* always rendered in the reaction's own colour so the rail reads
                       as colour-coded; the active one also gets a tinted pill. */}
-                  <Icon d={opt.icon} size={16} color={opt.c} />
+                  <Icon d={opt.icon} size={20} color={opt.c} />
                 </button>
               );
             })}

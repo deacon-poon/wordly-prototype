@@ -78,17 +78,17 @@ const isLargeText = (px, bold) => px >= 24 || (bold && px >= 18.66);
 
 const CONTRAST = [
   // — text —
-  { label: "transcript body on white", fg: "--fg-1", bg: "#ffffff", px: 14.5 },
-  { label: "transcript body on saved tint", fg: "--fg-1", bg: "--primary-blue-25", px: 14.5 },
+  { label: "transcript body on white", fg: "--fg-1", bg: "#ffffff", px: 16 },
+  { label: "transcript body on saved tint", fg: "--fg-1", bg: "--primary-blue-25", px: 16 },
   { label: "speaker name", fg: "--fg-1", bg: "#ffffff", px: 13 },
   { label: 'caret ">>" on app bg', fg: "--fg-3", bg: "--primary-blue-25", px: 14, bold: true },
   { label: '"My Highlights" title', fg: "--fg-1", bg: "#ffffff", px: 13, bold: true },
-  { label: "count badge text", fg: "#ffffff", bg: "--primary-blue-400", px: 10.5, bold: true },
-  { label: "highlight card text", fg: "--fg-1", bg: "#ffffff", px: 12.5 },
-  { label: "empty-state hint", fg: "--fg-4", bg: "#ffffff", px: 12 },
-  { label: "coach card subtext", fg: "--fg-3", bg: "--primary-blue-25", px: 11.5 },
-  { label: "coach B2 pill text", fg: "#ffffff", bg: "--primary-blue-500", px: 12.5, bold: true },
-  { label: "coach B4 banner text", fg: "--fg-2", bg: "#ffffff", px: 12, bold: true },
+  { label: "count badge text", fg: "#ffffff", bg: "--primary-blue-600", px: 11, bold: true },
+  { label: "highlight card text", fg: "--fg-1", bg: "#ffffff", px: 14 },
+  { label: "empty-state hint", fg: "--fg-3", bg: "#ffffff", px: 13 },
+  { label: "coach card subtext", fg: "--fg-3", bg: "--primary-blue-25", px: 13 },
+  { label: "coach B2 pill text", fg: "#ffffff", bg: "--primary-blue-500", px: 13, bold: true },
+  { label: "coach B4 banner text", fg: "--fg-2", bg: "#ffffff", px: 13, bold: true },
   // — non-text / icons (1.4.11, 3:1) —
   { label: "reaction 👍 icon", fg: "--accent-green-700", bg: "#ffffff", kind: "ui" },
   { label: "reaction 👎 icon", fg: "--rare-orange-600", bg: "#ffffff", kind: "ui" },
@@ -96,27 +96,30 @@ const CONTRAST = [
   { label: "reaction ❓ icon", fg: "--primary-blue-700", bg: "#ffffff", kind: "ui" },
   { label: "reaction 📌 icon", fg: "--primary-blue-600", bg: "#ffffff", kind: "ui" },
   { label: "bookmark header icon", fg: "--primary-blue-400", bg: "#ffffff", kind: "ui" },
-  { label: "remove (✕) icon", fg: "--fg-4", bg: "#ffffff", kind: "ui" },
+  { label: "remove (✕) icon", fg: "--fg-3", bg: "#ffffff", kind: "ui" },
 ];
 
 const TARGET_MIN = 44;
+// Rail + list reaction buttons are sized to 44 directly. The compact utility
+// controls (chip, remove ✕, dismiss) keep a small visual but get a 44px tappable
+// area from `.rxChip`/`.hitArea`'s ::before in engagement.module.css.
 const TARGETS = [
-  { label: "reaction rail button", px: 30, ref: "TranscriptBubble.tsx rail" },
-  { label: "highlights reaction button", px: 32, ref: "HighlightsList.tsx" },
-  { label: "corner reaction chip", px: 24, ref: "TranscriptBubble.tsx chip hit-area" },
-  { label: "highlight remove button", px: 22, ref: "HighlightsList.tsx remove hit-area" },
-  { label: "coach B2 dismiss", px: 22, ref: "Coach.tsx dismiss hit-area" },
+  { label: "reaction rail button", px: 44, ref: "TranscriptBubble.tsx rail (44 direct)" },
+  { label: "highlights reaction button", px: 44, ref: "HighlightsList.tsx (44 direct)" },
+  { label: "corner reaction chip", px: 44, ref: "styles.rxChip ::before (24 visual)" },
+  { label: "highlight remove button", px: 44, ref: "styles.hitArea ::before (22 visual)" },
+  { label: "coach B2 dismiss", px: 44, ref: "styles.hitArea ::before (22 visual)" },
 ];
 
 const BODY_MIN = 15;
 const SECONDARY_MIN = 13;
 const LEGIBILITY = [
-  { label: "transcript body (desktop)", px: 14.5, min: BODY_MIN },
-  { label: "transcript body (phone)", px: 13.5, min: BODY_MIN },
-  { label: "highlight card text", px: 12.5, min: SECONDARY_MIN },
+  { label: "transcript body (desktop)", px: 16, min: BODY_MIN },
+  { label: "transcript body (phone)", px: 15, min: BODY_MIN },
+  { label: "highlight card text", px: 14, min: SECONDARY_MIN },
   { label: "speaker name", px: 13, min: SECONDARY_MIN },
-  { label: "empty-state hint", px: 12, min: SECONDARY_MIN },
-  { label: "coach card subtext", px: 11.5, min: SECONDARY_MIN },
+  { label: "empty-state hint", px: 13, min: SECONDARY_MIN },
+  { label: "coach card subtext", px: 13, min: SECONDARY_MIN },
 ];
 
 // ── Run ──────────────────────────────────────────────────────────────────────

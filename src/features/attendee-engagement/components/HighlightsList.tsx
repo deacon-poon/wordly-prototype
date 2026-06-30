@@ -27,8 +27,8 @@ export function HighlightsList({
           <div
             style={{
               padding: "4px 2px",
-              fontSize: 12,
-              color: "var(--fg-4)",
+              fontSize: 13,
+              color: "var(--fg-3)",
               lineHeight: 1.5,
             }}
           >
@@ -59,6 +59,7 @@ export function HighlightsList({
               ref={hapticRef}
               onClick={() => hl.remove(s.id)}
               aria-label="Remove"
+              className={styles.hitArea}
               style={{
                 position: "absolute",
                 top: 6,
@@ -74,15 +75,16 @@ export function HighlightsList({
                 borderRadius: 6,
               }}
             >
-              <Icon d={ICON.x} size={14} color="var(--fg-4)" />
+              {/* fg-3, not fg-4: an icon must clear 3:1 (WCAG 1.4.11). */}
+              <Icon d={ICON.x} size={15} color="var(--fg-3)" />
             </button>
             <div
               style={{
-                fontSize: 12.5,
-                lineHeight: 1.42,
+                fontSize: 14,
+                lineHeight: 1.45,
                 color: "var(--fg-1)",
                 marginBottom: 10,
-                paddingRight: 20,
+                paddingRight: 22,
               }}
             >
               {clamp(b.text)}
@@ -99,8 +101,8 @@ export function HighlightsList({
                     aria-label={r.l}
                     title={r.l}
                     style={{
-                      width: 32,
-                      height: 32,
+                      width: 44,
+                      height: 44,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -112,7 +114,7 @@ export function HighlightsList({
                   >
                     {/* colour-coded: icon always in the reaction's colour; the active
                         reaction also gets its tinted background + border. */}
-                    <Icon d={r.icon} size={15} color={r.c} />
+                    <Icon d={r.icon} size={19} color={r.c} />
                   </button>
                 );
               })}

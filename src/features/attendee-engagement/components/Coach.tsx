@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { haptic, useHapticRef } from "../lib/haptics";
+import styles from "../engagement.module.css";
 
 const dismissHaptic = () => haptic("selection");
 
@@ -45,11 +46,11 @@ export function CoachPanelCard() {
           color="var(--primary-blue-600)"
           fill="var(--primary-blue-600)"
         />
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--fg-1)" }}>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--fg-1)" }}>
           How highlights work
         </span>
       </div>
-      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, lineHeight: 1.6 }}>
+      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6 }}>
         <li>
           <strong>Tap any line</strong> in the transcript to save it here.
         </li>
@@ -57,7 +58,7 @@ export function CoachPanelCard() {
           <strong>Press &amp; hold</strong> a line (or tap its chip) to react.
         </li>
       </ul>
-      <div style={{ marginTop: 9, fontSize: 11.5, color: "var(--fg-3)" }}>
+      <div style={{ marginTop: 9, fontSize: 13, color: "var(--fg-3)" }}>
         Your saved lines will replace this card.
       </div>
     </div>
@@ -108,7 +109,7 @@ export function Coach({
           animation: "wEngFade .3s ease",
         }}
       >
-        <span style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.3 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>
           {GESTURE}
         </span>
         <button
@@ -118,6 +119,7 @@ export function Coach({
             setDismissed(true);
           }}
           aria-label="Dismiss"
+          className={styles.hitArea}
           style={{
             flexShrink: 0,
             width: 22,
@@ -275,7 +277,7 @@ export function Coach({
           animation: "wEngPulseDot 1.4s infinite",
         }}
       />
-      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg-2)" }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-2)" }}>
         {GESTURE}
       </span>
     </div>

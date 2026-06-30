@@ -40,9 +40,11 @@ function PanelHeader({ count }: { count: number }) {
           height: 18,
           padding: "0 5px",
           borderRadius: 999,
-          background: BLUE,
+          // Darker than the bookmark icon's blue-400: white-on-400 is only 3.9:1,
+          // below the 4.5:1 this small badge text needs (WCAG 1.4.3).
+          background: "var(--primary-blue-600)",
           color: "#fff",
-          fontSize: 10.5,
+          fontSize: 11,
           fontWeight: 700,
         }}
       >
@@ -111,7 +113,7 @@ export default function EngagementApp({
             last={last}
             hl={hl}
             maxWidth={device === "desktop" ? 660 : 500}
-            fontSize={14.5}
+            fontSize={16}
             padding={device === "desktop" ? "78px 34px 28px" : "70px 26px 26px"}
             openRailId={railId}
             onRail={setRailId}
@@ -246,7 +248,7 @@ export default function EngagementApp({
           last={last}
           hl={hl}
           maxWidth="80%"
-          fontSize={13.5}
+          fontSize={15}
           padding="70px 18px 14px"
           anchorBottom
           openRailId={railId}
@@ -256,10 +258,9 @@ export default function EngagementApp({
       <Header logoHeight="20px" compact />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 
-      {/* Bottom sheet — wrapper carries the position/animation/z-index (its own
-          stacking context); the inner panel is statically positioned so the ribbon
-          halo (shinyBorder ::before, z-index -1) glows from *behind* it, peeking out
-          above the top edge instead of sitting on top. */}
+      {/* Bottom sheet. A thin brand-gradient accent (.auraGlow) hugs the top edge —
+          subtle, not a glowing halo — and the lift shadow is soft + lightly blue so it
+          doesn't haze the transcript gray behind it. */}
       <div
         style={{
           position: "absolute",
@@ -274,17 +275,18 @@ export default function EngagementApp({
         }}
       >
         <div
-          className={styles.shinyBorder}
           style={{
             position: "relative",
             height: "100%",
             background: "#fff",
             borderRadius: "18px 18px 0 0",
-            boxShadow: "0 -8px 28px rgba(15,23,42,.16)",
+            boxShadow:
+              "0 -1px 1px rgba(15,23,42,.04), 0 -10px 24px rgba(1,124,255,.07)",
             display: "flex",
             flexDirection: "column",
           }}
         >
+          <span className={styles.auraGlow} />
           <div
             onPointerDown={onHandleDown}
             onPointerMove={onHandleMove}
