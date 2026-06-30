@@ -3,7 +3,7 @@ import * as Popover from "@radix-ui/react-popover";
 import type { CSSProperties } from "react";
 import type { Bubble } from "../data/transcript";
 import { SPK } from "../data/transcript";
-import { REACT5, ICON_FOR } from "../lib/reactions-data";
+import { REACT5, ICON_FOR, ICON } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { Words } from "./Words";
 import { haptic, hapticTrigger, useHapticRef } from "../lib/haptics";
@@ -11,6 +11,12 @@ import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
 const RADIUS = "6px 20px 20px 20px";
+
+// Swipe-right-to-react: drag a bubble rightward; past the threshold it bounces back
+// and opens the reaction rail. (An alternative to long-press.)
+const MAX_DRAG = 96;
+const SWIPE_THRESHOLD = 52;
+const MOVE_SLOP = 8;
 
 /**
  * A single transcript line.
@@ -44,8 +50,16 @@ export function TranscriptBubble({
   const [hover, setHover] = useState(false);
   const [pressing, setPressing] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const [dragX, setDragX] = useState(0);
+  const [releasing, setReleasing] = useState(false);
   const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lpFired = useRef(false);
+  const swipedRef = useRef(false);
+  const dragRef = useRef<{
+    x: number;
+    y: number;
+    axis: "h" | "v" | null;
+  } | null>(null);
   const hapticRef = useHapticRef();
 
   const saved = hl.get(bubble.id);
@@ -61,10 +75,21 @@ export function TranscriptBubble({
   // Hover OR long-press lifts the bubble (elevation + drop shadow). The press lift is
   // a little stronger so a long-press gives immediate "it registered" feedback the
   // moment you hold, before the reaction rail opens.
-  const lifted = hover || pressing;
+  const lifted = hover || pressing || dragX > 0;
   const liftShadow = pressing
     ? "0 12px 30px rgba(1,124,255,.30)"
     : "0 7px 20px rgba(1,124,255,.20)";
+
+  const draggingH = dragRef.current?.axis === "h";
+  const liftY = pressing ? -3 : lifted ? -2 : 0;
+  const scale = pressing && !dragX ? " scale(1.01)" : "";
+  const transform =
+    dragX || lifted ? `translate(${dragX}px, ${liftY}px)${scale}` : "none";
+  const transition = draggingH
+    ? "box-shadow .16s ease" // follow the finger 1:1 while dragging
+    : releasing
+      ? "transform .42s cubic-bezier(.34,1.56,.64,1), box-shadow .16s ease" // bounce back
+      : "box-shadow .16s ease, transform .16s ease";
 
   const bubbleStyle: CSSProperties = {
     position: "relative",
@@ -76,34 +101,77 @@ export function TranscriptBubble({
     color: "var(--fg-1)",
     cursor: "pointer",
     boxShadow: lifted ? liftShadow : "var(--shadow-xs)",
-    transform: lifted
-      ? `translateY(${pressing ? -3 : -2}px)${pressing ? " scale(1.01)" : ""}`
-      : "none",
-    transition: "box-shadow .16s ease, transform .16s ease",
+    transform,
+    transition,
+    touchAction: "pan-y", // let vertical scroll pass; we own horizontal swipes
     WebkitUserSelect: "none",
     userSelect: "none",
   };
 
+  // A tap saves; but suppress it if the gesture was a long-press or a swipe.
   const onBubbleClick = () => {
-    if (lpFired.current) {
+    if (lpFired.current || swipedRef.current) {
       lpFired.current = false;
+      swipedRef.current = false;
       return;
     }
     hl.toggleSave(bubble.id);
   };
-  const startLp = () => {
+
+  const onDown = (e: React.PointerEvent) => {
+    dragRef.current = { x: e.clientX, y: e.clientY, axis: null };
     lpFired.current = false;
-    setPressing(true); // immediate lift feedback while holding
+    swipedRef.current = false;
+    setReleasing(false);
+    setPressing(true); // immediate lift feedback the moment you hold
     haptic("light"); // Android tick on press-start (iOS taps via the overlay)
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      /* no-op */
+    }
     clearTimeout(lpTimer.current as never);
     lpTimer.current = setTimeout(() => {
       lpFired.current = true;
-      haptic("medium"); // confirm the long-press gesture registered → rail opens
+      haptic("medium"); // long-press registered → rail opens
       setRailOpen(true);
     }, 450);
   };
-  const cancelLp = () => {
+
+  const onMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    if (
+      d.axis === null &&
+      (Math.abs(dx) > MOVE_SLOP || Math.abs(dy) > MOVE_SLOP)
+    ) {
+      d.axis = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
+      clearTimeout(lpTimer.current as never); // any drag cancels the hold timer
+      if (d.axis === "v") {
+        // vertical = scroll; abandon the gesture and let the list scroll
+        dragRef.current = null;
+        setPressing(false);
+        return;
+      }
+    }
+    if (d.axis === "h") setDragX(Math.max(0, Math.min(MAX_DRAG, dx)));
+  };
+
+  const endGesture = (commit: boolean) => {
     clearTimeout(lpTimer.current as never);
+    const wasSwipe = dragRef.current?.axis === "h";
+    if (wasSwipe && commit && dragX >= SWIPE_THRESHOLD) {
+      swipedRef.current = true;
+      haptic("medium");
+      setRailOpen(true);
+    }
+    if (wasSwipe) {
+      setReleasing(true);
+      setDragX(0); // spring back
+    }
+    dragRef.current = null;
     setPressing(false);
   };
 
@@ -148,16 +216,55 @@ export function TranscriptBubble({
       <Popover.Root open={railOpen} onOpenChange={setRailOpen}>
         <Popover.Anchor asChild>
           <div style={{ position: "relative", maxWidth }}>
+            {/* peek hint revealed as the bubble is dragged right */}
+            {dragX > 0 ? (
+              <div
+                style={{
+                  position: "absolute",
+                  left: 6,
+                  top: 0,
+                  bottom: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  opacity: Math.min(1, dragX / SWIPE_THRESHOLD),
+                  pointerEvents: "none",
+                }}
+              >
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 30,
+                    height: 30,
+                    borderRadius: 999,
+                    background:
+                      dragX >= SWIPE_THRESHOLD
+                        ? "var(--primary-blue-400)"
+                        : "var(--primary-blue-25)",
+                  }}
+                >
+                  <Icon
+                    d={ICON.smilePlus}
+                    size={17}
+                    color={
+                      dragX >= SWIPE_THRESHOLD
+                        ? "#fff"
+                        : "var(--primary-blue-500)"
+                    }
+                  />
+                </span>
+              </div>
+            ) : null}
             <div
               ref={hapticTrigger}
               style={bubbleStyle}
               onClick={onBubbleClick}
-              onPointerDown={startLp}
-              onPointerUp={cancelLp}
-              onPointerLeave={() => {
-                cancelLp();
-                setHover(false);
-              }}
+              onPointerDown={onDown}
+              onPointerMove={onMove}
+              onPointerUp={() => endGesture(true)}
+              onPointerCancel={() => endGesture(false)}
+              onPointerLeave={() => setHover(false)}
               onMouseEnter={() => setHover(true)}
             >
               <Words bubble={bubble} count={count} done={done} />

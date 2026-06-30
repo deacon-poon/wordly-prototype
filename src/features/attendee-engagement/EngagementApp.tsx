@@ -227,7 +227,10 @@ export default function EngagementApp({
         hl={hl}
         maxWidth="80%"
         fontSize={13.5}
-        padding={`70px 18px ${collapsedH + 18}px`}
+        // Dynamic bottom gap: reserve the sheet's current height + a 16px gap so the
+        // most-recent bubble always clears the My Highlights sheet (never overlapped),
+        // in both the collapsed and peek/expanded states.
+        padding={`70px 18px ${Math.round(sheetH) + 16}px`}
       />
       <Header logoHeight="20px" compact />
       <Coach variant={coach} hasSaved={hl.count > 0} />

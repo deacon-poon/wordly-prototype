@@ -34,11 +34,13 @@ export function Transcript({
     setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 36);
   });
 
+  // Re-pin to the bottom on new words AND when `padding` changes (the dynamic sheet
+  // gap), so the latest bubble keeps clearing the My Highlights sheet as it resizes.
   useEffect(() => {
     if (!atBottom) return;
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [eng.bi, eng.wi, atBottom, scrollRef]);
+  }, [eng.bi, eng.wi, atBottom, padding, scrollRef]);
 
   const jump = () => {
     haptic("light");
