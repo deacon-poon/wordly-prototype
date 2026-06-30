@@ -11,7 +11,7 @@
  */
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Search,
   Sparkles,
@@ -20,6 +20,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { featureConfigs } from "@/shell/feature-registry.generated";
+import { isStandaloneLabPath } from "@/shell/nav-registry";
 import { useChrome } from "@/components/chrome/chrome-context";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +41,11 @@ const GROUP_ORDER: Group[] = ["Prototypes", "Variants", "Appearance"];
 
 export function Spotlight() {
   const router = useRouter();
+  const pathname = usePathname();
   const { chrome, setChrome } = useChrome();
+  // Hide the launcher on standalone attendee experiences so they read like the real
+  // product (⌘K still works for power users).
+  const hideLauncher = isStandaloneLabPath(pathname);
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [active, setActive] = React.useState(0);
@@ -158,19 +163,22 @@ export function Spotlight() {
 
   return (
     <>
-      {/* Launcher — the single, unobtrusive control (replaces the old switcher clusters). */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Search prototypes"
-        className="fixed bottom-3 right-3 z-[1000] inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 py-1.5 pl-3 pr-2 text-xs font-medium text-gray-500 shadow-md backdrop-blur transition-colors hover:text-gray-900"
-      >
-        <Search className="h-3.5 w-3.5" />
-        <span>Search</span>
-        <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-sans text-[10px] text-gray-400">
-          ⌘K
-        </kbd>
-      </button>
+      {/* Launcher — the single, unobtrusive control (replaces the old switcher clusters).
+          Hidden on standalone attendee experiences (⌘K still opens the palette). */}
+      {hideLauncher ? null : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Search prototypes"
+          className="fixed bottom-3 right-3 z-[1000] inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 py-1.5 pl-3 pr-2 text-xs font-medium text-gray-500 shadow-md backdrop-blur transition-colors hover:text-gray-900"
+        >
+          <Search className="h-3.5 w-3.5" />
+          <span>Search</span>
+          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-sans text-[10px] text-gray-400">
+            ⌘K
+          </kbd>
+        </button>
+      )}
 
       {!open ? null : (
         <div

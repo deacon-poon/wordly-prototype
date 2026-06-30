@@ -16,8 +16,9 @@ const RADIUS = "6px 20px 20px 20px";
  * A single transcript line.
  *  - one click  → save / un-save (plain 📌)
  *  - long-press (or tapping the corner chip) → reaction rail (👍 👎 💡 ❓ 📌)
- *  - saved lines get a soft blue ring + a corner chip; reacted lines tint to the
- *    reaction's colour. Ported from the Claude Design "Current version" board.
+ *  - saved + reacted lines share one treatment: a background tint in the state's
+ *    colour + a corner icon chip (no separate outline). Long-press lifts the bubble
+ *    for feedback before the rail opens. Ported from the "Current version" board.
  */
 export function TranscriptBubble({
   bubble,
@@ -41,24 +42,29 @@ export function TranscriptBubble({
   fontSize?: number;
 }) {
   const [hover, setHover] = useState(false);
+  const [pressing, setPressing] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lpFired = useRef(false);
   const hapticRef = useHapticRef();
 
   const saved = hl.get(bubble.id);
-  const reacted = !!saved && saved.tag !== "📌";
   const r = saved ? ICON_FOR[saved.tag] : null;
+  const chipR = r ?? ICON_FOR["📌"];
+  const reacted = !!saved && saved.tag !== "📌";
 
-  const bg =
-    reacted && r ? r.cbg2 || r.cbg : saved ? "var(--primary-blue-25)" : "#fff";
-  const ring =
-    reacted && r
-      ? `0 0 0 2px ${r.cbdr}`
-      : saved
-        ? "0 0 0 1.5px var(--border-brand)"
-        : "var(--shadow-xs)";
-  const lift = hover && !saved ? "0 7px 20px rgba(1,124,255,.20)" : null;
+  // Saved and reacted share ONE consistent treatment: a soft background tint in the
+  // state's colour + the corner icon chip (below). No separate outline/ring — the
+  // icon + tint carry the meaning, the same way for save and every reaction.
+  const bg = saved ? chipR.cbg : "#fff";
+
+  // Hover OR long-press lifts the bubble (elevation + drop shadow). The press lift is
+  // a little stronger so a long-press gives immediate "it registered" feedback the
+  // moment you hold, before the reaction rail opens.
+  const lifted = hover || pressing;
+  const liftShadow = pressing
+    ? "0 12px 30px rgba(1,124,255,.30)"
+    : "0 7px 20px rgba(1,124,255,.20)";
 
   const bubbleStyle: CSSProperties = {
     position: "relative",
@@ -69,9 +75,11 @@ export function TranscriptBubble({
     lineHeight: 1.46,
     color: "var(--fg-1)",
     cursor: "pointer",
-    boxShadow: lift || ring,
-    transform: lift ? "translateY(-2px)" : "none",
-    transition: "box-shadow .18s ease, transform .18s ease",
+    boxShadow: lifted ? liftShadow : "var(--shadow-xs)",
+    transform: lifted
+      ? `translateY(${pressing ? -3 : -2}px)${pressing ? " scale(1.01)" : ""}`
+      : "none",
+    transition: "box-shadow .16s ease, transform .16s ease",
     WebkitUserSelect: "none",
     userSelect: "none",
   };
@@ -85,16 +93,19 @@ export function TranscriptBubble({
   };
   const startLp = () => {
     lpFired.current = false;
+    setPressing(true); // immediate lift feedback while holding
+    haptic("light"); // Android tick on press-start (iOS taps via the overlay)
     clearTimeout(lpTimer.current as never);
     lpTimer.current = setTimeout(() => {
       lpFired.current = true;
-      haptic("medium"); // confirm the long-press gesture registered
+      haptic("medium"); // confirm the long-press gesture registered → rail opens
       setRailOpen(true);
     }, 450);
   };
-  const cancelLp = () => clearTimeout(lpTimer.current as never);
-
-  const chipR = r ?? ICON_FOR["📌"];
+  const cancelLp = () => {
+    clearTimeout(lpTimer.current as never);
+    setPressing(false);
+  };
 
   return (
     <div
