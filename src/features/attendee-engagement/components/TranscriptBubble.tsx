@@ -12,11 +12,18 @@ import styles from "../engagement.module.css";
 
 const RADIUS = "6px 20px 20px 20px";
 
-// Swipe-right-to-react: drag a bubble rightward; past the threshold it bounces back
+// Swipe-right-to-react: drag a bubble rightward; past the threshold it springs back
 // and opens the reaction rail. (An alternative to long-press.)
-const MAX_DRAG = 96;
-const SWIPE_THRESHOLD = 52;
+const MAX_DRAG = 70; // visual cap — the bubble never travels further than this
+const SWIPE_THRESHOLD = 60; // raw finger distance (px) needed to commit
 const MOVE_SLOP = 8;
+// Rubber-band resistance: the bubble eases toward MAX_DRAG and never exceeds it, so a
+// long finger drag still only nudges the bubble — it feels like pulling against tension
+// rather than the bubble sticking to the finger.
+const rubber = (dx: number) => {
+  const x = Math.max(0, dx);
+  return Math.round(MAX_DRAG * (1 - Math.exp(-x / MAX_DRAG)));
+};
 
 /**
  * A single transcript line.
@@ -36,6 +43,8 @@ export function TranscriptBubble({
   showCaret,
   maxWidth = "80%",
   fontSize = 14.5,
+  railOpen,
+  onRail,
 }: {
   bubble: Bubble;
   count: number;
@@ -46,10 +55,12 @@ export function TranscriptBubble({
   showCaret: boolean;
   maxWidth?: number | string;
   fontSize?: number;
+  /** This bubble's reaction-rail open state (lifted so only one rail is open). */
+  railOpen: boolean;
+  onRail: (open: boolean) => void;
 }) {
   const [hover, setHover] = useState(false);
   const [pressing, setPressing] = useState(false);
-  const [railOpen, setRailOpen] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [releasing, setReleasing] = useState(false);
   const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,6 +70,7 @@ export function TranscriptBubble({
     x: number;
     y: number;
     axis: "h" | "v" | null;
+    dx: number;
   } | null>(null);
   const hapticRef = useHapticRef();
 
@@ -86,9 +98,9 @@ export function TranscriptBubble({
   const transform =
     dragX || lifted ? `translate(${dragX}px, ${liftY}px)${scale}` : "none";
   const transition = draggingH
-    ? "box-shadow .16s ease" // follow the finger 1:1 while dragging
+    ? "box-shadow .16s ease" // follow the finger while dragging (no transform easing)
     : releasing
-      ? "transform .42s cubic-bezier(.34,1.56,.64,1), box-shadow .16s ease" // bounce back
+      ? "transform .34s cubic-bezier(.22,1,.36,1), box-shadow .16s ease" // natural settle back
       : "box-shadow .16s ease, transform .16s ease";
 
   const bubbleStyle: CSSProperties = {
@@ -119,22 +131,20 @@ export function TranscriptBubble({
   };
 
   const onDown = (e: React.PointerEvent) => {
-    dragRef.current = { x: e.clientX, y: e.clientY, axis: null };
+    dragRef.current = { x: e.clientX, y: e.clientY, axis: null, dx: 0 };
     lpFired.current = false;
     swipedRef.current = false;
     setReleasing(false);
     setPressing(true); // immediate lift feedback the moment you hold
     haptic("light"); // Android tick on press-start (iOS taps via the overlay)
-    try {
-      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    } catch {
-      /* no-op */
-    }
+    // NOTE: pointer capture is claimed only once we know it's a horizontal swipe (in
+    // onMove) — capturing on pointerdown would retarget the click to this div and the
+    // iOS haptic overlay (the <input switch>) would never toggle on tap/long-press.
     clearTimeout(lpTimer.current as never);
     lpTimer.current = setTimeout(() => {
       lpFired.current = true;
       haptic("medium"); // long-press registered → rail opens
-      setRailOpen(true);
+      onRail(true);
     }, 450);
   };
 
@@ -155,17 +165,27 @@ export function TranscriptBubble({
         setPressing(false);
         return;
       }
+      // horizontal swipe: now capture so tracking survives the finger leaving the box
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        /* no-op */
+      }
     }
-    if (d.axis === "h") setDragX(Math.max(0, Math.min(MAX_DRAG, dx)));
+    if (d.axis === "h") {
+      d.dx = dx;
+      setDragX(rubber(dx)); // damped, resistance-y travel
+    }
   };
 
   const endGesture = (commit: boolean) => {
     clearTimeout(lpTimer.current as never);
-    const wasSwipe = dragRef.current?.axis === "h";
-    if (wasSwipe && commit && dragX >= SWIPE_THRESHOLD) {
+    const d = dragRef.current;
+    const wasSwipe = d?.axis === "h";
+    if (wasSwipe && commit && (d?.dx ?? 0) >= SWIPE_THRESHOLD) {
       swipedRef.current = true;
       haptic("medium");
-      setRailOpen(true);
+      onRail(true);
     }
     if (wasSwipe) {
       setReleasing(true);
@@ -213,7 +233,7 @@ export function TranscriptBubble({
         </div>
       ) : null}
 
-      <Popover.Root open={railOpen} onOpenChange={setRailOpen}>
+      <Popover.Root open={railOpen} onOpenChange={onRail}>
         <Popover.Anchor asChild>
           <div style={{ position: "relative", maxWidth }}>
             {/* peek hint revealed as the bubble is dragged right */}
@@ -283,7 +303,7 @@ export function TranscriptBubble({
                 onClick={(e) => {
                   e.stopPropagation();
                   haptic("light");
-                  setRailOpen(true);
+                  onRail(true);
                 }}
                 style={{
                   position: "absolute",
@@ -342,7 +362,7 @@ export function TranscriptBubble({
                   aria-label={opt.l}
                   onClick={() => {
                     hl.react(bubble.id, opt.e);
-                    setRailOpen(false);
+                    onRail(false);
                   }}
                   style={{
                     width: 30,

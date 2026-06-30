@@ -80,6 +80,8 @@ export default function EngagementApp({
   const hl = useHighlights();
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
+  // Single shared reaction-rail state so only one bubble's rail is open at a time.
+  const [railId, setRailId] = useState<number | null>(null);
 
   const [detent, setDetent] = useState<DetentKey>(
     coach === "b1" ? "peek" : "collapsed"
@@ -111,6 +113,8 @@ export default function EngagementApp({
             maxWidth={device === "desktop" ? 660 : 500}
             fontSize={14.5}
             padding={device === "desktop" ? "78px 34px 28px" : "70px 26px 26px"}
+            openRailId={railId}
+            onRail={setRailId}
           />
           <div
             style={{
@@ -221,17 +225,34 @@ export default function EngagementApp({
         flexDirection: "column",
       }}
     >
-      <Transcript
-        eng={eng}
-        last={last}
-        hl={hl}
-        maxWidth="80%"
-        fontSize={13.5}
-        // Dynamic bottom gap: reserve the sheet's current height + a 16px gap so the
-        // most-recent bubble always clears the My Highlights sheet (never overlapped),
-        // in both the collapsed and peek/expanded states.
-        padding={`70px 18px ${Math.round(sheetH) + 16}px`}
-      />
+      {/* The transcript occupies only the space ABOVE the sheet (bottom = sheet
+          height), so the newest line always sits just above it and is never rendered
+          behind it. The area shrinks/grows with the sheet detents. */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: sheetH,
+          display: "flex",
+          transition: sheetDrag.current
+            ? "none"
+            : "bottom .26s cubic-bezier(.32,.72,0,1)",
+        }}
+      >
+        <Transcript
+          eng={eng}
+          last={last}
+          hl={hl}
+          maxWidth="80%"
+          fontSize={13.5}
+          padding="70px 18px 14px"
+          anchorBottom
+          openRailId={railId}
+          onRail={setRailId}
+        />
+      </div>
       <Header logoHeight="20px" compact />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 

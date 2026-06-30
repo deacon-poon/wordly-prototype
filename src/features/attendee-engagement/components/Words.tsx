@@ -39,11 +39,23 @@ export function Words({
     seq = head.concat(tailArr);
   }
 
+  // Gently fade the most-recently revealed word in (only while still streaming) so
+  // text arrives word-by-word rather than popping.
   return (
     <span>
-      {seq.map((d, i) => (
-        <Fragment key={d.key}>{(i ? " " : "") + d.t}</Fragment>
-      ))}
+      {seq.map((d, i) => {
+        const isNewest = !done && i === seq.length - 1;
+        return (
+          <Fragment key={d.key}>
+            {i ? " " : ""}
+            <span
+              style={isNewest ? { animation: "wEngFade .22s ease" } : undefined}
+            >
+              {d.t}
+            </span>
+          </Fragment>
+        );
+      })}
     </span>
   );
 }

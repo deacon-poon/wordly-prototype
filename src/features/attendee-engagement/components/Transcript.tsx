@@ -18,6 +18,9 @@ export function Transcript({
   maxWidth,
   fontSize,
   padding,
+  anchorBottom = false,
+  openRailId,
+  onRail,
 }: {
   eng: StreamState;
   last: number;
@@ -25,6 +28,11 @@ export function Transcript({
   maxWidth: number | string;
   fontSize: number;
   padding: string;
+  /** Stick the newest line to the bottom (above the dynamic sheet gap) — phone. */
+  anchorBottom?: boolean;
+  /** Lifted single-open reaction-rail state so only one bubble's rail shows. */
+  openRailId: number | null;
+  onRail: (id: number | null) => void;
 }) {
   const [atBottom, setAtBottom] = useState(true);
   const hapticRef = useHapticRef();
@@ -34,13 +42,25 @@ export function Transcript({
     setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 36);
   });
 
-  // Re-pin to the bottom on new words AND when `padding` changes (the dynamic sheet
-  // gap), so the latest bubble keeps clearing the My Highlights sheet as it resizes.
+  // Re-pin to the bottom on new words (and when padding changes).
   useEffect(() => {
     if (!atBottom) return;
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [eng.bi, eng.wi, atBottom, padding, scrollRef]);
+
+  // Re-pin when the transcript area itself resizes (e.g. the sheet detent grows/shrinks
+  // the available height), so the newest line keeps sitting just above the sheet.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      if (atBottom && scrollRef.current)
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [atBottom, scrollRef]);
 
   const jump = () => {
     haptic("light");
@@ -104,25 +124,37 @@ export function Transcript({
           LIVE · interpreting
         </div>
 
-        {Array.from({ length: last + 1 }, (_, idx) => {
-          const b = TRANSCRIPT[idx];
-          const prev = idx > 0 ? TRANSCRIPT[idx - 1] : null;
-          const speakerChanged = !prev || prev.sp !== b.sp;
-          return (
-            <TranscriptBubble
-              key={b.id}
-              bubble={b}
-              count={idx < eng.bi ? 9999 : eng.wi}
-              done={idx < eng.bi}
-              isLatest={b.id === latestId}
-              hl={hl}
-              showName={idx === 0}
-              showCaret={speakerChanged && idx !== 0}
-              maxWidth={maxWidth}
-              fontSize={fontSize}
-            />
-          );
-        })}
+        {/* Bottom-anchor group: when short, marginTop:auto pushes the newest line to
+            the bottom (above the dynamic sheet gap); when tall, it scrolls normally. */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginTop: anchorBottom ? "auto" : 0,
+          }}
+        >
+          {Array.from({ length: last + 1 }, (_, idx) => {
+            const b = TRANSCRIPT[idx];
+            const prev = idx > 0 ? TRANSCRIPT[idx - 1] : null;
+            const speakerChanged = !prev || prev.sp !== b.sp;
+            return (
+              <TranscriptBubble
+                key={b.id}
+                bubble={b}
+                count={idx < eng.bi ? 9999 : eng.wi}
+                done={idx < eng.bi}
+                isLatest={b.id === latestId}
+                hl={hl}
+                showName={idx === 0}
+                showCaret={speakerChanged && idx !== 0}
+                maxWidth={maxWidth}
+                fontSize={fontSize}
+                railOpen={openRailId === b.id}
+                onRail={(open) => onRail(open ? b.id : null)}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {!atBottom ? (
