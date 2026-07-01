@@ -3,11 +3,15 @@ import { WordlyLogo } from "@/components/experience/branding/WordlyLogo";
 import { Icon, VolumeIcon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { haptic, useHapticRef } from "../lib/haptics";
+import { LANGS } from "../data/languages";
+import { HelpSheet } from "./HelpSheet";
+import { SettingsSheet, type EngagementSettings } from "./SettingsSheet";
 
 /**
  * The translucent live-view header: Wordly logo, language selector (target +
- * original), audio toggle, and an overflow (⋮) menu. The "exit" affordance lives in
- * the overflow menu per the meeting's toolbar-cleanup direction.
+ * original), audio toggle, and an overflow (⋮) menu. The language selector opens a
+ * language picker; the overflow menu opens Help / Settings / Leave Session. Help and
+ * Settings render as full-screen sheets (phone) / dialogs (wide).
  */
 export function Header({
   logoHeight = "20px",
@@ -17,7 +21,54 @@ export function Header({
   compact?: boolean;
 }) {
   const [audio, setAudio] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [lang, setLang] = useState("English (US)");
+  const [settings, setSettings] = useState<EngagementSettings>({
+    onlyFinal: false,
+    ttsSameLang: false,
+  });
   const hapticRef = useHapticRef();
+
+  const closePopers = () => {
+    setMenuOpen(false);
+    setLangOpen(false);
+  };
+
+  const menuItem = (
+    icon: string,
+    label: string,
+    onClick: () => void,
+    color = "var(--fg-1)"
+  ) => (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 11,
+        width: "100%",
+        padding: "9px 10px",
+        border: "none",
+        background: "transparent",
+        borderRadius: 7,
+        cursor: "pointer",
+        fontSize: 13.5,
+        fontWeight: color === "var(--fg-1)" ? 500 : 600,
+        color,
+        textAlign: "left",
+      }}
+    >
+      <Icon
+        d={icon}
+        size={18}
+        color={color === "var(--fg-1)" ? "var(--fg-2)" : color}
+      />
+      {label}
+    </button>
+  );
 
   return (
     <div
@@ -40,6 +91,15 @@ export function Header({
           pointerEvents: "none",
         }}
       />
+
+      {/* click-away layer for the open dropdowns */}
+      {menuOpen || langOpen ? (
+        <div
+          onClick={closePopers}
+          style={{ position: "fixed", inset: 0, zIndex: 19 }}
+        />
+      ) : null}
+
       <div
         style={{
           position: "relative",
@@ -52,33 +112,121 @@ export function Header({
         <WordlyLogo height={logoHeight} />
         <span style={{ flex: 1 }} />
 
-        {/* Language selector */}
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            flexShrink: 0,
-            whiteSpace: "nowrap",
-            height: 38,
-            padding: "0 11px",
-            background: "#fff",
-            border: "1px solid var(--border-2)",
-            borderRadius: 8,
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--fg-1)",
-            cursor: "pointer",
-          }}
-        >
-          <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
-          English (US)
-          {!compact ? (
-            <span style={{ fontSize: 11, color: "var(--fg-3)" }}>
-              Original: Spanish
-            </span>
+        {/* Language selector + picker */}
+        <span style={{ position: "relative", flexShrink: 0, zIndex: 21 }}>
+          <button
+            onClick={() => {
+              setLangOpen((o) => !o);
+              setMenuOpen(false);
+            }}
+            aria-label="Change language"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              whiteSpace: "nowrap",
+              height: 38,
+              padding: "0 11px",
+              background: "#fff",
+              border: `1px solid ${langOpen ? "var(--primary-blue-500)" : "var(--border-2)"}`,
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--fg-1)",
+              cursor: "pointer",
+            }}
+          >
+            <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
+            {lang}
+            {!compact ? (
+              <span style={{ fontSize: 11, color: "var(--fg-3)" }}>
+                Original: Spanish
+              </span>
+            ) : null}
+            <Icon
+              d={ICON.chevron}
+              size={14}
+              color="var(--fg-3)"
+              style={{ transform: langOpen ? "rotate(180deg)" : "none" }}
+            />
+          </button>
+          {langOpen ? (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 6px)",
+                right: 0,
+                width: 244,
+                maxHeight: 320,
+                overflowY: "auto",
+                zIndex: 40,
+                background: "#fff",
+                borderRadius: 12,
+                border: "1px solid var(--border-1)",
+                boxShadow: "var(--shadow-lg)",
+                padding: 5,
+                animation: "wEngPopIn .14s ease-out",
+              }}
+            >
+              {LANGS.map((L) => {
+                const on = L[0] === lang;
+                return (
+                  <button
+                    key={L[0]}
+                    onClick={() => {
+                      haptic("selection");
+                      setLang(L[0]);
+                      setLangOpen(false);
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "8px 10px",
+                      border: "none",
+                      background: on ? "var(--accent-green-50)" : "transparent",
+                      borderRadius: 7,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 16,
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {on ? (
+                        <Icon d={ICON.check} size={15} color="var(--fg-1)" />
+                      ) : null}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12.5,
+                        color: "var(--fg-2)",
+                        flex: 1,
+                        textAlign: "left",
+                      }}
+                    >
+                      {L[0]}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        color: "var(--fg-1)",
+                      }}
+                    >
+                      {L[1]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           ) : null}
-          <Icon d={ICON.chevron} size={14} color="var(--fg-3)" />
         </span>
 
         {/* Audio toggle */}
@@ -111,31 +259,100 @@ export function Header({
           />
         </button>
 
-        {/* Overflow */}
-        <button
-          aria-label="More options"
-          title="More options"
-          style={{
-            width: 38,
-            height: 38,
-            flexShrink: 0,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 8,
-            border: "1px solid transparent",
-            background: "transparent",
-            color: "var(--fg-2)",
-            cursor: "pointer",
-          }}
-        >
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="var(--fg-2)">
-            <circle cx={12} cy={5} r={1.7} />
-            <circle cx={12} cy={12} r={1.7} />
-            <circle cx={12} cy={19} r={1.7} />
-          </svg>
-        </button>
+        {/* Overflow menu */}
+        <span style={{ position: "relative", flexShrink: 0, zIndex: 21 }}>
+          <button
+            onClick={() => {
+              setMenuOpen((m) => !m);
+              setLangOpen(false);
+            }}
+            aria-label="More options"
+            title="More options"
+            style={{
+              width: 38,
+              height: 38,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 8,
+              border: `1px solid ${menuOpen ? "var(--border-2)" : "transparent"}`,
+              background: menuOpen ? "var(--gray-50)" : "transparent",
+              color: "var(--fg-2)",
+              cursor: "pointer",
+            }}
+          >
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="var(--fg-2)">
+              <circle cx={12} cy={5} r={1.7} />
+              <circle cx={12} cy={12} r={1.7} />
+              <circle cx={12} cy={19} r={1.7} />
+            </svg>
+          </button>
+          {menuOpen ? (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 6px)",
+                right: 0,
+                minWidth: 190,
+                zIndex: 40,
+                background: "#fff",
+                borderRadius: 12,
+                border: "1px solid var(--border-1)",
+                boxShadow: "var(--shadow-lg)",
+                padding: 6,
+                animation: "wEngPopIn .14s ease-out",
+              }}
+            >
+              {menuItem(ICON.helpCircle, "Help", () => {
+                setMenuOpen(false);
+                setHelpOpen(true);
+              })}
+              {menuItem(ICON.gear, "Settings", () => {
+                setMenuOpen(false);
+                setSettingsOpen(true);
+              })}
+              <div
+                style={{
+                  height: 1,
+                  background: "var(--border-1)",
+                  margin: "5px 4px",
+                }}
+              />
+              <a
+                href="/dashboard"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 11,
+                  width: "100%",
+                  padding: "9px 10px",
+                  borderRadius: 7,
+                  textDecoration: "none",
+                  fontSize: 13.5,
+                  fontWeight: 600,
+                  color: "var(--error, #E62D21)",
+                }}
+              >
+                <Icon d={ICON.logout} size={18} color="var(--error, #E62D21)" />
+                Leave Session
+              </a>
+            </div>
+          ) : null}
+        </span>
       </div>
+
+      <HelpSheet
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        compact={compact}
+      />
+      <SettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        compact={compact}
+        settings={settings}
+        onChange={setSettings}
+      />
     </div>
   );
 }

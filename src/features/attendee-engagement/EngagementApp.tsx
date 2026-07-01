@@ -12,6 +12,7 @@ import { Transcript } from "./components/Transcript";
 import { ReactionRail } from "./components/ReactionRail";
 import { HighlightsList } from "./components/HighlightsList";
 import { Header } from "./components/Header";
+import { ShareSheet } from "./components/ShareSheet";
 import { Coach, CoachPanelCard, type CoachVariant } from "./components/Coach";
 import styles from "./engagement.module.css";
 
@@ -55,6 +56,72 @@ function PanelHeader({ count }: { count: number }) {
   );
 }
 
+/** Share affordance in the "My Highlights" header — labelled pill (wide) or icon (phone). */
+function ShareButton({
+  onClick,
+  compact = false,
+}: {
+  onClick: () => void;
+  compact?: boolean;
+}) {
+  if (compact) {
+    return (
+      <button
+        onClick={onClick}
+        aria-label="Share highlights"
+        title="Share"
+        style={{
+          width: 30,
+          height: 30,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 8,
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+        }}
+      >
+        <Icon
+          d={ICON.shareIos}
+          size={17}
+          color="var(--primary-blue-600)"
+          sw={1.8}
+        />
+      </button>
+    );
+  }
+  return (
+    <button
+      onClick={onClick}
+      aria-label="Share highlights"
+      title="Share"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        height: 30,
+        padding: "0 12px",
+        borderRadius: 8,
+        border: "1px solid var(--border-2)",
+        background: "#fff",
+        cursor: "pointer",
+        fontSize: 12,
+        fontWeight: 600,
+        color: "var(--primary-blue-600)",
+      }}
+    >
+      <Icon
+        d={ICON.shareIos}
+        size={15}
+        color="var(--primary-blue-600)"
+        sw={1.8}
+      />
+      Share
+    </button>
+  );
+}
+
 type Device = "phone" | "tablet" | "desktop";
 const DETENTS = { collapsed: 56, peek: 0.46, full: 0.86 } as const;
 type DetentKey = keyof typeof DETENTS;
@@ -83,6 +150,7 @@ export default function EngagementApp({
   const hl = useHighlights();
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
+  const [shareOpen, setShareOpen] = useState(false);
   // Single shared reaction-rail state — one screen-fixed rail acting on `railId`.
   const [railId, setRailId] = useState<number | null>(null);
   // A short hover-close delay lets the pointer travel from a line to the fixed rail
@@ -183,8 +251,20 @@ export default function EngagementApp({
                 flexDirection: "column",
               }}
             >
-              <div style={{ flexShrink: 0, padding: "14px 15px 11px" }}>
+              <div
+                style={{
+                  flexShrink: 0,
+                  padding: "14px 15px 11px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                }}
+              >
                 <PanelHeader count={hl.count} />
+                {hl.count > 0 ? (
+                  <ShareButton onClick={() => setShareOpen(true)} />
+                ) : null}
               </div>
               <div
                 ref={panelScroll.ref}
@@ -211,6 +291,11 @@ export default function EngagementApp({
         </div>
         <Header logoHeight="22px" />
         <Coach variant={coach} hasSaved={hl.count > 0} />
+        <ShareSheet
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          hl={hl}
+        />
         <ReactionRail
           bubbleId={railId}
           hl={hl}
@@ -406,7 +491,18 @@ export default function EngagementApp({
               }}
             >
               <PanelHeader count={hl.count} />
-              <Icon d={ICON.ellipse} size={18} color="var(--fg-3)" />
+              <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                {hl.count > 0 ? (
+                  // Stop the handle's drag/tap-to-cycle from firing on the share tap.
+                  <span
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ShareButton compact onClick={() => setShareOpen(true)} />
+                  </span>
+                ) : null}
+                <Icon d={ICON.ellipse} size={18} color="var(--fg-3)" />
+              </div>
             </div>
           </div>
           {detent !== "collapsed" ? (
@@ -447,6 +543,12 @@ export default function EngagementApp({
         onClose={closeRail}
         onHoverKeep={clearRailTimer}
         onHoverLeave={scheduleRailClose}
+      />
+      <ShareSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        compact
+        hl={hl}
       />
     </div>
   );
