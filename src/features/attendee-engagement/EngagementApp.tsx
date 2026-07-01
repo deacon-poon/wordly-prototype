@@ -187,7 +187,9 @@ export default function EngagementApp({
                   flex: 1,
                   minHeight: 0,
                   overflowY: "auto",
-                  padding: "0 13px 14px",
+                  // Top padding keeps the first card's outset ring from being clipped
+                  // against / overlapping the header row above it.
+                  padding: "7px 13px 14px",
                 }}
               >
                 <HighlightsList hl={hl} emptyState={emptyState} />
@@ -382,7 +384,8 @@ export default function EngagementApp({
                 flex: 1,
                 minHeight: 0,
                 overflowY: "auto",
-                padding: "0 13px 16px",
+                // Top padding so the first card's outset ring clears the header row.
+                padding: "7px 13px 16px",
               }}
             >
               <HighlightsList hl={hl} emptyState={emptyState} />

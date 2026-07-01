@@ -30,6 +30,18 @@
   --rare-orange-300: #ff8833;
   --rare-orange-600: #a84600;
 
+  /* Distinct hues so the five reactions never read as "three blues": Insight = amber
+     (idea/bulb), Question = violet. Agree stays green, Disagree orange, Save brand blue. */
+  --amber-10: #fffdf5;
+  --amber-25: #fff6e0;
+  --amber-300: #f5b125;
+  --amber-600: #a15c00;
+
+  --violet-10: #fcfbff;
+  --violet-25: #f1ecff;
+  --violet-300: #a98cf0;
+  --violet-600: #6828c4;
+
   --gray-50: #f8f9fa;
   --gray-100: #eef0f2;
   --gray-200: #e3e6e8;
