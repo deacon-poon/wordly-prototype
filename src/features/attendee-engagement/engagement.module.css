@@ -178,6 +178,58 @@
   transform: scale(0.86);
 }
 
+/* Shared interactive states for the chrome's icon / menu / field buttons so hover +
+   press feedback is consistent everywhere. `!important` on hover backgrounds is
+   deliberate: these buttons set their resting background inline, which would otherwise
+   win over a class rule. */
+.iconBtn {
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    transform 0.1s ease;
+}
+.iconBtn:hover {
+  background: var(--gray-100) !important;
+  color: var(--fg-1) !important;
+}
+.iconBtn:active {
+  transform: scale(0.92);
+}
+
+/* Bordered "field" controls (language selector, Share pill). */
+.fieldBtn {
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+.fieldBtn:hover {
+  background: var(--gray-50) !important;
+  border-color: var(--border-brand) !important;
+}
+
+/* Rows inside dropdown menus / language list. */
+.menuRow {
+  transition: background 0.12s ease;
+}
+.menuRow:hover {
+  background: var(--gray-50) !important;
+}
+
+/* Prominent action buttons (Share sheet Copy / Share). */
+.actionBtn {
+  transition:
+    filter 0.14s ease,
+    background 0.14s ease,
+    transform 0.1s ease;
+}
+.actionBtn:hover {
+  filter: brightness(1.04);
+  background: var(--gray-50);
+}
+.actionBtn:active {
+  transform: translateY(1px);
+}
+
 /* "+N more" pill on the peek panel — subtle lift on hover. */
 .morePill {
   transition:

@@ -110,6 +110,7 @@ export function Overlay({
           <button
             onClick={onClose}
             aria-label="Close"
+            className={styles.iconBtn}
             style={{
               width: 30,
               height: 30,

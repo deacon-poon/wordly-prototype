@@ -6,6 +6,7 @@ import { haptic, useHapticRef } from "../lib/haptics";
 import { LANGS } from "../data/languages";
 import { HelpSheet } from "./HelpSheet";
 import { SettingsSheet, type EngagementSettings } from "./SettingsSheet";
+import styles from "../engagement.module.css";
 
 /**
  * The translucent live-view header: Wordly logo, language selector (target +
@@ -45,6 +46,7 @@ export function Header({
   ) => (
     <button
       onClick={onClick}
+      className={styles.menuRow}
       style={{
         display: "flex",
         alignItems: "center",
@@ -120,6 +122,7 @@ export function Header({
               setMenuOpen(false);
             }}
             aria-label="Change language"
+            className={styles.fieldBtn}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -178,6 +181,7 @@ export function Header({
                       setLang(L[0]);
                       setLangOpen(false);
                     }}
+                    className={on ? undefined : styles.menuRow}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -238,6 +242,7 @@ export function Header({
           }}
           aria-label={audio ? "Audio on" : "Audio off"}
           title={audio ? "Audio on" : "Audio off"}
+          className={audio ? undefined : styles.iconBtn}
           style={{
             width: 38,
             height: 38,
@@ -268,6 +273,7 @@ export function Header({
             }}
             aria-label="More options"
             title="More options"
+            className={menuOpen ? undefined : styles.iconBtn}
             style={{
               width: 38,
               height: 38,
@@ -320,6 +326,7 @@ export function Header({
               />
               <a
                 href="/dashboard"
+                className={styles.menuRow}
                 style={{
                   display: "flex",
                   alignItems: "center",

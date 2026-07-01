@@ -70,6 +70,7 @@ function ShareButton({
         onClick={onClick}
         aria-label="Share highlights"
         title="Share"
+        className={styles.iconBtn}
         style={{
           width: 30,
           height: 30,
@@ -96,6 +97,7 @@ function ShareButton({
       onClick={onClick}
       aria-label="Share highlights"
       title="Share"
+      className={styles.fieldBtn}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -284,6 +286,7 @@ export default function EngagementApp({
                   emptyState={emptyState}
                   railId={railId}
                   onEditReaction={openRail}
+                  showReactionLabel={false}
                 />
               </div>
             </div>
@@ -501,7 +504,17 @@ export default function EngagementApp({
                     <ShareButton compact onClick={() => setShareOpen(true)} />
                   </span>
                 ) : null}
-                <Icon d={ICON.ellipse} size={18} color="var(--fg-3)" />
+                {/* Accordion indicator: chevron points down at collapsed/peek
+                    (expand) and flips up at full (collapse). */}
+                <Icon
+                  d={ICON.chevron}
+                  size={18}
+                  color="var(--fg-3)"
+                  style={{
+                    transform: detent === "full" ? "rotate(180deg)" : "none",
+                    transition: "transform .2s ease",
+                  }}
+                />
               </div>
             </div>
           </div>

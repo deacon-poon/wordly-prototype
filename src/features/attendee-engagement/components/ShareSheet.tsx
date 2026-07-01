@@ -5,6 +5,7 @@ import { ICON, ICON_FOR } from "../lib/reactions-data";
 import { TRANSCRIPT } from "../data/transcript";
 import { haptic } from "../lib/haptics";
 import type { Highlights } from "../lib/useHighlights";
+import styles from "../engagement.module.css";
 
 /** Build the shareable plain-text block: each saved line, reactions prefixed [Label]. */
 function buildShareText(hl: Highlights): string {
@@ -84,7 +85,11 @@ export function ShareSheet({
       icon={ICON.shareIos}
       footer={
         <div style={{ display: "flex", gap: 10, padding: "12px 16px" }}>
-          <button onClick={copy} style={btn(false)}>
+          <button
+            onClick={copy}
+            className={styles.actionBtn}
+            style={btn(false)}
+          >
             <Icon
               d={copied ? ICON.check : ICON.note}
               size={17}
@@ -92,7 +97,11 @@ export function ShareSheet({
             />
             {copied ? "Copied" : "Copy"}
           </button>
-          <button onClick={share} style={btn(true)}>
+          <button
+            onClick={share}
+            className={styles.actionBtn}
+            style={btn(true)}
+          >
             <Icon d={ICON.shareIos} size={17} color="#fff" sw={1.9} />
             Share
           </button>
