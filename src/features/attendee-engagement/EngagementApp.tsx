@@ -192,7 +192,12 @@ export default function EngagementApp({
                   padding: "7px 13px 14px",
                 }}
               >
-                <HighlightsList hl={hl} emptyState={emptyState} />
+                <HighlightsList
+                  hl={hl}
+                  emptyState={emptyState}
+                  railId={railId}
+                  onEditReaction={openRail}
+                />
               </div>
             </div>
           </div>
@@ -230,6 +235,13 @@ export default function EngagementApp({
         ? peekH
         : vh * DETENTS.full;
   const sheetH = dragH ?? targetH;
+
+  // Opening the rail while the sheet is full leaves no room above it for the rail, so
+  // drop to peek first — the transcript (and rail) get space, the card stays in view.
+  const openRailPhone = (id: number | null) => {
+    if (id != null && detent === "full") setDetent("peek");
+    openRail(id);
+  };
 
   const onHandleDown = (e: React.PointerEvent) => {
     sheetDrag.current = { y: e.clientY, h: sheetH };
@@ -302,8 +314,8 @@ export default function EngagementApp({
           fontSize={15}
           padding="70px 18px 22px"
           openRailId={railId}
-          onRail={openRail}
-          onHoverOpen={openRail}
+          onRail={openRailPhone}
+          onHoverOpen={openRailPhone}
           onHoverClose={scheduleRailClose}
         />
       </div>
@@ -368,11 +380,7 @@ export default function EngagementApp({
               }}
             >
               <PanelHeader count={hl.count} />
-              <Icon
-                d={detent === "full" ? ICON.minimize2 : ICON.maximize}
-                size={16}
-                color="var(--fg-3)"
-              />
+              <Icon d={ICON.ellipsisH} size={18} color="var(--fg-3)" />
             </div>
           </div>
           {detent !== "collapsed" ? (
@@ -388,7 +396,12 @@ export default function EngagementApp({
                 padding: "7px 13px 16px",
               }}
             >
-              <HighlightsList hl={hl} emptyState={emptyState} />
+              <HighlightsList
+                hl={hl}
+                emptyState={emptyState}
+                railId={railId}
+                onEditReaction={openRailPhone}
+              />
             </div>
           ) : null}
         </div>
@@ -397,12 +410,11 @@ export default function EngagementApp({
       <ReactionRail
         bubbleId={railId}
         hl={hl}
-        // Fixed on the right edge, vertically centred within the transcript area
-        // (the space above the current sheet detent) — a stable spot, not per-bubble.
+        // Fixed on the right edge, docked just above the current sheet detent — a
+        // stable spot near both the transcript lines and the highlight cards below.
         positionStyle={{
           right: 12,
-          top: `${(vh - sheetH) / 2}px`,
-          transform: "translateY(-50%)",
+          bottom: sheetH + 12,
         }}
         onClose={closeRail}
         onHoverKeep={clearRailTimer}
