@@ -3,6 +3,12 @@ import { WordlyLogo } from "@/components/experience/branding/WordlyLogo";
 import { Icon, VolumeIcon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { haptic, useHapticRef } from "../lib/haptics";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { LANGS } from "../data/languages";
 import { HelpSheet } from "./HelpSheet";
 import { SettingsSheet, type EngagementSettings } from "./SettingsSheet";
@@ -23,7 +29,6 @@ export function Header({
 }) {
   const [audio, setAudio] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [lang, setLang] = useState("English (US)");
@@ -32,11 +37,6 @@ export function Header({
     ttsSameLang: false,
   });
   const hapticRef = useHapticRef();
-
-  const closePopers = () => {
-    setMenuOpen(false);
-    setLangOpen(false);
-  };
 
   const menuItem = (
     icon: string,
@@ -94,10 +94,10 @@ export function Header({
         }}
       />
 
-      {/* click-away layer for the open dropdowns */}
-      {menuOpen || langOpen ? (
+      {/* click-away layer for the open overflow menu */}
+      {menuOpen ? (
         <div
-          onClick={closePopers}
+          onClick={() => setMenuOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: 19 }}
         />
       ) : null}
@@ -114,119 +114,38 @@ export function Header({
         <WordlyLogo height={logoHeight} />
         <span style={{ flex: 1 }} />
 
-        {/* Language selector + picker */}
-        <span style={{ position: "relative", flexShrink: 0, zIndex: 21 }}>
-          <button
-            onClick={() => {
-              setLangOpen((o) => !o);
-              setMenuOpen(false);
-            }}
+        {/* Language selector — ShadCN Select (DS component). */}
+        <Select
+          value={lang}
+          onValueChange={(v) => {
+            haptic("selection");
+            setLang(v);
+          }}
+        >
+          <SelectTrigger
             aria-label="Change language"
-            className={styles.fieldBtn}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              whiteSpace: "nowrap",
-              height: 38,
-              padding: "0 11px",
-              background: "#fff",
-              border: `1px solid ${langOpen ? "var(--primary-blue-500)" : "var(--border-2)"}`,
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              color: "var(--fg-1)",
-              cursor: "pointer",
-            }}
+            className="h-11 w-auto shrink-0 gap-2 rounded-lg bg-white text-sm font-medium"
           >
             <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
             {lang}
-            <Icon
-              d={ICON.chevron}
-              size={14}
-              color="var(--fg-3)"
-              style={{ transform: langOpen ? "rotate(180deg)" : "none" }}
-            />
-          </button>
-          {langOpen ? (
-            <div
-              style={{
-                position: "absolute",
-                top: "calc(100% + 6px)",
-                right: 0,
-                width: 244,
-                maxHeight: 320,
-                overflowY: "auto",
-                zIndex: 40,
-                background: "#fff",
-                borderRadius: 12,
-                border: "1px solid var(--border-1)",
-                boxShadow: "var(--shadow-lg)",
-                padding: 5,
-                animation: "wEngPopIn .14s ease-out",
-              }}
-            >
-              {LANGS.map((L) => {
-                const on = L[0] === lang;
-                return (
-                  <button
-                    key={L[0]}
-                    onClick={() => {
-                      haptic("selection");
-                      setLang(L[0]);
-                      setLangOpen(false);
-                    }}
-                    className={on ? undefined : styles.menuRow}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      width: "100%",
-                      padding: "8px 10px",
-                      border: "none",
-                      background: on ? "var(--accent-green-50)" : "transparent",
-                      borderRadius: 7,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 16,
-                        flexShrink: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {on ? (
-                        <Icon d={ICON.check} size={15} color="var(--fg-1)" />
-                      ) : null}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 12.5,
-                        color: "var(--fg-2)",
-                        flex: 1,
-                        textAlign: "left",
-                      }}
-                    >
-                      {L[0]}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 12.5,
-                        fontWeight: 600,
-                        color: "var(--fg-1)",
-                      }}
-                    >
-                      {L[1]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : null}
-        </span>
+          </SelectTrigger>
+          <SelectContent className="max-h-[340px] min-w-[248px]">
+            {LANGS.map((L) => (
+              <SelectItem
+                key={L[0]}
+                value={L[0]}
+                className="pr-3 [&>span:last-child]:w-full"
+              >
+                <span className="flex w-full items-center justify-between gap-6">
+                  <span>{L[0]}</span>
+                  <span className="font-medium text-muted-foreground">
+                    {L[1]}
+                  </span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Audio toggle */}
         <button
@@ -262,10 +181,7 @@ export function Header({
         {/* Overflow menu */}
         <span style={{ position: "relative", flexShrink: 0, zIndex: 21 }}>
           <button
-            onClick={() => {
-              setMenuOpen((m) => !m);
-              setLangOpen(false);
-            }}
+            onClick={() => setMenuOpen((m) => !m)}
             aria-label="More options"
             title="More options"
             className={menuOpen ? undefined : styles.iconBtn}
