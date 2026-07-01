@@ -141,11 +141,6 @@ export function Header({
           >
             <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
             {lang}
-            {!compact ? (
-              <span style={{ fontSize: 11, color: "var(--fg-3)" }}>
-                Original: Spanish
-              </span>
-            ) : null}
             <Icon
               d={ICON.chevron}
               size={14}
