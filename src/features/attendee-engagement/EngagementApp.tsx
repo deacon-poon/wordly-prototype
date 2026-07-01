@@ -436,11 +436,13 @@ export default function EngagementApp({
       <ReactionRail
         bubbleId={railId}
         hl={hl}
-        // Fixed on the right edge, docked just above the current sheet detent — a
-        // stable spot near both the transcript lines and the highlight cards below.
+        // Fixed on the right edge, vertically centred in the transcript area (the space
+        // above the current sheet detent). Editing a card first drops the sheet to peek
+        // (see openRailPhone), so the rail always has room here.
         positionStyle={{
           right: 12,
-          bottom: sheetH + 12,
+          top: `${(vh - sheetH) / 2}px`,
+          transform: "translateY(-50%)",
         }}
         onClose={closeRail}
         onHoverKeep={clearRailTimer}
