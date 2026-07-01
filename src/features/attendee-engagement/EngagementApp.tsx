@@ -110,7 +110,14 @@ export default function EngagementApp({
   const [detent, setDetent] = useState<DetentKey>(
     coach === "b1" ? "peek" : "collapsed"
   );
-  const sheetDrag = useRef<{ y: number; h: number } | null>(null);
+  const sheetDrag = useRef<{
+    y: number;
+    h: number;
+    from: DetentKey;
+  } | null>(null);
+  // True once a press has moved far enough to count as a drag — used to suppress the
+  // handle's tap-to-cycle so a swipe doesn't ALSO cycle the detent after snapping.
+  const didDrag = useRef(false);
   const [dragH, setDragH] = useState<number | null>(null);
 
   const emptyState = coach === "b1" ? <CoachPanelCard /> : undefined;
@@ -244,34 +251,53 @@ export default function EngagementApp({
   };
 
   const onHandleDown = (e: React.PointerEvent) => {
-    sheetDrag.current = { y: e.clientY, h: sheetH };
+    sheetDrag.current = { y: e.clientY, h: sheetH, from: detent };
+    didDrag.current = false;
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
   const onHandleMove = (e: React.PointerEvent) => {
     if (!sheetDrag.current) return;
     const dy = sheetDrag.current.y - e.clientY;
+    if (Math.abs(dy) > 6) didDrag.current = true;
     setDragH(
       Math.min(vh * 0.9, Math.max(collapsedH, sheetDrag.current.h + dy))
     );
   };
   const onHandleUp = () => {
-    if (dragH != null) {
-      // snap to nearest detent
+    const drag = sheetDrag.current;
+    if (dragH != null && drag) {
       const opts: [DetentKey, number][] = [
         ["collapsed", collapsedH],
         ["peek", peekH],
         ["full", vh * DETENTS.full],
       ];
-      let best = opts[0];
-      for (const o of opts)
-        if (Math.abs(o[1] - dragH) < Math.abs(best[1] - dragH)) best = o;
+      const startIdx = opts.findIndex((o) => o[0] === drag.from);
+      // Nearest detent by height…
+      let nearest = 0;
+      for (let i = 1; i < opts.length; i++)
+        if (Math.abs(opts[i][1] - dragH) < Math.abs(opts[nearest][1] - dragH))
+          nearest = i;
+      // …but a deliberate swipe always advances at least one detent in its direction,
+      // so a short flick up out of collapsed opens rather than snapping back.
+      let target = nearest;
+      const movedUp = dragH > drag.h + 6;
+      const movedDown = dragH < drag.h - 6;
+      if (movedUp && target <= startIdx)
+        target = Math.min(opts.length - 1, startIdx + 1);
+      if (movedDown && target >= startIdx) target = Math.max(0, startIdx - 1);
       haptic("selection");
-      setDetent(best[0]);
+      setDetent(opts[target][0]);
     }
     sheetDrag.current = null;
     setDragH(null);
   };
   const cycle = () => {
+    // Suppress the tap-to-cycle when the gesture was actually a drag/swipe (onHandleUp
+    // already snapped to the right detent).
+    if (didDrag.current) {
+      didDrag.current = false;
+      return;
+    }
     haptic("selection");
     setDetent((d) =>
       d === "collapsed" ? "peek" : d === "peek" ? "full" : "collapsed"
@@ -380,7 +406,7 @@ export default function EngagementApp({
               }}
             >
               <PanelHeader count={hl.count} />
-              <Icon d={ICON.ellipsisH} size={18} color="var(--fg-3)" />
+              <Icon d={ICON.ellipse} size={18} color="var(--fg-3)" />
             </div>
           </div>
           {detent !== "collapsed" ? (
