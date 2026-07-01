@@ -280,7 +280,7 @@ export function Header({
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: 8,
+              borderRadius: 999,
               border: `1px solid ${menuOpen ? "var(--border-2)" : "transparent"}`,
               background: menuOpen ? "var(--gray-50)" : "transparent",
               color: "var(--fg-2)",

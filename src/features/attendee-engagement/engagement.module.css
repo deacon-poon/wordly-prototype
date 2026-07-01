@@ -191,6 +191,9 @@
 .iconBtn:hover {
   background: var(--gray-100) !important;
   color: var(--fg-1) !important;
+  /* Icon buttons are square 1:1 targets — a circular hover matches the circular
+     active/on states (audio-on, reaction buttons) instead of a rounded square. */
+  border-radius: 999px !important;
 }
 .iconBtn:active {
   transform: scale(0.92);
