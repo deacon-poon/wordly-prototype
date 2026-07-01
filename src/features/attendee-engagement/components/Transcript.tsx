@@ -9,8 +9,8 @@ import type { StreamState } from "../lib/useTranscriptStream";
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
-/** The streaming transcript column — auto-scrolls while pinned to the bottom, shows a
- *  "jump to latest" affordance when the user scrolls up, and a LIVE status pill. */
+/** The streaming transcript column — auto-scrolls while pinned to the bottom (via
+ *  `column-reverse`) and shows a "jump to latest" affordance when the user scrolls up. */
 export function Transcript({
   eng,
   last,
@@ -18,9 +18,10 @@ export function Transcript({
   maxWidth,
   fontSize,
   padding,
-  anchorBottom = false,
   openRailId,
   onRail,
+  onHoverOpen,
+  onHoverClose,
 }: {
   eng: StreamState;
   last: number;
@@ -28,11 +29,12 @@ export function Transcript({
   maxWidth: number | string;
   fontSize: number;
   padding: string;
-  /** Stick the newest line to the bottom (above the dynamic sheet gap) — phone. */
-  anchorBottom?: boolean;
   /** Lifted single-open reaction-rail state so only one bubble's rail shows. */
   openRailId: number | null;
   onRail: (id: number | null) => void;
+  /** Desktop hover on a line opens the shared rail for it; leaving schedules a close. */
+  onHoverOpen: (id: number) => void;
+  onHoverClose: () => void;
 }) {
   const [atBottom, setAtBottom] = useState(true);
   const hapticRef = useHapticRef();
@@ -120,53 +122,13 @@ export function Transcript({
               fontSize={fontSize}
               railOpen={openRailId === b.id}
               onRail={(open) => onRail(open ? b.id : null)}
+              onHoverOpen={() => onHoverOpen(b.id)}
+              onHoverClose={onHoverClose}
             />
           );
           // column-reverse renders DOM-first at the bottom, so reverse to keep
           // natural reading order (oldest at top → newest at bottom).
         }).reverse()}
-      </div>
-
-      {/* LIVE pill — floats at the top of the transcript area, out of the scroll flow,
-          so bottom-anchored bubbles never push it around. */}
-      <div
-        style={{
-          position: "absolute",
-          top: anchorBottom ? 70 : 80,
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "center",
-          pointerEvents: "none",
-          zIndex: 4,
-        }}
-      >
-        <div
-          style={{
-            padding: "2px 10px",
-            borderRadius: 999,
-            background: "var(--accent-green-50)",
-            border: "1px solid var(--accent-green-200)",
-            fontSize: 9.5,
-            fontWeight: 700,
-            letterSpacing: ".04em",
-            color: "var(--accent-green-700)",
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-          }}
-        >
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: 999,
-              background: "var(--accent-green-500)",
-              animation: "wEngPulseDot 1.2s infinite",
-            }}
-          />
-          LIVE · interpreting
-        </div>
       </div>
 
       {!atBottom ? (

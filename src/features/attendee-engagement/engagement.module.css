@@ -125,6 +125,18 @@
       opacity: 1;
     }
   }
+  /* Fixed reaction rail: slides + fades in from just right of its resting spot. Kept
+     off the `transform` used to vertically centre it (that lives on the wrapper). */
+  @keyframes wEngRailIn {
+    from {
+      opacity: 0;
+      transform: translateX(10px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
 }
 
 /* Reaction chip (corner) + emoji buttons — hover/active micro-interactions. */

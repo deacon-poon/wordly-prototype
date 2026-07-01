@@ -9,6 +9,7 @@ import { useHighlights } from "./lib/useHighlights";
 import { useFadeScroll } from "./lib/useFadeScroll";
 import { haptic } from "./lib/haptics";
 import { Transcript } from "./components/Transcript";
+import { ReactionRail } from "./components/ReactionRail";
 import { HighlightsList } from "./components/HighlightsList";
 import { Header } from "./components/Header";
 import { Coach, CoachPanelCard, type CoachVariant } from "./components/Coach";
@@ -82,8 +83,29 @@ export default function EngagementApp({
   const hl = useHighlights();
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
-  // Single shared reaction-rail state so only one bubble's rail is open at a time.
+  // Single shared reaction-rail state — one screen-fixed rail acting on `railId`.
   const [railId, setRailId] = useState<number | null>(null);
+  // A short hover-close delay lets the pointer travel from a line to the fixed rail
+  // (which sits away from the bubble) without the rail dismissing mid-journey.
+  const railTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearRailTimer = () => {
+    if (railTimer.current) {
+      clearTimeout(railTimer.current);
+      railTimer.current = null;
+    }
+  };
+  const openRail = (id: number | null) => {
+    clearRailTimer();
+    setRailId(id);
+  };
+  const closeRail = () => {
+    clearRailTimer();
+    setRailId(null);
+  };
+  const scheduleRailClose = () => {
+    clearRailTimer();
+    railTimer.current = setTimeout(() => setRailId(null), 240);
+  };
 
   const [detent, setDetent] = useState<DetentKey>(
     coach === "b1" ? "peek" : "collapsed"
@@ -96,6 +118,14 @@ export default function EngagementApp({
   // ── Wide: transcript + floating right panel ──────────────────────────────────
   if (isWide) {
     const panelW = device === "desktop" ? 348 : 290;
+    // Transcript metrics, shared with the rail so it can sit right beside the bubble
+    // column (not floating out by the panel).
+    const tMaxWidth = device === "desktop" ? 660 : 500;
+    const tPadLeft = device === "desktop" ? 34 : 26;
+    const tPad = device === "desktop" ? "78px 34px 28px" : "70px 26px 26px";
+    const vw = width || 1280;
+    // Just past the right edge of a full-width bubble, but never crossing into the panel.
+    const railLeft = Math.min(tPadLeft + tMaxWidth + 14, vw - panelW - 64);
     return (
       <div
         className={styles.root}
@@ -112,11 +142,13 @@ export default function EngagementApp({
             eng={eng}
             last={last}
             hl={hl}
-            maxWidth={device === "desktop" ? 660 : 500}
+            maxWidth={tMaxWidth}
             fontSize={16}
-            padding={device === "desktop" ? "78px 34px 28px" : "70px 26px 26px"}
+            padding={tPad}
             openRailId={railId}
-            onRail={setRailId}
+            onRail={openRail}
+            onHoverOpen={openRail}
+            onHoverClose={scheduleRailClose}
           />
           <div
             style={{
@@ -165,6 +197,20 @@ export default function EngagementApp({
         </div>
         <Header logoHeight="22px" />
         <Coach variant={coach} hasSaved={hl.count > 0} />
+        <ReactionRail
+          bubbleId={railId}
+          hl={hl}
+          // Fixed just to the right of the bubble column, vertically centred — a
+          // stable spot right beside the lines, not per-bubble.
+          positionStyle={{
+            left: railLeft,
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
+          onClose={closeRail}
+          onHoverKeep={clearRailTimer}
+          onHoverLeave={scheduleRailClose}
+        />
       </div>
     );
   }
@@ -253,9 +299,10 @@ export default function EngagementApp({
           maxWidth="80%"
           fontSize={15}
           padding="70px 18px 22px"
-          anchorBottom
           openRailId={railId}
-          onRail={setRailId}
+          onRail={openRail}
+          onHoverOpen={openRail}
+          onHoverClose={scheduleRailClose}
         />
       </div>
       <Header logoHeight="20px" compact />
@@ -343,6 +390,21 @@ export default function EngagementApp({
           ) : null}
         </div>
       </div>
+
+      <ReactionRail
+        bubbleId={railId}
+        hl={hl}
+        // Fixed on the right edge, vertically centred within the transcript area
+        // (the space above the current sheet detent) — a stable spot, not per-bubble.
+        positionStyle={{
+          right: 12,
+          top: `${(vh - sheetH) / 2}px`,
+          transform: "translateY(-50%)",
+        }}
+        onClose={closeRail}
+        onHoverKeep={clearRailTimer}
+        onHoverLeave={scheduleRailClose}
+      />
     </div>
   );
 }

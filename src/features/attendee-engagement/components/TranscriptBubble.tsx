@@ -1,9 +1,8 @@
-import { useRef, useState } from "react";
-import * as Popover from "@radix-ui/react-popover";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { Bubble } from "../data/transcript";
 import { SPK } from "../data/transcript";
-import { REACT5, ICON_FOR, ICON } from "../lib/reactions-data";
+import { ICON_FOR, ICON } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { Words } from "./Words";
 import {
@@ -33,10 +32,13 @@ const rubber = (dx: number) => {
 /**
  * A single transcript line.
  *  - one click  → save / un-save (plain 📌)
- *  - long-press (or tapping the corner chip) → reaction rail (👍 👎 💡 ❓ 📌)
+ *  - long-press, swipe-right, hover (desktop), or tapping the corner chip → open the
+ *    reaction rail. The rail is a single screen-fixed bar (see ReactionRail); this
+ *    bubble marks itself as its target with an elevated "selected" highlight (a
+ *    stronger lift + a brand-blue ring) so it's clear which line the rail acts on.
  *  - saved + reacted lines share one treatment: the bubble stays white with a
- *    coloured border in the state's colour + a corner icon chip. Long-press lifts the
- *    bubble for feedback before the rail opens. Ported from the "Current version" board.
+ *    coloured border in the state's colour + a corner icon chip. Ported from the
+ *    "Current version" board.
  */
 export function TranscriptBubble({
   bubble,
@@ -50,6 +52,8 @@ export function TranscriptBubble({
   fontSize = 14.5,
   railOpen,
   onRail,
+  onHoverOpen,
+  onHoverClose,
 }: {
   bubble: Bubble;
   count: number;
@@ -60,11 +64,22 @@ export function TranscriptBubble({
   showCaret: boolean;
   maxWidth?: number | string;
   fontSize?: number;
-  /** This bubble's reaction-rail open state (lifted so only one rail is open). */
+  /** Whether the shared rail is currently targeting THIS line (drives the highlight). */
   railOpen: boolean;
   onRail: (open: boolean) => void;
+  /** Desktop hover opens the rail on this line; leaving schedules a close. */
+  onHoverOpen?: () => void;
+  onHoverClose?: () => void;
 }) {
   const [hover, setHover] = useState(false);
+  // Hover only opens the rail on real hover-capable pointers (not synthetic touch
+  // mouseenter). Resolved on mount to avoid an SSR/first-paint mismatch.
+  const [canHover, setCanHover] = useState(false);
+  useEffect(() => {
+    setCanHover(
+      window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
+    );
+  }, []);
   const [pressing, setPressing] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [releasing, setReleasing] = useState(false);
@@ -88,20 +103,28 @@ export function TranscriptBubble({
   // a coloured BORDER in the state's colour (📌 = brand blue, each reaction = its own),
   // plus the corner icon chip. No background fill.
   const bg = "#fff";
-  const ring = saved ? `0 0 0 1.5px ${chipR.cbdr}` : "";
+  const savedRing = saved ? `0 0 0 1.5px ${chipR.cbdr}` : "";
 
-  // Hover OR long-press lifts the bubble (elevation + drop shadow). The press lift is
-  // a little stronger so a long-press gives immediate "it registered" feedback the
-  // moment you hold, before the reaction rail opens.
-  const lifted = hover || pressing || dragX > 0;
-  const liftShadow = pressing
-    ? "0 12px 30px rgba(1,124,255,.30)"
-    : "0 7px 20px rgba(1,124,255,.20)";
+  // `selected` = the shared reaction rail is currently targeting this line. Since the
+  // rail no longer sits beside the bubble, this highlight is what ties the two
+  // together: a pronounced lift + a solid brand-blue ring that reads as "this one".
+  const selected = railOpen;
+
+  // Hover / long-press / selection all lift the bubble. Selection lifts hardest (it's
+  // the active target); a press lifts next (immediate "it registered" feedback).
+  const lifted = hover || pressing || dragX > 0 || selected;
+  const liftShadow = selected
+    ? "0 16px 40px rgba(1,124,255,.32)"
+    : pressing
+      ? "0 12px 30px rgba(1,124,255,.30)"
+      : "0 7px 20px rgba(1,124,255,.20)";
   const baseShadow = lifted ? liftShadow : "var(--shadow-xs)";
+  // When selected, a solid 2px brand ring replaces the subtler saved ring.
+  const ring = selected ? "0 0 0 2px var(--primary-blue-400)" : savedRing;
 
   const draggingH = dragRef.current?.axis === "h";
-  const liftY = pressing ? -3 : lifted ? -2 : 0;
-  const scale = pressing && !dragX ? " scale(1.01)" : "";
+  const liftY = pressing || selected ? -3 : lifted ? -2 : 0;
+  const scale = (pressing || selected) && !dragX ? " scale(1.01)" : "";
   const transform =
     dragX || lifted ? `translate(${dragX}px, ${liftY}px)${scale}` : "none";
   const transition = draggingH
@@ -122,6 +145,9 @@ export function TranscriptBubble({
     boxShadow: ring ? `${ring}, ${baseShadow}` : baseShadow,
     transform,
     transition,
+    // Lift the selected line above its neighbours so the ring + big shadow aren't
+    // clipped by the bubbles stacked around it.
+    zIndex: selected ? 5 : undefined,
     touchAction: "pan-y", // let vertical scroll pass; we own horizontal swipes
     WebkitUserSelect: "none",
     userSelect: "none",
@@ -240,158 +266,100 @@ export function TranscriptBubble({
         </div>
       ) : null}
 
-      <Popover.Root open={railOpen} onOpenChange={onRail}>
-        <Popover.Anchor asChild>
-          <div style={{ position: "relative", maxWidth }}>
-            {/* peek hint revealed as the bubble is dragged right */}
-            {dragX > 0 ? (
-              <div
-                style={{
-                  position: "absolute",
-                  left: 6,
-                  top: 0,
-                  bottom: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  opacity: Math.min(1, dragX / SWIPE_THRESHOLD),
-                  pointerEvents: "none",
-                }}
-              >
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 30,
-                    height: 30,
-                    borderRadius: 999,
-                    background:
-                      dragX >= SWIPE_THRESHOLD
-                        ? "var(--primary-blue-400)"
-                        : "var(--primary-blue-25)",
-                  }}
-                >
-                  <Icon
-                    d={ICON.smilePlus}
-                    size={17}
-                    color={
-                      dragX >= SWIPE_THRESHOLD
-                        ? "#fff"
-                        : "var(--primary-blue-500)"
-                    }
-                  />
-                </span>
-              </div>
-            ) : null}
-            <div
-              ref={hapticTrigger}
-              style={bubbleStyle}
-              onClick={onBubbleClick}
-              onPointerDown={onDown}
-              onPointerMove={onMove}
-              onPointerUp={() => endGesture(true)}
-              onPointerCancel={() => endGesture(false)}
-              onPointerLeave={() => setHover(false)}
-              onMouseEnter={() => setHover(true)}
-            >
-              <Words bubble={bubble} count={count} done={done} />
-            </div>
-
-            {saved ? (
-              <button
-                ref={hapticRef}
-                className={styles.rxChip}
-                title={
-                  reacted
-                    ? `Change reaction · ${chipR.l}`
-                    : "Saved · tap to react"
-                }
-                aria-label={reacted ? "Change reaction" : "React"}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  haptic("light");
-                  onRail(true);
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: -9,
-                  right: -7,
-                  zIndex: 5,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 24,
-                  height: 24,
-                  borderRadius: 999,
-                  background: "#fff",
-                  border: `1px solid ${chipR.cbdr}`,
-                  boxShadow: "var(--shadow-sm)",
-                  cursor: "pointer",
-                  animation: "wEngPopIn .22s ease-out",
-                }}
-              >
-                <Icon d={chipR.icon} size={13} color={chipR.c} />
-              </button>
-            ) : null}
-          </div>
-        </Popover.Anchor>
-
-        <Popover.Portal>
-          <Popover.Content
-            side="right"
-            align="end"
-            sideOffset={8}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            // styles.root re-declares the DS tokens: Radix portals this content to
-            // <body>, outside the feature root, so without it every var(--…) the
-            // reaction icons/colours reference would be undefined (invisible rail).
-            className={styles.root}
+      <div style={{ position: "relative", maxWidth }}>
+        {/* peek hint revealed as the bubble is dragged right */}
+        {dragX > 0 ? (
+          <div
             style={{
+              position: "absolute",
+              left: 6,
+              top: 0,
+              bottom: 0,
               display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              padding: 3,
-              borderRadius: 12,
-              background: "#fff",
-              border: "1px solid var(--border-1)",
-              boxShadow: "var(--shadow-lg)",
-              zIndex: 60,
+              alignItems: "center",
+              opacity: Math.min(1, dragX / SWIPE_THRESHOLD),
+              pointerEvents: "none",
             }}
           >
-            {REACT5.map((opt) => {
-              const on = saved?.tag === opt.e;
-              return (
-                <button
-                  key={opt.e}
-                  ref={hapticRef}
-                  className={styles.rxEmoji}
-                  title={opt.l}
-                  aria-label={opt.l}
-                  onClick={() => {
-                    hl.react(bubble.id, opt.e);
-                    onRail(false);
-                  }}
-                  style={{
-                    width: 44,
-                    height: 44,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 999,
-                    border: `1px solid ${on ? opt.cbdr : "transparent"}`,
-                    background: on ? opt.cbg : "transparent",
-                    cursor: "pointer",
-                  }}
-                >
-                  {/* always rendered in the reaction's own colour so the rail reads
-                      as colour-coded; the active one also gets a tinted pill. */}
-                  <Icon d={opt.icon} size={20} color={opt.c} />
-                </button>
-              );
-            })}
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 30,
+                height: 30,
+                borderRadius: 999,
+                background:
+                  dragX >= SWIPE_THRESHOLD
+                    ? "var(--primary-blue-400)"
+                    : "var(--primary-blue-25)",
+              }}
+            >
+              <Icon
+                d={ICON.smilePlus}
+                size={17}
+                color={
+                  dragX >= SWIPE_THRESHOLD ? "#fff" : "var(--primary-blue-500)"
+                }
+              />
+            </span>
+          </div>
+        ) : null}
+        <div
+          ref={hapticTrigger}
+          style={bubbleStyle}
+          onClick={onBubbleClick}
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={() => endGesture(true)}
+          onPointerCancel={() => endGesture(false)}
+          onMouseEnter={() => {
+            setHover(true);
+            if (canHover) onHoverOpen?.();
+          }}
+          onMouseLeave={() => {
+            setHover(false);
+            if (canHover) onHoverClose?.();
+          }}
+        >
+          <Words bubble={bubble} count={count} done={done} />
+        </div>
+
+        {saved ? (
+          <button
+            ref={hapticRef}
+            className={styles.rxChip}
+            title={
+              reacted ? `Change reaction · ${chipR.l}` : "Saved · tap to react"
+            }
+            aria-label={reacted ? "Change reaction" : "React"}
+            onClick={(e) => {
+              e.stopPropagation();
+              haptic("light");
+              onRail(true);
+            }}
+            style={{
+              position: "absolute",
+              bottom: -9,
+              right: -7,
+              zIndex: 5,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 24,
+              height: 24,
+              borderRadius: 999,
+              background: "#fff",
+              border: `1px solid ${chipR.cbdr}`,
+              boxShadow: "var(--shadow-sm)",
+              cursor: "pointer",
+              animation: "wEngPopIn .22s ease-out",
+            }}
+          >
+            <Icon d={chipR.icon} size={13} color={chipR.c} />
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
