@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Overlay } from "./Overlay";
+import { HighlightsReadback } from "./HighlightsReadback";
 import { Icon } from "../lib/icons";
 import { ICON, ICON_FOR } from "../lib/reactions-data";
 import { TRANSCRIPT } from "../data/transcript";
@@ -116,34 +117,9 @@ export function ShareSheet({
       }
     >
       <div style={{ padding: "12px 16px 16px" }}>
-        <div
-          dir="auto"
-          style={{
-            fontSize: 12.5,
-            color: "var(--fg-3)",
-            marginBottom: 10,
-          }}
-        >
-          {hl.count} saved {hl.count === 1 ? "line" : "lines"} · a plain-text
-          copy of your highlights
-        </div>
-        <div
-          dir="auto"
-          style={{
-            background: "var(--gray-50)",
-            border: "1px solid var(--border-1)",
-            borderRadius: 12,
-            padding: "12px 14px",
-            fontSize: 13,
-            lineHeight: 1.5,
-            color: "var(--fg-1)",
-            whiteSpace: "pre-wrap",
-            maxHeight: compact ? "none" : 320,
-            overflowY: "auto",
-          }}
-        >
-          {text || "No highlights yet."}
-        </div>
+        {/* Figma share panel: the highlights read back as CARDS (text + reaction
+            chip + remove), not a plain-text blob — same body as Session complete. */}
+        <HighlightsReadback hl={hl} emptyText="No highlights yet." />
       </div>
     </Overlay>
   );
