@@ -395,7 +395,14 @@ export function TranscriptBubble({
             style={{
               position: "absolute",
               bottom: "calc(100% + 6px)",
-              insetInlineEnd: 0,
+              // End-anchored on normal bubbles; on SHORT bubbles (live non-final
+              // phrases can be a word or two) the panel is wider than the bubble
+              // and would overflow off-screen toward the column start — flip the
+              // anchor so it grows into the open column instead.
+              ...((wrapRef.current?.offsetWidth ?? Infinity) <
+              (canHover ? 186 : 260)
+                ? { insetInlineStart: 0 }
+                : { insetInlineEnd: 0 }),
               zIndex: 7,
               display: "flex",
               gap: canHover ? 3 : 4,
