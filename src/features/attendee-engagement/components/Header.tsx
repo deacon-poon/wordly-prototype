@@ -144,7 +144,9 @@ export function Header({
               <SelectItem
                 key={L[0]}
                 value={L[0]}
-                className="pr-3 [&>span:last-child]:w-full"
+                // Hover/highlight in Wordly's ACCENT GREEN (secondary), not the
+                // default blue — scoped here, not in the shared Select.
+                className="pr-3 [&>span:last-child]:w-full focus:bg-[hsl(var(--accent-green-50))] focus:text-[hsl(var(--accent-green-900))]"
               >
                 <span className="flex w-full items-center justify-between gap-6">
                   <span>{L[0]}</span>

@@ -539,10 +539,11 @@ export default function EngagementApp({
                 justifyContent: "space-between",
               }}
             >
-              <PanelHeader count={hl.count} />
-              {/* Comfortable separation between the share tap-target and the
-                  accordion chevron (they were nearly touching). */}
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              {/* Share sits WITH the title (the thing it acts on); the accordion
+                  chevron stands alone at the far edge — a full row of separation
+                  between the two tap targets, not just a wider gap. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <PanelHeader count={hl.count} />
                 {hl.count > 0 ? (
                   // Stop the handle's drag/tap-to-cycle from firing on the share tap.
                   <span
@@ -552,18 +553,18 @@ export default function EngagementApp({
                     <ShareButton compact onClick={() => setShareOpen(true)} />
                   </span>
                 ) : null}
-                {/* Accordion indicator: chevron points down at collapsed/peek
-                    (expand) and flips up at full (collapse). */}
-                <Icon
-                  d={ICON.chevron}
-                  size={18}
-                  color="var(--fg-3)"
-                  style={{
-                    transform: detent === "full" ? "rotate(180deg)" : "none",
-                    transition: "transform .2s ease",
-                  }}
-                />
               </div>
+              {/* Accordion indicator: chevron points down at collapsed/peek
+                  (expand) and flips up at full (collapse). */}
+              <Icon
+                d={ICON.chevron}
+                size={18}
+                color="var(--fg-3)"
+                style={{
+                  transform: detent === "full" ? "rotate(180deg)" : "none",
+                  transition: "transform .2s ease",
+                }}
+              />
             </div>
           </div>
           {detent !== "collapsed" ? (
