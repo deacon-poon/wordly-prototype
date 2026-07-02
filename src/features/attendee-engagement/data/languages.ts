@@ -83,3 +83,67 @@ export const isRTLLang = (name: string) => RTL_LANGS.has(name);
  */
 export const captionLangFor = (name: string): "en" | "ar" | "he" =>
   name === "Arabic" ? "ar" : name === "Hebrew" ? "he" : "en";
+
+/**
+ * Wordly language codes for the live `/attend` feed, mapped from the picker's
+ * display names by base language (regional variants share a code). Subset —
+ * verify additions against help.wordly.ai/about-languages-supported.
+ */
+const WORDLY_CODES: Record<string, string> = {
+  afrikaans: "af",
+  albanian: "sq",
+  arabic: "ar",
+  armenian: "hy",
+  bengali: "bn",
+  bosnian: "bs",
+  bulgarian: "bg",
+  cantonese: "yue",
+  catalan: "ca",
+  chinese: "zh",
+  croatian: "hr",
+  czech: "cs",
+  danish: "da",
+  dutch: "nl",
+  english: "en",
+  estonian: "et",
+  finnish: "fi",
+  french: "fr",
+  georgian: "ka",
+  german: "de",
+  greek: "el",
+  gujarati: "gu",
+  haitian: "ht",
+  hebrew: "he",
+  hindi: "hi",
+  hungarian: "hu",
+  icelandic: "is",
+  indonesian: "id",
+  irish: "ga",
+  italian: "it",
+  japanese: "ja",
+  korean: "ko",
+  latvian: "lv",
+  lithuanian: "lt",
+  norwegian: "no",
+  polish: "pl",
+  portuguese: "pt",
+  romanian: "ro",
+  russian: "ru",
+  serbian: "sr",
+  slovak: "sk",
+  slovenian: "sl",
+  spanish: "es",
+  swahili: "sw",
+  swedish: "sv",
+  tagalog: "tl",
+  tamil: "ta",
+  thai: "th",
+  turkish: "tr",
+  ukrainian: "uk",
+  urdu: "ur",
+  vietnamese: "vi",
+  welsh: "cy",
+  zulu: "zu",
+};
+export const wordlyCodeFor = (name: string): string =>
+  WORDLY_CODES[name.split(" ")[0].toLowerCase()] ?? "en";

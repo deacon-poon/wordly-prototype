@@ -9,7 +9,8 @@ import { useHighlights } from "./lib/useHighlights";
 import { useFadeScroll } from "./lib/useFadeScroll";
 import { haptic } from "./lib/haptics";
 import { setTranscriptLang } from "./data/transcript";
-import { isRTLLang, captionLangFor } from "./data/languages";
+import { isRTLLang, captionLangFor, wordlyCodeFor } from "./data/languages";
+import { useAttendStream, type AttendConfig } from "./lib/useAttendStream";
 import { Transcript } from "./components/Transcript";
 import { HighlightsList } from "./components/HighlightsList";
 import { Header } from "./components/Header";
@@ -121,12 +122,15 @@ export default function EngagementApp({
   coach = "b1",
   demoEnd = false,
   initialLang,
+  live,
 }: {
   coach?: CoachVariant;
   /** Demo shortcut (?demo=end): start on the final line so the session ends in seconds. */
   demoEnd?: boolean;
   /** Initial attend language (?lang=ar → Arabic captions + RTL layout). */
   initialLang?: string;
+  /** Live session (?code=XXXX-0000[&key=…]) — real /attend feed instead of the demo. */
+  live?: AttendConfig;
 }) {
   const { width } = useViewportSize();
   const device: Device =
@@ -137,11 +141,16 @@ export default function EngagementApp({
         : "phone";
   const isWide = device !== "phone";
 
-  const { eng, last, ended } = useTranscriptStream({
-    active: true,
+  const demo = useTranscriptStream({
+    active: !live,
     wordMs: 206,
     demoEnd,
   });
+  const attend = useAttendStream({
+    config: live,
+    initialLanguageCode: wordlyCodeFor(initialLang ?? "English (US)"),
+  });
+  const { eng, last, ended } = live ? attend : demo;
   const hl = useHighlights();
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
@@ -201,6 +210,38 @@ export default function EngagementApp({
 
   const emptyState = coach === "b1" ? <CoachPanelCard /> : undefined;
 
+  // Live connection pill — visible while connecting / on terminal errors.
+  const liveBadge =
+    live && attend.status !== "live" && !ended ? (
+      <div
+        dir="auto"
+        style={{
+          position: "absolute",
+          top: 64,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 30,
+          padding: "7px 14px",
+          borderRadius: 999,
+          background: "#fff",
+          border: "1px solid var(--border-1)",
+          boxShadow: "var(--shadow-sm)",
+          fontSize: 13,
+          fontWeight: 600,
+          color:
+            attend.status === "error" ? "var(--error, #E62D21)" : "var(--fg-3)",
+          whiteSpace: "nowrap",
+          maxWidth: "90%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {attend.status === "error"
+          ? attend.errorMsg
+          : `Connecting to ${live.code}…`}
+      </div>
+    ) : null;
+
   // ── Attend language + RTL (spec §1: bubble alignment, rail placement, panel all
   //    mirror for RTL languages). Captions swap synchronously BEFORE the re-render
   //    so the transcript, cards, and share text all read the new language at once. ──
@@ -212,7 +253,8 @@ export default function EngagementApp({
   const rtl = isRTLLang(lang);
   const dir = rtl ? "rtl" : "ltr";
   const onLang = (l: string) => {
-    setTranscriptLang(captionLangFor(l));
+    if (live) attend.changeLanguage(wordlyCodeFor(l));
+    else setTranscriptLang(captionLangFor(l));
     setLang(l);
   };
   // Mirroring is scoped to the CONTENT (the transcript column + reaction rail):
@@ -346,6 +388,8 @@ export default function EngagementApp({
           lang={lang}
           onLang={onLang}
         />
+        {liveBadge}
+        {liveBadge}
         <Coach variant={coach} hasSaved={hl.count > 0} />
         <ShareSheet
           open={shareOpen}

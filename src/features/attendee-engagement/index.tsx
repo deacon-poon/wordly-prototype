@@ -35,6 +35,12 @@ function EngagementRoute() {
   const langParam = (params.get("lang") || "").toLowerCase();
   const initialLang =
     langParam === "ar" ? "Arabic" : langParam === "he" ? "Hebrew" : undefined;
+  // ?code=XXXX-0000[&key=passcode] → LIVE session via the real /attend feed
+  // (wss://endpoint.wordly.ai/attend) instead of the scripted demo.
+  const code = (params.get("code") || "").trim().toUpperCase();
+  const live = code
+    ? { code, accessKey: params.get("key") || undefined }
+    : undefined;
 
   return (
     <div className="fixed inset-0 bg-[#f0f4f8]">
@@ -42,6 +48,7 @@ function EngagementRoute() {
         coach={coach}
         demoEnd={demoEnd}
         initialLang={initialLang}
+        live={live}
       />
     </div>
   );
