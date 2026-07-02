@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
+import { useFadeScroll } from "../lib/useFadeScroll";
 import styles from "../engagement.module.css";
 
 /**
@@ -23,12 +24,14 @@ export function Overlay({
   open: boolean;
   onClose: () => void;
   title: string;
-  icon: string;
+  /** Optional leading icon; omit for a plain title row (per the session-end spec). */
+  icon?: string;
   /** Phone → full-screen sheet; otherwise → centred dialog. */
   compact?: boolean;
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const bodyScroll = useFadeScroll();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -37,6 +40,10 @@ export function Overlay({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+  // Re-check the "more below" fade whenever the body content changes.
+  useEffect(() => {
+    bodyScroll.check();
+  });
 
   if (!open || typeof document === "undefined") return null;
 
@@ -104,7 +111,9 @@ export function Overlay({
               color: "var(--fg-1)",
             }}
           >
-            <Icon d={icon} size={18} color="var(--primary-blue-500)" />
+            {icon ? (
+              <Icon d={icon} size={18} color="var(--primary-blue-500)" />
+            ) : null}
             {title}
           </span>
           <button
@@ -127,8 +136,26 @@ export function Overlay({
           </button>
         </div>
 
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
-          {children}
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            ref={bodyScroll.ref}
+            onScroll={bodyScroll.onScroll}
+            className={styles.appleScroll}
+            style={{ flex: 1, minHeight: 0, overflowY: "auto" }}
+          >
+            {children}
+          </div>
+          {/* Soft "more below" veil — fades the list into the footer while content
+              continues past the fold (same pattern as the highlights panel). */}
+          <div className={styles.scrollFade} />
         </div>
 
         {footer ? (

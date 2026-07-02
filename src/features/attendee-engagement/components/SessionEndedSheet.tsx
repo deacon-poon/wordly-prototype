@@ -84,8 +84,8 @@ export function SessionEndedSheet({
       open={open}
       onClose={onClose}
       compact={compact}
+      // Spec ("simplified session end"): plain title row, ✕ only — no leading icon.
       title="Session complete"
-      icon={ICON.check}
       footer={
         <div
           style={{

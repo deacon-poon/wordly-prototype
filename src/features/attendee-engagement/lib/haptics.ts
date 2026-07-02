@@ -134,3 +134,17 @@ export function pulseHaptic(kind: HapticKind = "light") {
   }
   haptic(kind);
 }
+
+/**
+ * iOS-only Taptic pulse (no Android vibrate). Safari gates the label-click trick on
+ * user activation, so a long-press TIMER can't fire it — call this from the real
+ * pointerup instead: the long-press haptic lands on RELEASE (rail already showing),
+ * while Android already buzzed at rail-display via the timer.
+ */
+export function pulseIOSHaptic() {
+  try {
+    ensurePulse()?.click();
+  } catch {
+    /* no-op */
+  }
+}

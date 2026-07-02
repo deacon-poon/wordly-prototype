@@ -8,6 +8,7 @@ import { Words } from "./Words";
 import {
   haptic,
   pulseHaptic,
+  pulseIOSHaptic,
   hapticTrigger,
   useHapticRef,
 } from "../lib/haptics";
@@ -237,6 +238,10 @@ export function TranscriptBubble({
       pulseHaptic("light"); // subtle tap as the rail renders from a swipe
       onRail(true);
     }
+    // Long-press → rail is showing: fire the iOS Taptic on RELEASE. Safari gates the
+    // pulse on user activation, which the 450ms timer lacks but this pointerup has —
+    // Android already buzzed at rail-display via the timer.
+    if (commit && lpFired.current) pulseIOSHaptic();
     if (wasSwipe) {
       setReleasing(true);
       setDragX(0); // spring back
