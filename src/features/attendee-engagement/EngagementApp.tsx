@@ -323,12 +323,7 @@ export default function EngagementApp({
                   padding: "7px 13px 14px",
                 }}
               >
-                <HighlightsList
-                  hl={hl}
-                  emptyState={emptyState}
-                  railId={railId}
-                  onEditReaction={openRail}
-                />
+                <HighlightsList hl={hl} emptyState={emptyState} />
               </div>
               {/* Soft "more below" veil — shows only while cards continue past the fold. */}
               <div
@@ -604,8 +599,6 @@ export default function EngagementApp({
                 <HighlightsList
                   hl={hl}
                   emptyState={emptyState}
-                  railId={railId}
-                  onEditReaction={openRailPhone}
                   // Peek detent: show the newest highlight + a "+N more" pill that expands
                   // the sheet to full. Full detent: the complete scrollable list.
                   peek={detent === "peek"}

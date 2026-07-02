@@ -1,8 +1,9 @@
+import { useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { TRANSCRIPT } from "../data/transcript";
-import { ICON, ICON_FOR } from "../lib/reactions-data";
+import { ICON, ICON_FOR, REACT5 } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
-import { useHapticRef } from "../lib/haptics";
+import { haptic, useHapticRef } from "../lib/haptics";
 import type { Highlights, SavedItem } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
@@ -53,11 +54,10 @@ function EmptyHighlights() {
  * The body of the "My Highlights" panel. Cards mirror the transcript bubble — white,
  * a coloured ring in the item's colour, a subtle drop shadow.
  *
- * A card shows only its CURRENT reaction as a labelled chip (not the always-on row of
- * five, which crowded the narrow panel). Tapping the chip opens the SAME screen-fixed
- * reaction rail used by the transcript, targeting this line, and the card takes on the
- * bubble's "selected" highlight (brand-blue ring + lift) so it's clear which one the
- * rail is editing — no reaction row ever has to overlap the panel.
+ * A card shows only its CURRENT reaction as a compact chip. Tapping the chip expands
+ * it INLINE into the full 5-reaction row inside the card (no jump out to the fixed
+ * rail); the editing card takes the "selected" highlight (brand-blue ring + lift) and
+ * picking a reaction collapses back to the chip.
  *
  * Two layouts (ported from the design's DetentPanel):
  *  - default (full / desktop): every saved line, most-recent first, full text.
@@ -70,19 +70,16 @@ export function HighlightsList({
   emptyState,
   peek = false,
   onExpand,
-  railId = null,
-  onEditReaction,
 }: {
   hl: Highlights;
   emptyState?: ReactNode;
   peek?: boolean;
   onExpand?: () => void;
-  /** The line the shared rail is currently editing (drives the card's selected state). */
-  railId?: number | null;
-  /** Open the shared reaction rail on this line to change its reaction. */
-  onEditReaction?: (id: number) => void;
 }) {
   const hapticRef = useHapticRef();
+  // Which card has its inline reaction picker open (one at a time). Editing happens
+  // IN the card — the chip expands into the 5 reactions — not via the fixed rail.
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   if (!hl.count) {
     return <>{emptyState ?? <EmptyHighlights />}</>;
@@ -95,7 +92,7 @@ export function HighlightsList({
     const b = TRANSCRIPT.find((t) => t.id === s.id);
     if (!b) return null;
     const chipR = ICON_FOR[s.tag];
-    const selected = railId === s.id;
+    const selected = editingId === s.id;
     const textStyle: CSSProperties = {
       fontSize: 14,
       lineHeight: 1.45,
@@ -121,8 +118,8 @@ export function HighlightsList({
           borderRadius: 14,
           padding: "10px 11px",
           // Resting: white + a coloured ring in the item's colour + a soft shadow (same
-          // language as the saved bubble). Selected (the rail is editing this line):
-          // the bubble's brand-blue ring + a pronounced lift, so the two read as linked.
+          // language as the saved bubble). Editing (inline picker open): the bubble's
+          // brand-blue ring + a pronounced lift, so the active card reads clearly.
           boxShadow: selected
             ? "0 0 0 2px var(--primary-blue-400), 0 14px 34px rgba(1,124,255,.28)"
             : `0 0 0 1.5px ${chipR.cbdr}, var(--shadow-sm)`,
@@ -156,27 +153,72 @@ export function HighlightsList({
         <div dir="auto" style={textStyle}>
           {b.text}
         </div>
-        {/* Current reaction only — tap to change it via the shared fixed rail. */}
-        <button
-          ref={hapticRef}
-          className={`${styles.morePill} ${styles.hitArea}`}
-          onClick={() => onEditReaction?.(s.id)}
-          aria-label={`Reaction: ${chipR.l}. Tap to change.`}
-          title="Change reaction"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "4px 8px 4px 9px",
-            borderRadius: 999,
-            border: `1px solid ${chipR.cbdr}`,
-            background: chipR.cbg,
-            cursor: "pointer",
-          }}
-        >
-          <Icon d={chipR.icon} size={15} color={chipR.c} />
-          <Icon d={ICON.chevron} size={12} color={chipR.c} />
-        </button>
+        {selected ? (
+          /* Inline picker: the chip expands into the 5 reactions right in the card. */
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              animation: "wEngFade .18s ease",
+            }}
+          >
+            {REACT5.map((r) => {
+              const on = s.tag === r.e;
+              return (
+                <button
+                  key={r.e}
+                  ref={hapticRef}
+                  className={styles.rxEmoji}
+                  onClick={() => {
+                    hl.react(s.id, r.e);
+                    setEditingId(null);
+                  }}
+                  aria-label={r.l}
+                  title={r.l}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 999,
+                    border: `1px solid ${on ? r.cbdr : "var(--border-1)"}`,
+                    background: on ? r.cbg : "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Icon d={r.icon} size={19} color={r.c} />
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          /* Current reaction only — tap to pick a different one inline. */
+          <button
+            ref={hapticRef}
+            className={`${styles.morePill} ${styles.hitArea}`}
+            onClick={() => {
+              haptic("light");
+              setEditingId(s.id);
+            }}
+            aria-label={`Reaction: ${chipR.l}. Tap to change.`}
+            title="Change reaction"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 8px 4px 9px",
+              borderRadius: 999,
+              border: `1px solid ${chipR.cbdr}`,
+              background: chipR.cbg,
+              cursor: "pointer",
+            }}
+          >
+            <Icon d={chipR.icon} size={15} color={chipR.c} />
+            <Icon d={ICON.chevron} size={12} color={chipR.c} />
+          </button>
+        )}
       </div>
     );
   };
