@@ -42,6 +42,7 @@ export function Header({
   const [langState, setLangState] = useState("English (US)");
   const lang = langProp ?? langState;
   const setLang = onLang ?? setLangState;
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [settings, setSettings] = useState<EngagementSettings>({
     onlyFinal: false,
     ttsSameLang: false,
@@ -131,10 +132,21 @@ export function Header({
             haptic("selection");
             setLang(v);
           }}
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
         >
           <SelectTrigger
             aria-label="Change language"
-            className="h-11 w-auto shrink-0 gap-2 rounded-lg bg-white text-sm font-medium"
+            // Button states per the Wordly DS outline button (Figma 906-2161):
+            // hover = accent-green-100 (#bbf7cb), active/open = accent-green-50,
+            // gray border and regular text unchanged.
+            // NB: plain var() — inside the feature root these tokens are hex
+            // (engagement.module.css), so hsl(var()) would not resolve.
+            className="h-11 w-auto shrink-0 gap-2 rounded-lg bg-white text-sm font-medium transition-colors hover:bg-[var(--accent-green-100)] active:bg-[var(--accent-green-50)]"
+            // Open state inline (deterministic over utility-order): green-50 fill.
+            style={
+              pickerOpen ? { background: "var(--accent-green-50)" } : undefined
+            }
           >
             <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
             {lang}
