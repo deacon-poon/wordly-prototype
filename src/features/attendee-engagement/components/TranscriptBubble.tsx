@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { Bubble } from "../data/transcript";
 import { SPK } from "../data/transcript";
-import { ICON_FOR, ICON } from "../lib/reactions-data";
+import { ICON_FOR, ICON, REACT5 } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { Words } from "./Words";
 import {
@@ -104,6 +104,29 @@ export function TranscriptBubble({
     sign: 1 | -1;
   } | null>(null);
   const hapticRef = useHapticRef();
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Dismiss the embedded reaction bar on outside pointer-down or Escape. Attached on
+  // the next tick so the gesture that opened it (long-press release / swipe) doesn't
+  // instantly close it again.
+  useEffect(() => {
+    if (!railOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) onRail(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onRail(false);
+    };
+    const t = setTimeout(() => {
+      document.addEventListener("pointerdown", onDown, true);
+      document.addEventListener("keydown", onKey);
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [railOpen, onRail]);
 
   const saved = hl.get(bubble.id);
   const r = saved ? ICON_FOR[saved.tag] : null;
@@ -288,7 +311,28 @@ export function TranscriptBubble({
         </div>
       ) : null}
 
-      <div style={{ position: "relative", maxWidth }}>
+      <div
+        ref={wrapRef}
+        // Hover lives on the WRAPPER (bubble + embedded reaction bar + chip): moving
+        // the pointer from the bubble onto the bar never leaves it, so there's no
+        // gap to lose hover across — the bar is anchored to the bubble itself.
+        onMouseEnter={() => {
+          setHover(true);
+          if (canHover) onHoverOpen?.();
+        }}
+        onMouseLeave={() => {
+          setHover(false);
+          if (canHover) onHoverClose?.();
+        }}
+        style={{
+          position: "relative",
+          maxWidth,
+          // Reserve room for the embedded bar's hanging half while it's open, so it
+          // never covers the next transcript line below.
+          marginBottom: railOpen ? 34 : 0,
+          transition: "margin-bottom .18s ease",
+        }}
+      >
         {/* peek hint revealed as the bubble is dragged toward the rail */}
         {dragX > 0 ? (
           <div
@@ -335,19 +379,69 @@ export function TranscriptBubble({
           onPointerMove={onMove}
           onPointerUp={() => endGesture(true)}
           onPointerCancel={() => endGesture(false)}
-          onMouseEnter={() => {
-            setHover(true);
-            if (canHover) onHoverOpen?.();
-          }}
-          onMouseLeave={() => {
-            setHover(false);
-            if (canHover) onHoverClose?.();
-          }}
         >
           <Words bubble={bubble} count={count} done={done} />
         </div>
 
-        {saved ? (
+        {railOpen ? (
+          /* Reaction bar EMBEDDED in the bubble — anchored to its bottom inline-end
+             corner (where the chip lives), half-overlapping the bubble edge. */
+          <div
+            role="menu"
+            aria-label="React to this line"
+            style={{
+              position: "absolute",
+              bottom: -26,
+              insetInlineEnd: 10,
+              zIndex: 7,
+              display: "flex",
+              gap: 2,
+              padding: 3,
+              borderRadius: 999,
+              background: "#fff",
+              border: "1px solid var(--border-1)",
+              boxShadow: "var(--shadow-lg)",
+              animation: "wEngPopIn .18s ease-out",
+            }}
+          >
+            {REACT5.map((opt) => {
+              const on = saved?.tag === opt.e;
+              return (
+                <button
+                  key={opt.e}
+                  ref={hapticRef}
+                  className={styles.rxEmoji}
+                  role="menuitemradio"
+                  aria-checked={on}
+                  title={opt.l}
+                  aria-label={opt.l}
+                  onClick={() => {
+                    hl.react(bubble.id, opt.e);
+                    onRail(false);
+                  }}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 999,
+                    border: "1px solid transparent",
+                    background: on ? opt.cbg : "transparent",
+                    // Selected: solid ring in the reaction's colour (box-shadow so the
+                    // icon never shifts) — same treatment as the card's inline picker.
+                    boxShadow: on ? `0 0 0 2px ${opt.cbdr}` : "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Icon d={opt.icon} size={20} color={opt.c} />
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {saved && !railOpen ? (
           <button
             ref={hapticRef}
             className={styles.rxChip}

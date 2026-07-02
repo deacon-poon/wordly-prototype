@@ -11,7 +11,6 @@ import { haptic } from "./lib/haptics";
 import { setTranscriptLang } from "./data/transcript";
 import { isRTLLang, captionLangFor } from "./data/languages";
 import { Transcript } from "./components/Transcript";
-import { ReactionRail } from "./components/ReactionRail";
 import { HighlightsList } from "./components/HighlightsList";
 import { Header } from "./components/Header";
 import { ShareSheet } from "./components/ShareSheet";
@@ -240,10 +239,6 @@ export default function EngagementApp({
     // large screens don't strand a lane of empty space beside the conversation.
     const tW = vw - panelW;
     const bubbleMax = Math.round((tW - tPadLeft * 2) * 0.8);
-    // Rail hugs the bubbles' edge: just past their max width in LTR; in RTL the
-    // bubbles right-align within the transcript, so the rail mirrors to their left.
-    const railLeft = Math.min(tPadLeft + bubbleMax + 14, tW - 64);
-    const railLeftRtl = Math.max(12, tW - tPadLeft - bubbleMax - 62);
     return (
       <div
         className={styles.root}
@@ -352,22 +347,6 @@ export default function EngagementApp({
           hl={hl}
           reason={endReason}
         />
-        <ReactionRail
-          bubbleId={railId}
-          hl={hl}
-          // Fixed just to the right of the bubble column, vertically centred — a
-          // stable spot right beside the lines, not per-bubble.
-          // Beside the bubbles: past their right edge in LTR; in RTL (bubbles
-          // right-aligned) mirrored to their left edge.
-          positionStyle={{
-            left: rtl ? railLeftRtl : railLeft,
-            top: "50%",
-            transform: "translateY(-50%)",
-          }}
-          onClose={closeRail}
-          onHoverKeep={clearRailTimer}
-          onHoverLeave={scheduleRailClose}
-        />
       </div>
     );
   }
@@ -385,13 +364,6 @@ export default function EngagementApp({
         ? peekH
         : vh * DETENTS.full;
   const sheetH = dragH ?? targetH;
-
-  // Opening the rail while the sheet is full leaves no room above it for the rail, so
-  // drop to peek first — the transcript (and rail) get space, the card stays in view.
-  const openRailPhone = (id: number | null) => {
-    if (id != null && detent === "full") setDetent("peek");
-    openRail(id);
-  };
 
   const onHandleDown = (e: React.PointerEvent) => {
     sheetDrag.current = { y: e.clientY, h: sheetH, from: detent };
@@ -484,8 +456,8 @@ export default function EngagementApp({
           fontSize={15}
           padding="70px 18px 22px"
           openRailId={railId}
-          onRail={openRailPhone}
-          onHoverOpen={openRailPhone}
+          onRail={openRail}
+          onHoverOpen={openRail}
           onHoverClose={scheduleRailClose}
         />
       </div>
@@ -615,21 +587,6 @@ export default function EngagementApp({
         </div>
       </div>
 
-      <ReactionRail
-        bubbleId={railId}
-        hl={hl}
-        // Fixed on the right edge, vertically centred in the transcript area (the space
-        // above the current sheet detent). Editing a card first drops the sheet to peek
-        // (see openRailPhone), so the rail always has room here.
-        positionStyle={{
-          ...(rtl ? { left: 12 } : { right: 12 }),
-          top: `${(vh - sheetH) / 2}px`,
-          transform: "translateY(-50%)",
-        }}
-        onClose={closeRail}
-        onHoverKeep={clearRailTimer}
-        onHoverLeave={scheduleRailClose}
-      />
       <ShareSheet
         open={shareOpen}
         onClose={() => setShareOpen(false)}
