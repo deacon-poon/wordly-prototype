@@ -157,14 +157,12 @@ export function TranscriptBubble({
   const ring = selected ? "0 0 0 2px var(--primary-blue-400)" : savedRing;
 
   const draggingH = dragRef.current?.axis === "h";
-  const liftY = pressing || selected ? -3 : lifted ? -2 : 0;
-  const scale = (pressing || selected) && !dragX ? " scale(1.01)" : "";
+  // The bubble does NOT move or scale on hover/selection — the transcript stays
+  // perfectly still (readability). Hover/selected feedback is shadow + ring only;
+  // the only translation is the deliberate swipe gesture.
   // dragX is the damped travel toward the rail; the sign maps it back to screen-x.
   const dragSign = dragRef.current?.sign ?? 1;
-  const transform =
-    dragX || lifted
-      ? `translate(${dragX * dragSign}px, ${liftY}px)${scale}`
-      : "none";
+  const transform = dragX ? `translate(${dragX * dragSign}px, 0)` : "none";
   const transition = draggingH
     ? "box-shadow .16s ease" // follow the finger while dragging (no transform easing)
     : releasing
@@ -327,10 +325,12 @@ export function TranscriptBubble({
         style={{
           position: "relative",
           maxWidth,
-          // Reserve room for the embedded bar's hanging half while it's open, so it
-          // never covers the next transcript line below.
-          marginBottom: railOpen ? 34 : 0,
-          transition: "margin-bottom .18s ease",
+          // Reserve room ABOVE for the floating reaction panel while it's open, so it
+          // never covers the previous transcript line — and (column-reverse) only the
+          // older lines shift up; the hovered bubble itself stays put. No pop/zoom:
+          // the bubble does not move or elevate on hover (transcript stays still).
+          marginTop: railOpen ? 58 : 0,
+          transition: "margin-top .18s ease",
         }}
       >
         {/* peek hint revealed as the bubble is dragged toward the rail */}
@@ -384,23 +384,29 @@ export function TranscriptBubble({
         </div>
 
         {railOpen ? (
-          /* Reaction bar EMBEDDED in the bubble — anchored to its bottom inline-end
-             corner (where the chip lives), half-overlapping the bubble edge. */
+          /* Reaction panel — floats just ABOVE the bubble's top inline-end corner
+             ("Lift + float · blue field", Hover State Explorations): a frosted
+             blue pill with white circular buttons. It never covers the newest
+             streaming lines below, and the reserved margin keeps the older line
+             above clear too. */
           <div
             role="menu"
             aria-label="React to this line"
             style={{
               position: "absolute",
-              bottom: -26,
-              insetInlineEnd: 10,
+              bottom: "calc(100% + 10px)",
+              insetInlineEnd: 0,
               zIndex: 7,
               display: "flex",
-              gap: 2,
-              padding: 3,
+              gap: 4,
+              padding: 5,
               borderRadius: 999,
-              background: "#fff",
-              border: "1px solid var(--border-1)",
-              boxShadow: "var(--shadow-lg)",
+              background:
+                "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
+              border: "1px solid rgba(255,255,255,.65)",
+              boxShadow: "0 10px 24px rgba(0,99,204,.26)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
               animation: "wEngPopIn .18s ease-out",
             }}
           >
@@ -426,11 +432,13 @@ export function TranscriptBubble({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 999,
-                    border: "1px solid transparent",
-                    background: on ? opt.cbg : "transparent",
+                    background: on ? opt.cbg : "#fff",
+                    border: "1px solid rgba(255,255,255,.7)",
                     // Selected: solid ring in the reaction's colour (box-shadow so the
                     // icon never shifts) — same treatment as the card's inline picker.
-                    boxShadow: on ? `0 0 0 2px ${opt.cbdr}` : "none",
+                    boxShadow: on
+                      ? `0 0 0 2px ${opt.cbdr}`
+                      : "0 1px 3px rgba(15,23,42,.14)",
                     cursor: "pointer",
                   }}
                 >
@@ -441,7 +449,7 @@ export function TranscriptBubble({
           </div>
         ) : null}
 
-        {saved && !railOpen ? (
+        {saved ? (
           <button
             ref={hapticRef}
             className={styles.rxChip}
