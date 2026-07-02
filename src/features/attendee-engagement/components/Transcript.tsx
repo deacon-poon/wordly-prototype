@@ -15,6 +15,7 @@ export function Transcript({
   eng,
   last,
   hl,
+  dir = "ltr",
   maxWidth,
   fontSize,
   padding,
@@ -26,6 +27,9 @@ export function Transcript({
   eng: StreamState;
   last: number;
   hl: Highlights;
+  /** Content direction. RTL mirrors ONLY the transcript (bubbles, chips, swipe,
+   *  jump button) — the surrounding chrome (header/panel) stays LTR. */
+  dir?: "ltr" | "rtl";
   maxWidth: number | string;
   fontSize: number;
   padding: string;
@@ -83,6 +87,7 @@ export function Transcript({
 
   return (
     <div
+      dir={dir}
       style={{ flex: 1, minWidth: 0, position: "relative", display: "flex" }}
     >
       <div

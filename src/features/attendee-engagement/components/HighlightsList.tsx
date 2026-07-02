@@ -101,7 +101,8 @@ export function HighlightsList({
       lineHeight: 1.45,
       color: "var(--fg-1)",
       marginBottom: 10,
-      paddingInlineEnd: 22,
+      // Clears the ✕ (top inline-end) even when RTL text starts at that corner.
+      paddingInlineEnd: 28,
     };
     if (clampLines) {
       Object.assign(textStyle, {
@@ -152,7 +153,9 @@ export function HighlightsList({
         >
           <Icon d={ICON.x} size={15} color="var(--fg-3)" />
         </button>
-        <div style={textStyle}>{b.text}</div>
+        <div dir="auto" style={textStyle}>
+          {b.text}
+        </div>
         {/* Current reaction only — tap to change it via the shared fixed rail. */}
         <button
           ref={hapticRef}
@@ -220,6 +223,7 @@ export function HighlightsList({
             }}
           >
             <div
+              dir="auto"
               style={{
                 background: "#fff",
                 borderRadius: 14,

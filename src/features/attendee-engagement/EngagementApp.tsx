@@ -216,15 +216,10 @@ export default function EngagementApp({
     setTranscriptLang(captionLangFor(l));
     setLang(l);
   };
-  // Set the document direction (this feature is standalone/full-screen), so BOTH
-  // responsive branches and every portalled overlay (Help/Settings/Share/Session
-  // complete render into <body>) inherit the mirroring. Restored on unmount.
-  useEffect(() => {
-    document.documentElement.dir = dir;
-    return () => {
-      document.documentElement.dir = "ltr";
-    };
-  }, [dir]);
+  // Mirroring is scoped to the CONTENT (the transcript column + reaction rail):
+  // `dir` is applied on <Transcript> only. The chrome — header, highlights panel,
+  // sheets, overlays — stays LTR (its copy is English); Arabic text inside cards
+  // handles its own direction via dir="auto".
 
   // Re-check the "more below" fade whenever content height can change outside a
   // scroll event: cards added/removed, detent snap, viewport resize.
@@ -238,16 +233,20 @@ export default function EngagementApp({
     const panelW = device === "desktop" ? 348 : 290;
     // Transcript metrics, shared with the rail so it can sit right beside the bubble
     // column (not floating out by the panel).
-    const tMaxWidth = device === "desktop" ? 660 : 500;
     const tPadLeft = device === "desktop" ? 34 : 26;
     const tPad = device === "desktop" ? "78px 34px 28px" : "70px 26px 26px";
     const vw = width || 1280;
-    // Just past the right edge of a full-width bubble, but never crossing into the panel.
-    const railLeft = Math.min(tPadLeft + tMaxWidth + 14, vw - panelW - 64);
+    // Fluid bubbles: cap at 80% of the transcript REGION (not a fixed px column), so
+    // large screens don't strand a lane of empty space beside the conversation.
+    const tW = vw - panelW;
+    const bubbleMax = Math.round((tW - tPadLeft * 2) * 0.8);
+    // Rail hugs the bubbles' edge: just past their max width in LTR; in RTL the
+    // bubbles right-align within the transcript, so the rail mirrors to their left.
+    const railLeft = Math.min(tPadLeft + bubbleMax + 14, tW - 64);
+    const railLeftRtl = Math.max(12, tW - tPadLeft - bubbleMax - 62);
     return (
       <div
         className={styles.root}
-        dir={dir}
         style={{
           position: "relative",
           display: "flex",
@@ -261,7 +260,8 @@ export default function EngagementApp({
             eng={eng}
             last={last}
             hl={hl}
-            maxWidth={tMaxWidth}
+            dir={dir}
+            maxWidth={bubbleMax}
             fontSize={16}
             padding={tPad}
             openRailId={railId}
@@ -362,9 +362,10 @@ export default function EngagementApp({
           hl={hl}
           // Fixed just to the right of the bubble column, vertically centred — a
           // stable spot right beside the lines, not per-bubble.
-          // Beside the bubble column: past its right edge in LTR, its LEFT in RTL.
+          // Beside the bubbles: past their right edge in LTR; in RTL (bubbles
+          // right-aligned) mirrored to their left edge.
           positionStyle={{
-            ...(rtl ? { right: railLeft } : { left: railLeft }),
+            left: rtl ? railLeftRtl : railLeft,
             top: "50%",
             transform: "translateY(-50%)",
           }}
@@ -484,6 +485,7 @@ export default function EngagementApp({
           last={last}
           hl={hl}
           maxWidth="80%"
+          dir={dir}
           fontSize={15}
           padding="70px 18px 22px"
           openRailId={railId}

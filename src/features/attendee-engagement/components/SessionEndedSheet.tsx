@@ -202,6 +202,7 @@ export function SessionEndedSheet({
                   }}
                 >
                   <div
+                    dir="auto"
                     style={{
                       flex: 1,
                       fontSize: 13,
