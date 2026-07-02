@@ -325,12 +325,10 @@ export function TranscriptBubble({
         style={{
           position: "relative",
           maxWidth,
-          // Reserve room ABOVE for the floating reaction panel while it's open, so it
-          // never covers the previous transcript line — and (column-reverse) only the
-          // older lines shift up; the hovered bubble itself stays put. No pop/zoom:
-          // the bubble does not move or elevate on hover (transcript stays still).
-          marginTop: railOpen ? 58 : 0,
-          transition: "margin-top .18s ease",
+          // No reserved space, no push: the transcript layout NEVER moves when the
+          // panel opens. The frosted panel is a pure overlay above the bubble — it
+          // briefly floats over the older (already-read) line, whose text stays
+          // legible through the blur.
         }}
       >
         {/* peek hint revealed as the bubble is dragged toward the rail */}
