@@ -38,8 +38,15 @@ function EngagementRoute() {
   // ?code=XXXX-0000[&key=passcode] → LIVE session via the real /attend feed
   // (wss://endpoint.wordly.ai/attend) instead of the scripted demo.
   const code = (params.get("code") || "").trim().toUpperCase();
+  // ?env=dev|staging|preview targets that environment's endpoint server
+  // (wss://<env>-timely.wordly.ai/attend, per wordly_portal environment configs) —
+  // use it when the session was created in the dev/staging portal. Default: prod.
+  const env = (params.get("env") || "").toLowerCase();
+  const endpoint = ["dev", "staging", "preview"].includes(env)
+    ? `wss://${env}-timely.wordly.ai/attend`
+    : undefined;
   const live = code
-    ? { code, accessKey: params.get("key") || undefined }
+    ? { code, accessKey: params.get("key") || undefined, endpoint }
     : undefined;
 
   return (

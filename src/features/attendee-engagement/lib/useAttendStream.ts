@@ -23,6 +23,8 @@ export type AttendConfig = {
   code: string;
   /** Attendee passcode for restricted sessions. */
   accessKey?: string;
+  /** Full wss endpoint URL override (?env=dev → wss://dev-timely.wordly.ai/attend). */
+  endpoint?: string;
 };
 
 const ENDPOINT = "wss://endpoint.wordly.ai/attend";
@@ -147,7 +149,7 @@ export function useAttendStream({
     const open = () => {
       if (closedForGood.current) return;
       setStatus("connecting");
-      const sock = new WebSocket(ENDPOINT);
+      const sock = new WebSocket(config.endpoint || ENDPOINT);
       ws.current = sock;
 
       sock.onopen = () => {
@@ -245,7 +247,7 @@ export function useAttendStream({
       ws.current?.close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config?.code, config?.accessKey]);
+  }, [config?.code, config?.accessKey, config?.endpoint]);
 
   /** Future phrases arrive translated into this language (spec: `change`). */
   const changeLanguage = useCallback((languageCode: string) => {
