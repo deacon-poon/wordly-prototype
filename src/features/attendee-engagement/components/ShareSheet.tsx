@@ -61,7 +61,7 @@ export function ShareSheet({
   };
 
   const btn = (primary: boolean): React.CSSProperties => ({
-    flex: 1,
+    width: "100%",
     height: 44,
     display: "inline-flex",
     alignItems: "center",
@@ -81,29 +81,36 @@ export function ShareSheet({
       open={open}
       onClose={onClose}
       compact={compact}
+      // Share-panel spec (same as Session complete): plain title row (no icon) and a
+      // stacked action column — Copy My Highlights (primary) · Share · Close.
       title="Share highlights"
-      icon={ICON.shareIos}
       footer={
-        <div style={{ display: "flex", gap: 10, padding: "12px 16px" }}>
-          <button
-            onClick={copy}
-            className={styles.actionBtn}
-            style={btn(false)}
-          >
-            <Icon
-              d={copied ? ICON.check : ICON.note}
-              size={17}
-              color={copied ? "var(--accent-green-700)" : "var(--fg-2)"}
-            />
-            {copied ? "Copied" : "Copy"}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            padding: "12px 16px",
+          }}
+        >
+          <button onClick={copy} className={styles.actionBtn} style={btn(true)}>
+            {copied ? <Icon d={ICON.check} size={17} color="#fff" /> : null}
+            {copied ? "Copied" : "Copy My Highlights"}
           </button>
           <button
             onClick={share}
             className={styles.actionBtn}
-            style={btn(true)}
+            style={btn(false)}
           >
-            <Icon d={ICON.shareIos} size={17} color="#fff" sw={1.9} />
+            <Icon d={ICON.shareIos} size={17} color="var(--fg-2)" />
             Share
+          </button>
+          <button
+            onClick={onClose}
+            className={styles.actionBtn}
+            style={btn(false)}
+          >
+            Close
           </button>
         </div>
       }
