@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { haptic, useHapticRef } from "../lib/haptics";
+import { EmptyIllustration } from "./HighlightsList";
 import styles from "../engagement.module.css";
 
 const dismissHaptic = () => haptic("selection");
@@ -32,12 +33,13 @@ export function CoachPanelCard() {
         color: "var(--fg-2)",
       }}
     >
+      <EmptyIllustration width={150} />
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 7,
-          marginBottom: 8,
+          margin: "10px 0 8px",
         }}
       >
         <Icon

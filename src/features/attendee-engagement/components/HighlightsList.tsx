@@ -7,6 +7,48 @@ import type { Highlights, SavedItem } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
 /**
+ * Reusable Wordly empty-state illustration (house line-art style, teal accents;
+ * generated via ChatGPT like the rest of public/asset/illustration). Until the
+ * asset lands the <img> hides itself on error, so the empty state degrades to
+ * text-only instead of a broken-image icon.
+ */
+export function EmptyIllustration({ width = 170 }: { width?: number }) {
+  return (
+    // Decorative — the adjacent text carries the meaning, so hide it from AT.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/asset/illustration/my-highlights-empty.png"
+      alt=""
+      aria-hidden
+      width={width}
+      style={{ display: "block", margin: "0 auto", maxWidth: "78%" }}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.display = "none";
+      }}
+    />
+  );
+}
+
+/** Default "My Highlights" empty state: illustration + one-line hint. */
+function EmptyHighlights() {
+  return (
+    <div style={{ padding: "14px 8px 10px", textAlign: "center" }}>
+      <EmptyIllustration />
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 13,
+          color: "var(--fg-3)",
+          lineHeight: 1.5,
+        }}
+      >
+        Lines you save or react to are kept here.
+      </div>
+    </div>
+  );
+}
+
+/**
  * The body of the "My Highlights" panel. Cards mirror the transcript bubble — white,
  * a coloured ring in the item's colour, a subtle drop shadow.
  *
@@ -42,22 +84,7 @@ export function HighlightsList({
   const hapticRef = useHapticRef();
 
   if (!hl.count) {
-    return (
-      <>
-        {emptyState ?? (
-          <div
-            style={{
-              padding: "4px 2px",
-              fontSize: 13,
-              color: "var(--fg-3)",
-              lineHeight: 1.5,
-            }}
-          >
-            Lines you save or react to are kept here.
-          </div>
-        )}
-      </>
-    );
+    return <>{emptyState ?? <EmptyHighlights />}</>;
   }
 
   // Most-recent first.
