@@ -97,7 +97,8 @@ export function ReactionRail({
               key={opt.e}
               ref={hapticRef}
               className={styles.rxEmoji}
-              role="menuitem"
+              role="menuitemradio"
+              aria-checked={on}
               title={opt.l}
               aria-label={opt.l}
               onClick={() => {
@@ -111,8 +112,11 @@ export function ReactionRail({
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: 999,
-                border: `1px solid ${on ? opt.cbdr : "transparent"}`,
+                border: "1px solid transparent",
                 background: on ? opt.cbg : "transparent",
+                // Clear "selected" state: a solid ring in the reaction's colour (box-shadow
+                // so it never shifts the icon), matching the picker's selected treatment.
+                boxShadow: on ? `0 0 0 2px ${opt.cbdr}` : "none",
                 cursor: "pointer",
               }}
             >
