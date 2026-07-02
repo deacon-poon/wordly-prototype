@@ -286,7 +286,6 @@ export default function EngagementApp({
                   emptyState={emptyState}
                   railId={railId}
                   onEditReaction={openRail}
-                  showReactionLabel={false}
                 />
               </div>
             </div>

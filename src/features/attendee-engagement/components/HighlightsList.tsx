@@ -29,7 +29,6 @@ export function HighlightsList({
   onExpand,
   railId = null,
   onEditReaction,
-  showReactionLabel = true,
 }: {
   hl: Highlights;
   emptyState?: ReactNode;
@@ -39,9 +38,6 @@ export function HighlightsList({
   railId?: number | null;
   /** Open the shared reaction rail on this line to change its reaction. */
   onEditReaction?: (id: number) => void;
-  /** Show the reaction's text label on the chip. Off on the narrow floating panel to
-   *  avoid untranslated English labels (localization). */
-  showReactionLabel?: boolean;
 }) {
   const hapticRef = useHapticRef();
 
@@ -148,11 +144,6 @@ export function HighlightsList({
           }}
         >
           <Icon d={chipR.icon} size={15} color={chipR.c} />
-          {showReactionLabel ? (
-            <span style={{ fontSize: 12, fontWeight: 700, color: chipR.c }}>
-              {chipR.l}
-            </span>
-          ) : null}
           <Icon d={ICON.chevron} size={12} color={chipR.c} />
         </button>
       </div>
