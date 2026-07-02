@@ -24,11 +24,24 @@ export type StreamState = { bi: number; wi: number };
 export function useTranscriptStream({
   active,
   wordMs = 200,
+  demoEnd = false,
 }: {
   active: boolean;
   wordMs?: number;
+  /** Demo shortcut (?demo=end): start on the final line so the session ends in seconds. */
+  demoEnd?: boolean;
 }) {
-  const [eng, setEng] = useState<StreamState>({ bi: INIT_BI, wi: INIT_WI });
+  const [eng, setEng] = useState<StreamState>(() =>
+    demoEnd
+      ? {
+          bi: TRANSCRIPT.length - 1,
+          wi: Math.max(0, revealLen(TRANSCRIPT[TRANSCRIPT.length - 1]) - 3),
+        }
+      : { bi: INIT_BI, wi: INIT_WI }
+  );
+  // The session is over once the stream has advanced past the last line. The live
+  // seam maps this to the real session-end signal from the attend feed.
+  const ended = eng.bi >= TRANSCRIPT.length;
   const engRef = useRef(eng);
   engRef.current = eng;
 
@@ -55,8 +68,8 @@ export function useTranscriptStream({
       let delay = wordMs;
 
       if (s.bi >= TRANSCRIPT.length) {
-        next = { bi: 0, wi: 0 };
-        delay = 800;
+        // Session over — stop (no loop). The ended flag drives the end-of-session flow.
+        return;
       } else {
         const bub = TRANSCRIPT[s.bi];
         const len = revealLen(bub);
@@ -90,5 +103,5 @@ export function useTranscriptStream({
   }, [active, wordMs]);
 
   const last = Math.min(eng.bi, TRANSCRIPT.length - 1);
-  return { eng, last };
+  return { eng, last, ended };
 }

@@ -28,10 +28,13 @@ function EngagementRoute() {
   const coach: CoachVariant = (VARIANTS as string[]).includes(raw)
     ? (raw as CoachVariant)
     : "b1";
+  // ?demo=end → start on the final transcript line so the end-of-session flow
+  // (Session complete sheet) can be demoed in seconds instead of ~8 minutes.
+  const demoEnd = (params.get("demo") || "").toLowerCase() === "end";
 
   return (
     <div className="fixed inset-0 bg-[#f0f4f8]">
-      <EngagementApp coach={coach} />
+      <EngagementApp coach={coach} demoEnd={demoEnd} />
     </div>
   );
 }

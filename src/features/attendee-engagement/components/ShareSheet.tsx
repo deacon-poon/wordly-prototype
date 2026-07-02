@@ -8,7 +8,7 @@ import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
 /** Build the shareable plain-text block: each saved line, reactions prefixed [Label]. */
-function buildShareText(hl: Highlights): string {
+export function buildShareText(hl: Highlights): string {
   return hl.sorted
     .map((s) => {
       const b = TRANSCRIPT.find((t) => t.id === s.id);

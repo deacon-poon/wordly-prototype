@@ -13,6 +13,7 @@ import { ReactionRail } from "./components/ReactionRail";
 import { HighlightsList } from "./components/HighlightsList";
 import { Header } from "./components/Header";
 import { ShareSheet } from "./components/ShareSheet";
+import { SessionEndedSheet } from "./components/SessionEndedSheet";
 import { Coach, CoachPanelCard, type CoachVariant } from "./components/Coach";
 import styles from "./engagement.module.css";
 
@@ -117,8 +118,11 @@ type DetentKey = keyof typeof DETENTS;
  */
 export default function EngagementApp({
   coach = "b1",
+  demoEnd = false,
 }: {
   coach?: CoachVariant;
+  /** Demo shortcut (?demo=end): start on the final line so the session ends in seconds. */
+  demoEnd?: boolean;
 }) {
   const { width } = useViewportSize();
   const device: Device =
@@ -129,11 +133,31 @@ export default function EngagementApp({
         : "phone";
   const isWide = device !== "phone";
 
-  const { eng, last } = useTranscriptStream({ active: true, wordMs: 206 });
+  const { eng, last, ended } = useTranscriptStream({
+    active: true,
+    wordMs: 206,
+    demoEnd,
+  });
   const hl = useHighlights();
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
   const [shareOpen, setShareOpen] = useState(false);
+
+  // ── End-of-session flow (spec §2): on session end or early leave, the attendee
+  //    gets their highlights and can copy them out. ─────────────────────────────
+  const [endedOpen, setEndedOpen] = useState(false);
+  const [endReason, setEndReason] = useState<"ended" | "leave">("ended");
+  useEffect(() => {
+    if (ended) {
+      setEndReason("ended");
+      setEndedOpen(true);
+      haptic("success");
+    }
+  }, [ended]);
+  const openLeave = () => {
+    setEndReason("leave");
+    setEndedOpen(true);
+  };
   // Single shared reaction-rail state — one screen-fixed rail acting on `railId`.
   const [railId, setRailId] = useState<number | null>(null);
   // A short hover-close delay lets the pointer travel from a line to the fixed rail
@@ -284,12 +308,19 @@ export default function EngagementApp({
             </div>
           </div>
         </div>
-        <Header logoHeight="22px" />
+        <Header logoHeight="22px" onLeave={openLeave} />
         <Coach variant={coach} hasSaved={hl.count > 0} />
         <ShareSheet
           open={shareOpen}
           onClose={() => setShareOpen(false)}
           hl={hl}
+        />
+        <SessionEndedSheet
+          open={endedOpen}
+          onClose={() => setEndedOpen(false)}
+          onLeave={() => (window.location.href = "/dashboard")}
+          hl={hl}
+          reason={endReason}
         />
         <ReactionRail
           bubbleId={railId}
@@ -425,7 +456,7 @@ export default function EngagementApp({
           onHoverClose={scheduleRailClose}
         />
       </div>
-      <Header logoHeight="20px" compact />
+      <Header logoHeight="20px" compact onLeave={openLeave} />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 
       {/* Bottom sheet. A thin brand-gradient accent (.auraGlow) hugs the top edge —
@@ -567,6 +598,14 @@ export default function EngagementApp({
         onClose={() => setShareOpen(false)}
         compact
         hl={hl}
+      />
+      <SessionEndedSheet
+        open={endedOpen}
+        onClose={() => setEndedOpen(false)}
+        onLeave={() => (window.location.href = "/dashboard")}
+        compact
+        hl={hl}
+        reason={endReason}
       />
     </div>
   );

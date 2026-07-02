@@ -23,9 +23,12 @@ import styles from "../engagement.module.css";
 export function Header({
   logoHeight = "20px",
   compact = false,
+  onLeave,
 }: {
   logoHeight?: string;
   compact?: boolean;
+  /** Leave Session → the end-of-session flow (highlights + copy out), not a bare nav. */
+  onLeave?: () => void;
 }) {
   const [audio, setAudio] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -235,8 +238,13 @@ export function Header({
                   margin: "5px 4px",
                 }}
               />
-              <a
-                href="/dashboard"
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  // End-of-session flow: show highlights + copy-out before leaving.
+                  if (onLeave) onLeave();
+                  else window.location.href = "/dashboard";
+                }}
                 className={styles.menuRow}
                 style={{
                   display: "flex",
@@ -245,7 +253,9 @@ export function Header({
                   width: "100%",
                   padding: "9px 10px",
                   borderRadius: 7,
-                  textDecoration: "none",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
                   fontSize: 13.5,
                   fontWeight: 600,
                   color: "var(--error, #E62D21)",
@@ -253,7 +263,7 @@ export function Header({
               >
                 <Icon d={ICON.logout} size={18} color="var(--error, #E62D21)" />
                 Leave Session
-              </a>
+              </button>
             </div>
           ) : null}
         </span>
