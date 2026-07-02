@@ -641,6 +641,7 @@ export const clamp = (t: string, n = 92): string =>
 // highlight ids and the stream position stay valid because ids/order are identical.
 
 import { TRANSCRIPT_AR, SPEAKER_NAMES_AR } from "./transcript-ar";
+import { TRANSCRIPT_HE, SPEAKER_NAMES_HE } from "./transcript-he";
 
 const TRANSCRIPT_EN: Bubble[] = TRANSCRIPT.map((b) => ({ ...b }));
 const SPEAKER_NAMES_EN: Record<string, { name: string; role: string }> =
@@ -651,16 +652,24 @@ const SPEAKER_NAMES_EN: Record<string, { name: string; role: string }> =
     ])
   );
 
-export type TranscriptLang = "en" | "ar";
+export type TranscriptLang = "en" | "ar" | "he";
+const SOURCES: Record<
+  TranscriptLang,
+  { script: Bubble[]; names: Record<string, { name: string; role: string }> }
+> = {
+  en: { script: TRANSCRIPT_EN, names: SPEAKER_NAMES_EN },
+  ar: { script: TRANSCRIPT_AR, names: SPEAKER_NAMES_AR },
+  he: { script: TRANSCRIPT_HE, names: SPEAKER_NAMES_HE },
+};
+
 let activeLang: TranscriptLang = "en";
 export const getTranscriptLang = () => activeLang;
 
 export function setTranscriptLang(l: TranscriptLang) {
   if (l === activeLang) return;
   activeLang = l;
-  const src = l === "ar" ? TRANSCRIPT_AR : TRANSCRIPT_EN;
-  TRANSCRIPT.splice(0, TRANSCRIPT.length, ...src.map((b) => ({ ...b })));
-  const names = l === "ar" ? SPEAKER_NAMES_AR : SPEAKER_NAMES_EN;
+  const { script, names } = SOURCES[l];
+  TRANSCRIPT.splice(0, TRANSCRIPT.length, ...script.map((b) => ({ ...b })));
   for (const k of Object.keys(SPEAKERS)) {
     SPEAKERS[k].name = names[k].name;
     SPEAKERS[k].role = names[k].role;

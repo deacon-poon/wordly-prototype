@@ -31,9 +31,10 @@ function EngagementRoute() {
   // ?demo=end → start on the final transcript line so the end-of-session flow
   // (Session complete sheet) can be demoed in seconds instead of ~8 minutes.
   const demoEnd = (params.get("demo") || "").toLowerCase() === "end";
-  // ?lang=ar → Arabic captions + full RTL layout (mirrored bubbles/rail/panel).
+  // ?lang=ar|he → RTL captions + mirrored transcript/rail (chrome stays LTR).
+  const langParam = (params.get("lang") || "").toLowerCase();
   const initialLang =
-    (params.get("lang") || "").toLowerCase() === "ar" ? "Arabic" : undefined;
+    langParam === "ar" ? "Arabic" : langParam === "he" ? "Hebrew" : undefined;
 
   return (
     <div className="fixed inset-0 bg-[#f0f4f8]">

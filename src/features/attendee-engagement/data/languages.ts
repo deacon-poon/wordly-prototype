@@ -77,9 +77,9 @@ export const RTL_LANGS = new Set(["Arabic", "Hebrew", "Urdu"]);
 export const isRTLLang = (name: string) => RTL_LANGS.has(name);
 
 /**
- * Which caption script the demo feed has for a language. Only Arabic has a full
- * translated transcript so far; other RTL picks fall back to the English script
- * (layout still mirrors — content would come from the real feed).
+ * Which caption script the demo feed has for a language. Arabic and Hebrew have
+ * full translated transcripts; other picks fall back to the English script
+ * (the real feed would serve any language).
  */
-export const captionLangFor = (name: string): "en" | "ar" =>
-  name === "Arabic" ? "ar" : "en";
+export const captionLangFor = (name: string): "en" | "ar" | "he" =>
+  name === "Arabic" ? "ar" : name === "Hebrew" ? "he" : "en";
