@@ -25,6 +25,9 @@ export function useFadeScroll<T extends HTMLElement = HTMLDivElement>(
     const more = el.scrollTop + el.clientHeight < el.scrollHeight - 4;
     if (more) el.setAttribute("data-more", "1");
     else el.removeAttribute("data-more");
+    // Content above the fold too (scrolled down) → drives the top veil.
+    if (el.scrollTop > 4) el.setAttribute("data-more-top", "1");
+    else el.removeAttribute("data-more-top");
   }, []);
 
   const onScroll = useCallback(() => {

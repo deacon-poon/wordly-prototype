@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { TRANSCRIPT } from "../data/transcript";
 import { ICON, ICON_FOR, REACT5 } from "../lib/reactions-data";
@@ -77,9 +77,37 @@ export function HighlightsList({
   onExpand?: () => void;
 }) {
   const hapticRef = useHapticRef();
-  // Which card has its inline reaction picker open (one at a time). Editing happens
-  // IN the card — the chip expands into the 5 reactions — not via the fixed rail.
+  // Which card has its reaction picker open (one at a time). The picker is a frosted
+  // pill OVERLAY that grows out of the chip's corner — the card never changes height.
   const [editingId, setEditingId] = useState<number | null>(null);
+  const pickerRef = useRef<HTMLDivElement | null>(null);
+  // Per-pointer sizing, same rule as the transcript panel: 44px touch targets,
+  // compact 30px on hover-capable fine pointers.
+  const [fine, setFine] = useState(false);
+  useEffect(() => {
+    setFine(
+      window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
+    );
+  }, []);
+  // Dismiss the open picker on outside pointer-down or Escape.
+  useEffect(() => {
+    if (editingId == null) return;
+    const onDown = (e: PointerEvent) => {
+      if (!pickerRef.current?.contains(e.target as Node)) setEditingId(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setEditingId(null);
+    };
+    const t = setTimeout(() => {
+      document.addEventListener("pointerdown", onDown, true);
+      document.addEventListener("keydown", onKey);
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [editingId]);
 
   if (!hl.count) {
     return <>{emptyState ?? <EmptyHighlights />}</>;
@@ -153,56 +181,18 @@ export function HighlightsList({
         <div dir="auto" style={textStyle}>
           {b.text}
         </div>
-        {selected ? (
-          /* Inline picker: the chip expands into the 5 reactions right in the card. */
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              animation: "wEngFade .18s ease",
-            }}
-          >
-            {REACT5.map((r) => {
-              const on = s.tag === r.e;
-              return (
-                <button
-                  key={r.e}
-                  ref={hapticRef}
-                  className={styles.rxEmoji}
-                  onClick={() => {
-                    hl.react(s.id, r.e);
-                    setEditingId(null);
-                  }}
-                  aria-label={r.l}
-                  title={r.l}
-                  style={{
-                    width: 44,
-                    height: 44,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 999,
-                    border: `1px solid ${on ? r.cbdr : "var(--border-1)"}`,
-                    background: on ? r.cbg : "#fff",
-                    cursor: "pointer",
-                  }}
-                >
-                  <Icon d={r.icon} size={19} color={r.c} />
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          /* Current reaction only — tap to pick a different one inline. */
+        {/* Current reaction chip — bottom inline-end, matching the bubble's corner
+            placement. The card keeps this height even while the picker is open. */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button
             ref={hapticRef}
             className={`${styles.morePill} ${styles.hitArea}`}
             onClick={() => {
               haptic("light");
-              setEditingId(s.id);
+              setEditingId(selected ? null : s.id);
             }}
             aria-label={`Reaction: ${chipR.l}. Tap to change.`}
+            aria-expanded={selected}
             title="Change reaction"
             style={{
               display: "inline-flex",
@@ -218,7 +208,71 @@ export function HighlightsList({
             <Icon d={chipR.icon} size={15} color={chipR.c} />
             <Icon d={ICON.chevron} size={12} color={chipR.c} />
           </button>
-        )}
+        </div>
+
+        {selected ? (
+          /* Picker: the same frosted pill as the transcript panel, OVERLAID on the
+             card and growing out of the chip's corner (transform-origin bottom
+             inline-end) — continuity from the chip, zero height change. */
+          <div
+            ref={pickerRef}
+            role="menu"
+            aria-label="Change reaction"
+            style={{
+              position: "absolute",
+              bottom: 7,
+              insetInlineEnd: 7,
+              zIndex: 6,
+              display: "flex",
+              gap: fine ? 3 : 4,
+              padding: fine ? 4 : 5,
+              borderRadius: 999,
+              background:
+                "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
+              border: "1px solid rgba(255,255,255,.65)",
+              boxShadow: "0 10px 24px rgba(0,99,204,.26)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              transformOrigin: "100% 100%",
+              animation: "wEngPopIn .18s ease-out",
+            }}
+          >
+            {REACT5.map((r) => {
+              const on = s.tag === r.e;
+              return (
+                <button
+                  key={r.e}
+                  ref={hapticRef}
+                  className={styles.rxEmoji}
+                  role="menuitemradio"
+                  aria-checked={on}
+                  onClick={() => {
+                    hl.react(s.id, r.e);
+                    setEditingId(null);
+                  }}
+                  aria-label={r.l}
+                  title={r.l}
+                  style={{
+                    width: fine ? 30 : 44,
+                    height: fine ? 30 : 44,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 999,
+                    background: on ? r.cbg : "#fff",
+                    border: "1px solid rgba(255,255,255,.7)",
+                    boxShadow: on
+                      ? `0 0 0 2px ${r.cbdr}`
+                      : "0 1px 3px rgba(15,23,42,.14)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Icon d={r.icon} size={fine ? 17 : 20} color={r.c} />
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
     );
   };

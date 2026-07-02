@@ -306,25 +306,37 @@ export default function EngagementApp({
                 ) : null}
               </div>
               <div
-                ref={panelScroll.ref}
-                onScroll={panelScroll.onScroll}
-                className={styles.appleScroll}
                 style={{
                   flex: 1,
                   minHeight: 0,
-                  overflowY: "auto",
-                  // Top padding keeps the first card's outset ring from being clipped
-                  // against / overlapping the header row above it.
-                  padding: "7px 13px 14px",
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <HighlightsList hl={hl} emptyState={emptyState} />
+                <div
+                  ref={panelScroll.ref}
+                  onScroll={panelScroll.onScroll}
+                  className={styles.appleScroll}
+                  style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: "auto",
+                    // Top padding keeps the first card's outset ring from being clipped
+                    // against / overlapping the header row above it.
+                    padding: "7px 13px 14px",
+                  }}
+                >
+                  <HighlightsList hl={hl} emptyState={emptyState} />
+                </div>
+                {/* Soft veils — below while more cards continue past the fold, above
+                    once scrolled down (content above the fold). */}
+                <div
+                  className={styles.scrollFade}
+                  style={{ borderRadius: "0 0 18px 18px" }}
+                />
+                <div className={styles.scrollFadeTop} />
               </div>
-              {/* Soft "more below" veil — shows only while cards continue past the fold. */}
-              <div
-                className={styles.scrollFade}
-                style={{ borderRadius: "0 0 18px 18px" }}
-              />
             </div>
           </div>
         </div>
@@ -555,7 +567,15 @@ export default function EngagementApp({
             </div>
           </div>
           {detent !== "collapsed" ? (
-            <>
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <div
                 ref={sheetScroll.ref}
                 onScroll={sheetScroll.onScroll}
@@ -580,9 +600,10 @@ export default function EngagementApp({
                   }}
                 />
               </div>
-              {/* Soft "more below" veil — same pattern as the desktop panel. */}
+              {/* Soft veils — same pattern as the desktop panel. */}
               <div className={styles.scrollFade} />
-            </>
+              <div className={styles.scrollFadeTop} />
+            </div>
           ) : null}
         </div>
       </div>

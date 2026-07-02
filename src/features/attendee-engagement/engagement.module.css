@@ -346,6 +346,23 @@
   opacity: 1;
 }
 
+/* Top counterpart — shows once the list is scrolled down (content above the fold).
+   Place as a LATER sibling of the .appleScroll container (after .scrollFade). */
+.scrollFadeTop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 46px;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0), var(--bg-1) 82%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.appleScroll[data-more-top="1"] ~ .scrollFadeTop {
+  opacity: 1;
+}
+
 /* Apple-style overlay scrollbar: thin, rounded, inset from the right edge, and
    hidden until the user scrolls (then it fades back out). The transparent border +
    padding-box clip is what insets the thumb a few px off the edge ("move it left"). */

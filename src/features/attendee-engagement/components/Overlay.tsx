@@ -153,9 +153,10 @@ export function Overlay({
           >
             {children}
           </div>
-          {/* Soft "more below" veil — fades the list into the footer while content
-              continues past the fold (same pattern as the highlights panel). */}
+          {/* Soft veils — into the footer while content continues past the fold,
+              and at the top once scrolled down (same pattern as the panel). */}
           <div className={styles.scrollFade} />
+          <div className={styles.scrollFadeTop} />
         </div>
 
         {footer ? (
