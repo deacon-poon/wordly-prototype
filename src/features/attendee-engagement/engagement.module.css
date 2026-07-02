@@ -322,6 +322,30 @@
   pointer-events: none;
 }
 
+/* Soft "more below" overlay — the same progressive-fade language as the peek
+   preview. Place as the IMMEDIATE sibling after an .appleScroll container inside a
+   position:relative parent; it fades in only while that container has content below
+   the fold (data-more, maintained by useFadeScroll), so a short or fully-scrolled
+   list shows no veil. */
+.scrollFade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    var(--bg-1) 82%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.appleScroll[data-more="1"] + .scrollFade {
+  opacity: 1;
+}
+
 /* Apple-style overlay scrollbar: thin, rounded, inset from the right edge, and
    hidden until the user scrolls (then it fades back out). The transparent border +
    padding-box clip is what insets the thumb a few px off the edge ("move it left"). */

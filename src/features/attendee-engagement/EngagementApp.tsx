@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useViewportSize } from "@/hooks/use-mobile";
 import { Icon } from "./lib/icons";
 import { ICON } from "./lib/reactions-data";
@@ -16,13 +16,10 @@ import { ShareSheet } from "./components/ShareSheet";
 import { Coach, CoachPanelCard, type CoachVariant } from "./components/Coach";
 import styles from "./engagement.module.css";
 
-const BLUE = "var(--primary-blue-400)";
-
-/** Bookmark + "My Highlights" + count badge — the panel/sheet title row. */
+/** "My Highlights (9)" — the panel/sheet title row (no icon, plain parenthesised count). */
 function PanelHeader({ count }: { count: number }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <Icon d={ICON.lBookmark} size={17} color={BLUE} fill={BLUE} />
+    <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
       <span
         style={{
           fontSize: 13,
@@ -33,24 +30,8 @@ function PanelHeader({ count }: { count: number }) {
       >
         My Highlights
       </span>
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minWidth: 18,
-          height: 18,
-          padding: "0 5px",
-          borderRadius: 999,
-          // Darker than the bookmark icon's blue-400: white-on-400 is only 3.9:1,
-          // below the 4.5:1 this small badge text needs (WCAG 1.4.3).
-          background: "var(--primary-blue-600)",
-          color: "#fff",
-          fontSize: 11,
-          fontWeight: 700,
-        }}
-      >
-        {count}
+      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-3)" }}>
+        ({count})
       </span>
     </div>
   );
@@ -192,6 +173,13 @@ export default function EngagementApp({
 
   const emptyState = coach === "b1" ? <CoachPanelCard /> : undefined;
 
+  // Re-check the "more below" fade whenever content height can change outside a
+  // scroll event: cards added/removed, detent snap, viewport resize.
+  useEffect(() => {
+    panelScroll.check();
+    sheetScroll.check();
+  }, [hl.count, detent, width, panelScroll, sheetScroll]);
+
   // ── Wide: transcript + floating right panel ──────────────────────────────────
   if (isWide) {
     const panelW = device === "desktop" ? 348 : 290;
@@ -288,6 +276,11 @@ export default function EngagementApp({
                   onEditReaction={openRail}
                 />
               </div>
+              {/* Soft "more below" veil — shows only while cards continue past the fold. */}
+              <div
+                className={styles.scrollFade}
+                style={{ borderRadius: "0 0 18px 18px" }}
+              />
             </div>
           </div>
         </div>
@@ -493,7 +486,9 @@ export default function EngagementApp({
               }}
             >
               <PanelHeader count={hl.count} />
-              <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {/* Comfortable separation between the share tap-target and the
+                  accordion chevron (they were nearly touching). */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 {hl.count > 0 ? (
                   // Stop the handle's drag/tap-to-cycle from firing on the share tap.
                   <span
@@ -518,32 +513,36 @@ export default function EngagementApp({
             </div>
           </div>
           {detent !== "collapsed" ? (
-            <div
-              ref={sheetScroll.ref}
-              onScroll={sheetScroll.onScroll}
-              className={styles.appleScroll}
-              style={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: "auto",
-                // Top padding so the first card's outset ring clears the header row.
-                padding: "7px 13px 16px",
-              }}
-            >
-              <HighlightsList
-                hl={hl}
-                emptyState={emptyState}
-                railId={railId}
-                onEditReaction={openRailPhone}
-                // Peek detent: show the newest highlight + a "+N more" pill that expands
-                // the sheet to full. Full detent: the complete scrollable list.
-                peek={detent === "peek"}
-                onExpand={() => {
-                  haptic("selection");
-                  setDetent("full");
+            <>
+              <div
+                ref={sheetScroll.ref}
+                onScroll={sheetScroll.onScroll}
+                className={styles.appleScroll}
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  overflowY: "auto",
+                  // Top padding so the first card's outset ring clears the header row.
+                  padding: "7px 13px 16px",
                 }}
-              />
-            </div>
+              >
+                <HighlightsList
+                  hl={hl}
+                  emptyState={emptyState}
+                  railId={railId}
+                  onEditReaction={openRailPhone}
+                  // Peek detent: show the newest highlight + a "+N more" pill that expands
+                  // the sheet to full. Full detent: the complete scrollable list.
+                  peek={detent === "peek"}
+                  onExpand={() => {
+                    haptic("selection");
+                    setDetent("full");
+                  }}
+                />
+              </div>
+              {/* Soft "more below" veil — same pattern as the desktop panel. */}
+              <div className={styles.scrollFade} />
+            </>
           ) : null}
         </div>
       </div>
