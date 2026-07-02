@@ -184,16 +184,17 @@ export function HighlightsList({
           title="Show all highlights"
           style={{ position: "relative", cursor: "pointer", marginTop: 8 }}
         >
-          {/* faded preview of the next card */}
+          {/* faded preview of the next card — a real card peeking (not just a line),
+              clipped and faded at the bottom so it reads as "more cards below". */}
           <div
             style={{
-              height: 38,
+              height: 74,
               overflow: "hidden",
               borderRadius: 14,
               WebkitMaskImage:
-                "linear-gradient(to bottom, #000 0%, #000 28%, transparent 100%)",
+                "linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%)",
               maskImage:
-                "linear-gradient(to bottom, #000 0%, #000 28%, transparent 100%)",
+                "linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%)",
             }}
           >
             <div
@@ -205,6 +206,10 @@ export function HighlightsList({
                 fontSize: 14,
                 lineHeight: 1.45,
                 color: "var(--fg-1)",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
               }}
             >
               {nextBody}

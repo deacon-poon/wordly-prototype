@@ -536,6 +536,13 @@ export default function EngagementApp({
                 emptyState={emptyState}
                 railId={railId}
                 onEditReaction={openRailPhone}
+                // Peek detent: show the newest highlight + a "+N more" pill that expands
+                // the sheet to full. Full detent: the complete scrollable list.
+                peek={detent === "peek"}
+                onExpand={() => {
+                  haptic("selection");
+                  setDetent("full");
+                }}
               />
             </div>
           ) : null}
