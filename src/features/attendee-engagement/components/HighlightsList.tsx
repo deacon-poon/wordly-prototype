@@ -176,16 +176,19 @@ export function HighlightsList({
           style={{ position: "relative", cursor: "pointer", marginTop: 8 }}
         >
           {/* faded preview of the next card — a real card peeking (not just a line),
-              clipped and faded at the bottom so it reads as "more cards below". */}
+              clipped and faded at the bottom so it reads as "more cards below". Top +
+              side padding gives the card's outset ring room so overflow:hidden doesn't
+              shave its border; only the bottom is cut (and masked). */}
           <div
             style={{
-              height: 74,
+              height: 80,
               overflow: "hidden",
-              borderRadius: 14,
+              padding: "3px 3px 0",
+              borderRadius: 17,
               WebkitMaskImage:
-                "linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%)",
+                "linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%)",
               maskImage:
-                "linear-gradient(to bottom, #000 0%, #000 62%, transparent 100%)",
+                "linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%)",
             }}
           >
             <div
