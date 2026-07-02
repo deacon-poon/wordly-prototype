@@ -132,7 +132,7 @@ export function HighlightsList({
         {/* Current reaction only — tap to change it via the shared fixed rail. */}
         <button
           ref={hapticRef}
-          className={styles.morePill}
+          className={`${styles.morePill} ${styles.hitArea}`}
           onClick={() => onEditReaction?.(s.id)}
           aria-label={`Reaction: ${chipR.l}. Tap to change.`}
           title="Change reaction"

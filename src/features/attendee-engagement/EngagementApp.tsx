@@ -70,7 +70,7 @@ function ShareButton({
         onClick={onClick}
         aria-label="Share highlights"
         title="Share"
-        className={styles.iconBtn}
+        className={`${styles.iconBtn} ${styles.hitArea}`}
         style={{
           width: 30,
           height: 30,
@@ -97,12 +97,12 @@ function ShareButton({
       onClick={onClick}
       aria-label="Share highlights"
       title="Share"
-      className={styles.fieldBtn}
+      className={`${styles.fieldBtn} ${styles.hitArea}`}
       style={{
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        height: 30,
+        height: 32,
         padding: "0 12px",
         borderRadius: 8,
         border: "1px solid var(--border-2)",

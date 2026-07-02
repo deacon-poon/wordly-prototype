@@ -110,10 +110,10 @@ export function Overlay({
           <button
             onClick={onClose}
             aria-label="Close"
-            className={styles.iconBtn}
+            className={`${styles.iconBtn} ${styles.hitArea}`}
             style={{
-              width: 30,
-              height: 30,
+              width: 32,
+              height: 32,
               borderRadius: 8,
               background: "transparent",
               border: "none",
