@@ -24,17 +24,24 @@ export function Header({
   logoHeight = "20px",
   compact = false,
   onLeave,
+  lang: langProp,
+  onLang,
 }: {
   logoHeight?: string;
   compact?: boolean;
   /** Leave Session → the end-of-session flow (highlights + copy out), not a bare nav. */
   onLeave?: () => void;
+  /** Controlled language (lifted so the app can switch caption data + RTL layout). */
+  lang?: string;
+  onLang?: (lang: string) => void;
 }) {
   const [audio, setAudio] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [lang, setLang] = useState("English (US)");
+  const [langState, setLangState] = useState("English (US)");
+  const lang = langProp ?? langState;
+  const setLang = onLang ?? setLangState;
   const [settings, setSettings] = useState<EngagementSettings>({
     onlyFinal: false,
     ttsSameLang: false,
@@ -63,7 +70,7 @@ export function Header({
         fontSize: 13.5,
         fontWeight: color === "var(--fg-1)" ? 500 : 600,
         color,
-        textAlign: "left",
+        textAlign: "start",
       }}
     >
       <Icon
@@ -212,7 +219,7 @@ export function Header({
               style={{
                 position: "absolute",
                 top: "calc(100% + 6px)",
-                right: 0,
+                insetInlineEnd: 0,
                 minWidth: 190,
                 zIndex: 40,
                 background: "#fff",

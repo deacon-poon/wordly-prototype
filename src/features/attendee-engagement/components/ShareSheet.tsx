@@ -110,6 +110,7 @@ export function ShareSheet({
     >
       <div style={{ padding: "12px 16px 16px" }}>
         <div
+          dir="auto"
           style={{
             fontSize: 12.5,
             color: "var(--fg-3)",
@@ -120,6 +121,7 @@ export function ShareSheet({
           copy of your highlights
         </div>
         <div
+          dir="auto"
           style={{
             background: "var(--gray-50)",
             border: "1px solid var(--border-1)",

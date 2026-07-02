@@ -14,10 +14,18 @@ import {
 import type { Highlights } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
-const RADIUS = "6px 20px 20px 20px";
+// Speech-bubble corners: the small corner sits at the top inline-start (the speaker
+// side) — logical radii so the shape mirrors automatically under dir="rtl".
+const RADII: CSSProperties = {
+  borderStartStartRadius: 6,
+  borderStartEndRadius: 20,
+  borderEndEndRadius: 20,
+  borderEndStartRadius: 20,
+};
 
-// Swipe-right-to-react: drag a bubble rightward; past the threshold it springs back
-// and opens the reaction rail. (An alternative to long-press.)
+// Swipe-to-react: drag a bubble toward the rail side (right in LTR, LEFT in RTL);
+// past the threshold it springs back and opens the reaction rail. (An alternative
+// to long-press.)
 const MAX_DRAG = 70; // visual cap — the bubble never travels further than this
 const SWIPE_THRESHOLD = 60; // raw finger distance (px) needed to commit
 const MOVE_SLOP = 8;
@@ -91,6 +99,8 @@ export function TranscriptBubble({
     y: number;
     axis: "h" | "v" | null;
     dx: number;
+    /** +1 LTR / −1 RTL: "toward the rail" — read from the live computed direction. */
+    sign: 1 | -1;
   } | null>(null);
   const hapticRef = useHapticRef();
 
@@ -125,8 +135,12 @@ export function TranscriptBubble({
   const draggingH = dragRef.current?.axis === "h";
   const liftY = pressing || selected ? -3 : lifted ? -2 : 0;
   const scale = (pressing || selected) && !dragX ? " scale(1.01)" : "";
+  // dragX is the damped travel toward the rail; the sign maps it back to screen-x.
+  const dragSign = dragRef.current?.sign ?? 1;
   const transform =
-    dragX || lifted ? `translate(${dragX}px, ${liftY}px)${scale}` : "none";
+    dragX || lifted
+      ? `translate(${dragX * dragSign}px, ${liftY}px)${scale}`
+      : "none";
   const transition = draggingH
     ? "box-shadow .16s ease" // follow the finger while dragging (no transform easing)
     : releasing
@@ -136,7 +150,7 @@ export function TranscriptBubble({
   const bubbleStyle: CSSProperties = {
     position: "relative",
     background: bg,
-    borderRadius: RADIUS,
+    ...RADII,
     padding: "10px 14px",
     fontSize,
     lineHeight: 1.46,
@@ -164,7 +178,9 @@ export function TranscriptBubble({
   };
 
   const onDown = (e: React.PointerEvent) => {
-    dragRef.current = { x: e.clientX, y: e.clientY, axis: null, dx: 0 };
+    const sign: 1 | -1 =
+      getComputedStyle(e.currentTarget).direction === "rtl" ? -1 : 1;
+    dragRef.current = { x: e.clientX, y: e.clientY, axis: null, dx: 0, sign };
     lpFired.current = false;
     swipedRef.current = false;
     setReleasing(false);
@@ -206,8 +222,9 @@ export function TranscriptBubble({
       }
     }
     if (d.axis === "h") {
-      d.dx = dx;
-      setDragX(rubber(dx)); // damped, resistance-y travel
+      // Track travel toward the rail side (right in LTR, left in RTL).
+      d.dx = dx * d.sign;
+      setDragX(rubber(d.dx)); // damped, resistance-y travel (magnitude)
     }
   };
 
@@ -267,12 +284,12 @@ export function TranscriptBubble({
       ) : null}
 
       <div style={{ position: "relative", maxWidth }}>
-        {/* peek hint revealed as the bubble is dragged right */}
+        {/* peek hint revealed as the bubble is dragged toward the rail */}
         {dragX > 0 ? (
           <div
             style={{
               position: "absolute",
-              left: 6,
+              insetInlineStart: 6,
               top: 0,
               bottom: 0,
               display: "flex",
@@ -341,7 +358,7 @@ export function TranscriptBubble({
             style={{
               position: "absolute",
               bottom: -9,
-              right: -7,
+              insetInlineEnd: -7,
               zIndex: 5,
               display: "inline-flex",
               alignItems: "center",

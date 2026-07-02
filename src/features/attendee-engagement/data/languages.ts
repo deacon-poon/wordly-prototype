@@ -71,3 +71,15 @@ export const LANGS: [string, string][] = [
   ["Vietnamese", "Tiếng Việt"],
   ["Zulu", "IsiZulu"],
 ];
+
+/** Right-to-left attend languages (MVP spec: designs must account for RTL layouts). */
+export const RTL_LANGS = new Set(["Arabic", "Hebrew", "Urdu"]);
+export const isRTLLang = (name: string) => RTL_LANGS.has(name);
+
+/**
+ * Which caption script the demo feed has for a language. Only Arabic has a full
+ * translated transcript so far; other RTL picks fall back to the English script
+ * (layout still mirrors — content would come from the real feed).
+ */
+export const captionLangFor = (name: string): "en" | "ar" =>
+  name === "Arabic" ? "ar" : "en";

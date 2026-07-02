@@ -12,7 +12,7 @@ export type Bubble = {
   revise?: { finalHeadLen: number; draftHead: string[] };
 };
 
-export const SPEAKERS = {
+export const SPEAKERS: Record<string, Speaker> = {
   mod: {
     name: "Lars Eriksson",
     role: "Moderator",
@@ -39,7 +39,7 @@ export const SPEAKERS = {
   },
 };
 
-export const TRANSCRIPT = [
+export const TRANSCRIPT: Bubble[] = [
   {
     id: 1,
     sp: "mod",
@@ -632,3 +632,37 @@ export function revealLen(b: Bubble): number {
 
 export const clamp = (t: string, n = 92): string =>
   t.length > n ? t.slice(0, n - 1).trim() + "…" : t;
+
+// ── Caption language switch (prototype) ────────────────────────────────────────
+// The demo "feed" can serve the captions in Arabic (data/transcript-ar.ts) to mock
+// the RTL experience end-to-end. The exported TRANSCRIPT/SPEAKERS are swapped IN
+// PLACE, so every consumer re-reads the active language on its next render — the
+// same shape as the real attend feed changing caption language mid-session. Saved
+// highlight ids and the stream position stay valid because ids/order are identical.
+
+import { TRANSCRIPT_AR, SPEAKER_NAMES_AR } from "./transcript-ar";
+
+const TRANSCRIPT_EN: Bubble[] = TRANSCRIPT.map((b) => ({ ...b }));
+const SPEAKER_NAMES_EN: Record<string, { name: string; role: string }> =
+  Object.fromEntries(
+    Object.entries(SPEAKERS).map(([k, s]) => [
+      k,
+      { name: s.name, role: s.role },
+    ])
+  );
+
+export type TranscriptLang = "en" | "ar";
+let activeLang: TranscriptLang = "en";
+export const getTranscriptLang = () => activeLang;
+
+export function setTranscriptLang(l: TranscriptLang) {
+  if (l === activeLang) return;
+  activeLang = l;
+  const src = l === "ar" ? TRANSCRIPT_AR : TRANSCRIPT_EN;
+  TRANSCRIPT.splice(0, TRANSCRIPT.length, ...src.map((b) => ({ ...b })));
+  const names = l === "ar" ? SPEAKER_NAMES_AR : SPEAKER_NAMES_EN;
+  for (const k of Object.keys(SPEAKERS)) {
+    SPEAKERS[k].name = names[k].name;
+    SPEAKERS[k].role = names[k].role;
+  }
+}

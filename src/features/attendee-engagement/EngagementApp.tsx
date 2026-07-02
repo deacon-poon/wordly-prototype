@@ -8,6 +8,8 @@ import { useTranscriptStream } from "./lib/useTranscriptStream";
 import { useHighlights } from "./lib/useHighlights";
 import { useFadeScroll } from "./lib/useFadeScroll";
 import { haptic } from "./lib/haptics";
+import { setTranscriptLang } from "./data/transcript";
+import { isRTLLang, captionLangFor } from "./data/languages";
 import { Transcript } from "./components/Transcript";
 import { ReactionRail } from "./components/ReactionRail";
 import { HighlightsList } from "./components/HighlightsList";
@@ -119,10 +121,13 @@ type DetentKey = keyof typeof DETENTS;
 export default function EngagementApp({
   coach = "b1",
   demoEnd = false,
+  initialLang,
 }: {
   coach?: CoachVariant;
   /** Demo shortcut (?demo=end): start on the final line so the session ends in seconds. */
   demoEnd?: boolean;
+  /** Initial attend language (?lang=ar → Arabic captions + RTL layout). */
+  initialLang?: string;
 }) {
   const { width } = useViewportSize();
   const device: Device =
@@ -197,6 +202,30 @@ export default function EngagementApp({
 
   const emptyState = coach === "b1" ? <CoachPanelCard /> : undefined;
 
+  // ── Attend language + RTL (spec §1: bubble alignment, rail placement, panel all
+  //    mirror for RTL languages). Captions swap synchronously BEFORE the re-render
+  //    so the transcript, cards, and share text all read the new language at once. ──
+  const [lang, setLang] = useState(() => {
+    const l = initialLang ?? "English (US)";
+    setTranscriptLang(captionLangFor(l));
+    return l;
+  });
+  const rtl = isRTLLang(lang);
+  const dir = rtl ? "rtl" : "ltr";
+  const onLang = (l: string) => {
+    setTranscriptLang(captionLangFor(l));
+    setLang(l);
+  };
+  // Set the document direction (this feature is standalone/full-screen), so BOTH
+  // responsive branches and every portalled overlay (Help/Settings/Share/Session
+  // complete render into <body>) inherit the mirroring. Restored on unmount.
+  useEffect(() => {
+    document.documentElement.dir = dir;
+    return () => {
+      document.documentElement.dir = "ltr";
+    };
+  }, [dir]);
+
   // Re-check the "more below" fade whenever content height can change outside a
   // scroll event: cards added/removed, detent snap, viewport resize.
   useEffect(() => {
@@ -218,6 +247,7 @@ export default function EngagementApp({
     return (
       <div
         className={styles.root}
+        dir={dir}
         style={{
           position: "relative",
           display: "flex",
@@ -308,7 +338,12 @@ export default function EngagementApp({
             </div>
           </div>
         </div>
-        <Header logoHeight="22px" onLeave={openLeave} />
+        <Header
+          logoHeight="22px"
+          onLeave={openLeave}
+          lang={lang}
+          onLang={onLang}
+        />
         <Coach variant={coach} hasSaved={hl.count > 0} />
         <ShareSheet
           open={shareOpen}
@@ -327,8 +362,9 @@ export default function EngagementApp({
           hl={hl}
           // Fixed just to the right of the bubble column, vertically centred — a
           // stable spot right beside the lines, not per-bubble.
+          // Beside the bubble column: past its right edge in LTR, its LEFT in RTL.
           positionStyle={{
-            left: railLeft,
+            ...(rtl ? { right: railLeft } : { left: railLeft }),
             top: "50%",
             transform: "translateY(-50%)",
           }}
@@ -456,7 +492,13 @@ export default function EngagementApp({
           onHoverClose={scheduleRailClose}
         />
       </div>
-      <Header logoHeight="20px" compact onLeave={openLeave} />
+      <Header
+        logoHeight="20px"
+        compact
+        onLeave={openLeave}
+        lang={lang}
+        onLang={onLang}
+      />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 
       {/* Bottom sheet. A thin brand-gradient accent (.auraGlow) hugs the top edge —
@@ -585,7 +627,7 @@ export default function EngagementApp({
         // above the current sheet detent). Editing a card first drops the sheet to peek
         // (see openRailPhone), so the rail always has room here.
         positionStyle={{
-          right: 12,
+          ...(rtl ? { left: 12 } : { right: 12 }),
           top: `${(vh - sheetH) / 2}px`,
           transform: "translateY(-50%)",
         }}

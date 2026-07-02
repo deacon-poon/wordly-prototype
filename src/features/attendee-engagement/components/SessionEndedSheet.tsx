@@ -126,7 +126,9 @@ export function SessionEndedSheet({
       }
     >
       <div style={{ padding: "12px 16px 16px" }}>
+        {/* dir="auto": English chrome copy keeps LTR punctuation inside an RTL doc */}
         <div
+          dir="auto"
           style={{
             fontSize: 13,
             color: "var(--fg-3)",
@@ -167,6 +169,7 @@ export function SessionEndedSheet({
           <div style={{ textAlign: "center", padding: "6px 0 4px" }}>
             <EmptyIllustration width={150} />
             <div
+              dir="auto"
               style={{
                 marginTop: 8,
                 fontSize: 13,

@@ -25,6 +25,7 @@ const GESTURE = "Tap any line to save it · press & hold to react";
 export function CoachPanelCard() {
   return (
     <div
+      dir="auto"
       style={{
         border: "1px dashed var(--border-2)",
         borderRadius: 14,
@@ -52,7 +53,14 @@ export function CoachPanelCard() {
           How highlights work
         </span>
       </div>
-      <ul style={{ margin: 0, paddingLeft: 16, fontSize: 13, lineHeight: 1.6 }}>
+      <ul
+        style={{
+          margin: 0,
+          paddingInlineStart: 16,
+          fontSize: 13,
+          lineHeight: 1.6,
+        }}
+      >
         <li>
           <strong>Tap any line</strong> in the transcript to save it here.
         </li>
@@ -111,7 +119,10 @@ export function Coach({
           animation: "wEngFade .3s ease",
         }}
       >
-        <span style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}>
+        <span
+          dir="auto"
+          style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}
+        >
           {GESTURE}
         </span>
         <button
@@ -279,7 +290,10 @@ export function Coach({
           animation: "wEngPulseDot 1.4s infinite",
         }}
       />
-      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-2)" }}>
+      <span
+        dir="auto"
+        style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-2)" }}
+      >
         {GESTURE}
       </span>
     </div>

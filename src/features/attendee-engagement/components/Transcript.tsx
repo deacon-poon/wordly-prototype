@@ -139,7 +139,7 @@ export function Transcript({
           title="Jump to latest"
           style={{
             position: "absolute",
-            right: 20,
+            insetInlineEnd: 20,
             bottom: 20,
             zIndex: 6,
             width: 46,

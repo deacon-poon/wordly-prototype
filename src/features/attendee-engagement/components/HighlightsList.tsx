@@ -35,6 +35,7 @@ function EmptyHighlights() {
     <div style={{ padding: "14px 8px 10px", textAlign: "center" }}>
       <EmptyIllustration />
       <div
+        dir="auto"
         style={{
           marginTop: 10,
           fontSize: 13,
@@ -100,7 +101,7 @@ export function HighlightsList({
       lineHeight: 1.45,
       color: "var(--fg-1)",
       marginBottom: 10,
-      paddingRight: 22,
+      paddingInlineEnd: 22,
     };
     if (clampLines) {
       Object.assign(textStyle, {
@@ -137,7 +138,7 @@ export function HighlightsList({
           style={{
             position: "absolute",
             top: 6,
-            right: 6,
+            insetInlineEnd: 6,
             width: 22,
             height: 22,
             display: "flex",
