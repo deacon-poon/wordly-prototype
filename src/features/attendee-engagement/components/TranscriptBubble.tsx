@@ -384,20 +384,22 @@ export function TranscriptBubble({
         {railOpen ? (
           /* Reaction panel — floats just ABOVE the bubble's top inline-end corner
              ("Lift + float · blue field", Hover State Explorations): a frosted
-             blue pill with white circular buttons. It never covers the newest
-             streaming lines below, and the reserved margin keeps the older line
-             above clear too. */
+             blue pill with white circular buttons, as a pure overlay (no layout
+             push). Touch-target sizing is per pointer type: 44px on touch
+             (WCAG 2.5.5), a compact 30px on hover-capable fine pointers (well
+             above 2.5.8's 24px floor) so the pill sits in the inter-bubble gap
+             instead of covering the line above. */
           <div
             role="menu"
             aria-label="React to this line"
             style={{
               position: "absolute",
-              bottom: "calc(100% + 10px)",
+              bottom: "calc(100% + 6px)",
               insetInlineEnd: 0,
               zIndex: 7,
               display: "flex",
-              gap: 4,
-              padding: 5,
+              gap: canHover ? 3 : 4,
+              padding: canHover ? 4 : 5,
               borderRadius: 999,
               background:
                 "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
@@ -424,8 +426,8 @@ export function TranscriptBubble({
                     onRail(false);
                   }}
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: canHover ? 30 : 44,
+                    height: canHover ? 30 : 44,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -440,7 +442,7 @@ export function TranscriptBubble({
                     cursor: "pointer",
                   }}
                 >
-                  <Icon d={opt.icon} size={20} color={opt.c} />
+                  <Icon d={opt.icon} size={canHover ? 17 : 20} color={opt.c} />
                 </button>
               );
             })}

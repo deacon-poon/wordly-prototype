@@ -104,7 +104,9 @@ const TARGET_MIN = 44;
 // controls (chip, remove ✕, dismiss) keep a small visual but get a 44px tappable
 // area from `.rxChip`/`.hitArea`'s ::before in engagement.module.css.
 const TARGETS = [
-  { label: "reaction rail button", px: 44, ref: "TranscriptBubble.tsx rail (44 direct)" },
+  // Touch value checked here; hover-capable fine pointers get a compact 30px
+  // variant (above WCAG 2.5.8's 24px pointer floor — 2.5.5's 44px is for touch).
+  { label: "reaction rail button", px: 44, ref: "TranscriptBubble.tsx rail (44 touch / 30 fine-pointer)" },
   { label: "highlights reaction button", px: 44, ref: "HighlightsList.tsx (44 direct)" },
   { label: "corner reaction chip", px: 44, ref: "styles.rxChip ::before (24 visual)" },
   { label: "highlight remove button", px: 44, ref: "styles.hitArea ::before (22 visual)" },
