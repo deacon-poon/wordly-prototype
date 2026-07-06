@@ -8,8 +8,12 @@ import { useTranscriptStream } from "./lib/useTranscriptStream";
 import { useHighlights } from "./lib/useHighlights";
 import { useFadeScroll } from "./lib/useFadeScroll";
 import { haptic } from "./lib/haptics";
-import { setTranscriptLang } from "./data/transcript";
-import { isRTLLang, captionLangFor, wordlyCodeFor } from "./data/languages";
+import {
+  setTranscriptLang,
+  TRANSCRIPT,
+  type TranscriptLang,
+} from "./data/transcript";
+import { captionLangFor, wordlyCodeFor } from "./data/languages";
 import { useAttendStream, type AttendConfig } from "./lib/useAttendStream";
 import { Transcript } from "./components/Transcript";
 import { HighlightsList } from "./components/HighlightsList";
@@ -253,13 +257,27 @@ export default function EngagementApp({
     setTranscriptLang(captionLangFor(l));
     return l;
   });
-  const rtl = isRTLLang(lang);
-  const dir = rtl ? "rtl" : "ltr";
+  // Per-bubble caption language (spec §14): a language switch applies only to bubbles
+  // that stream AFTER it, so already-shown bubbles keep the language/direction they were
+  // streamed in — a session can end up mixing LTR + RTL alignment.
+  const [bubbleLang, setBubbleLang] = useState<TranscriptLang[]>(() =>
+    Array(TRANSCRIPT.length).fill(captionLangFor(initialLang ?? "English (US)"))
+  );
   const onLang = (l: string) => {
     if (live) attend.changeLanguage(wordlyCodeFor(l));
-    else setTranscriptLang(captionLangFor(l));
+    const cap = captionLangFor(l);
+    // Freeze everything up to and including the current line; switch only what's next.
+    setBubbleLang((prev) => prev.map((v, i) => (i > last ? cap : v)));
     setLang(l);
   };
+  // Keep the GLOBAL transcript (which the stream engine reads for reveal + word timing)
+  // in the CURRENT bubble's language, so the engine's word counts match what's rendered.
+  // Per-bubble rendering reads its own language snapshot, independent of this.
+  useEffect(() => {
+    setTranscriptLang(
+      bubbleLang[Math.min(last, bubbleLang.length - 1)] ?? "en"
+    );
+  }, [last, bubbleLang]);
   // Mirroring is scoped to the CONTENT (the transcript column + reaction rail):
   // `dir` is applied on <Transcript> only. The chrome — header, highlights panel,
   // sheets, overlays — stays LTR (its copy is English); Arabic text inside cards
@@ -315,7 +333,7 @@ export default function EngagementApp({
             eng={eng}
             last={last}
             hl={hl}
-            dir={dir}
+            bubbleLang={bubbleLang}
             maxWidth={bubbleMax}
             fontSize={16}
             padding={tPad}
@@ -528,7 +546,7 @@ export default function EngagementApp({
           last={last}
           hl={hl}
           maxWidth="80%"
-          dir={dir}
+          bubbleLang={bubbleLang}
           fontSize={15}
           padding="70px 18px 22px"
           openRailId={railId}

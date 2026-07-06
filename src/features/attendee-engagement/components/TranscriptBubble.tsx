@@ -57,6 +57,8 @@ export function TranscriptBubble({
   hl,
   showName,
   showCaret,
+  dir = "ltr",
+  speakerName,
   maxWidth = "80%",
   fontSize = 14.5,
   railOpen,
@@ -71,6 +73,10 @@ export function TranscriptBubble({
   hl: Highlights;
   showName: boolean;
   showCaret: boolean;
+  /** This line's own direction — bubbles can mix LTR/RTL after a language switch. */
+  dir?: "ltr" | "rtl";
+  /** Speaker name in this bubble's language (falls back to the global speaker). */
+  speakerName?: string;
   maxWidth?: number | string;
   fontSize?: number;
   /** Whether the shared rail is currently targeting THIS line (drives the highlight). */
@@ -276,6 +282,7 @@ export function TranscriptBubble({
 
   return (
     <div
+      dir={dir}
       ref={(el) => {
         if (el && isLatest) el.dataset.latest = "1";
       }}
@@ -296,7 +303,7 @@ export function TranscriptBubble({
             margin: "0 2px 6px",
           }}
         >
-          {SPK(bubble).name}
+          {speakerName ?? SPK(bubble).name}
         </div>
       ) : showCaret ? (
         <div

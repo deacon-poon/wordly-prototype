@@ -675,3 +675,16 @@ export function setTranscriptLang(l: TranscriptLang) {
     SPEAKERS[k].role = names[k].role;
   }
 }
+
+// ── Per-bubble caption language (spec §14) ──────────────────────────────────────
+// So a mid-session language switch affects only bubbles that stream AFTER it (mixing
+// LTR + RTL in one session), each bubble is rendered from the language it was streamed
+// in. These accessors expose the stable per-language snapshots (setTranscriptLang
+// copies OUT of these and never mutates them), keyed by the shared bubble ids/order.
+export const scriptFor = (l: TranscriptLang): Bubble[] => SOURCES[l].script;
+export const speakerNameFor = (
+  l: TranscriptLang,
+  sp: string
+): { name: string; role: string } => SOURCES[l].names[sp];
+export const isCaptionRTL = (l: TranscriptLang): boolean =>
+  l === "ar" || l === "he";

@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { TRANSCRIPT } from "../data/transcript";
+import {
+  TRANSCRIPT,
+  scriptFor,
+  speakerNameFor,
+  isCaptionRTL,
+  type TranscriptLang,
+} from "../data/transcript";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { TranscriptBubble } from "./TranscriptBubble";
@@ -15,7 +21,7 @@ export function Transcript({
   eng,
   last,
   hl,
-  dir = "ltr",
+  bubbleLang,
   maxWidth,
   fontSize,
   padding,
@@ -27,9 +33,10 @@ export function Transcript({
   eng: StreamState;
   last: number;
   hl: Highlights;
-  /** Content direction. RTL mirrors ONLY the transcript (bubbles, chips, swipe,
-   *  jump button) — the surrounding chrome (header/panel) stays LTR. */
-  dir?: "ltr" | "rtl";
+  /** Caption language per bubble index. Each bubble renders in its own language +
+   *  direction (spec §14), so a mid-session switch mixes LTR + RTL. Only the transcript
+   *  mirrors per-bubble; the surrounding chrome (header/panel) stays LTR. */
+  bubbleLang: TranscriptLang[];
   maxWidth: number | string;
   fontSize: number;
   padding: string;
@@ -87,7 +94,6 @@ export function Transcript({
 
   return (
     <div
-      dir={dir}
       style={{ flex: 1, minWidth: 0, position: "relative", display: "flex" }}
     >
       <div
@@ -110,13 +116,18 @@ export function Transcript({
         }}
       >
         {Array.from({ length: last + 1 }, (_, idx) => {
-          const b = TRANSCRIPT[idx];
-          const prev = idx > 0 ? TRANSCRIPT[idx - 1] : null;
-          const speakerChanged = !prev || prev.sp !== b.sp;
+          // Render each bubble in the language it was streamed in (spec §14).
+          const lang = bubbleLang[idx] ?? "en";
+          const src = scriptFor(lang);
+          const b = src[idx];
+          const prev = idx > 0 ? src[idx - 1] : null;
+          const speakerChanged = !prev || prev.sp !== b.sp; // sp is language-independent
           return (
             <TranscriptBubble
               key={b.id}
               bubble={b}
+              dir={isCaptionRTL(lang) ? "rtl" : "ltr"}
+              speakerName={speakerNameFor(lang, b.sp).name}
               count={idx < eng.bi ? 9999 : eng.wi}
               done={idx < eng.bi}
               isLatest={b.id === latestId}
