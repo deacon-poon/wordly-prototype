@@ -10,6 +10,10 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { LANGS } from "../data/languages";
+
+// Collapsed trigger shows the language in the user's OWN language (native label),
+// while the dropdown keeps the English name + native label. Keyed by English name.
+const NATIVE_LABEL: Record<string, string> = Object.fromEntries(LANGS);
 import { HelpSheet } from "./HelpSheet";
 import { SettingsSheet, type EngagementSettings } from "./SettingsSheet";
 import styles from "../engagement.module.css";
@@ -93,14 +97,11 @@ export function Header({
           position: "absolute",
           inset: "0 0 auto 0",
           height: compact ? 96 : 104,
-          backdropFilter: "blur(6px)",
-          WebkitBackdropFilter: "blur(6px)",
+          // Pure gradient fade to transparent — no backdrop blur. Streaming text
+          // dissolves under the header via the white→transparent ramp alone (Graham:
+          // the top should fade with a gradient, not blur).
           background:
-            "linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.9) 46%, rgba(255,255,255,.5) 76%, rgba(255,255,255,0) 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom,#000 0%,#000 56%,transparent 100%)",
-          maskImage:
-            "linear-gradient(to bottom,#000 0%,#000 56%,transparent 100%)",
+            "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.98) 46%, rgba(255,255,255,.72) 72%, rgba(255,255,255,0) 100%)",
           pointerEvents: "none",
         }}
       />
@@ -149,7 +150,7 @@ export function Header({
             }
           >
             <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
-            {lang}
+            <span dir="auto">{NATIVE_LABEL[lang] ?? lang}</span>
           </SelectTrigger>
           <SelectContent className="max-h-[340px] min-w-[248px]">
             {LANGS.map((L) => (

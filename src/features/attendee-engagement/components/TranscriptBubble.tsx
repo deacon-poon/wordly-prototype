@@ -197,6 +197,9 @@ export function TranscriptBubble({
       return;
     }
     hl.toggleSave(bubble.id);
+    // A tap that saves also dismisses an open reaction rail — e.g. long-press to open
+    // the rail, then tap the line to save: the rail should close, not linger.
+    if (railOpen) onRail(false);
   };
 
   const onDown = (e: React.PointerEvent) => {

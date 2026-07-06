@@ -33,10 +33,10 @@ export function useTranscriptStream({
 }) {
   const [eng, setEng] = useState<StreamState>(() =>
     demoEnd
-      ? {
-          bi: TRANSCRIPT.length - 1,
-          wi: Math.max(0, revealLen(TRANSCRIPT[TRANSCRIPT.length - 1]) - 3),
-        }
+      ? // Start one full line before the last (from its beginning) so there's ~5s of
+        // streaming left — enough time to add a couple of reactions before the session
+        // ends and the Session-complete sheet appears.
+        { bi: Math.max(0, TRANSCRIPT.length - 2), wi: 0 }
       : { bi: INIT_BI, wi: INIT_WI }
   );
   // The session is over once the stream has advanced past the last line. The live

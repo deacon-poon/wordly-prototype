@@ -33,6 +33,10 @@ export const ICON = {
     "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5M9 18h6M10 22h4",
   lHelp:
     "M7.9 20A9 9 0 1 0 4 16.1L2 22ZM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01",
+  // Standalone question mark in the Lucide stroke idiom (curl + dot, no circle/bubble)
+  // so the Question reaction matches the other line icons instead of reading as a chat
+  // glyph. Centred in the 24×24 box.
+  lQuestion: "M8.6 8.5a3.4 3.4 0 1 1 4.9 3.4c-1 .6-1.5 1.3-1.5 2.6M12 18h.01",
   lBookmark: "M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z",
   ellipsisV: "M12 5h.01M12 12h.01M12 19h.01",
   ellipsisH: "M5 12h.01M12 12h.01M19 12h.01",
@@ -92,7 +96,7 @@ export const REACT5 = [
   },
   {
     e: "❓",
-    icon: ICON.lHelp,
+    icon: ICON.lQuestion,
     l: "Question",
     c: "var(--violet-600)",
     cbg: "var(--violet-25)",

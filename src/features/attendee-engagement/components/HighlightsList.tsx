@@ -113,8 +113,10 @@ export function HighlightsList({
     return <>{emptyState ?? <EmptyHighlights />}</>;
   }
 
-  // Most-recent first.
-  const items = hl.sorted.slice().reverse();
+  // Full list reads chronologically — newest appended at the BOTTOM, matching the
+  // transcript's top→bottom flow (the panel auto-scrolls to it). Peek shows the newest,
+  // so it works off a reversed copy.
+  const items = hl.sorted;
 
   const card = (s: SavedItem, clampLines?: number) => {
     const b = TRANSCRIPT.find((t) => t.id === s.id);
@@ -287,8 +289,9 @@ export function HighlightsList({
   }
 
   // ── Peek: newest in full (3-line clamp) + "+N more" fade affordance ────────────
-  const top = items[0];
-  const next = items[1];
+  const rev = items.slice().reverse();
+  const top = rev[0];
+  const next = rev[1];
   const remaining = hl.count - 1;
   const nextBody = next ? TRANSCRIPT.find((t) => t.id === next.id)?.text : "";
 

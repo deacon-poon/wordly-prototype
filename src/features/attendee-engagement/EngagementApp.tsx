@@ -269,13 +269,28 @@ export default function EngagementApp({
     sheetScroll.check();
   }, [hl.count, detent, width, panelScroll, sheetScroll]);
 
+  // Newest highlight appends at the bottom of the list — bring it into view when the
+  // count grows (desktop panel or mobile sheet). rAF lets the new card lay out first.
+  const prevHlCount = useRef(0);
+  useEffect(() => {
+    if (hl.count > prevHlCount.current) {
+      const el = isWide ? panelScroll.ref.current : sheetScroll.ref.current;
+      requestAnimationFrame(() =>
+        el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" })
+      );
+    }
+    prevHlCount.current = hl.count;
+  }, [hl.count, isWide, panelScroll, sheetScroll]);
+
   // ── Wide: transcript + floating right panel ──────────────────────────────────
   if (isWide) {
     const panelW = device === "desktop" ? 348 : 290;
     // Transcript metrics, shared with the rail so it can sit right beside the bubble
     // column (not floating out by the panel).
     const tPadLeft = device === "desktop" ? 34 : 26;
-    const tPad = device === "desktop" ? "78px 34px 28px" : "70px 26px 26px";
+    // Tighter right padding closes the gutter between the transcript and the highlights
+    // panel (Justin: too much space between the bubble and the panel).
+    const tPad = device === "desktop" ? "78px 20px 28px" : "70px 16px 26px";
     const vw = width || 1280;
     // Fluid bubbles: cap at 80% of the transcript REGION (not a fixed px column), so
     // large screens don't strand a lane of empty space beside the conversation.
@@ -314,10 +329,10 @@ export default function EngagementApp({
               zIndex: 8,
               display: "flex",
               flexDirection: "column",
+              // Flush to the page's right edge (Graham) — no outer right margin; the
+              // small left value keeps the panel a hair off the transcript column.
               padding:
-                device === "desktop"
-                  ? "96px 18px 18px 2px"
-                  : "84px 16px 16px 2px",
+                device === "desktop" ? "96px 0 18px 2px" : "84px 0 16px 2px",
             }}
           >
             <div
@@ -518,7 +533,7 @@ export default function EngagementApp({
         />
       </div>
       <Header
-        logoHeight="20px"
+        logoHeight="24px"
         compact
         onLeave={openLeave}
         lang={lang}
