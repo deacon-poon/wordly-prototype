@@ -54,6 +54,7 @@ export function TranscriptBubble({
   count,
   done,
   isLatest,
+  audioOn = false,
   hl,
   showName,
   showCaret,
@@ -68,6 +69,8 @@ export function TranscriptBubble({
   count: number;
   done: boolean;
   isLatest: boolean;
+  /** TTS on: the latest (currently-spoken) line shows an animated speaking cue. */
+  audioOn?: boolean;
   hl: Highlights;
   showName: boolean;
   showCaret: boolean;
@@ -492,6 +495,54 @@ export function TranscriptBubble({
           >
             <Icon d={chipR.icon} size={13} color={chipR.c} />
           </button>
+        ) : null}
+
+        {/* TTS "reading aloud" cue — a speaker + live equalizer pill sitting in the
+            gutter just past the bubble's inline-end. Only the ACTIVE (latest) line
+            shows it, and only while audio is on. Deliberately a separate adornment,
+            not a change to the bubble's border/background/shadow (those were rejected:
+            a bubble drop shadow reads as an interactive hover). */}
+        {audioOn && isLatest ? (
+          <div
+            aria-label="Reading this line aloud"
+            title="Reading aloud"
+            style={{
+              position: "absolute",
+              insetInlineStart: "calc(100% + 8px)",
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 4,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 9px",
+              borderRadius: 999,
+              background: "#fff",
+              border: "1px solid var(--border-brand)",
+              boxShadow: "var(--shadow-xs)",
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Icon d={ICON.speaker} size={14} color="var(--primary-blue-600)" />
+            <span
+              aria-hidden
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 2,
+                height: 13,
+              }}
+            >
+              {[9, 13, 7].map((h, i) => (
+                <span
+                  key={i}
+                  className={styles.ttsBar}
+                  style={{ height: h, animationDelay: `${i * 0.15}s` }}
+                />
+              ))}
+            </span>
+          </div>
         ) : null}
       </div>
     </div>

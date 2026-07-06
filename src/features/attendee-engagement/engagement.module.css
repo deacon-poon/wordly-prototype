@@ -150,6 +150,26 @@
       transform: translateX(0) scale(1);
     }
   }
+  /* TTS "reading aloud" equalizer bars beside the active bubble. */
+  @keyframes wEngEq {
+    0%,
+    100% {
+      transform: scaleY(0.4);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+}
+
+/* One bar of the TTS speaking indicator — height set inline per bar; the animation
+   pulses it around its own baseline so the trio reads as a live audio equalizer. */
+.ttsBar {
+  width: 2.5px;
+  border-radius: 2px;
+  background: var(--primary-blue-500);
+  transform-origin: center bottom;
+  animation: wEngEq 0.9s ease-in-out infinite;
 }
 
 /* Reaction chip (corner) + emoji buttons — hover/active micro-interactions. */

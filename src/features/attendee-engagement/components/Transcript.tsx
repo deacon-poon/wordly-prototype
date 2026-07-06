@@ -23,6 +23,7 @@ export function Transcript({
   onRail,
   onHoverOpen,
   onHoverClose,
+  audioOn = false,
 }: {
   eng: StreamState;
   last: number;
@@ -39,6 +40,8 @@ export function Transcript({
   /** Desktop hover on a line opens the shared rail for it; leaving schedules a close. */
   onHoverOpen: (id: number) => void;
   onHoverClose: () => void;
+  /** When TTS/audio is on, the latest (currently-spoken) line shows a speaking cue. */
+  audioOn?: boolean;
 }) {
   const [atBottom, setAtBottom] = useState(true);
   const hapticRef = useHapticRef();
@@ -120,6 +123,7 @@ export function Transcript({
               count={idx < eng.bi ? 9999 : eng.wi}
               done={idx < eng.bi}
               isLatest={b.id === latestId}
+              audioOn={audioOn}
               hl={hl}
               showName={idx === 0}
               showCaret={speakerChanged && idx !== 0}

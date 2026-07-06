@@ -30,6 +30,8 @@ export function Header({
   onLeave,
   lang: langProp,
   onLang,
+  audio: audioProp,
+  onAudio,
 }: {
   logoHeight?: string;
   compact?: boolean;
@@ -38,8 +40,14 @@ export function Header({
   /** Controlled language (lifted so the app can switch caption data + RTL layout). */
   lang?: string;
   onLang?: (lang: string) => void;
+  /** Controlled TTS/audio toggle (lifted so the transcript can mark the line being
+   *  read aloud). Falls back to local state when uncontrolled. */
+  audio?: boolean;
+  onAudio?: (on: boolean) => void;
 }) {
-  const [audio, setAudio] = useState(false);
+  const [audioState, setAudioState] = useState(false);
+  const audio = audioProp ?? audioState;
+  const setAudio = onAudio ?? setAudioState;
   const [menuOpen, setMenuOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -177,7 +185,7 @@ export function Header({
           ref={hapticRef}
           onClick={() => {
             haptic("selection");
-            setAudio((a) => !a);
+            setAudio(!audio);
           }}
           aria-label={audio ? "Audio on" : "Audio off"}
           title={audio ? "Audio on" : "Audio off"}

@@ -155,6 +155,9 @@ export default function EngagementApp({
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
   const [shareOpen, setShareOpen] = useState(false);
+  // TTS/audio toggle lifted from the header so the transcript can mark the bubble
+  // currently being read aloud (spec §4).
+  const [audio, setAudio] = useState(false);
 
   // ── End-of-session flow (spec §2): on session end or early leave, the attendee
   //    gets their highlights and can copy them out. ─────────────────────────────
@@ -320,6 +323,7 @@ export default function EngagementApp({
             onRail={openRail}
             onHoverOpen={openRail}
             onHoverClose={scheduleRailClose}
+            audioOn={audio}
           />
           <div
             style={{
@@ -402,6 +406,8 @@ export default function EngagementApp({
           onLeave={openLeave}
           lang={lang}
           onLang={onLang}
+          audio={audio}
+          onAudio={setAudio}
         />
         {liveBadge}
         {liveBadge}
@@ -530,6 +536,7 @@ export default function EngagementApp({
           onRail={openRail}
           onHoverOpen={openRail}
           onHoverClose={scheduleRailClose}
+          audioOn={audio}
         />
       </div>
       <Header
@@ -538,6 +545,8 @@ export default function EngagementApp({
         onLeave={openLeave}
         lang={lang}
         onLang={onLang}
+        audio={audio}
+        onAudio={setAudio}
       />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 
