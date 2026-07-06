@@ -613,14 +613,15 @@ export default function EngagementApp({
                   </span>
                 ) : null}
               </div>
-              {/* Accordion indicator: chevron points down at collapsed/peek
-                  (expand) and flips up at full (collapse). */}
+              {/* Accordion indicator points in the DIRECTION OF THE ACTION: chevron
+                  up while collapsed/peek (tap to expand the sheet upward), down at
+                  full (tap to collapse it back down). */}
               <Icon
                 d={ICON.chevron}
                 size={18}
                 color="var(--fg-3)"
                 style={{
-                  transform: detent === "full" ? "rotate(180deg)" : "none",
+                  transform: detent === "full" ? "none" : "rotate(180deg)",
                   transition: "transform .2s ease",
                 }}
               />
