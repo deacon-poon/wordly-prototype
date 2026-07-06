@@ -329,10 +329,10 @@ export default function EngagementApp({
               zIndex: 8,
               display: "flex",
               flexDirection: "column",
-              // Flush to the page's right edge (Graham) — no outer right margin; the
-              // small left value keeps the panel a hair off the transcript column.
               padding:
-                device === "desktop" ? "96px 0 18px 2px" : "84px 0 16px 2px",
+                device === "desktop"
+                  ? "96px 18px 18px 2px"
+                  : "84px 16px 16px 2px",
             }}
           >
             <div
