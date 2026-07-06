@@ -202,9 +202,9 @@ export function HighlightsList({
             zIndex: 5,
             display: "inline-flex",
             alignItems: "center",
-            justifyContent: "center",
-            width: 24,
-            height: 24,
+            gap: 3,
+            height: 22,
+            padding: "0 6px 0 7px",
             borderRadius: 999,
             background: "#fff",
             border: `1px solid ${chipR.cbdr}`,
@@ -213,6 +213,8 @@ export function HighlightsList({
           }}
         >
           <Icon d={chipR.icon} size={13} color={chipR.c} />
+          {/* chevron signals the reaction is changeable (tap → picker) */}
+          <Icon d={ICON.chevron} size={11} color={chipR.c} />
         </button>
 
         {selected ? (
