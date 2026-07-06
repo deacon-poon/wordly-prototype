@@ -127,7 +127,6 @@ export function HighlightsList({
       fontSize: 14,
       lineHeight: 1.45,
       color: "var(--fg-1)",
-      marginBottom: 10,
       // Clears the ✕ (top inline-end) even when RTL text starts at that corner.
       paddingInlineEnd: 28,
     };
@@ -183,34 +182,38 @@ export function HighlightsList({
         <div dir="auto" style={textStyle}>
           {b.text}
         </div>
-        {/* Current reaction chip — bottom inline-end, matching the bubble's corner
-            placement. The card keeps this height even while the picker is open. */}
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button
-            ref={hapticRef}
-            className={`${styles.morePill} ${styles.hitArea}`}
-            onClick={() => {
-              haptic("light");
-              setEditingId(selected ? null : s.id);
-            }}
-            aria-label={`Reaction: ${chipR.l}. Tap to change.`}
-            aria-expanded={selected}
-            title="Change reaction"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "4px 8px 4px 9px",
-              borderRadius: 999,
-              border: `1px solid ${chipR.cbdr}`,
-              background: chipR.cbg,
-              cursor: "pointer",
-            }}
-          >
-            <Icon d={chipR.icon} size={15} color={chipR.c} />
-            <Icon d={ICON.chevron} size={12} color={chipR.c} />
-          </button>
-        </div>
+        {/* Reaction chip — a corner badge unified with the transcript bubble's chip
+            (same white circle + coloured ring, bottom inline-end, overlapping the
+            edge). Tapping it opens the inline picker below. */}
+        <button
+          ref={hapticRef}
+          className={styles.rxChip}
+          onClick={() => {
+            haptic("light");
+            setEditingId(selected ? null : s.id);
+          }}
+          aria-label={`Reaction: ${chipR.l}. Tap to change.`}
+          aria-expanded={selected}
+          title="Change reaction"
+          style={{
+            position: "absolute",
+            bottom: -9,
+            insetInlineEnd: -7,
+            zIndex: 5,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 24,
+            height: 24,
+            borderRadius: 999,
+            background: "#fff",
+            border: `1px solid ${chipR.cbdr}`,
+            boxShadow: "var(--shadow-sm)",
+            cursor: "pointer",
+          }}
+        >
+          <Icon d={chipR.icon} size={13} color={chipR.c} />
+        </button>
 
         {selected ? (
           /* Picker: the same frosted pill as the transcript panel, OVERLAID on the
