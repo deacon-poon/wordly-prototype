@@ -146,28 +146,46 @@ export function Header({
         >
           <SelectTrigger
             aria-label="Change language"
-            // Button states per the Wordly DS outline button (Figma 906-2161):
-            // hover = accent-green-100 (#bbf7cb), active/open = accent-green-50,
-            // gray border and regular text unchanged.
+            // Button states per the Wordly DS menu style guide (Figma 911-1868):
+            // hover = accent-green-100 (#bbf7cb), pressed = accent-green-200
+            // (#84f1a2); gray border + regular text unchanged.
             // NB: plain var() — inside the feature root these tokens are hex
             // (engagement.module.css), so hsl(var()) would not resolve.
-            className="h-11 w-auto shrink-0 gap-2 rounded-lg bg-white text-sm font-medium transition-colors hover:bg-[var(--accent-green-100)] active:bg-[var(--accent-green-50)]"
-            // Open state inline (deterministic over utility-order): green-50 fill.
+            className="h-11 w-auto shrink-0 gap-2 rounded-lg bg-white text-sm font-medium transition-colors hover:bg-[var(--accent-green-100)] active:bg-[var(--accent-green-200)]"
+            // While open, hold the hover tint (green-100) so the trigger reads active.
             style={
-              pickerOpen ? { background: "var(--accent-green-50)" } : undefined
+              pickerOpen ? { background: "var(--accent-green-100)" } : undefined
             }
           >
             <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
             <span dir="auto">{NATIVE_LABEL[lang] ?? lang}</span>
           </SelectTrigger>
-          <SelectContent className="max-h-[340px] min-w-[248px]">
+          <SelectContent
+            className="max-h-[340px] min-w-[248px]"
+            // Radix portals the menu to <body>, OUTSIDE the feature .root, so the
+            // scoped green tokens aren't in scope here — re-declare them on the menu
+            // so the item state classes (var(--accent-green-*)) resolve. Values mirror
+            // engagement.module.css / the Wordly DS.
+            style={
+              {
+                "--accent-green-50": "#dafbe4",
+                "--accent-green-100": "#bbf7cb",
+                "--accent-green-200": "#84f1a2",
+                "--fg-1": "#121416",
+              } as React.CSSProperties
+            }
+          >
             {LANGS.map((L) => (
               <SelectItem
                 key={L[0]}
                 value={L[0]}
-                // Hover/highlight in Wordly's ACCENT GREEN (secondary), not the
-                // default blue — scoped here, not in the shared Select.
-                className="pr-3 [&>span:last-child]:w-full focus:bg-[hsl(var(--accent-green-50))] focus:text-[hsl(var(--accent-green-900))]"
+                // Item states per the Wordly DS menu style guide (Figma 911-1868),
+                // in ACCENT GREEN (secondary), not the default blue — scoped here,
+                // not in the shared Select. Radix marks the hovered/keyboard item with
+                // `data-highlighted` (NOT :focus), so target that. Plain var() (hex
+                // tokens); `!` beats the shared Select's base focus:bg-accent.
+                //   hover/highlight → green-100 · pressed → green-200 · selected → green-50
+                className="rounded-[4px] pr-3 [&>span:last-child]:w-full data-[highlighted]:!bg-[var(--accent-green-100)] data-[highlighted]:!text-[var(--fg-1)] active:!bg-[var(--accent-green-200)] data-[highlighted]:active:!bg-[var(--accent-green-200)] data-[state=checked]:bg-[var(--accent-green-50)]"
               >
                 <span className="flex w-full items-center justify-between gap-6">
                   <span>{L[0]}</span>
