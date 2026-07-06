@@ -19,10 +19,29 @@ export const COACH_META: Record<
   b4: { badge: "B4", title: "Slim static hint" },
 };
 
-const GESTURE = "Tap any line to save it · press & hold to react";
+/**
+ * Coaching copy is phrased for the pointer the attendee actually has (Justin):
+ *  - fine pointer / hover (desktop): "Click … Hover to react"
+ *  - touch (mobile): "Tap … Long press to react"
+ */
+function useFinePointer() {
+  const [fine, setFine] = useState(false);
+  useEffect(() => {
+    setFine(
+      window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
+    );
+  }, []);
+  return fine;
+}
+
+const gestureLine = (fine: boolean) =>
+  fine
+    ? "Click a speech bubble to save it · Hover to react"
+    : "Tap a speech bubble to save it · Long press to react";
 
 /** B1 empty-state — the how-to card shown inside My Highlights until the first save. */
 export function CoachPanelCard() {
+  const fine = useFinePointer();
   return (
     <div
       dir="auto"
@@ -62,10 +81,10 @@ export function CoachPanelCard() {
         }}
       >
         <li>
-          <strong>Tap any line</strong> in the transcript to save it here.
+          <strong>{fine ? "Click" : "Tap"} a speech bubble</strong> to save it.
         </li>
         <li>
-          <strong>Press &amp; hold</strong> a line (or tap its chip) to react.
+          <strong>{fine ? "Hover" : "Long press"}</strong> to react.
         </li>
       </ul>
       <div style={{ marginTop: 9, fontSize: 13, color: "var(--fg-3)" }}>
@@ -89,6 +108,7 @@ export function Coach({
 }) {
   const [dismissed, setDismissed] = useState(false);
   const hapticRef = useHapticRef();
+  const fine = useFinePointer();
 
   // B2 auto-dismisses once the user saves their first line.
   useEffect(() => {
@@ -123,7 +143,7 @@ export function Coach({
           dir="auto"
           style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }}
         >
-          {GESTURE}
+          {gestureLine(fine)}
         </span>
         <button
           ref={hapticRef}
@@ -231,10 +251,11 @@ export function Coach({
               marginBottom: 16,
             }}
           >
-            <strong>Tap any line</strong> to keep it in My Highlights.
+            <strong>{fine ? "Click" : "Tap"} a speech bubble</strong> to keep it
+            in My Highlights.
             <br />
-            <strong>Press &amp; hold</strong> a line to react with 👍 💡 ❓ and
-            more.
+            <strong>{fine ? "Hover" : "Long press"}</strong> to react with 👍 💡
+            ❓ and more.
           </div>
           <button
             ref={hapticRef}
@@ -294,7 +315,7 @@ export function Coach({
         dir="auto"
         style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-2)" }}
       >
-        {GESTURE}
+        {gestureLine(fine)}
       </span>
     </div>
   );

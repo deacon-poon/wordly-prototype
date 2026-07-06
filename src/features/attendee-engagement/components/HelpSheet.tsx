@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Overlay } from "./Overlay";
 import { ICON } from "../lib/reactions-data";
 
-const HELP_QA: [string, string][] = [
+/** FAQ, phrased for the attendee's pointer (fine/hover = desktop verbs). */
+const helpQA = (fine: boolean): [string, string][] => [
   [
     "How do I turn on the sound?",
     "To listen to the translation as spoken speech, tap the volume icon near the language name.",
@@ -12,7 +14,9 @@ const HELP_QA: [string, string][] = [
   ],
   [
     "How do I save a moment?",
-    "Tap a speech bubble to save it to My Highlights. Long-press a bubble (or hover on desktop) to react with an emoji.",
+    fine
+      ? "Click a speech bubble to save it to My Highlights. Hover a bubble to react with an emoji."
+      : "Tap a speech bubble to save it to My Highlights. Long press a bubble to react with an emoji.",
   ],
   [
     "Can I capture a transcript?",
@@ -34,6 +38,13 @@ export function HelpSheet({
   onClose: () => void;
   compact?: boolean;
 }) {
+  const [fine, setFine] = useState(false);
+  useEffect(() => {
+    setFine(
+      window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
+    );
+  }, []);
+  const HELP_QA = helpQA(fine);
   return (
     <Overlay
       open={open}
