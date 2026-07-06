@@ -54,7 +54,6 @@ export function TranscriptBubble({
   count,
   done,
   isLatest,
-  audioOn = false,
   hl,
   showName,
   showCaret,
@@ -69,8 +68,6 @@ export function TranscriptBubble({
   count: number;
   done: boolean;
   isLatest: boolean;
-  /** TTS on: the latest (currently-spoken) line shows an animated speaking cue. */
-  audioOn?: boolean;
   hl: Highlights;
   showName: boolean;
   showCaret: boolean;
@@ -495,29 +492,6 @@ export function TranscriptBubble({
           >
             <Icon d={chipR.icon} size={13} color={chipR.c} />
           </button>
-        ) : null}
-
-        {/* TTS "reading aloud" cue — a thin animated brand-gradient accent under the
-            ACTIVE (latest) line, shown only while audio is on. Reuses the app's
-            signature gradient motif (highlights halo / mobile aura) so the speaking
-            state extends the existing visual language instead of adding a new
-            component. Not a bubble border/background/shadow (those were rejected). */}
-        {audioOn && isLatest ? (
-          <>
-            <span aria-hidden className={styles.ttsLine} />
-            <span
-              style={{
-                position: "absolute",
-                width: 1,
-                height: 1,
-                overflow: "hidden",
-                clip: "rect(0 0 0 0)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Reading aloud
-            </span>
-          </>
         ) : null}
       </div>
     </div>

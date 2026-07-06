@@ -187,9 +187,9 @@ export function Header({
             haptic("selection");
             setAudio(!audio);
           }}
-          aria-label={audio ? "Audio on" : "Audio off"}
+          aria-label={audio ? "Audio on, reading aloud" : "Audio off"}
           title={audio ? "Audio on" : "Audio off"}
-          className={audio ? undefined : styles.iconBtn}
+          className={audio ? styles.audioPulse : styles.iconBtn}
           style={{
             width: 38,
             height: 38,

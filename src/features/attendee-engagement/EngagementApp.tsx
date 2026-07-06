@@ -323,7 +323,6 @@ export default function EngagementApp({
             onRail={openRail}
             onHoverOpen={openRail}
             onHoverClose={scheduleRailClose}
-            audioOn={audio}
           />
           <div
             style={{
@@ -536,7 +535,6 @@ export default function EngagementApp({
           onRail={openRail}
           onHoverOpen={openRail}
           onHoverClose={scheduleRailClose}
-          audioOn={audio}
         />
       </div>
       <Header
