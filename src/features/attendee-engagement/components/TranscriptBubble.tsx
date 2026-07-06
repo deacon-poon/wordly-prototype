@@ -497,52 +497,27 @@ export function TranscriptBubble({
           </button>
         ) : null}
 
-        {/* TTS "reading aloud" cue — a speaker + live equalizer pill sitting in the
-            gutter just past the bubble's inline-end. Only the ACTIVE (latest) line
-            shows it, and only while audio is on. Deliberately a separate adornment,
-            not a change to the bubble's border/background/shadow (those were rejected:
-            a bubble drop shadow reads as an interactive hover). */}
+        {/* TTS "reading aloud" cue — a thin animated brand-gradient accent under the
+            ACTIVE (latest) line, shown only while audio is on. Reuses the app's
+            signature gradient motif (highlights halo / mobile aura) so the speaking
+            state extends the existing visual language instead of adding a new
+            component. Not a bubble border/background/shadow (those were rejected). */}
         {audioOn && isLatest ? (
-          <div
-            aria-label="Reading this line aloud"
-            title="Reading aloud"
-            style={{
-              position: "absolute",
-              insetInlineStart: "calc(100% + 8px)",
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 4,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "5px 9px",
-              borderRadius: 999,
-              background: "#fff",
-              border: "1px solid var(--border-brand)",
-              boxShadow: "var(--shadow-xs)",
-              pointerEvents: "none",
-              whiteSpace: "nowrap",
-            }}
-          >
-            <Icon d={ICON.speaker} size={14} color="var(--primary-blue-600)" />
+          <>
+            <span aria-hidden className={styles.ttsLine} />
             <span
-              aria-hidden
               style={{
-                display: "flex",
-                alignItems: "flex-end",
-                gap: 2,
-                height: 13,
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0 0 0 0)",
+                whiteSpace: "nowrap",
               }}
             >
-              {[9, 13, 7].map((h, i) => (
-                <span
-                  key={i}
-                  className={styles.ttsBar}
-                  style={{ height: h, animationDelay: `${i * 0.15}s` }}
-                />
-              ))}
+              Reading aloud
             </span>
-          </div>
+          </>
         ) : null}
       </div>
     </div>

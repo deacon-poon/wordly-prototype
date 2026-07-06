@@ -150,26 +150,33 @@
       transform: translateX(0) scale(1);
     }
   }
-  /* TTS "reading aloud" equalizer bars beside the active bubble. */
-  @keyframes wEngEq {
-    0%,
-    100% {
-      transform: scaleY(0.4);
-    }
-    50% {
-      transform: scaleY(1);
-    }
-  }
 }
 
-/* One bar of the TTS speaking indicator — height set inline per bar; the animation
-   pulses it around its own baseline so the trio reads as a live audio equalizer. */
-.ttsBar {
-  width: 2.5px;
-  border-radius: 2px;
-  background: var(--primary-blue-500);
-  transform-origin: center bottom;
-  animation: wEngEq 0.9s ease-in-out infinite;
+/* TTS "reading aloud" cue — a thin animated brand-gradient accent hugging the bottom
+   of the active bubble. Reuses the app's signature gradient + ribbon-shift motion
+   (same as .shinyBorder / .auraGlow) so the speaking state reads as part of the
+   existing visual language, not a bolted-on component. The flowing gradient reads as
+   live playback rather than a static border/hover/selected state. */
+.ttsLine {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -3px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #3cff52,
+    #00d0ff,
+    #017cff,
+    #00d0ff,
+    #3cff52
+  );
+  background-size: 220% 100%;
+  animation: wEngRibbonShift 3s linear infinite;
+  filter: blur(1.5px);
+  opacity: 0.85;
+  pointer-events: none;
 }
 
 /* Reaction chip (corner) + emoji buttons — hover/active micro-interactions. */
