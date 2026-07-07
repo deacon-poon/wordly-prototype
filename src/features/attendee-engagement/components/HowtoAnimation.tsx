@@ -51,6 +51,9 @@ function CornerChip({ r, className }: { r: Reaction; className: string }) {
 }
 
 export function HowtoAnimation() {
+  // Fixed 210×150 stage scaled down so the whole coach card (art + instructions) fits
+  // the mobile bottom-sheet peek without clipping. DOM/vector, so it stays crisp.
+  const S = 0.74;
   const ring: CSSProperties = {
     position: "absolute",
     left: 43,
@@ -65,107 +68,120 @@ export function HowtoAnimation() {
       aria-hidden
       style={{
         position: "relative",
-        width: 210,
-        height: 150,
+        width: 210 * S,
+        height: 150 * S,
         margin: "0 auto",
+        overflow: "visible",
       }}
     >
-      {/* the caption line (transcript bubble) */}
       <div
         style={{
           position: "absolute",
-          left: 30,
-          top: 60,
-          width: 150,
-          height: 58,
-          background: "#fff",
-          boxShadow: "var(--shadow-xs)",
-          ...RADII,
+          top: 0,
+          left: 0,
+          width: 210,
+          height: 150,
+          transform: `scale(${S})`,
+          transformOrigin: "top left",
         }}
       >
-        {/* placeholder caption text (abstract bars — no words) */}
+        {/* the caption line (transcript bubble) */}
         <div
-          style={{
-            padding: "13px 14px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 7,
-          }}
-        >
-          <div
-            style={{
-              height: 7,
-              width: "82%",
-              borderRadius: 4,
-              background: "var(--gray-200)",
-            }}
-          />
-          <div
-            style={{
-              height: 7,
-              width: "56%",
-              borderRadius: 4,
-              background: "var(--gray-200)",
-            }}
-          />
-        </div>
-
-        {/* reaction rail — floats above the bubble (same frosted pill as the real UI) */}
-        <div
-          className={styles.hsRail}
           style={{
             position: "absolute",
-            bottom: "calc(100% + 8px)",
-            left: "50%",
-            marginLeft: -83,
-            width: 166,
-            display: "flex",
-            gap: 4,
-            padding: 5,
-            borderRadius: 999,
-            background:
-              "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
-            border: "1px solid rgba(255,255,255,.65)",
-            boxShadow: "0 10px 24px rgba(0,99,204,.26)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
+            left: 30,
+            top: 60,
+            width: 150,
+            height: 58,
+            background: "#fff",
+            boxShadow: "var(--shadow-xs)",
+            ...RADII,
           }}
         >
-          {REACT5.map((opt, i) => (
-            <span
-              key={opt.e}
-              // Insight (index 2) is the one that gets "picked" — it pulses selected.
-              className={i === 2 ? styles.hsReactBtn : undefined}
+          {/* placeholder caption text (abstract bars — no words) */}
+          <div
+            style={{
+              padding: "13px 14px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 7,
+            }}
+          >
+            <div
               style={{
-                width: 28,
-                height: 28,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 999,
-                background: "#fff",
-                border: "1px solid rgba(255,255,255,.7)",
-                boxShadow: "0 1px 3px rgba(15,23,42,.14)",
+                height: 7,
+                width: "82%",
+                borderRadius: 4,
+                background: "var(--gray-200)",
               }}
-            >
-              <Icon d={opt.icon} size={16} color={opt.c} />
-            </span>
-          ))}
+            />
+            <div
+              style={{
+                height: 7,
+                width: "56%",
+                borderRadius: 4,
+                background: "var(--gray-200)",
+              }}
+            />
+          </div>
+
+          {/* reaction rail — floats above the bubble (same frosted pill as the real UI) */}
+          <div
+            className={styles.hsRail}
+            style={{
+              position: "absolute",
+              bottom: "calc(100% + 8px)",
+              left: "50%",
+              marginLeft: -83,
+              width: 166,
+              display: "flex",
+              gap: 4,
+              padding: 5,
+              borderRadius: 999,
+              background:
+                "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
+              border: "1px solid rgba(255,255,255,.65)",
+              boxShadow: "0 10px 24px rgba(0,99,204,.26)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+            }}
+          >
+            {REACT5.map((opt, i) => (
+              <span
+                key={opt.e}
+                // Insight (index 2) is the one that gets "picked" — it pulses selected.
+                className={i === 2 ? styles.hsReactBtn : undefined}
+                style={{
+                  width: 28,
+                  height: 28,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 999,
+                  background: "#fff",
+                  border: "1px solid rgba(255,255,255,.7)",
+                  boxShadow: "0 1px 3px rgba(15,23,42,.14)",
+                }}
+              >
+                <Icon d={opt.icon} size={16} color={opt.c} />
+              </span>
+            ))}
+          </div>
+
+          {/* tap ripple + long-press/hold ring, centered on the line */}
+          <span
+            className={styles.hsTap}
+            style={{ ...ring, border: "5px solid var(--primary-blue-400)" }}
+          />
+          <span
+            className={styles.hsHold}
+            style={{ ...ring, border: "4px solid var(--primary-blue-300)" }}
+          />
+
+          {/* corner chip: saves as 📌 first, then becomes the Insight reaction */}
+          <CornerChip r={SAVE} className={styles.hsChipSave} />
+          <CornerChip r={INSIGHT} className={styles.hsChipReact} />
         </div>
-
-        {/* tap ripple + long-press/hold ring, centered on the line */}
-        <span
-          className={styles.hsTap}
-          style={{ ...ring, border: "5px solid var(--primary-blue-400)" }}
-        />
-        <span
-          className={styles.hsHold}
-          style={{ ...ring, border: "4px solid var(--primary-blue-300)" }}
-        />
-
-        {/* corner chip: saves as 📌 first, then becomes the Insight reaction */}
-        <CornerChip r={SAVE} className={styles.hsChipSave} />
-        <CornerChip r={INSIGHT} className={styles.hsChipReact} />
       </div>
     </div>
   );
