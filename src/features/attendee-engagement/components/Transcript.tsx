@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   TRANSCRIPT,
   scriptFor,
@@ -67,17 +67,20 @@ export function Transcript({
   // Belt-and-braces re-pin: when already at the bottom, snap scrollTop to 0 (the
   // newest line) after new words arrive or the area resizes (e.g. a sheet detent
   // change), in case the browser's native column-reverse anchoring lags a frame.
+  // Guarded — a redundant scrollTop write every word-tick interrupts iOS momentum
+  // scrolling/bounce and reads as jank.
   useEffect(() => {
     if (!atBottom) return;
     const el = scrollRef.current;
-    if (el) el.scrollTop = 0;
+    if (el && el.scrollTop !== 0) el.scrollTop = 0;
   }, [eng.bi, eng.wi, atBottom, scrollRef]);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(() => {
-      if (atBottom && scrollRef.current) scrollRef.current.scrollTop = 0;
+      const cur = scrollRef.current;
+      if (atBottom && cur && cur.scrollTop !== 0) cur.scrollTop = 0;
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -91,6 +94,13 @@ export function Transcript({
   };
 
   const latestId = TRANSCRIPT[last]?.id;
+
+  // Stable, id-taking callbacks so the memoized bubbles bail out of the word-tick
+  // re-render storm (fresh per-bubble closures would defeat React.memo entirely).
+  const onRailChange = useCallback(
+    (id: number, open: boolean) => onRail(open ? id : null),
+    [onRail]
+  );
 
   return (
     <div
@@ -110,9 +120,9 @@ export function Transcript({
           // Newest line pinned to the bottom: render bubbles newest-first (below) and
           // reverse the column so DOM-first sits at the bottom and packs upward.
           flexDirection: "column-reverse",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0, #000 18px)",
-          maskImage: "linear-gradient(to bottom, transparent 0, #000 18px)",
+          // NO mask on the scroller: masking a scroll container forces expensive
+          // per-frame compositing on mobile Safari (measured scroll jank). The
+          // header's gradient scrim already fades content at the top edge.
         }}
       >
         {Array.from({ length: last + 1 }, (_, idx) => {
@@ -131,14 +141,16 @@ export function Transcript({
               count={idx < eng.bi ? 9999 : eng.wi}
               done={idx < eng.bi}
               isLatest={b.id === latestId}
-              hl={hl}
+              saved={hl.get(b.id)}
+              onToggleSave={hl.toggleSave}
+              onReact={hl.react}
               showName={idx === 0}
               showCaret={speakerChanged && idx !== 0}
               maxWidth={maxWidth}
               fontSize={fontSize}
               railOpen={openRailId === b.id}
-              onRail={(open) => onRail(open ? b.id : null)}
-              onHoverOpen={() => onHoverOpen(b.id)}
+              onRailChange={onRailChange}
+              onHoverOpen={onHoverOpen}
               onHoverClose={onHoverClose}
             />
           );

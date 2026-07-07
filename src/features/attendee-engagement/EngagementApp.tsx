@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useViewportSize } from "@/hooks/use-mobile";
 import { Icon } from "./lib/icons";
 import { ICON } from "./lib/reactions-data";
@@ -183,24 +183,17 @@ export default function EngagementApp({
   // A short hover-close delay lets the pointer travel from a line to the fixed rail
   // (which sits away from the bubble) without the rail dismissing mid-journey.
   const railTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clearRailTimer = () => {
-    if (railTimer.current) {
-      clearTimeout(railTimer.current);
-      railTimer.current = null;
-    }
-  };
-  const openRail = (id: number | null) => {
-    clearRailTimer();
+  // useCallback-stable: these feed the memoized bubbles — fresh identities every
+  // word-tick would defeat React.memo and re-render the whole transcript 5×/s.
+  const openRail = useCallback((id: number | null) => {
+    if (railTimer.current) clearTimeout(railTimer.current);
+    railTimer.current = null;
     setRailId(id);
-  };
-  const closeRail = () => {
-    clearRailTimer();
-    setRailId(null);
-  };
-  const scheduleRailClose = () => {
-    clearRailTimer();
+  }, []);
+  const scheduleRailClose = useCallback(() => {
+    if (railTimer.current) clearTimeout(railTimer.current);
     railTimer.current = setTimeout(() => setRailId(null), 240);
-  };
+  }, []);
 
   const [detent, setDetent] = useState<DetentKey>(
     coach === "b1" ? "peek" : "collapsed"
@@ -426,7 +419,6 @@ export default function EngagementApp({
           audio={audio}
           onAudio={setAudio}
         />
-        {liveBadge}
         {liveBadge}
         <Coach variant={coach} hasSaved={hl.count > 0} />
         <ShareSheet

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { Bubble } from "../data/transcript";
 import { SPK } from "../data/transcript";
@@ -6,13 +6,13 @@ import { ICON_FOR, ICON, REACT5 } from "../lib/reactions-data";
 import { Icon } from "../lib/icons";
 import { Words } from "./Words";
 import {
-  haptic,
   pulseHaptic,
   pulseIOSHaptic,
   hapticTrigger,
   useHapticRef,
+  haptic,
 } from "../lib/haptics";
-import type { Highlights } from "../lib/useHighlights";
+import type { SavedItem } from "../lib/useHighlights";
 import styles from "../engagement.module.css";
 
 // Speech-bubble corners: the small corner sits at the top inline-start (the speaker
@@ -30,6 +30,13 @@ const RADII: CSSProperties = {
 const MAX_DRAG = 70; // visual cap — the bubble never travels further than this
 const SWIPE_THRESHOLD = 60; // raw finger distance (px) needed to commit
 const MOVE_SLOP = 8;
+// A near-diagonal flick is a SCROLL, not a swipe: horizontal must clearly dominate
+// (1.5×) before we claim the gesture, otherwise scrolls that start on a bubble get
+// stolen and rubber-band the bubble sideways — the "janky scroll on bubbles" bug.
+const H_AXIS_BIAS = 1.5;
+// Press-lift is deferred a beat so a scroll flick that starts on a bubble never
+// paints the lift (a re-render + shadow paint at the most frame-critical moment).
+const PRESS_LIFT_MS = 80;
 // Rubber-band resistance: the bubble eases toward MAX_DRAG and never exceeds it, so a
 // long finger drag still only nudges the bubble — it feels like pulling against tension
 // rather than the bubble sticking to the finger.
@@ -42,19 +49,24 @@ const rubber = (dx: number) => {
  * A single transcript line.
  *  - one click  → save / un-save (plain 📌)
  *  - long-press, swipe-right, hover (desktop), or tapping the corner chip → open the
- *    reaction rail. The rail is a single screen-fixed bar (see ReactionRail); this
- *    bubble marks itself as its target with an elevated "selected" highlight (a
- *    stronger lift + a brand-blue ring) so it's clear which line the rail acts on.
+ *    reaction rail; this bubble marks itself as its target with an elevated
+ *    "selected" highlight (a stronger lift + a brand-blue ring).
  *  - saved + reacted lines share one treatment: the bubble stays white with a
- *    coloured border in the state's colour + a corner icon chip. Ported from the
- *    "Current version" board.
+ *    coloured border in the state's colour + a corner icon chip.
+ *
+ * PERF: memoized — the transcript re-renders every word-tick (~5×/s), so with dozens
+ * of lines on screen the bubbles MUST bail out. All props are stable except the
+ * streaming line's `count` and the targeted line's `railOpen`/`saved`; callbacks are
+ * id-taking and useCallback-stable in the parents.
  */
-export function TranscriptBubble({
+export const TranscriptBubble = memo(function TranscriptBubble({
   bubble,
   count,
   done,
   isLatest,
-  hl,
+  saved,
+  onToggleSave,
+  onReact,
   showName,
   showCaret,
   dir = "ltr",
@@ -62,7 +74,7 @@ export function TranscriptBubble({
   maxWidth = "80%",
   fontSize = 14.5,
   railOpen,
-  onRail,
+  onRailChange,
   onHoverOpen,
   onHoverClose,
 }: {
@@ -70,7 +82,10 @@ export function TranscriptBubble({
   count: number;
   done: boolean;
   isLatest: boolean;
-  hl: Highlights;
+  /** This line's saved/reaction state (undefined = not saved). Value-stable. */
+  saved: SavedItem | undefined;
+  onToggleSave: (id: number) => void;
+  onReact: (id: number, tag: string) => void;
   showName: boolean;
   showCaret: boolean;
   /** This line's own direction — bubbles can mix LTR/RTL after a language switch. */
@@ -81,9 +96,9 @@ export function TranscriptBubble({
   fontSize?: number;
   /** Whether the shared rail is currently targeting THIS line (drives the highlight). */
   railOpen: boolean;
-  onRail: (open: boolean) => void;
+  onRailChange: (id: number, open: boolean) => void;
   /** Desktop hover opens the rail on this line; leaving schedules a close. */
-  onHoverOpen?: () => void;
+  onHoverOpen?: (id: number) => void;
   onHoverClose?: () => void;
 }) {
   const [hover, setHover] = useState(false);
@@ -99,6 +114,7 @@ export function TranscriptBubble({
   const [dragX, setDragX] = useState(0);
   const [releasing, setReleasing] = useState(false);
   const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lpFired = useRef(false);
   const swipedRef = useRef(false);
   const dragRef = useRef<{
@@ -112,16 +128,19 @@ export function TranscriptBubble({
   const hapticRef = useHapticRef();
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  const onRail = (open: boolean) => onRailChange(bubble.id, open);
+
   // Dismiss the embedded reaction bar on outside pointer-down or Escape. Attached on
   // the next tick so the gesture that opened it (long-press release / swipe) doesn't
   // instantly close it again.
   useEffect(() => {
     if (!railOpen) return;
     const onDown = (e: PointerEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) onRail(false);
+      if (!wrapRef.current?.contains(e.target as Node))
+        onRailChange(bubble.id, false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onRail(false);
+      if (e.key === "Escape") onRailChange(bubble.id, false);
     };
     const t = setTimeout(() => {
       document.addEventListener("pointerdown", onDown, true);
@@ -132,9 +151,8 @@ export function TranscriptBubble({
       document.removeEventListener("pointerdown", onDown, true);
       document.removeEventListener("keydown", onKey);
     };
-  }, [railOpen, onRail]);
+  }, [railOpen, onRailChange, bubble.id]);
 
-  const saved = hl.get(bubble.id);
   const r = saved ? ICON_FOR[saved.tag] : null;
   const chipR = r ?? ICON_FOR["📌"];
   const reacted = !!saved && saved.tag !== "📌";
@@ -151,7 +169,7 @@ export function TranscriptBubble({
   const selected = railOpen;
 
   // Hover / long-press / selection all lift the bubble. Selection lifts hardest (it's
-  // the active target); a press lifts next (immediate "it registered" feedback).
+  // the active target); a press lifts next.
   const lifted = hover || pressing || dragX > 0 || selected;
   const liftShadow = selected
     ? "0 16px 40px rgba(1,124,255,.32)"
@@ -195,6 +213,11 @@ export function TranscriptBubble({
     userSelect: "none",
   };
 
+  const clearTimers = () => {
+    clearTimeout(lpTimer.current as never);
+    clearTimeout(pressTimer.current as never);
+  };
+
   // A tap saves; but suppress it if the gesture was a long-press or a swipe.
   const onBubbleClick = () => {
     if (lpFired.current || swipedRef.current) {
@@ -202,7 +225,7 @@ export function TranscriptBubble({
       swipedRef.current = false;
       return;
     }
-    hl.toggleSave(bubble.id);
+    onToggleSave(bubble.id);
     // A tap that saves also dismisses an open reaction rail — e.g. long-press to open
     // the rail, then tap the line to save: the rail should close, not linger.
     if (railOpen) onRail(false);
@@ -215,12 +238,15 @@ export function TranscriptBubble({
     lpFired.current = false;
     swipedRef.current = false;
     setReleasing(false);
-    setPressing(true); // immediate lift feedback the moment you hold
-    haptic("light"); // Android tick on press-start (iOS taps via the overlay)
+    // Deferred press-lift: a scroll flick starting on the bubble abandons the gesture
+    // within PRESS_LIFT_MS, so scrolling never pays for a lift render/paint. A real
+    // hold still gets feedback fast. (No vibrate here — scroll-starts must be silent;
+    // the tap/long-press paths carry their own haptics.)
+    clearTimers();
+    pressTimer.current = setTimeout(() => setPressing(true), PRESS_LIFT_MS);
     // NOTE: pointer capture is claimed only once we know it's a horizontal swipe (in
     // onMove) — capturing on pointerdown would retarget the click to this div and the
     // iOS haptic overlay (the <input switch>) would never toggle on tap/long-press.
-    clearTimeout(lpTimer.current as never);
     lpTimer.current = setTimeout(() => {
       lpFired.current = true;
       pulseHaptic("light"); // subtle tap as the reaction rail renders (iOS + Android)
@@ -237,8 +263,10 @@ export function TranscriptBubble({
       d.axis === null &&
       (Math.abs(dx) > MOVE_SLOP || Math.abs(dy) > MOVE_SLOP)
     ) {
-      d.axis = Math.abs(dx) > Math.abs(dy) ? "h" : "v";
-      clearTimeout(lpTimer.current as never); // any drag cancels the hold timer
+      // Horizontal must clearly dominate to count as a swipe — near-diagonal
+      // movement is a scroll and must stay one.
+      d.axis = Math.abs(dx) > Math.abs(dy) * H_AXIS_BIAS ? "h" : "v";
+      clearTimers(); // any drag cancels the hold + pending press-lift
       if (d.axis === "v") {
         // vertical = scroll; abandon the gesture and let the list scroll
         dragRef.current = null;
@@ -260,7 +288,7 @@ export function TranscriptBubble({
   };
 
   const endGesture = (commit: boolean) => {
-    clearTimeout(lpTimer.current as never);
+    clearTimers();
     const d = dragRef.current;
     const wasSwipe = d?.axis === "h";
     if (wasSwipe && commit && (d?.dx ?? 0) >= SWIPE_THRESHOLD) {
@@ -326,7 +354,7 @@ export function TranscriptBubble({
         // gap to lose hover across — the bar is anchored to the bubble itself.
         onMouseEnter={() => {
           setHover(true);
-          if (canHover) onHoverOpen?.();
+          if (canHover) onHoverOpen?.(bubble.id);
         }}
         onMouseLeave={() => {
           setHover(false);
@@ -439,7 +467,7 @@ export function TranscriptBubble({
                   title={opt.l}
                   aria-label={opt.l}
                   onClick={() => {
-                    hl.react(bubble.id, opt.e);
+                    onReact(bubble.id, opt.e);
                     onRail(false);
                   }}
                   style={{
@@ -505,4 +533,4 @@ export function TranscriptBubble({
       </div>
     </div>
   );
-}
+});
