@@ -2,8 +2,95 @@ import { useEffect, useState } from "react";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { haptic, useHapticRef } from "../lib/haptics";
-import { EmptyIllustration } from "./HighlightsList";
 import styles from "../engagement.module.css";
+
+/**
+ * Instructional illustration for the "How highlights work" card: the saved SVG scene
+ * (bubble + tapping finger + bookmark) with a looping motion overlay — a tap ripple at
+ * the fingertip + a subtle press, then a "saved" glow on the bookmark. The overlays are
+ * positioned in the SVG's native 1024-space inside a fitted, cropped stage; CSS drives
+ * the loop (see engagement.module.css) and pauses under prefers-reduced-motion.
+ */
+function HowtoIllustration() {
+  const W = 190;
+  const K = W / 835; // fit the art's content box (x 110–945, y 215–815)
+  const stage: React.CSSProperties = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 1024,
+    height: 1024,
+    transform: `translate(${(-110 * K).toFixed(2)}px, ${(-215 * K).toFixed(2)}px) scale(${K})`,
+    transformOrigin: "top left",
+  };
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "relative",
+        width: W,
+        height: Math.round((W * 600) / 835),
+        margin: "2px auto 0",
+        overflow: "visible",
+      }}
+    >
+      <div style={stage}>
+        {/* base art */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/asset/illustration/highlight-reaction.svg"
+          alt=""
+          width={1024}
+          height={1024}
+          className={styles.howtoPress}
+          style={{ position: "absolute", inset: 0 }}
+        />
+        {/* saved glow on the bookmark (center ≈ 856,546) */}
+        <div
+          className={styles.howtoGlowDisc}
+          style={{
+            position: "absolute",
+            left: 771,
+            top: 461,
+            width: 170,
+            height: 170,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(closest-side, color-mix(in srgb, var(--accent-green-500) 45%, transparent), transparent)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          className={styles.howtoGlowRing}
+          style={{
+            position: "absolute",
+            left: 741,
+            top: 431,
+            width: 230,
+            height: 230,
+            borderRadius: "50%",
+            border: "9px solid var(--accent-green-500)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* tap ripple at the fingertip (center ≈ 500,405) */}
+        <div
+          className={styles.howtoRipple}
+          style={{
+            position: "absolute",
+            left: 390,
+            top: 295,
+            width: 220,
+            height: 220,
+            borderRadius: "50%",
+            border: "7px solid var(--primary-blue-400)",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 const dismissHaptic = () => haptic("selection");
 
@@ -53,7 +140,7 @@ export function CoachPanelCard() {
         color: "var(--fg-2)",
       }}
     >
-      <EmptyIllustration width={150} />
+      <HowtoIllustration />
       <div
         style={{
           display: "flex",
