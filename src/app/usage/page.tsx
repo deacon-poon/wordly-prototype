@@ -17,7 +17,16 @@
  */
 
 import * as React from "react";
-import { Download, BarChart3, FileText, Users, PanelRight } from "lucide-react";
+import {
+  Download,
+  BarChart3,
+  FileText,
+  Users,
+  PanelRight,
+  Smile,
+} from "lucide-react";
+
+import { ICON } from "@/features/attendee-engagement/lib/reactions-data";
 
 import { MainContainer } from "@/components/ui/main-container";
 import {
@@ -43,6 +52,15 @@ import { cn } from "@/lib/utils";
 // Mock data — mirrors UsageSummary (subset used by the table + record panel)
 // ---------------------------------------------------------------------------
 
+interface SessionEngagement {
+  attendeesReacted: number;
+  totalReactions: number;
+  /** Count per reaction type — keys match REACTION_META. */
+  byType: Record<ReactionKey, number>;
+  /** Transcript phrases ranked by attendee engagement (any reaction or highlight). */
+  topMoments: { text: string; count: number }[];
+}
+
 interface UsageRow {
   id: string;
   sessionTitle: string;
@@ -56,7 +74,39 @@ interface UsageRow {
   realDuration: number;
   languages: { language: string; count: number }[];
   presenters: { language: string; minutes: number }[];
+  /** Present only when the session had the Highlights setting enabled. */
+  engagement?: SessionEngagement;
 }
+
+type ReactionKey = "save" | "question" | "agree" | "insight" | "disagree";
+
+// The five attendee reactions — glyphs shared with the attendee-engagement
+// prototype (single source for the icon language). Reactions are icon + colour
+// ONLY in the UI (localization rule); names appear solely in aria-labels.
+// Colours mirror engagement.module.css — promote to global tokens when this
+// graduates past the prototype.
+const REACTION_META: {
+  key: ReactionKey;
+  label: string;
+  icon: string;
+  color: string;
+}[] = [
+  { key: "save", label: "Save", icon: ICON.lBookmark, color: "#0051a8" },
+  {
+    key: "question",
+    label: "Question",
+    icon: ICON.lQuestion,
+    color: "#6828c4",
+  },
+  { key: "agree", label: "Agree", icon: ICON.lThumbUp, color: "#0f802f" },
+  { key: "insight", label: "Insight", icon: ICON.lBulb, color: "#a15c00" },
+  {
+    key: "disagree",
+    label: "Disagree",
+    icon: ICON.lThumbDown,
+    color: "#a84600",
+  },
+];
 
 const ACTIVE_STATUS = "started";
 
@@ -109,6 +159,39 @@ const ROWS: UsageRow[] = [
       { language: "Japanese", count: 22 },
     ],
     presenters: [{ language: "English", minutes: 92 }],
+    engagement: {
+      attendeesReacted: 96,
+      totalReactions: 991,
+      byType: {
+        save: 402,
+        question: 251,
+        agree: 188,
+        insight: 129,
+        disagree: 21,
+      },
+      topMoments: [
+        {
+          text: "We're expanding the platform to twelve new languages by the end of Q3.",
+          count: 214,
+        },
+        {
+          text: "Every team will get a dedicated localization budget starting next quarter.",
+          count: 133,
+        },
+        {
+          text: "Our attendee satisfaction score is the highest it has been in three years.",
+          count: 87,
+        },
+        {
+          text: "We are opening the new APAC office in Singapore this September.",
+          count: 52,
+        },
+        {
+          text: "Headcount stays flat — no reductions are planned.",
+          count: 34,
+        },
+      ],
+    },
   },
   {
     id: "u4",
@@ -196,6 +279,25 @@ const ROWS: UsageRow[] = [
     realDuration: 84,
     languages: [{ language: "Spanish", count: 14 }],
     presenters: [{ language: "English", minutes: 84 }],
+    engagement: {
+      attendeesReacted: 27,
+      totalReactions: 239,
+      byType: { save: 88, question: 61, agree: 45, insight: 39, disagree: 6 },
+      topMoments: [
+        {
+          text: "The new glossary workflow cut our prep time from two days to two hours.",
+          count: 41,
+        },
+        {
+          text: "We'd pay for per-session engagement reports on day one.",
+          count: 33,
+        },
+        {
+          text: "Custom terminology is the main reason we renewed this year.",
+          count: 19,
+        },
+      ],
+    },
   },
   {
     id: "u10",
@@ -241,6 +343,25 @@ const ROWS: UsageRow[] = [
       { language: "Spanish", count: 9 },
     ],
     presenters: [{ language: "English", minutes: 45 }],
+    engagement: {
+      attendeesReacted: 41,
+      totalReactions: 317,
+      byType: { save: 120, question: 74, agree: 66, insight: 48, disagree: 9 },
+      topMoments: [
+        {
+          text: "ARR grew 42% year over year, ahead of plan.",
+          count: 66,
+        },
+        {
+          text: "Net revenue retention reached 118% this quarter.",
+          count: 43,
+        },
+        {
+          text: "We expect to reach break-even by the second half of next year.",
+          count: 28,
+        },
+      ],
+    },
   },
   {
     id: "u13",
@@ -331,6 +452,10 @@ function UsageRecordPanel({
           />
         </div>
 
+        {record.engagement ? (
+          <AttendeeReactions engagement={record.engagement} />
+        ) : null}
+
         <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <span className="text-primary">
             <Users className="h-4 w-4" />
@@ -379,6 +504,99 @@ function UsageRecordPanel({
         ) : null}
       </div>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Attendee Reactions — per-session engagement report (Attendee Engagement I,
+// Solution §3). Rendered only when the session ran with Highlights enabled.
+// ---------------------------------------------------------------------------
+
+function ReactionIcon({ d, color }: { d: string; color: string }) {
+  return (
+    <svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
+
+function AttendeeReactions({ engagement }: { engagement: SessionEngagement }) {
+  // Strip is ranked by count (mockup) so the most-used reaction reads first.
+  const ranked = [...REACTION_META].sort(
+    (a, b) => engagement.byType[b.key] - engagement.byType[a.key]
+  );
+  return (
+    <>
+      <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="text-primary">
+          <Smile className="h-4 w-4" />
+        </span>
+        Attendee Reactions
+      </h3>
+
+      <div className="flex flex-col">
+        <Detail
+          label="Attendees who reacted:"
+          value={engagement.attendeesReacted.toLocaleString("en-US")}
+        />
+        <Detail
+          label="Total reactions:"
+          value={engagement.totalReactions.toLocaleString("en-US")}
+        />
+      </div>
+
+      <div>
+        <span className="text-sm font-semibold">Reactions by Type</span>
+        <ul
+          aria-label="Reactions by type"
+          className="mt-2 flex list-none rounded-lg border py-3"
+        >
+          {ranked.map((r) => (
+            <li
+              key={r.key}
+              aria-label={`${r.label}: ${engagement.byType[r.key].toLocaleString("en-US")}`}
+              title={r.label}
+              className="flex flex-1 flex-col items-center gap-1.5"
+            >
+              <ReactionIcon d={r.icon} color={r.color} />
+              <span className="text-sm font-semibold tabular-nums">
+                {engagement.byType[r.key].toLocaleString("en-US")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <span className="text-sm font-semibold">Top Moments</span>
+        <ul
+          aria-label="Top moments by attendee engagement"
+          className="mt-2 flex list-none flex-col rounded-lg border p-3"
+        >
+          {engagement.topMoments.map((m, i) => (
+            <li
+              key={i}
+              className="flex items-start justify-between gap-3 border-b px-4 py-2.5 last:border-b-0"
+            >
+              <span className="min-w-0 text-sm">&ldquo;{m.text}&rdquo;</span>
+              <span className="text-sm font-semibold tabular-nums">
+                {m.count.toLocaleString("en-US")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }
 
