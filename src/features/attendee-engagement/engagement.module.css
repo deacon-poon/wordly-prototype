@@ -163,59 +163,103 @@
       box-shadow: 0 0 0 0 rgba(21, 183, 67, 0);
     }
   }
-  /* "How highlights work" instructional loop — tap ripple + press, then save glow. */
-  @keyframes howtoPress {
-    0%,
-    5%,
-    30%,
-    100% {
-      transform: scale(1);
-    }
-    17% {
-      transform: scale(0.978);
-    }
-  }
-  @keyframes howtoRipple {
+  /* "How highlights work" full-story loop (5s): tap→save, then hold→rail→react. */
+  @keyframes hsTap {
     0%,
     3% {
-      transform: scale(0.25);
+      transform: scale(0.3);
       opacity: 0;
     }
-    9% {
-      opacity: 0.9;
+    6% {
+      opacity: 0.85;
     }
-    34%,
+    16%,
     100% {
-      transform: scale(1.75);
+      transform: scale(1.5);
       opacity: 0;
     }
   }
-  @keyframes howtoGlowRing {
+  @keyframes hsHold {
     0%,
-    42% {
-      transform: scale(0.55);
+    33% {
+      transform: scale(0.45);
       opacity: 0;
     }
+    38% {
+      opacity: 0.7;
+    }
+    47%,
+    100% {
+      transform: scale(1.3);
+      opacity: 0;
+    }
+  }
+  @keyframes hsRail {
+    0%,
+    40% {
+      transform: translateY(6px);
+      opacity: 0;
+    }
+    50%,
+    72% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    80%,
+    100% {
+      transform: translateY(6px);
+      opacity: 0;
+    }
+  }
+  @keyframes hsChipSave {
+    0%,
+    11% {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    15%,
+    60% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    64%,
+    100% {
+      transform: scale(0.7);
+      opacity: 0;
+    }
+  }
+  @keyframes hsChipReact {
+    0%,
+    62% {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    67%,
+    90% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    95%,
+    100% {
+      transform: scale(0.7);
+      opacity: 0;
+    }
+  }
+  @keyframes hsReactBtn {
+    0%,
     50% {
-      opacity: 0.85;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
     }
-    80%,
+    58%,
+    66% {
+      background: var(--amber-25);
+      box-shadow: 0 0 0 2px var(--amber-300);
+    }
+    72%,
     100% {
-      transform: scale(1.7);
-      opacity: 0;
-    }
-  }
-  @keyframes howtoGlowDisc {
-    0%,
-    42%,
-    80%,
-    100% {
-      transform: scale(0.8);
-      opacity: 0;
-    }
-    61% {
-      transform: scale(1.05);
-      opacity: 0.85;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
     }
   }
 }
@@ -232,32 +276,44 @@
   }
 }
 
-/* Instructional illustration overlays (tap → save). All share one 1.8s loop so the
-   ripple, press and save-glow stay in sync. Under reduced-motion the static art shows. */
-.howtoPress {
-  animation: howtoPress 1.8s ease-in-out infinite;
-  /* transform-origin (fingertip) is set inline as a % of the element box. */
+/* "How highlights work" demo — all elements share one 5s loop so tap→save→react
+   stays in sync. Under reduced-motion, show a static composed state (rail + reaction
+   chip) with no motion. */
+.hsTap {
+  animation: hsTap 5s linear infinite;
 }
-.howtoRipple {
-  animation: howtoRipple 1.8s ease-out infinite;
+.hsHold {
+  animation: hsHold 5s linear infinite;
 }
-.howtoGlowRing {
-  animation: howtoGlowRing 1.8s ease-out infinite;
+.hsRail {
+  animation: hsRail 5s ease-in-out infinite;
 }
-.howtoGlowDisc {
-  animation: howtoGlowDisc 1.8s ease-in-out infinite;
+.hsChipSave {
+  animation: hsChipSave 5s ease-out infinite;
+}
+.hsChipReact {
+  animation: hsChipReact 5s ease-out infinite;
+}
+.hsReactBtn {
+  animation: hsReactBtn 5s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .howtoPress,
-  .howtoRipple,
-  .howtoGlowRing,
-  .howtoGlowDisc {
+  .hsTap,
+  .hsHold,
+  .hsChipSave,
+  .hsReactBtn {
     animation: none;
   }
-  .howtoRipple,
-  .howtoGlowRing,
-  .howtoGlowDisc {
+  .hsTap,
+  .hsHold,
+  .hsChipSave {
     opacity: 0;
+  }
+  .hsRail,
+  .hsChipReact {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 

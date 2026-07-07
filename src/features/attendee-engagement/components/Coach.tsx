@@ -2,86 +2,8 @@ import { useEffect, useState } from "react";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { haptic, useHapticRef } from "../lib/haptics";
+import { HowtoAnimation } from "./HowtoAnimation";
 import styles from "../engagement.module.css";
-
-/**
- * Instructional illustration for the "How highlights work" card: the saved SVG scene
- * (bubble + tapping finger + bookmark) with a looping motion overlay — a tap ripple at
- * the fingertip + a subtle press, then a "saved" glow on the bookmark. The overlays are
- * positioned in the SVG's native 1024-space inside a fitted, cropped stage; CSS drives
- * the loop (see engagement.module.css) and pauses under prefers-reduced-motion.
- */
-function HowtoIllustration() {
-  // The SVG is cropped to this viewBox, so it renders at native display size (crisp) —
-  // no 1024→small bitmap downscale. Overlays are placed in the same coordinate space.
-  const VB = { x: 110, y: 215, w: 835, h: 600 };
-  const W = 190;
-  const H = Math.round((W * VB.h) / VB.w);
-  const cx = (x: number) => ((x - VB.x) / VB.w) * W; // 1024-space → display px
-  const cy = (y: number) => ((y - VB.y) / VB.h) * H;
-  const d = (px: number) => (px / VB.w) * W; // length → display px
-  // A centred round overlay whose transform stays free for the keyframe scale.
-  const dot = (px: number, py: number, size: number): React.CSSProperties => ({
-    position: "absolute",
-    left: cx(px) - size / 2,
-    top: cy(py) - size / 2,
-    width: size,
-    height: size,
-    borderRadius: "50%",
-    pointerEvents: "none",
-  });
-  return (
-    <div
-      aria-hidden
-      style={{
-        position: "relative",
-        width: W,
-        height: H,
-        margin: "2px auto 0",
-        overflow: "visible",
-      }}
-    >
-      {/* base art — rendered at display size for crisp edges */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/asset/illustration/highlight-reaction.svg"
-        alt=""
-        className={styles.howtoPress}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          transformOrigin: `${(((500 - VB.x) / VB.w) * 100).toFixed(1)}% ${(((405 - VB.y) / VB.h) * 100).toFixed(1)}%`,
-        }}
-      />
-      {/* saved glow on the bookmark (center ≈ 856,546) */}
-      <div
-        className={styles.howtoGlowDisc}
-        style={{
-          ...dot(856, 546, d(170)),
-          background:
-            "radial-gradient(closest-side, color-mix(in srgb, var(--accent-green-500) 45%, transparent), transparent)",
-        }}
-      />
-      <div
-        className={styles.howtoGlowRing}
-        style={{
-          ...dot(856, 546, d(230)),
-          border: `${Math.max(2, d(9)).toFixed(1)}px solid var(--accent-green-500)`,
-        }}
-      />
-      {/* tap ripple at the fingertip (center ≈ 500,405) */}
-      <div
-        className={styles.howtoRipple}
-        style={{
-          ...dot(500, 405, d(220)),
-          border: `${Math.max(2, d(7)).toFixed(1)}px solid var(--primary-blue-400)`,
-        }}
-      />
-    </div>
-  );
-}
 
 const dismissHaptic = () => haptic("selection");
 
@@ -131,7 +53,7 @@ export function CoachPanelCard() {
         color: "var(--fg-2)",
       }}
     >
-      <HowtoIllustration />
+      <HowtoAnimation />
       <div
         style={{
           display: "flex",
