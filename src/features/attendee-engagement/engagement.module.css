@@ -236,7 +236,7 @@
    ripple, press and save-glow stay in sync. Under reduced-motion the static art shows. */
 .howtoPress {
   animation: howtoPress 1.8s ease-in-out infinite;
-  transform-origin: 500px 405px;
+  /* transform-origin (fingertip) is set inline as a % of the element box. */
 }
 .howtoRipple {
   animation: howtoRipple 1.8s ease-out infinite;

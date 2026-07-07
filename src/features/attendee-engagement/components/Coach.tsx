@@ -12,82 +12,73 @@ import styles from "../engagement.module.css";
  * the loop (see engagement.module.css) and pauses under prefers-reduced-motion.
  */
 function HowtoIllustration() {
+  // The SVG is cropped to this viewBox, so it renders at native display size (crisp) —
+  // no 1024→small bitmap downscale. Overlays are placed in the same coordinate space.
+  const VB = { x: 110, y: 215, w: 835, h: 600 };
   const W = 190;
-  const K = W / 835; // fit the art's content box (x 110–945, y 215–815)
-  const stage: React.CSSProperties = {
+  const H = Math.round((W * VB.h) / VB.w);
+  const cx = (x: number) => ((x - VB.x) / VB.w) * W; // 1024-space → display px
+  const cy = (y: number) => ((y - VB.y) / VB.h) * H;
+  const d = (px: number) => (px / VB.w) * W; // length → display px
+  // A centred round overlay whose transform stays free for the keyframe scale.
+  const dot = (px: number, py: number, size: number): React.CSSProperties => ({
     position: "absolute",
-    top: 0,
-    left: 0,
-    width: 1024,
-    height: 1024,
-    transform: `translate(${(-110 * K).toFixed(2)}px, ${(-215 * K).toFixed(2)}px) scale(${K})`,
-    transformOrigin: "top left",
-  };
+    left: cx(px) - size / 2,
+    top: cy(py) - size / 2,
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    pointerEvents: "none",
+  });
   return (
     <div
       aria-hidden
       style={{
         position: "relative",
         width: W,
-        height: Math.round((W * 600) / 835),
+        height: H,
         margin: "2px auto 0",
         overflow: "visible",
       }}
     >
-      <div style={stage}>
-        {/* base art */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/asset/illustration/highlight-reaction.svg"
-          alt=""
-          width={1024}
-          height={1024}
-          className={styles.howtoPress}
-          style={{ position: "absolute", inset: 0 }}
-        />
-        {/* saved glow on the bookmark (center ≈ 856,546) */}
-        <div
-          className={styles.howtoGlowDisc}
-          style={{
-            position: "absolute",
-            left: 771,
-            top: 461,
-            width: 170,
-            height: 170,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(closest-side, color-mix(in srgb, var(--accent-green-500) 45%, transparent), transparent)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          className={styles.howtoGlowRing}
-          style={{
-            position: "absolute",
-            left: 741,
-            top: 431,
-            width: 230,
-            height: 230,
-            borderRadius: "50%",
-            border: "9px solid var(--accent-green-500)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* tap ripple at the fingertip (center ≈ 500,405) */}
-        <div
-          className={styles.howtoRipple}
-          style={{
-            position: "absolute",
-            left: 390,
-            top: 295,
-            width: 220,
-            height: 220,
-            borderRadius: "50%",
-            border: "7px solid var(--primary-blue-400)",
-            pointerEvents: "none",
-          }}
-        />
-      </div>
+      {/* base art — rendered at display size for crisp edges */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/asset/illustration/highlight-reaction.svg"
+        alt=""
+        className={styles.howtoPress}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          transformOrigin: `${(((500 - VB.x) / VB.w) * 100).toFixed(1)}% ${(((405 - VB.y) / VB.h) * 100).toFixed(1)}%`,
+        }}
+      />
+      {/* saved glow on the bookmark (center ≈ 856,546) */}
+      <div
+        className={styles.howtoGlowDisc}
+        style={{
+          ...dot(856, 546, d(170)),
+          background:
+            "radial-gradient(closest-side, color-mix(in srgb, var(--accent-green-500) 45%, transparent), transparent)",
+        }}
+      />
+      <div
+        className={styles.howtoGlowRing}
+        style={{
+          ...dot(856, 546, d(230)),
+          border: `${Math.max(2, d(9)).toFixed(1)}px solid var(--accent-green-500)`,
+        }}
+      />
+      {/* tap ripple at the fingertip (center ≈ 500,405) */}
+      <div
+        className={styles.howtoRipple}
+        style={{
+          ...dot(500, 405, d(220)),
+          border: `${Math.max(2, d(7)).toFixed(1)}px solid var(--primary-blue-400)`,
+        }}
+      />
     </div>
   );
 }
