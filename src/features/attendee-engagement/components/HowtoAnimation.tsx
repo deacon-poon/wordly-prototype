@@ -53,7 +53,9 @@ function CornerChip({ r, className }: { r: Reaction; className: string }) {
 export function HowtoAnimation() {
   // Fixed 210×150 stage scaled down so the whole coach card (art + instructions) fits
   // the mobile bottom-sheet peek without clipping. DOM/vector, so it stays crisp.
-  const S = 0.74;
+  // 0.74 → 0.66 (Deacon 2026-07-08): slightly smaller art buys the centered copy
+  // room above the fold at the peek detent.
+  const S = 0.66;
   const ring: CSSProperties = {
     position: "absolute",
     left: 43,

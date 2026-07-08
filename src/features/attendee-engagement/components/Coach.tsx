@@ -54,26 +54,23 @@ export function CoachPanelCard() {
       }}
     >
       <HowtoAnimation />
-      {/* No heading (Justin/Deacon: keep the empty state minimal — the animation
-          already says what this is; on the phone peek the heading pushed the
-          gesture bullets below the fold). */}
-      <ul
+      {/* Minimal empty state (Justin/Deacon): no heading, no footnote — just the
+          animation and the centered gesture copy, so everything sits above the
+          fold at the phone peek detent. */}
+      <div
         style={{
-          margin: "10px 0 0",
-          paddingInlineStart: 16,
+          margin: "8px 0 2px",
           fontSize: 13,
           lineHeight: 1.6,
+          textAlign: "center",
         }}
       >
-        <li>
+        <div>
           <strong>{fine ? "Click" : "Tap"} a speech bubble</strong> to save it.
-        </li>
-        <li>
+        </div>
+        <div>
           <strong>{fine ? "Hover" : "Long press"}</strong> to react.
-        </li>
-      </ul>
-      <div style={{ marginTop: 9, fontSize: 13, color: "var(--fg-3)" }}>
-        Your saved lines will replace this card.
+        </div>
       </div>
     </div>
   );
