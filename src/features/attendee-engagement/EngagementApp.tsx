@@ -566,7 +566,10 @@ export default function EngagementApp({
 
       {/* Bottom sheet. A thin brand-gradient accent (.auraGlow) hugs the top edge —
           subtle, not a glowing halo — and the lift shadow is soft + lightly blue so it
-          doesn't haze the transcript gray behind it. */}
+          doesn't haze the transcript gray behind it. (NOT .shinyBorder here: the blurred
+          negative-z halo was near-invisible at rest on mobile and only surfaced via
+          iOS sticky :hover while dragging — and its full-card blur fights the sheet's
+          height animation. The desktop panel keeps the halo, where hover is real.) */}
       <div
         style={{
           position: "absolute",
@@ -581,7 +584,6 @@ export default function EngagementApp({
         }}
       >
         <div
-          className={styles.shinyBorder}
           style={{
             position: "relative",
             height: "100%",
@@ -593,6 +595,7 @@ export default function EngagementApp({
             flexDirection: "column",
           }}
         >
+          <span className={styles.auraGlow} aria-hidden="true" />
           <div
             onPointerDown={onHandleDown}
             onPointerMove={onHandleMove}

@@ -487,6 +487,13 @@
   opacity: 0.4;
   pointer-events: none;
 }
+@media (prefers-reduced-motion: reduce) {
+  /* The gradient stays as a static brand cue; only the drift stops. */
+  .auraGlow,
+  .shinyBorder::before {
+    animation: none;
+  }
+}
 
 /* Soft "more below" overlay — the same progressive-fade language as the peek
    preview. Place as the IMMEDIATE sibling after an .appleScroll container inside a
