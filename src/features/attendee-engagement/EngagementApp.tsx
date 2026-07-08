@@ -564,12 +564,10 @@ export default function EngagementApp({
       />
       <Coach variant={coach} hasSaved={hl.count > 0} />
 
-      {/* Bottom sheet. A thin brand-gradient accent (.auraGlow) hugs the top edge —
-          subtle, not a glowing halo — and the lift shadow is soft + lightly blue so it
-          doesn't haze the transcript gray behind it. (NOT .shinyBorder here: the blurred
-          negative-z halo was near-invisible at rest on mobile and only surfaced via
-          iOS sticky :hover while dragging — and its full-card blur fights the sheet's
-          height animation. The desktop panel keeps the halo, where hover is real.) */}
+      {/* Bottom sheet, wearing the aurora halo (.shinyBorder). On touch devices the
+          halo's REST opacity is the visible one (media hover:none override) — the old
+          0.3 base was invisible over the transcript and the aurora only surfaced via
+          iOS sticky :hover while dragging. */}
       <div
         style={{
           position: "absolute",
@@ -584,6 +582,7 @@ export default function EngagementApp({
         }}
       >
         <div
+          className={styles.shinyBorder}
           style={{
             position: "relative",
             height: "100%",
@@ -595,7 +594,6 @@ export default function EngagementApp({
             flexDirection: "column",
           }}
         >
-          <span className={styles.auraGlow} aria-hidden="true" />
           <div
             onPointerDown={onHandleDown}
             onPointerMove={onHandleMove}
