@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   TRANSCRIPT,
   SPK,
@@ -61,6 +67,9 @@ export function Transcript({
     // `column-reverse`: the bottom (newest) is scrollTop ≈ 0; scrolling up toward
     // older lines grows |scrollTop|. Browsers differ on the sign, so use magnitude.
     setAtBottom(Math.abs(el.scrollTop) < 36);
+    // Every scroll re-baselines the reading anchor: user scrolls OWN the position,
+    // and our own drift corrections settle here at the corrected value.
+    anchorY.current = measureAnchor();
   });
 
   // The scroll container is `flex-direction: column-reverse`, so the first child in
@@ -91,6 +100,39 @@ export function Transcript({
     ro.observe(el);
     return () => ro.disconnect();
   }, [atBottom, scrollRef]);
+
+  // READING FREEZE (the defined scroll contract): once the user scrolls up, the
+  // line they're on must HOLD STILL while the stream keeps arriving — they're
+  // reading, or lining up a reaction. column-reverse anchors the viewport to the
+  // BOTTOM, so each streamed word grows the content and slides history up under
+  // the finger on iOS (WebKit has no scroll anchoring; Chrome anchors natively).
+  // So anchor by MEASUREMENT, not by delta: remember where the oldest line sits
+  // relative to the scroller, and after each streamed commit restore any residual
+  // drift before paint — a no-op where the browser already anchored, the full
+  // correction on WebKit. The user's own scrolls re-baseline via onScroll, the
+  // pinned-at-bottom path is untouched, and the jump arrow is the way back down.
+  const anchorY = useRef<number | null>(null);
+  const measureAnchor = useCallback(() => {
+    const el = scrollRef.current;
+    const oldest = el?.lastElementChild; // DOM-last = oldest = visually top line
+    if (!el || !oldest) return null;
+    return oldest.getBoundingClientRect().top - el.getBoundingClientRect().top;
+  }, [scrollRef]);
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (atBottom) {
+      anchorY.current = measureAnchor();
+      return;
+    }
+    const y = measureAnchor();
+    if (y == null) return;
+    if (anchorY.current != null && Math.abs(y - anchorY.current) > 0.5) {
+      el.scrollTop += y - anchorY.current;
+    } else {
+      anchorY.current = y;
+    }
+  });
 
   const jump = () => {
     haptic("light");
