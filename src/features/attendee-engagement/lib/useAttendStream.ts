@@ -129,7 +129,9 @@ export function useAttendStream({
         phraseIds.current.set(m.phraseId, id);
       }
       const idx = TRANSCRIPT.findIndex((b) => b.id === id);
-      const bubble = { id, sp, text: m.translatedText };
+      // Stamp the language the phrase streamed in (re-stamped on updates: after a
+      // `change`, non-final revisions arrive re-translated into the new language).
+      const bubble = { id, sp, text: m.translatedText, lang: langRef.current };
       if (idx >= 0) TRANSCRIPT[idx] = bubble;
       else TRANSCRIPT.push(bubble);
       bump();

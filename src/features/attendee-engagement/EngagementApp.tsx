@@ -247,7 +247,8 @@ export default function EngagementApp({
   //    so the transcript, cards, and share text all read the new language at once. ──
   const [lang, setLang] = useState(() => {
     const l = initialLang ?? "English (US)";
-    setTranscriptLang(captionLangFor(l));
+    // Demo only — the live feed owns TRANSCRIPT (see the guard on the effect below).
+    if (!live) setTranscriptLang(captionLangFor(l));
     return l;
   });
   // Per-bubble caption language (spec §14): a language switch applies only to bubbles
@@ -266,11 +267,14 @@ export default function EngagementApp({
   // Keep the GLOBAL transcript (which the stream engine reads for reveal + word timing)
   // in the CURRENT bubble's language, so the engine's word counts match what's rendered.
   // Per-bubble rendering reads its own language snapshot, independent of this.
+  // DEMO ONLY: setTranscriptLang refills TRANSCRIPT with the demo script — in live
+  // mode that would wipe the live-fed phrases (the attend feed owns the array).
   useEffect(() => {
+    if (live) return;
     setTranscriptLang(
       bubbleLang[Math.min(last, bubbleLang.length - 1)] ?? "en"
     );
-  }, [last, bubbleLang]);
+  }, [live, last, bubbleLang]);
   // Mirroring is scoped to the CONTENT (the transcript column + reaction rail):
   // `dir` is applied on <Transcript> only. The chrome — header, highlights panel,
   // sheets, overlays — stays LTR (its copy is English); Arabic text inside cards
@@ -326,6 +330,7 @@ export default function EngagementApp({
             eng={eng}
             last={last}
             hl={hl}
+            live={!!live}
             bubbleLang={bubbleLang}
             maxWidth={bubbleMax}
             fontSize={16}
@@ -537,6 +542,7 @@ export default function EngagementApp({
           eng={eng}
           last={last}
           hl={hl}
+          live={!!live}
           maxWidth="80%"
           bubbleLang={bubbleLang}
           fontSize={15}

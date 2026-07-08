@@ -10,6 +10,10 @@ export type Bubble = {
   text: string;
   ambiguous?: boolean;
   revise?: { finalHeadLen: number; draftHead: string[] };
+  /** LIVE mode only: the wordly language code this phrase streamed in (spec §14 —
+   *  a bubble keeps the language/direction it arrived with). Demo bubbles resolve
+   *  language via the per-language snapshots instead. */
+  lang?: string;
 };
 
 export const SPEAKERS: Record<string, Speaker> = {

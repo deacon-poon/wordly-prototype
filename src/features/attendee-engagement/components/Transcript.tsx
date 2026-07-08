@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   TRANSCRIPT,
+  SPK,
   scriptFor,
   speakerNameFor,
   isCaptionRTL,
   type TranscriptLang,
 } from "../data/transcript";
+import { isRTLCode } from "../data/languages";
 import { Icon } from "../lib/icons";
 import { ICON } from "../lib/reactions-data";
 import { TranscriptBubble } from "./TranscriptBubble";
@@ -21,6 +23,7 @@ export function Transcript({
   eng,
   last,
   hl,
+  live = false,
   bubbleLang,
   maxWidth,
   fontSize,
@@ -33,7 +36,10 @@ export function Transcript({
   eng: StreamState;
   last: number;
   hl: Highlights;
-  /** Caption language per bubble index. Each bubble renders in its own language +
+  /** LIVE session (?code=): bubbles come from the live-fed TRANSCRIPT — each stamped
+   *  with the language it streamed in — instead of the demo's per-language snapshots. */
+  live?: boolean;
+  /** DEMO: caption language per bubble index. Each bubble renders in its own language +
    *  direction (spec §14), so a mid-session switch mixes LTR + RTL. Only the transcript
    *  mirrors per-bubble; the surrounding chrome (header/panel) stays LTR. */
   bubbleLang: TranscriptLang[];
@@ -126,18 +132,22 @@ export function Transcript({
         }}
       >
         {Array.from({ length: last + 1 }, (_, idx) => {
-          // Render each bubble in the language it was streamed in (spec §14).
+          // Render each bubble in the language it was streamed in (spec §14). LIVE
+          // bubbles carry their own text + language stamp (the feed already serves
+          // the phrase translated); demo bubbles read the per-language snapshots.
           const lang = bubbleLang[idx] ?? "en";
-          const src = scriptFor(lang);
+          const src = live ? TRANSCRIPT : scriptFor(lang);
           const b = src[idx];
+          if (!b) return null;
           const prev = idx > 0 ? src[idx - 1] : null;
           const speakerChanged = !prev || prev.sp !== b.sp; // sp is language-independent
+          const rtl = live ? isRTLCode(b.lang) : isCaptionRTL(lang);
           return (
             <TranscriptBubble
               key={b.id}
               bubble={b}
-              dir={isCaptionRTL(lang) ? "rtl" : "ltr"}
-              speakerName={speakerNameFor(lang, b.sp).name}
+              dir={rtl ? "rtl" : "ltr"}
+              speakerName={live ? SPK(b).name : speakerNameFor(lang, b.sp).name}
               count={idx < eng.bi ? 9999 : eng.wi}
               done={idx < eng.bi}
               isLatest={b.id === latestId}

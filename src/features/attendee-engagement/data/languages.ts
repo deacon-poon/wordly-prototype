@@ -75,6 +75,9 @@ export const LANGS: [string, string][] = [
 /** Right-to-left attend languages (MVP spec: designs must account for RTL layouts). */
 export const RTL_LANGS = new Set(["Arabic", "Hebrew", "Urdu"]);
 export const isRTLLang = (name: string) => RTL_LANGS.has(name);
+/** Same check for a wordly language code (live bubbles carry the code, not the name). */
+export const isRTLCode = (code?: string) =>
+  !!code && /^(ar|fa|he|iw|ps|sd|ur)(-|$)/.test(code);
 
 /**
  * Which caption script the demo feed has for a language. Arabic and Hebrew have

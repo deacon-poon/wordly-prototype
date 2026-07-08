@@ -54,27 +54,12 @@ export function CoachPanelCard() {
       }}
     >
       <HowtoAnimation />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 7,
-          margin: "10px 0 8px",
-        }}
-      >
-        <Icon
-          d={ICON.lBookmark}
-          size={15}
-          color="var(--primary-blue-600)"
-          fill="var(--primary-blue-600)"
-        />
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--fg-1)" }}>
-          How highlights work
-        </span>
-      </div>
+      {/* No heading (Justin/Deacon: keep the empty state minimal — the animation
+          already says what this is; on the phone peek the heading pushed the
+          gesture bullets below the fold). */}
       <ul
         style={{
-          margin: 0,
+          margin: "10px 0 0",
           paddingInlineStart: 16,
           fontSize: 13,
           lineHeight: 1.6,
