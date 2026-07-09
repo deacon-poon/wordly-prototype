@@ -21,6 +21,8 @@ import { Header } from "./components/Header";
 import { ShareSheet, buildShareText } from "./components/ShareSheet";
 import { SessionEndedSheet } from "./components/SessionEndedSheet";
 import { Coach, CoachPanelCard, type CoachVariant } from "./components/Coach";
+import type { EngagementSettings } from "./components/SettingsSheet";
+import { useSpeechTts } from "./lib/useSpeechTts";
 import styles from "./engagement.module.css";
 
 /** "My Highlights (9)" — the panel/sheet title row (no icon, plain parenthesised count). */
@@ -150,18 +152,39 @@ export default function EngagementApp({
     wordMs: 206,
     demoEnd,
   });
+  // TTS/audio toggle lifted from the header so the transcript can mark the bubble
+  // currently being read aloud (spec §4).
+  const [audio, setAudio] = useState(false);
+  // Settings lifted from the header so live TTS can honor ttsSameLang.
+  const [settings, setSettings] = useState<EngagementSettings>({
+    onlyFinal: false,
+    ttsSameLang: false,
+  });
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
+  // LIVE TTS (Graham, per attend.wordly.ai): finalized phrases are spoken in the
+  // language they streamed in while the audio toggle is on; toggling off cancels
+  // the queue. The "same language as speaker" setting keeps the default silence
+  // when the feed shows no translation happened (originalText === translatedText).
+  const speak = useSpeechTts(audio && !!live);
+  const onFinalPhrase = useCallback(
+    (p: { text: string; lang: string; sameAsSource: boolean }) => {
+      if (p.sameAsSource && !settingsRef.current.ttsSameLang) return;
+      speak(p.text, p.lang);
+    },
+    [speak]
+  );
   const attend = useAttendStream({
     config: live,
     initialLanguageCode: wordlyCodeFor(initialLang ?? "English (US)"),
+    onFinal: onFinalPhrase,
   });
   const { eng, last, ended } = live ? attend : demo;
   const hl = useHighlights();
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
   const [shareOpen, setShareOpen] = useState(false);
-  // TTS/audio toggle lifted from the header so the transcript can mark the bubble
-  // currently being read aloud (spec §4).
-  const [audio, setAudio] = useState(false);
 
   // ── End-of-session flow (spec §2): on session end or early leave, the attendee
   //    gets their highlights and can copy them out. ─────────────────────────────
@@ -507,6 +530,8 @@ export default function EngagementApp({
           onLang={onLang}
           audio={audio}
           onAudio={setAudio}
+          settings={settings}
+          onSettings={setSettings}
         />
         {liveBadge}
         {preSession ? null : <Coach variant={coach} hasSaved={hl.count > 0} />}
@@ -650,6 +675,8 @@ export default function EngagementApp({
         onLang={onLang}
         audio={audio}
         onAudio={setAudio}
+        settings={settings}
+        onSettings={setSettings}
       />
       {preSession ? null : <Coach variant={coach} hasSaved={hl.count > 0} />}
 

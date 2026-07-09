@@ -47,11 +47,19 @@ export type AttendStatus = "idle" | "connecting" | "live" | "error";
 export function useAttendStream({
   config,
   initialLanguageCode,
+  onFinal,
 }: {
   /** Live session config; omit to keep the hook inert (demo mode). */
   config?: AttendConfig;
   initialLanguageCode: string;
+  /** Fires once per phrase when its FINAL result lands (drives TTS). `sameAsSource`
+   *  is true when the feed shows no translation happened (originalText ===
+   *  translatedText), i.e. the attendee's language matches the speaker's. */
+  onFinal?: (p: { text: string; lang: string; sameAsSource: boolean }) => void;
 }) {
+  // Ref'd so a new callback identity never reconnects the socket effect.
+  const onFinalRef = useRef(onFinal);
+  onFinalRef.current = onFinal;
   // Transcript lives in the module array; this counter re-renders consumers.
   const [, setTick] = useState(0);
   const [ended, setEnded] = useState(false);
@@ -103,12 +111,22 @@ export function useAttendStream({
       speakerId?: string;
       name?: string;
       translatedText?: string;
+      originalText?: string;
       isFinal?: boolean;
     }) => {
       if (!m.phraseId || typeof m.translatedText !== "string") return;
       // Ignore a non-final result that arrives after the final one (spec).
       if (finals.current.has(m.phraseId) && !m.isFinal) return;
-      if (m.isFinal) finals.current.add(m.phraseId);
+      if (m.isFinal && !finals.current.has(m.phraseId)) {
+        finals.current.add(m.phraseId);
+        onFinalRef.current?.({
+          text: m.translatedText,
+          lang: langRef.current,
+          sameAsSource:
+            typeof m.originalText === "string" &&
+            m.originalText === m.translatedText,
+        });
+      }
 
       const sp = m.speakerId || "speaker";
       if (!SPEAKERS[sp]) {

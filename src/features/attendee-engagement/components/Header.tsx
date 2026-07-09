@@ -32,6 +32,8 @@ export function Header({
   onLang,
   audio: audioProp,
   onAudio,
+  settings: settingsProp,
+  onSettings,
 }: {
   logoHeight?: string;
   compact?: boolean;
@@ -44,6 +46,9 @@ export function Header({
    *  read aloud). Falls back to local state when uncontrolled. */
   audio?: boolean;
   onAudio?: (on: boolean) => void;
+  /** Controlled settings (lifted so live TTS can honor ttsSameLang). */
+  settings?: EngagementSettings;
+  onSettings?: (next: EngagementSettings) => void;
 }) {
   const [audioState, setAudioState] = useState(false);
   const audio = audioProp ?? audioState;
@@ -55,10 +60,14 @@ export function Header({
   const lang = langProp ?? langState;
   const setLang = onLang ?? setLangState;
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [settings, setSettings] = useState<EngagementSettings>({
+  // Controlled from the app when provided (live TTS reads ttsSameLang there);
+  // falls back to local state, same pattern as `audio` above.
+  const [settingsState, setSettingsState] = useState<EngagementSettings>({
     onlyFinal: false,
     ttsSameLang: false,
   });
+  const settings = settingsProp ?? settingsState;
+  const setSettings = onSettings ?? setSettingsState;
   const hapticRef = useHapticRef();
 
   const menuItem = (
