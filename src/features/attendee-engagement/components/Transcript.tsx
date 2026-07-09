@@ -60,6 +60,18 @@ export function Transcript({
   onHoverClose: () => void;
 }) {
   const [atBottom, setAtBottom] = useState(true);
+  // "{n} new messages" (attend-app parity): count lines that stream in while the
+  // user reads history; reset the moment they're back at the bottom.
+  const [newCount, setNewCount] = useState(0);
+  const lastSeen = useRef(last);
+  useEffect(() => {
+    if (atBottom) {
+      lastSeen.current = last;
+      setNewCount(0);
+    } else {
+      setNewCount(Math.max(0, last - lastSeen.current));
+    }
+  }, [atBottom, last]);
   const hapticRef = useHapticRef();
   const { ref: scrollRef, onScroll } = useFadeScroll(() => {
     const el = scrollRef.current;
@@ -215,26 +227,46 @@ export function Transcript({
         <button
           ref={hapticRef}
           onClick={jump}
-          aria-label="Jump to latest"
+          aria-label={
+            newCount > 0
+              ? `${newCount} new ${newCount === 1 ? "message" : "messages"} — jump to latest`
+              : "Jump to latest"
+          }
           title="Jump to latest"
           style={{
             position: "absolute",
             insetInlineEnd: 20,
             bottom: 20,
             zIndex: 6,
-            width: 46,
             height: 46,
+            // Icon-only circle until something new streams in; then a counted
+            // pill, matching the attend app's "{n} new messages" (Graham).
+            width: newCount > 0 ? undefined : 46,
+            padding: newCount > 0 ? "0 18px 0 20px" : 0,
             borderRadius: 999,
             border: "none",
             background: "var(--primary-blue-400)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            gap: 8,
             cursor: "pointer",
             boxShadow: "0 8px 20px rgba(1,124,255,.4)",
             animation: "wEngPopIn .18s ease-out",
           }}
         >
+          {newCount > 0 ? (
+            <span
+              style={{
+                color: "#fff",
+                fontSize: 13.5,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {newCount} new {newCount === 1 ? "message" : "messages"}
+            </span>
+          ) : null}
           <Icon d={ICON.arrowdown} size={22} color="#fff" sw={2.2} />
         </button>
       ) : null}
