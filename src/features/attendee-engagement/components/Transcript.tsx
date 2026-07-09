@@ -162,6 +162,70 @@ export function Transcript({
     [onRail]
   );
 
+  // ── Keyboard navigation (WCAG 2.1.1): the transcript is ONE Tab stop with a
+  // roving tabindex — Tab lands on the active line (newest by default), ↑/↓ move
+  // between lines, Home/End jump to oldest/newest, Enter/Space toggles save, and
+  // →/← opens the reaction rail as a menu (focus moves into it; Escape returns).
+  // One stop instead of per-line tabindex so keyboard users aren't forced through
+  // dozens of stops to reach the My Highlights panel behind the transcript.
+  const [focusId, setFocusId] = useState<number | null>(null);
+  const onListKeyDown = (e: React.KeyboardEvent) => {
+    const scroller = scrollRef.current;
+    const target = e.target as HTMLElement;
+    // Only act when a LINE is focused — the rail owns its own keys.
+    if (!scroller || target.closest('[role="menu"]')) return;
+    const option = target.closest<HTMLElement>('[role="option"]');
+    if (!option) return;
+    // DOM order is newest-first (column-reverse); reverse to visual top→bottom.
+    const options = [
+      ...scroller.querySelectorAll<HTMLElement>('[role="option"]'),
+    ].reverse();
+    const idx = options.indexOf(option);
+    const focusLine = (el?: HTMLElement) => {
+      if (!el) return;
+      el.focus();
+      el.scrollIntoView({ block: "nearest" });
+    };
+    switch (e.key) {
+      case "ArrowUp":
+        e.preventDefault();
+        focusLine(options[Math.max(0, idx - 1)]);
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        focusLine(options[Math.min(options.length - 1, idx + 1)]);
+        break;
+      case "Home":
+        e.preventDefault();
+        focusLine(options[0]);
+        break;
+      case "End":
+        e.preventDefault();
+        focusLine(options[options.length - 1]);
+        break;
+      case "Enter":
+      case " ": {
+        e.preventDefault();
+        const id = Number(option.dataset.lineId);
+        if (!Number.isNaN(id)) hl.toggleSave(id);
+        break;
+      }
+      case "ArrowRight":
+      case "ArrowLeft": {
+        // Mirrors swipe-toward-the-rail; both arrows accepted so RTL lines and
+        // muscle memory both work. Focus moves into the menu once it renders.
+        e.preventDefault();
+        const id = Number(option.dataset.lineId);
+        if (Number.isNaN(id)) break;
+        onRail(id);
+        requestAnimationFrame(() => {
+          option.querySelector<HTMLElement>('[role="menu"] button')?.focus();
+        });
+        break;
+      }
+    }
+  };
+
   return (
     <div
       style={{ flex: 1, minWidth: 0, position: "relative", display: "flex" }}
@@ -169,6 +233,10 @@ export function Transcript({
       <div
         ref={scrollRef}
         onScroll={onScroll}
+        onKeyDown={onListKeyDown}
+        role="listbox"
+        aria-label="Live transcript"
+        aria-multiselectable="true"
         className={styles.appleScroll}
         style={{
           flex: 1,
@@ -216,6 +284,8 @@ export function Transcript({
               onRailChange={onRailChange}
               onHoverOpen={onHoverOpen}
               onHoverClose={onHoverClose}
+              tabbable={(focusId ?? latestId) === b.id}
+              onFocusLine={setFocusId}
             />
           );
           // column-reverse renders DOM-first at the bottom, so reverse to keep

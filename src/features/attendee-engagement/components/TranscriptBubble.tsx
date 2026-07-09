@@ -77,6 +77,8 @@ export const TranscriptBubble = memo(function TranscriptBubble({
   onRailChange,
   onHoverOpen,
   onHoverClose,
+  tabbable = false,
+  onFocusLine,
 }: {
   bubble: Bubble;
   count: number;
@@ -100,6 +102,9 @@ export const TranscriptBubble = memo(function TranscriptBubble({
   /** Desktop hover opens the rail on this line; leaving schedules a close. */
   onHoverOpen?: (id: number) => void;
   onHoverClose?: () => void;
+  /** Roving tabindex: exactly one line is the transcript's Tab stop. */
+  tabbable?: boolean;
+  onFocusLine?: (id: number) => void;
 }) {
   const [hover, setHover] = useState(false);
   // Hover only opens the rail on real hover-capable pointers (not synthetic touch
@@ -349,6 +354,18 @@ export const TranscriptBubble = memo(function TranscriptBubble({
 
       <div
         ref={wrapRef}
+        // Keyboard: each line is a listbox option; the roving tabindex makes the
+        // ACTIVE line the transcript's single Tab stop. aria-selected mirrors the
+        // saved state (multiselectable listbox), Enter/arrows are handled by the
+        // container. focus() lands here, so the ring hugs the bubble.
+        role="option"
+        aria-selected={!!saved}
+        tabIndex={tabbable ? 0 : -1}
+        data-line-id={bubble.id}
+        className={styles.lineFocus}
+        onFocus={(e) => {
+          if (e.target === wrapRef.current) onFocusLine?.(bubble.id);
+        }}
         // Hover lives on the WRAPPER (bubble + embedded reaction bar + chip): moving
         // the pointer from the bubble onto the bar never leaves it, so there's no
         // gap to lose hover across — the bar is anchored to the bubble itself.
@@ -363,6 +380,7 @@ export const TranscriptBubble = memo(function TranscriptBubble({
         style={{
           position: "relative",
           maxWidth,
+          ...RADII, // the focus outline follows the bubble's rounded shape
           // No reserved space, no push: the transcript layout NEVER moves when the
           // panel opens. The frosted panel is a pure overlay above the bubble — it
           // briefly floats over the older (already-read) line, whose text stays
@@ -430,6 +448,25 @@ export const TranscriptBubble = memo(function TranscriptBubble({
           <div
             role="menu"
             aria-label="React to this line"
+            onKeyDown={(e) => {
+              // Menu pattern: ←/→ cycle the five reactions, Escape closes and
+              // hands focus back to the line. stopPropagation keeps the list's
+              // own arrow handling out of the rail.
+              const btns = [
+                ...e.currentTarget.querySelectorAll("button"),
+              ] as HTMLElement[];
+              const i = btns.indexOf(document.activeElement as HTMLElement);
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                e.stopPropagation();
+                const step = e.key === "ArrowRight" ? 1 : -1;
+                btns[(i + step + btns.length) % btns.length]?.focus();
+              } else if (e.key === "Escape") {
+                e.stopPropagation();
+                onRail(false);
+                wrapRef.current?.focus();
+              }
+            }}
             style={{
               position: "absolute",
               // The rail OVERLAPS the bubble it affects (Justin 7/9) — but only by
@@ -479,9 +516,13 @@ export const TranscriptBubble = memo(function TranscriptBubble({
                   aria-checked={on}
                   title={opt.l}
                   aria-label={opt.l}
-                  onClick={() => {
+                  onClick={(e) => {
                     onReact(bubble.id, opt.e);
                     onRail(false);
+                    // Keyboard activation (detail 0): hand focus back to the line
+                    // so the user isn't dropped to <body> when the menu unmounts.
+                    if (e.detail === 0)
+                      requestAnimationFrame(() => wrapRef.current?.focus());
                   }}
                   style={{
                     width: canHover ? 30 : 44,

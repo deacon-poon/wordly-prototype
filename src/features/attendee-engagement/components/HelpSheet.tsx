@@ -26,6 +26,10 @@ const helpQA = (fine: boolean): [string, string][] => [
     "How do I leave the session?",
     "Open the menu in the top right and choose Leave Session.",
   ],
+  [
+    "Can I use the keyboard?",
+    "Yes. Press Tab to reach the transcript, then use ↑ and ↓ to move between lines (Home and End jump to the oldest and newest). Press Enter to save a line, → to open the reactions, ← and → to choose one, Enter to pick it, and Esc to close.",
+  ],
 ];
 
 /** Help page — session info, a short FAQ, and a legal/version footer. */

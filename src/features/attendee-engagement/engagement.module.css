@@ -287,6 +287,16 @@
   }
 }
 
+/* Keyboard focus ring for transcript lines (WCAG 2.4.7) — :focus-visible so mouse
+   clicks don't paint it; the outline follows the wrap's bubble radii. */
+.lineFocus:focus-visible {
+  outline: 2px solid var(--primary-blue-500);
+  outline-offset: 3px;
+}
+.lineFocus:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Gentle status pulse (pre-session waiting room) — motion stops under reduced-motion,
    the dot itself stays as the static cue. */
 .pulseDot {
