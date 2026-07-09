@@ -432,16 +432,17 @@ export const TranscriptBubble = memo(function TranscriptBubble({
             aria-label="React to this line"
             style={{
               position: "absolute",
-              // The rail OVERLAPS the bubble it affects (Justin 7/9): it straddles
-              // the bubble's top edge, so ownership is never ambiguous — a rail
-              // floating in the gap read as belonging to the bubble BELOW it
-              // (Graham's screenshot). When the bubble sits right under the
-              // header, the rail tucks fully inside its top corner instead, so it
-              // never slips beneath the header (which swallowed clicks).
+              // The rail OVERLAPS the bubble it affects (Justin 7/9) — but only by
+              // ~10px, the bubble's own top PADDING, so ownership is unambiguous
+              // while no text is ever covered (Deacon: the half-straddle blocked
+              // the first line). When the bubble sits right under the header the
+              // rail tucks inside the top corner instead, so it never slips
+              // beneath the header (which swallowed clicks) — that sliver of
+              // content is already dissolving under the scrim anyway.
               ...((wrapRef.current?.getBoundingClientRect().top ?? Infinity) <
-              (canHover ? 92 : 100)
+              (canHover ? 92 : 110)
                 ? { top: 6 }
-                : { top: canHover ? -19 : -27 }),
+                : { top: canHover ? -32 : -48 }),
               // End-anchored on normal bubbles; on SHORT bubbles (live non-final
               // phrases can be a word or two) the panel is wider than the bubble
               // and would overflow off-screen toward the column start — flip the
