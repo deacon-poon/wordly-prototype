@@ -32,6 +32,7 @@ export function Header({
   onLang,
   audio: audioProp,
   onAudio,
+  speaking,
   settings: settingsProp,
   onSettings,
 }: {
@@ -46,6 +47,10 @@ export function Header({
    *  read aloud). Falls back to local state when uncontrolled. */
   audio?: boolean;
   onAudio?: (on: boolean) => void;
+  /** LIVE mode: true only while voice is actually playing — the ripple becomes an
+   *  honest playback indicator instead of a constant animation. Omitted (demo):
+   *  the ripple shows whenever audio is on, so the state stays demonstrable. */
+  speaking?: boolean;
   /** Controlled settings (lifted so live TTS can honor ttsSameLang). */
   settings?: EngagementSettings;
   onSettings?: (next: EngagementSettings) => void;
@@ -229,7 +234,7 @@ export function Header({
           }}
           aria-label={audio ? "Audio on, reading aloud" : "Audio off"}
           title={audio ? "Audio on" : "Audio off"}
-          className={`${styles.ttsBtn} ${audio ? styles.audioPulse : ""}`}
+          className={`${styles.ttsBtn} ${audio && (speaking ?? true) ? styles.audioPulse : ""}`}
           style={{
             width: 38,
             height: 38,

@@ -130,6 +130,17 @@
       background-position: 230% 0%;
     }
   }
+  /* Aurora INTRO: a short, gentle drift that eases out into stillness — "runs for
+     a couple of seconds when first joining" (Graham). Same slow velocity as the
+     old loop; any resting position on the smooth gradient reads fine. */
+  @keyframes wEngRibbonIntro {
+    from {
+      background-position: 0% 0%;
+    }
+    to {
+      background-position: 60% 0%;
+    }
+  }
   @keyframes wEngFade {
     from {
       opacity: 0;
@@ -501,10 +512,10 @@
     #3cff52
   );
   background-size: 230% 100%;
-  /* ONE gentle pass, then still (Graham: the endless rotating glow keeps pulling
-     peripheral vision). 100% of the shift == 0% visually (the gradient tiles), so
-     the stop is seamless; the halo itself stays. */
-  animation: wEngRibbonShift 16s linear 1;
+  /* Intro-only motion (Graham): ~4s of gentle drift easing out into stillness on
+     join — the halo itself stays. Was an endless 16s loop, then one full pass;
+     Deacon 7/9: make it literally a couple of seconds. */
+  animation: wEngRibbonIntro 4s cubic-bezier(0.33, 1, 0.68, 1) 1 forwards;
   filter: blur(9px);
   opacity: 0.3;
   z-index: -1;
@@ -547,7 +558,7 @@
     #3cff52
   );
   background-size: 220% 100%;
-  animation: wEngRibbonShift 16s linear 1; /* one pass, then still — see .shinyBorder */
+  animation: wEngRibbonIntro 4s cubic-bezier(0.33, 1, 0.68, 1) 1 forwards; /* see .shinyBorder */
   filter: blur(2.5px);
   opacity: 0.4;
   pointer-events: none;

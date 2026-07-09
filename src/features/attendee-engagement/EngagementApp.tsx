@@ -167,7 +167,7 @@ export default function EngagementApp({
   // language they streamed in while the audio toggle is on; toggling off cancels
   // the queue. The "same language as speaker" setting keeps the default silence
   // when the feed shows no translation happened (originalText === translatedText).
-  const speak = useSpeechTts(audio && !!live);
+  const { speak, speaking } = useSpeechTts(audio && !!live);
   const onFinalPhrase = useCallback(
     (p: { text: string; lang: string; sameAsSource: boolean }) => {
       if (p.sameAsSource && !settingsRef.current.ttsSameLang) return;
@@ -530,6 +530,7 @@ export default function EngagementApp({
           onLang={onLang}
           audio={audio}
           onAudio={setAudio}
+          speaking={live ? speaking : undefined}
           settings={settings}
           onSettings={setSettings}
         />
@@ -675,6 +676,7 @@ export default function EngagementApp({
         onLang={onLang}
         audio={audio}
         onAudio={setAudio}
+        speaking={live ? speaking : undefined}
         settings={settings}
         onSettings={setSettings}
       />
