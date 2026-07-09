@@ -148,12 +148,12 @@ export function HighlightsList({
           padding: "10px 11px",
           // Resting: white + a coloured ring in the item's colour + a soft shadow (same
           // language as the saved bubble). Editing (inline picker open): the bubble's
-          // brand-blue ring + a pronounced lift, so the active card reads clearly.
+          // brand-blue ring + a lift SHADOW — the card itself never moves, same rule
+          // as the transcript bubbles (Graham 7/9: the 2px lift read as a twitch).
           boxShadow: selected
             ? "0 0 0 2px var(--primary-blue-400), 0 14px 34px rgba(1,124,255,.28)"
             : `0 0 0 1.5px ${chipR.cbdr}, var(--shadow-sm)`,
-          transform: selected ? "translateY(-2px)" : "none",
-          transition: "box-shadow .16s ease, transform .16s ease",
+          transition: "box-shadow .16s ease",
           zIndex: selected ? 3 : undefined,
         }}
       >

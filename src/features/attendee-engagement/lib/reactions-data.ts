@@ -36,9 +36,10 @@ export const ICON = {
   // Standalone question mark in the Lucide stroke idiom (curl + dot, no circle/bubble)
   // so the Question reaction matches the other line icons instead of reading as a chat
   // glyph. Sized to fill the 24×24 box so it carries the same visual weight as the
-  // thumbs / bulb / bookmark.
+  // thumbs / bulb / bookmark. The dot is a stroked r=1 circle (~2× the bare h.01
+  // cap-dot) — Deacon 7/9: the tiny dot was hard to see at small sizes.
   lQuestion:
-    "M7.5 8.5a4.5 4.5 0 1 1 7.3 3.5c-1.4 1.1-2.3 1.9-2.3 3.5M12 20h.01",
+    "M7.5 8.5a4.5 4.5 0 1 1 7.3 3.5c-1.4 1.1-2.3 1.9-2.3 3.5M12 19.1a1 1 0 1 1 0 2 1 1 0 1 1 0-2",
   lBookmark: "M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z",
   ellipsisV: "M12 5h.01M12 12h.01M12 19h.01",
   ellipsisH: "M5 12h.01M12 12h.01M19 12h.01",
