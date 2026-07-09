@@ -210,9 +210,66 @@ export default function EngagementApp({
 
   const emptyState = coach === "b1" ? <CoachPanelCard /> : undefined;
 
-  // Live connection pill — visible while connecting / on terminal errors.
+  // ── Pre-session (spec note, Graham 7/8): joined a live session before the
+  //    presenter started — a centered waiting state owns the screen and the
+  //    My Highlights panel/sheet/coach stay hidden until the first phrase. ──
+  const preSession = !!live && last < 0 && !ended;
+  const waitingRoom = preSession ? (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <div style={{ textAlign: "center", maxWidth: 360 }}>
+        {attend.status !== "error" ? (
+          <span
+            className={styles.pulseDot}
+            style={{
+              display: "inline-block",
+              width: 8,
+              height: 8,
+              borderRadius: 999,
+              background: "var(--primary-blue-400)",
+              marginBottom: 12,
+            }}
+          />
+        ) : null}
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 600,
+            color:
+              attend.status === "error"
+                ? "var(--error, #E62D21)"
+                : "var(--fg-1)",
+          }}
+        >
+          {attend.status === "error"
+            ? attend.errorMsg
+            : attend.status === "live"
+              ? "Waiting for the presenter to begin"
+              : `Connecting to ${live?.code}…`}
+        </div>
+        {attend.status === "live" ? (
+          <div style={{ marginTop: 6, fontSize: 13, color: "var(--fg-3)" }}>
+            You&apos;re connected to {live?.code} — captions will appear here
+            the moment the session starts.
+          </div>
+        ) : null}
+      </div>
+    </div>
+  ) : null;
+
+  // Live connection pill — visible while connecting / on terminal errors DURING
+  // a session (pre-session states render in the waiting room instead).
   const liveBadge =
-    live && attend.status !== "live" && !ended ? (
+    live && !preSession && attend.status !== "live" && !ended ? (
       <div
         dir="auto"
         style={{
@@ -326,116 +383,122 @@ export default function EngagementApp({
         }}
       >
         <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
-          <Transcript
-            eng={eng}
-            last={last}
-            hl={hl}
-            live={!!live}
-            bubbleLang={bubbleLang}
-            maxWidth={bubbleMax}
-            fontSize={16}
-            padding={tPad}
-            openRailId={railId}
-            onRail={openRail}
-            onHoverOpen={openRail}
-            onHoverClose={scheduleRailClose}
-          />
-          <div
-            style={{
-              width: panelW,
-              flexShrink: 0,
-              position: "relative",
-              zIndex: 8,
-              display: "flex",
-              flexDirection: "column",
-              padding:
-                device === "desktop"
-                  ? "96px 18px 18px 2px"
-                  : "84px 16px 16px 2px",
-            }}
-          >
+          {preSession ? (
+            waitingRoom
+          ) : (
+            <Transcript
+              eng={eng}
+              last={last}
+              hl={hl}
+              live={!!live}
+              bubbleLang={bubbleLang}
+              maxWidth={bubbleMax}
+              fontSize={16}
+              padding={tPad}
+              openRailId={railId}
+              onRail={openRail}
+              onHoverOpen={openRail}
+              onHoverClose={scheduleRailClose}
+            />
+          )}
+          {preSession ? null : (
             <div
-              className={styles.shinyBorder}
               style={{
-                flex: 1,
-                minHeight: 0,
-                background: "#fff",
-                borderRadius: 18,
-                boxShadow: "var(--shadow-sm)",
+                width: panelW,
+                flexShrink: 0,
+                position: "relative",
+                zIndex: 8,
                 display: "flex",
                 flexDirection: "column",
+                padding:
+                  device === "desktop"
+                    ? "96px 18px 18px 2px"
+                    : "84px 16px 16px 2px",
               }}
             >
               <div
-                style={{
-                  flexShrink: 0,
-                  padding: "14px 15px 11px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 8,
-                }}
-              >
-                <PanelHeader count={hl.count} />
-                {hl.count > 0 ? (
-                  // Desktop goes STRAIGHT to the OS share sheet (Graham) — the
-                  // preview modal is only the fallback where navigator.share
-                  // doesn't exist. (Phone keeps the preview sheet: closed-round
-                  // decision, and mobile share sheets obscure the content.)
-                  <ShareButton
-                    onClick={async () => {
-                      if (navigator.share) {
-                        try {
-                          await navigator.share({
-                            title: "My Highlights",
-                            text: buildShareText(hl),
-                          });
-                          return;
-                        } catch (e) {
-                          // Dismissed the native sheet → done. Anything else
-                          // (blocked/unsupported payload) → preview modal.
-                          if ((e as Error)?.name === "AbortError") return;
-                        }
-                      }
-                      setShareOpen(true);
-                    }}
-                  />
-                ) : null}
-              </div>
-              <div
+                className={styles.shinyBorder}
                 style={{
                   flex: 1,
                   minHeight: 0,
-                  position: "relative",
+                  background: "#fff",
+                  borderRadius: 18,
+                  boxShadow: "var(--shadow-sm)",
                   display: "flex",
                   flexDirection: "column",
                 }}
               >
                 <div
-                  ref={panelScroll.ref}
-                  onScroll={panelScroll.onScroll}
-                  className={styles.appleScroll}
+                  style={{
+                    flexShrink: 0,
+                    padding: "14px 15px 11px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
+                  }}
+                >
+                  <PanelHeader count={hl.count} />
+                  {hl.count > 0 ? (
+                    // Desktop goes STRAIGHT to the OS share sheet (Graham) — the
+                    // preview modal is only the fallback where navigator.share
+                    // doesn't exist. (Phone keeps the preview sheet: closed-round
+                    // decision, and mobile share sheets obscure the content.)
+                    <ShareButton
+                      onClick={async () => {
+                        if (navigator.share) {
+                          try {
+                            await navigator.share({
+                              title: "My Highlights",
+                              text: buildShareText(hl),
+                            });
+                            return;
+                          } catch (e) {
+                            // Dismissed the native sheet → done. Anything else
+                            // (blocked/unsupported payload) → preview modal.
+                            if ((e as Error)?.name === "AbortError") return;
+                          }
+                        }
+                        setShareOpen(true);
+                      }}
+                    />
+                  ) : null}
+                </div>
+                <div
                   style={{
                     flex: 1,
                     minHeight: 0,
-                    overflowY: "auto",
-                    // Top padding keeps the first card's outset ring from being clipped
-                    // against / overlapping the header row above it.
-                    padding: "7px 13px 14px",
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <HighlightsList hl={hl} emptyState={emptyState} />
-                </div>
-                {/* Soft veils — below while more cards continue past the fold, above
+                  <div
+                    ref={panelScroll.ref}
+                    onScroll={panelScroll.onScroll}
+                    className={styles.appleScroll}
+                    style={{
+                      flex: 1,
+                      minHeight: 0,
+                      overflowY: "auto",
+                      // Top padding keeps the first card's outset ring from being clipped
+                      // against / overlapping the header row above it.
+                      padding: "7px 13px 14px",
+                    }}
+                  >
+                    <HighlightsList hl={hl} emptyState={emptyState} />
+                  </div>
+                  {/* Soft veils — below while more cards continue past the fold, above
                     once scrolled down (content above the fold). */}
-                <div
-                  className={styles.scrollFade}
-                  style={{ borderRadius: "0 0 18px 18px" }}
-                />
-                <div className={styles.scrollFadeTop} />
+                  <div
+                    className={styles.scrollFade}
+                    style={{ borderRadius: "0 0 18px 18px" }}
+                  />
+                  <div className={styles.scrollFadeTop} />
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
         <Header
           logoHeight="22px"
@@ -446,7 +509,7 @@ export default function EngagementApp({
           onAudio={setAudio}
         />
         {liveBadge}
-        <Coach variant={coach} hasSaved={hl.count > 0} />
+        {preSession ? null : <Coach variant={coach} hasSaved={hl.count > 0} />}
         <ShareSheet
           open={shareOpen}
           onClose={() => setShareOpen(false)}
@@ -552,27 +615,32 @@ export default function EngagementApp({
           top: 0,
           left: 0,
           right: 0,
-          bottom: sheetH,
+          // Pre-session there is no sheet — the waiting room owns the full area.
+          bottom: preSession ? 0 : sheetH,
           display: "flex",
           transition: sheetDrag.current
             ? "none"
             : "bottom .26s cubic-bezier(.32,.72,0,1)",
         }}
       >
-        <Transcript
-          eng={eng}
-          last={last}
-          hl={hl}
-          live={!!live}
-          maxWidth="80%"
-          bubbleLang={bubbleLang}
-          fontSize={15}
-          padding="70px 18px 22px"
-          openRailId={railId}
-          onRail={openRail}
-          onHoverOpen={openRail}
-          onHoverClose={scheduleRailClose}
-        />
+        {preSession ? (
+          waitingRoom
+        ) : (
+          <Transcript
+            eng={eng}
+            last={last}
+            hl={hl}
+            live={!!live}
+            maxWidth="80%"
+            bubbleLang={bubbleLang}
+            fontSize={15}
+            padding="70px 18px 22px"
+            openRailId={railId}
+            onRail={openRail}
+            onHoverOpen={openRail}
+            onHoverClose={scheduleRailClose}
+          />
+        )}
       </div>
       <Header
         logoHeight="24px"
@@ -583,136 +651,139 @@ export default function EngagementApp({
         audio={audio}
         onAudio={setAudio}
       />
-      <Coach variant={coach} hasSaved={hl.count > 0} />
+      {preSession ? null : <Coach variant={coach} hasSaved={hl.count > 0} />}
 
       {/* Bottom sheet, wearing the aurora halo (.shinyBorder). On touch devices the
           halo's REST opacity is the visible one (media hover:none override) — the old
           0.3 base was invisible over the transcript and the aurora only surfaced via
-          iOS sticky :hover while dragging. */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: sheetH,
-          transition: sheetDrag.current
-            ? "none"
-            : "height .26s cubic-bezier(.32,.72,0,1)",
-          zIndex: 25,
-        }}
-      >
+          iOS sticky :hover while dragging. Hidden pre-session (no highlights to
+          collect until the presenter starts). */}
+      {preSession ? null : (
         <div
-          className={styles.shinyBorder}
           style={{
-            position: "relative",
-            height: "100%",
-            background: "#fff",
-            borderRadius: "18px 18px 0 0",
-            boxShadow:
-              "0 -1px 1px rgba(15,23,42,.04), 0 -10px 24px rgba(1,124,255,.07)",
-            display: "flex",
-            flexDirection: "column",
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: sheetH,
+            transition: sheetDrag.current
+              ? "none"
+              : "height .26s cubic-bezier(.32,.72,0,1)",
+            zIndex: 25,
           }}
         >
           <div
-            onPointerDown={onHandleDown}
-            onPointerMove={onHandleMove}
-            onPointerUp={onHandleUp}
-            onClick={cycle}
+            className={styles.shinyBorder}
             style={{
-              flexShrink: 0,
-              padding: "8px 15px 10px",
-              cursor: "grab",
-              touchAction: "none",
+              position: "relative",
+              height: "100%",
+              background: "#fff",
+              borderRadius: "18px 18px 0 0",
+              boxShadow:
+                "0 -1px 1px rgba(15,23,42,.04), 0 -10px 24px rgba(1,124,255,.07)",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             <div
+              onPointerDown={onHandleDown}
+              onPointerMove={onHandleMove}
+              onPointerUp={onHandleUp}
+              onClick={cycle}
               style={{
-                width: 36,
-                height: 4,
-                borderRadius: 999,
-                background: "var(--gray-300)",
-                margin: "0 auto 10px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              {/* Share sits WITH the title (the thing it acts on); the accordion
-                  chevron stands alone at the far edge — a full row of separation
-                  between the two tap targets, not just a wider gap. */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <PanelHeader count={hl.count} />
-                {hl.count > 0 ? (
-                  // Stop the handle's drag/tap-to-cycle from firing on the share tap.
-                  <span
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ShareButton compact onClick={() => setShareOpen(true)} />
-                  </span>
-                ) : null}
-              </div>
-              {/* Accordion indicator points in the DIRECTION OF THE ACTION: chevron
-                  up while collapsed/peek (tap to expand the sheet upward), down at
-                  full (tap to collapse it back down). */}
-              <Icon
-                d={ICON.chevron}
-                size={18}
-                color="var(--fg-3)"
-                style={{
-                  transform: detent === "full" ? "none" : "rotate(180deg)",
-                  transition: "transform .2s ease",
-                }}
-              />
-            </div>
-          </div>
-          {detent !== "collapsed" ? (
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
+                flexShrink: 0,
+                padding: "8px 15px 10px",
+                cursor: "grab",
+                touchAction: "none",
               }}
             >
               <div
-                ref={sheetScroll.ref}
-                onScroll={sheetScroll.onScroll}
-                className={styles.appleScroll}
                 style={{
-                  flex: 1,
-                  minHeight: 0,
-                  overflowY: "auto",
-                  // Top padding so the first card's outset ring clears the header row.
-                  padding: "7px 13px 16px",
+                  width: 36,
+                  height: 4,
+                  borderRadius: 999,
+                  background: "var(--gray-300)",
+                  margin: "0 auto 10px",
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <HighlightsList
-                  hl={hl}
-                  emptyState={emptyState}
-                  // Peek detent: show the newest highlight + a "+N more" pill that expands
-                  // the sheet to full. Full detent: the complete scrollable list.
-                  peek={detent === "peek"}
-                  onExpand={() => {
-                    haptic("selection");
-                    setDetent("full");
+                {/* Share sits WITH the title (the thing it acts on); the accordion
+                  chevron stands alone at the far edge — a full row of separation
+                  between the two tap targets, not just a wider gap. */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <PanelHeader count={hl.count} />
+                  {hl.count > 0 ? (
+                    // Stop the handle's drag/tap-to-cycle from firing on the share tap.
+                    <span
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ShareButton compact onClick={() => setShareOpen(true)} />
+                    </span>
+                  ) : null}
+                </div>
+                {/* Accordion indicator points in the DIRECTION OF THE ACTION: chevron
+                  up while collapsed/peek (tap to expand the sheet upward), down at
+                  full (tap to collapse it back down). */}
+                <Icon
+                  d={ICON.chevron}
+                  size={18}
+                  color="var(--fg-3)"
+                  style={{
+                    transform: detent === "full" ? "none" : "rotate(180deg)",
+                    transition: "transform .2s ease",
                   }}
                 />
               </div>
-              {/* Soft veils — same pattern as the desktop panel. */}
-              <div className={styles.scrollFade} />
-              <div className={styles.scrollFadeTop} />
             </div>
-          ) : null}
+            {detent !== "collapsed" ? (
+              <div
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div
+                  ref={sheetScroll.ref}
+                  onScroll={sheetScroll.onScroll}
+                  className={styles.appleScroll}
+                  style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: "auto",
+                    // Top padding so the first card's outset ring clears the header row.
+                    padding: "7px 13px 16px",
+                  }}
+                >
+                  <HighlightsList
+                    hl={hl}
+                    emptyState={emptyState}
+                    // Peek detent: show the newest highlight + a "+N more" pill that expands
+                    // the sheet to full. Full detent: the complete scrollable list.
+                    peek={detent === "peek"}
+                    onExpand={() => {
+                      haptic("selection");
+                      setDetent("full");
+                    }}
+                  />
+                </div>
+                {/* Soft veils — same pattern as the desktop panel. */}
+                <div className={styles.scrollFade} />
+                <div className={styles.scrollFadeTop} />
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
+      )}
 
       <ShareSheet
         open={shareOpen}

@@ -276,6 +276,17 @@
   }
 }
 
+/* Gentle status pulse (pre-session waiting room) — motion stops under reduced-motion,
+   the dot itself stays as the static cue. */
+.pulseDot {
+  animation: wEngPulseDot 1.4s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulseDot {
+    animation: none;
+  }
+}
+
 /* "How highlights work" demo — all elements share one 5s loop so tap→save→react
    stays in sync. Under reduced-motion, show a static composed state (rail + reaction
    chip) with no motion. */
