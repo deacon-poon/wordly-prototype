@@ -185,6 +185,9 @@ export default function EngagementApp({
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
   const [shareOpen, setShareOpen] = useState(false);
+  // True while the OS share sheet is up — re-clicks of the Share button are ignored
+  // instead of triggering a second navigator.share (which rejects InvalidStateError).
+  const nativeSharing = useRef(false);
 
   // ── End-of-session flow (spec §2): on session end or early leave, the attendee
   //    gets their highlights and can copy them out. ─────────────────────────────
@@ -464,25 +467,31 @@ export default function EngagementApp({
                   <PanelHeader count={hl.count} />
                   {hl.count > 0 ? (
                     // Desktop goes STRAIGHT to the OS share sheet (Graham) — the
-                    // preview modal is only the fallback where navigator.share
-                    // doesn't exist. (Phone keeps the preview sheet: closed-round
-                    // decision, and mobile share sheets obscure the content.)
+                    // preview modal exists ONLY where navigator.share is absent.
+                    // Never fall back to it on a rejected share: clicking the
+                    // button while the native sheet is up rejects with
+                    // InvalidStateError (Deacon hit this — the fallback modal
+                    // popped and read as the end-of-session sheet), and a
+                    // dismissal rejects with AbortError. Both mean "do nothing".
+                    // (Phone keeps the preview sheet: closed-round decision.)
                     <ShareButton
                       onClick={async () => {
-                        if (navigator.share) {
-                          try {
-                            await navigator.share({
-                              title: "My Highlights",
-                              text: buildShareText(hl),
-                            });
-                            return;
-                          } catch (e) {
-                            // Dismissed the native sheet → done. Anything else
-                            // (blocked/unsupported payload) → preview modal.
-                            if ((e as Error)?.name === "AbortError") return;
-                          }
+                        if (!navigator.share) {
+                          setShareOpen(true);
+                          return;
                         }
-                        setShareOpen(true);
+                        if (nativeSharing.current) return; // sheet already up
+                        nativeSharing.current = true;
+                        try {
+                          await navigator.share({
+                            title: "My Highlights",
+                            text: buildShareText(hl),
+                          });
+                        } catch {
+                          /* dismissed or blocked — no modal */
+                        } finally {
+                          nativeSharing.current = false;
+                        }
                       }}
                     />
                   ) : null}
