@@ -220,7 +220,7 @@ export function Header({
           }}
           aria-label={audio ? "Audio on, reading aloud" : "Audio off"}
           title={audio ? "Audio on" : "Audio off"}
-          className={audio ? styles.audioPulse : styles.iconBtn}
+          className={`${styles.ttsBtn} ${audio ? styles.audioPulse : ""}`}
           style={{
             width: 38,
             height: 38,

@@ -365,6 +365,29 @@
   transform: scale(0.92);
 }
 
+/* TTS/audio toggle — hover states per the DS toggle-button set (Figma 4060-2985
+   family): hovering EITHER mode shows accent-green background-accent-hover with the
+   gray border. Rest states stay as designed here (on = background-accent, off blends
+   into the chrome). !important for the same inline-background reason as .iconBtn. */
+.ttsBtn {
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.1s ease;
+}
+@media (hover: hover) {
+  .ttsBtn:hover {
+    background: #bbf7cb !important; /* semantic/accent-green/background-accent-hover */
+    border-color: #cdd2d7 !important; /* semantic/gray/gray-border */
+    color: #121416 !important;
+    border-radius: 999px !important;
+  }
+}
+.ttsBtn:active {
+  transform: scale(0.92);
+}
+
 /* Bordered "field" controls (language selector, Share pill). */
 .fieldBtn {
   transition:
