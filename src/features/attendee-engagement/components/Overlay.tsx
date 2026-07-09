@@ -112,7 +112,9 @@ export function Overlay({
             }}
           >
             {icon ? (
-              <Icon d={icon} size={18} color="var(--primary-blue-500)" />
+              // Black, not brand blue — comparable modals in the Portal and the
+              // current present app use black title icons (Graham, 2026-07-08).
+              <Icon d={icon} size={18} color="var(--fg-1)" />
             ) : null}
             {title}
           </span>
