@@ -121,9 +121,11 @@ export function Header({
           height: compact ? 96 : 104,
           // Pure gradient fade to transparent — no backdrop blur. Streaming text
           // dissolves under the header via the white→transparent ramp alone (Graham:
-          // the top should fade with a gradient, not blur).
+          // the top should fade with a gradient, not blur). SOLID through the whole
+          // control row (Deacon 7/9: nothing may show through behind the logo);
+          // the fade begins below the row.
           background:
-            "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,.98) 46%, rgba(255,255,255,.72) 72%, rgba(255,255,255,0) 100%)",
+            "linear-gradient(180deg, #fff 0px, #fff 58px, rgba(255,255,255,.8) 76px, rgba(255,255,255,0) 100%)",
           pointerEvents: "none",
         }}
       />
