@@ -131,7 +131,20 @@ export function Header({
           padding: compact ? "14px 18px" : "15px 22px",
         }}
       >
-        <WordlyLogo height={logoHeight} />
+        {compact ? (
+          // Static DS asset on small screens (Justin: logo rendered tiny on iPhone
+          // Safari). WordlyLogo's inline <svg> sets height + viewBox but no width,
+          // and Safari doesn't derive intrinsic width from the viewBox ratio — the
+          // <img> carries the artwork's explicit 190×57, so Safari sizes it right.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src="/logo/wordly-logo.svg"
+            alt="Wordly"
+            style={{ height: logoHeight, width: "auto", display: "block" }}
+          />
+        ) : (
+          <WordlyLogo height={logoHeight} />
+        )}
         <span style={{ flex: 1 }} />
 
         {/* Language selector — ShadCN Select (DS component). */}
