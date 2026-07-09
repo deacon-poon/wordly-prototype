@@ -432,13 +432,16 @@ export const TranscriptBubble = memo(function TranscriptBubble({
             aria-label="React to this line"
             style={{
               position: "absolute",
-              // Flip BELOW the bubble when it sits near the viewport top —
-              // otherwise the rail lands under the translucent header, which
-              // swallows the clicks (found while verifying the 7/8 round).
+              // The rail OVERLAPS the bubble it affects (Justin 7/9): it straddles
+              // the bubble's top edge, so ownership is never ambiguous — a rail
+              // floating in the gap read as belonging to the bubble BELOW it
+              // (Graham's screenshot). When the bubble sits right under the
+              // header, the rail tucks fully inside its top corner instead, so it
+              // never slips beneath the header (which swallowed clicks).
               ...((wrapRef.current?.getBoundingClientRect().top ?? Infinity) <
-              120
-                ? { top: "calc(100% + 6px)" }
-                : { bottom: "calc(100% + 6px)" }),
+              (canHover ? 92 : 100)
+                ? { top: 6 }
+                : { top: canHover ? -19 : -27 }),
               // End-anchored on normal bubbles; on SHORT bubbles (live non-final
               // phrases can be a word or two) the panel is wider than the bubble
               // and would overflow off-screen toward the column start — flip the

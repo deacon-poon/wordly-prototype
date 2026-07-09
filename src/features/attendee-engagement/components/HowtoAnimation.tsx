@@ -141,7 +141,9 @@ export function HowtoAnimation() {
             className={styles.hsRail}
             style={{
               position: "absolute",
-              bottom: "calc(100% + 8px)",
+              // Straddles the bubble's top edge — mirrors the real rail's
+              // overlap-the-affected-bubble placement (Justin 7/9).
+              top: -19,
               left: "50%",
               marginLeft: -83,
               width: 166,
