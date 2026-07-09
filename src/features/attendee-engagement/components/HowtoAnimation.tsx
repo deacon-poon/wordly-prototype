@@ -149,12 +149,11 @@ export function HowtoAnimation() {
               gap: 4,
               padding: 5,
               borderRadius: 999,
-              background:
-                "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
-              border: "1px solid rgba(255,255,255,.65)",
-              boxShadow: "0 10px 24px rgba(0,99,204,.26)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
+              // Mirrors the REAL rail (unified with the bubble in the 7/8 round):
+              // solid white, brand-blue border, tight shadow, borderless buttons.
+              background: "#fff",
+              border: "1px solid var(--primary-blue-400)",
+              boxShadow: "0 4px 12px rgba(0,99,204,.18)",
             }}
           >
             {REACT5.map((opt, i) => (
@@ -169,9 +168,8 @@ export function HowtoAnimation() {
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: 999,
-                  background: "#fff",
-                  border: "1px solid rgba(255,255,255,.7)",
-                  boxShadow: "0 1px 3px rgba(15,23,42,.14)",
+                  background: "transparent",
+                  border: "none",
                 }}
               >
                 <Icon d={opt.icon} size={16} color={opt.c} />

@@ -432,7 +432,13 @@ export const TranscriptBubble = memo(function TranscriptBubble({
             aria-label="React to this line"
             style={{
               position: "absolute",
-              bottom: "calc(100% + 6px)",
+              // Flip BELOW the bubble when it sits near the viewport top —
+              // otherwise the rail lands under the translucent header, which
+              // swallows the clicks (found while verifying the 7/8 round).
+              ...((wrapRef.current?.getBoundingClientRect().top ?? Infinity) <
+              120
+                ? { top: "calc(100% + 6px)" }
+                : { bottom: "calc(100% + 6px)" }),
               // End-anchored on normal bubbles; on SHORT bubbles (live non-final
               // phrases can be a word or two) the panel is wider than the bubble
               // and would overflow off-screen toward the column start — flip the
@@ -446,12 +452,15 @@ export const TranscriptBubble = memo(function TranscriptBubble({
               gap: canHover ? 3 : 4,
               padding: canHover ? 4 : 5,
               borderRadius: 999,
-              background:
-                "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
-              border: "1px solid rgba(255,255,255,.65)",
-              boxShadow: "0 10px 24px rgba(0,99,204,.26)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
+              // ONE visual system with the hovered bubble (Graham, 7/8 round):
+              // solid white like the bubble + the SAME brand blue as its ring for
+              // the border; no frosted tint, no backdrop blur, and a tight shadow
+              // that doesn't cast down over the bubble's top edge. The buttons sit
+              // borderless on the shared white surface (hover/selected states
+              // carry the affordance).
+              background: "#fff",
+              border: "1px solid var(--primary-blue-400)",
+              boxShadow: "0 4px 12px rgba(0,99,204,.18)",
               animation: "wEngPopIn .18s ease-out",
             }}
           >
@@ -477,13 +486,13 @@ export const TranscriptBubble = memo(function TranscriptBubble({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 999,
-                    background: on ? opt.cbg : "#fff",
-                    border: "1px solid rgba(255,255,255,.7)",
-                    // Selected: solid ring in the reaction's colour (box-shadow so the
-                    // icon never shifts) — same treatment as the card's inline picker.
-                    boxShadow: on
-                      ? `0 0 0 2px ${opt.cbdr}`
-                      : "0 1px 3px rgba(15,23,42,.14)",
+                    // Borderless on the rail's shared white surface — resting
+                    // borders/shadows per button were part of the hover-cluster
+                    // noise. Selected keeps its tint + colour ring (state must
+                    // stay visible); hover feedback comes from .rxEmoji.
+                    background: on ? opt.cbg : "transparent",
+                    border: "none",
+                    boxShadow: on ? `0 0 0 2px ${opt.cbdr}` : "none",
                     cursor: "pointer",
                   }}
                 >
