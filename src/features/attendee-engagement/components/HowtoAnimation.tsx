@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Icon } from "../lib/icons";
 import { ICON, REACT5, ICON_FOR, type Reaction } from "../lib/reactions-data";
 import styles from "../engagement.module.css";
@@ -56,6 +56,14 @@ export function HowtoAnimation() {
   // 0.74 → 0.66 (Deacon 2026-07-08): slightly smaller art buys the centered copy
   // room above the fold at the peek detent.
   const S = 0.66;
+  // The story loops TWICE, then freezes on the composed end state (rail + picked
+  // reaction) — continual motion in the always-visible panel is peripheral noise
+  // (Graham). 2 × the 5s loop; .hsDone swaps in the static frame.
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setDone(true), 10_000);
+    return () => clearTimeout(t);
+  }, []);
   const ring: CSSProperties = {
     position: "absolute",
     left: 43,
@@ -68,6 +76,7 @@ export function HowtoAnimation() {
   return (
     <div
       aria-hidden
+      className={done ? styles.hsDone : undefined}
       style={{
         position: "relative",
         width: 210 * S,
