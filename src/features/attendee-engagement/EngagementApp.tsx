@@ -18,7 +18,7 @@ import { useAttendStream, type AttendConfig } from "./lib/useAttendStream";
 import { Transcript } from "./components/Transcript";
 import { HighlightsList } from "./components/HighlightsList";
 import { Header } from "./components/Header";
-import { ShareSheet } from "./components/ShareSheet";
+import { ShareSheet, buildShareText } from "./components/ShareSheet";
 import { SessionEndedSheet } from "./components/SessionEndedSheet";
 import { Coach, CoachPanelCard, type CoachVariant } from "./components/Coach";
 import styles from "./engagement.module.css";
@@ -378,7 +378,28 @@ export default function EngagementApp({
               >
                 <PanelHeader count={hl.count} />
                 {hl.count > 0 ? (
-                  <ShareButton onClick={() => setShareOpen(true)} />
+                  // Desktop goes STRAIGHT to the OS share sheet (Graham) — the
+                  // preview modal is only the fallback where navigator.share
+                  // doesn't exist. (Phone keeps the preview sheet: closed-round
+                  // decision, and mobile share sheets obscure the content.)
+                  <ShareButton
+                    onClick={async () => {
+                      if (navigator.share) {
+                        try {
+                          await navigator.share({
+                            title: "My Highlights",
+                            text: buildShareText(hl),
+                          });
+                          return;
+                        } catch (e) {
+                          // Dismissed the native sheet → done. Anything else
+                          // (blocked/unsupported payload) → preview modal.
+                          if ((e as Error)?.name === "AbortError") return;
+                        }
+                      }
+                      setShareOpen(true);
+                    }}
+                  />
                 ) : null}
               </div>
               <div
