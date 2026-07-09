@@ -514,9 +514,10 @@ export const TranscriptBubble = memo(function TranscriptBubble({
               zIndex: 5,
               display: "inline-flex",
               alignItems: "center",
-              gap: 3,
+              justifyContent: "center",
               height: 22,
-              padding: "0 6px 0 7px",
+              minWidth: 22,
+              padding: "0 4px",
               borderRadius: 999,
               background: "#fff",
               border: `1px solid ${chipR.cbdr}`,
@@ -525,9 +526,12 @@ export const TranscriptBubble = memo(function TranscriptBubble({
               animation: "wEngPopIn .22s ease-out",
             }}
           >
+            {/* Icon-only status (Graham, 7/8 round): no chevron here — on desktop
+                the rail is already open on hover, so the chevron promised a menu
+                that never visibly appeared. Tapping still opens the rail (touch);
+                the highlight-card chip keeps its chevron, where it opens a real
+                picker. */}
             <Icon d={chipR.icon} size={13} color={chipR.c} />
-            {/* chevron signals the reaction is changeable (tap → picker/rail) */}
-            <Icon d={ICON.chevron} size={11} color={chipR.c} />
           </button>
         ) : null}
       </div>
