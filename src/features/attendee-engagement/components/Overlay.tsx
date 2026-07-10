@@ -15,6 +15,7 @@ import styles from "../engagement.module.css";
 export function Overlay({
   open,
   onClose,
+  onBack,
   title,
   icon,
   compact = false,
@@ -23,6 +24,10 @@ export function Overlay({
 }: {
   open: boolean;
   onClose: () => void;
+  /** Drill-in sub-view: renders a Back affordance before the title and makes
+   *  Escape step BACK instead of closing — one modal that navigates, never a
+   *  modal stacked on a modal. */
+  onBack?: () => void;
   title: string;
   /** Optional leading icon; omit for a plain title row (per the session-end spec). */
   icon?: string;
@@ -35,11 +40,11 @@ export function Overlay({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") (onBack ?? onClose)();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open, onClose, onBack]);
   // Re-check the "more below" fade whenever the body content changes.
   useEffect(() => {
     bodyScroll.check();
@@ -111,7 +116,33 @@ export function Overlay({
               color: "var(--fg-1)",
             }}
           >
-            {icon ? (
+            {onBack ? (
+              <button
+                onClick={onBack}
+                aria-label="Back"
+                className={`${styles.iconBtn} ${styles.hitArea}`}
+                style={{
+                  width: 32,
+                  height: 32,
+                  marginInlineStart: -6,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  borderRadius: 8,
+                }}
+              >
+                {/* left-pointing chevron (the shared chevron points down) */}
+                <Icon
+                  d={ICON.chevron}
+                  size={17}
+                  color="var(--fg-1)"
+                  style={{ transform: "rotate(90deg)" }}
+                />
+              </button>
+            ) : icon ? (
               // Black, not brand blue — comparable modals in the Portal and the
               // current present app use black title icons (Graham, 2026-07-08).
               <Icon d={icon} size={18} color="var(--fg-1)" />

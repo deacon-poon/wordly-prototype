@@ -180,14 +180,26 @@ export function Header({
             // (#84f1a2); gray border + regular text unchanged.
             // NB: plain var() — inside the feature root these tokens are hex
             // (engagement.module.css), so hsl(var()) would not resolve.
-            className="h-11 w-auto shrink-0 gap-2 rounded-lg bg-white text-sm font-medium transition-colors hover:bg-[var(--accent-green-100)] active:bg-[var(--accent-green-200)]"
+            // min-w-0 + shrink so the pill compresses (label ellipsizes) instead
+            // of shoving the audio/menu buttons off-screen at very narrow widths
+            // — at the 320px WCAG floor the ⋮ landed at x=334 (Deacon 7/10).
+            className="h-11 w-auto min-w-0 shrink gap-2 rounded-lg bg-white text-sm font-medium transition-colors hover:bg-[var(--accent-green-100)] active:bg-[var(--accent-green-200)]"
             // While open, hold the hover tint (green-100) so the trigger reads active.
             style={
               pickerOpen ? { background: "var(--accent-green-100)" } : undefined
             }
           >
             <Icon d={ICON.languages} size={16} color="var(--fg-3)" />
-            <span dir="auto">{NATIVE_LABEL[lang] ?? lang}</span>
+            <span
+              dir="auto"
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {NATIVE_LABEL[lang] ?? lang}
+            </span>
           </SelectTrigger>
           <SelectContent
             className="max-h-[340px] min-w-[248px]"

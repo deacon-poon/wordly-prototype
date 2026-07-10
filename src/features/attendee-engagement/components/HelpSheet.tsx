@@ -43,13 +43,65 @@ export function HelpSheet({
   compact?: boolean;
 }) {
   const [fine, setFine] = useState(false);
-  const [attrOpen, setAttrOpen] = useState(false);
+  // Drill-in sub-view (Attribution) INSIDE the same modal — never a second
+  // modal stacked on this one (Deacon 7/10). Back (or Escape) returns to Help;
+  // the X still closes everything. Resets to Help each time the sheet opens.
+  const [view, setView] = useState<"help" | "attribution">("help");
+  useEffect(() => {
+    if (open) setView("help");
+  }, [open]);
   useEffect(() => {
     setFine(
       window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
     );
   }, []);
   const HELP_QA = helpQA(fine);
+
+  if (view === "attribution") {
+    return (
+      <Overlay
+        open={open}
+        onClose={onClose}
+        onBack={() => setView("help")}
+        compact={compact}
+        title="Attribution"
+      >
+        <div style={{ padding: "12px 16px 16px" }}>
+          <div
+            style={{ fontSize: 12.5, color: "var(--fg-3)", marginBottom: 10 }}
+          >
+            This experience is built with open-source software:
+          </div>
+          {[
+            ["React", "MIT License · Meta Platforms, Inc."],
+            ["Next.js", "MIT License · Vercel, Inc."],
+            ["Radix UI / shadcn/ui", "MIT License · WorkOS & contributors"],
+            ["Lucide Icons", "ISC License · Lucide contributors"],
+            ["Roboto", "Apache License 2.0 · Google Fonts"],
+          ].map(([name, lic], i, arr) => (
+            <div
+              key={name}
+              style={{
+                padding: "10px 0",
+                borderBottom:
+                  i < arr.length - 1 ? "1px solid var(--border-1)" : "none",
+              }}
+            >
+              <div
+                style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-1)" }}
+              >
+                {name}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--fg-3)", marginTop: 2 }}>
+                {lic}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Overlay>
+    );
+  }
+
   return (
     <>
       <Overlay
@@ -89,7 +141,7 @@ export function HelpSheet({
               </a>
               {" | "}
               <button
-                onClick={() => setAttrOpen(true)}
+                onClick={() => setView("attribution")}
                 style={{
                   border: "none",
                   background: "transparent",
@@ -150,46 +202,6 @@ export function HelpSheet({
                 }}
               >
                 {qa[1]}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Overlay>
-      {/* Attribution — the open-source components this prototype is built on. */}
-      <Overlay
-        open={attrOpen}
-        onClose={() => setAttrOpen(false)}
-        compact={compact}
-        title="Attribution"
-      >
-        <div style={{ padding: "12px 16px 16px" }}>
-          <div
-            style={{ fontSize: 12.5, color: "var(--fg-3)", marginBottom: 10 }}
-          >
-            This experience is built with open-source software:
-          </div>
-          {[
-            ["React", "MIT License · Meta Platforms, Inc."],
-            ["Next.js", "MIT License · Vercel, Inc."],
-            ["Radix UI / shadcn/ui", "MIT License · WorkOS & contributors"],
-            ["Lucide Icons", "ISC License · Lucide contributors"],
-            ["Roboto", "Apache License 2.0 · Google Fonts"],
-          ].map(([name, lic], i, arr) => (
-            <div
-              key={name}
-              style={{
-                padding: "10px 0",
-                borderBottom:
-                  i < arr.length - 1 ? "1px solid var(--border-1)" : "none",
-              }}
-            >
-              <div
-                style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-1)" }}
-              >
-                {name}
-              </div>
-              <div style={{ fontSize: 12, color: "var(--fg-3)", marginTop: 2 }}>
-                {lic}
               </div>
             </div>
           ))}
