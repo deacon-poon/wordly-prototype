@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import EngagementApp from "./EngagementApp";
+import HapticLab from "./components/HapticLab";
 import type { CoachVariant } from "./components/Coach";
 
 /**
@@ -48,6 +49,11 @@ function EngagementRoute() {
   const live = code
     ? { code, accessKey: params.get("key") || undefined, endpoint }
     : undefined;
+
+  // ?haptic=lab → the iOS haptic test matrix (tracker item: mid-gesture Taptic).
+  if ((params.get("haptic") || "").toLowerCase() === "lab") {
+    return <HapticLab />;
+  }
 
   return (
     <div className="fixed inset-0 bg-[#f0f4f8]">
