@@ -562,17 +562,20 @@ export default function EngagementApp({
   }
 
   // ── Phone: transcript + bottom-sheet detents ─────────────────────────────────
-  const vh = width === 0 ? 720 : Math.max(window?.innerHeight ?? 720, 480);
+  // Real viewport height, no floor: the old Math.max(…, 480) meant that at the
+  // WCAG reflow minimum (320×256) "full" computed 413px of sheet in a 256px
+  // window — the handle rose past the viewport top and the sheet couldn't be
+  // collapsed (Graham, tracker 7/9). Every detent is instead capped so the
+  // handle row always stays reachable below the header.
+  const vh = width === 0 ? 720 : Math.max(window?.innerHeight ?? 720, 120);
+  const maxSheetH = Math.max(DETENTS.collapsed, vh - 64);
   const collapsedH = DETENTS.collapsed;
   // Peek is a compact dock — just the newest highlight + the "+N more" affordance —
   // not a half-sheet, so plenty of transcript stays visible above it.
-  const peekH = Math.min(300, Math.round(vh * 0.4));
+  const peekH = Math.min(300, Math.round(vh * 0.4), maxSheetH);
+  const fullH = Math.min(vh * DETENTS.full, maxSheetH);
   const targetH =
-    detent === "collapsed"
-      ? collapsedH
-      : detent === "peek"
-        ? peekH
-        : vh * DETENTS.full;
+    detent === "collapsed" ? collapsedH : detent === "peek" ? peekH : fullH;
   const sheetH = dragH ?? targetH;
 
   const onHandleDown = (e: React.PointerEvent) => {
@@ -585,7 +588,7 @@ export default function EngagementApp({
     const dy = sheetDrag.current.y - e.clientY;
     if (Math.abs(dy) > 6) didDrag.current = true;
     setDragH(
-      Math.min(vh * 0.9, Math.max(collapsedH, sheetDrag.current.h + dy))
+      Math.min(maxSheetH, Math.max(collapsedH, sheetDrag.current.h + dy))
     );
   };
   const onHandleUp = () => {
@@ -594,7 +597,7 @@ export default function EngagementApp({
       const opts: [DetentKey, number][] = [
         ["collapsed", collapsedH],
         ["peek", peekH],
-        ["full", vh * DETENTS.full],
+        ["full", fullH],
       ];
       const startIdx = opts.findIndex((o) => o[0] === drag.from);
       // Nearest detent by height…
@@ -724,10 +727,19 @@ export default function EngagementApp({
             }}
           >
             <div
+              role="button"
+              tabIndex={0}
+              aria-label="Toggle highlights panel"
               onPointerDown={onHandleDown}
               onPointerMove={onHandleMove}
               onPointerUp={onHandleUp}
               onClick={cycle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  cycle();
+                }
+              }}
               style={{
                 flexShrink: 0,
                 padding: "8px 15px 10px",

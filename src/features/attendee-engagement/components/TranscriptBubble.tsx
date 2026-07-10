@@ -24,26 +24,13 @@ const RADII: CSSProperties = {
   borderEndStartRadius: 20,
 };
 
-// Swipe-to-react: drag a bubble toward the rail side (right in LTR, LEFT in RTL);
-// past the threshold it springs back and opens the reaction rail. (An alternative
-// to long-press.)
-const MAX_DRAG = 70; // visual cap — the bubble never travels further than this
-const SWIPE_THRESHOLD = 60; // raw finger distance (px) needed to commit
+// (Swipe-to-react was REMOVED in the 7/9 tracker round — it never worked on
+// desktop and could strand a bubble mis-aligned. Long-press (touch) and hover
+// (desktop) are the reaction paths; any movement past MOVE_SLOP is a scroll.)
 const MOVE_SLOP = 8;
-// A near-diagonal flick is a SCROLL, not a swipe: horizontal must clearly dominate
-// (1.5×) before we claim the gesture, otherwise scrolls that start on a bubble get
-// stolen and rubber-band the bubble sideways — the "janky scroll on bubbles" bug.
-const H_AXIS_BIAS = 1.5;
 // Press-lift is deferred a beat so a scroll flick that starts on a bubble never
 // paints the lift (a re-render + shadow paint at the most frame-critical moment).
 const PRESS_LIFT_MS = 80;
-// Rubber-band resistance: the bubble eases toward MAX_DRAG and never exceeds it, so a
-// long finger drag still only nudges the bubble — it feels like pulling against tension
-// rather than the bubble sticking to the finger.
-const rubber = (dx: number) => {
-  const x = Math.max(0, dx);
-  return Math.round(MAX_DRAG * (1 - Math.exp(-x / MAX_DRAG)));
-};
 
 /**
  * A single transcript line.
@@ -116,20 +103,13 @@ export const TranscriptBubble = memo(function TranscriptBubble({
     );
   }, []);
   const [pressing, setPressing] = useState(false);
-  const [dragX, setDragX] = useState(0);
-  const [releasing, setReleasing] = useState(false);
   const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lpFired = useRef(false);
-  const swipedRef = useRef(false);
-  const dragRef = useRef<{
-    x: number;
-    y: number;
-    axis: "h" | "v" | null;
-    dx: number;
-    /** +1 LTR / −1 RTL: "toward the rail" — read from the live computed direction. */
-    sign: 1 | -1;
-  } | null>(null);
+  // True once the pointer moved past MOVE_SLOP — the gesture is a scroll, not a
+  // tap: timers are cancelled and the eventual click is suppressed.
+  const movedRef = useRef(false);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
   const hapticRef = useHapticRef();
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -175,7 +155,7 @@ export const TranscriptBubble = memo(function TranscriptBubble({
 
   // Hover / long-press / selection all lift the bubble. Selection lifts hardest (it's
   // the active target); a press lifts next.
-  const lifted = hover || pressing || dragX > 0 || selected;
+  const lifted = hover || pressing || selected;
   const liftShadow = selected
     ? "0 16px 40px rgba(1,124,255,.32)"
     : pressing
@@ -185,18 +165,10 @@ export const TranscriptBubble = memo(function TranscriptBubble({
   // When selected, a solid 2px brand ring replaces the subtler saved ring.
   const ring = selected ? "0 0 0 2px var(--primary-blue-400)" : savedRing;
 
-  const draggingH = dragRef.current?.axis === "h";
   // The bubble does NOT move or scale on hover/selection — the transcript stays
-  // perfectly still (readability). Hover/selected feedback is shadow + ring only;
-  // the only translation is the deliberate swipe gesture.
-  // dragX is the damped travel toward the rail; the sign maps it back to screen-x.
-  const dragSign = dragRef.current?.sign ?? 1;
-  const transform = dragX ? `translate(${dragX * dragSign}px, 0)` : "none";
-  const transition = draggingH
-    ? "box-shadow .16s ease" // follow the finger while dragging (no transform easing)
-    : releasing
-      ? "transform .34s cubic-bezier(.22,1,.36,1), box-shadow .16s ease" // natural settle back
-      : "box-shadow .16s ease, transform .16s ease";
+  // perfectly still (readability). Hover/selected feedback is shadow + ring only.
+  const transform = "none";
+  const transition = "box-shadow .16s ease";
 
   const bubbleStyle: CSSProperties = {
     position: "relative",
@@ -223,26 +195,27 @@ export const TranscriptBubble = memo(function TranscriptBubble({
     clearTimeout(pressTimer.current as never);
   };
 
-  // A tap saves; but suppress it if the gesture was a long-press or a swipe.
+  // A tap SAVES an unsaved line; on an already-saved line it does nothing —
+  // removal moved to tapping the corner chip (Graham, tracker 7/9: Slack/Zoom
+  // convention — tap the emoji to remove it, tap the bubble never removes).
+  // Long-press/hover still opens the rail to change. Suppressed after a
+  // long-press or a drag so those gestures never double as a tap.
   const onBubbleClick = () => {
-    if (lpFired.current || swipedRef.current) {
+    if (lpFired.current || movedRef.current) {
       lpFired.current = false;
-      swipedRef.current = false;
+      movedRef.current = false;
       return;
     }
-    onToggleSave(bubble.id);
-    // A tap that saves also dismisses an open reaction rail — e.g. long-press to open
-    // the rail, then tap the line to save: the rail should close, not linger.
+    if (!saved) onToggleSave(bubble.id);
+    // A tap also dismisses an open reaction rail — e.g. long-press to open the
+    // rail, then tap the line: the rail should close, not linger.
     if (railOpen) onRail(false);
   };
 
   const onDown = (e: React.PointerEvent) => {
-    const sign: 1 | -1 =
-      getComputedStyle(e.currentTarget).direction === "rtl" ? -1 : 1;
-    dragRef.current = { x: e.clientX, y: e.clientY, axis: null, dx: 0, sign };
+    startRef.current = { x: e.clientX, y: e.clientY };
     lpFired.current = false;
-    swipedRef.current = false;
-    setReleasing(false);
+    movedRef.current = false;
     // Deferred press-lift: a scroll flick starting on the bubble abandons the gesture
     // within PRESS_LIFT_MS, so scrolling never pays for a lift render/paint. A real
     // hold still gets feedback fast. (No vibrate here — scroll-starts must be silent;
@@ -260,56 +233,26 @@ export const TranscriptBubble = memo(function TranscriptBubble({
   };
 
   const onMove = (e: React.PointerEvent) => {
-    const d = dragRef.current;
-    if (!d) return;
-    const dx = e.clientX - d.x;
-    const dy = e.clientY - d.y;
-    if (
-      d.axis === null &&
-      (Math.abs(dx) > MOVE_SLOP || Math.abs(dy) > MOVE_SLOP)
-    ) {
-      // Horizontal must clearly dominate to count as a swipe — near-diagonal
-      // movement is a scroll and must stay one.
-      d.axis = Math.abs(dx) > Math.abs(dy) * H_AXIS_BIAS ? "h" : "v";
-      clearTimers(); // any drag cancels the hold + pending press-lift
-      if (d.axis === "v") {
-        // vertical = scroll; abandon the gesture and let the list scroll
-        dragRef.current = null;
-        setPressing(false);
-        return;
-      }
-      // horizontal swipe: now capture so tracking survives the finger leaving the box
-      try {
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      } catch {
-        /* no-op */
-      }
-    }
-    if (d.axis === "h") {
-      // Track travel toward the rail side (right in LTR, left in RTL).
-      d.dx = dx * d.sign;
-      setDragX(rubber(d.dx)); // damped, resistance-y travel (magnitude)
+    const st = startRef.current;
+    if (!st || movedRef.current) return;
+    const dx = e.clientX - st.x;
+    const dy = e.clientY - st.y;
+    if (Math.abs(dx) > MOVE_SLOP || Math.abs(dy) > MOVE_SLOP) {
+      // Movement in ANY direction is a scroll/abandon — cancel the hold and the
+      // pending press-lift, and suppress the eventual click.
+      movedRef.current = true;
+      clearTimers();
+      setPressing(false);
     }
   };
 
   const endGesture = (commit: boolean) => {
     clearTimers();
-    const d = dragRef.current;
-    const wasSwipe = d?.axis === "h";
-    if (wasSwipe && commit && (d?.dx ?? 0) >= SWIPE_THRESHOLD) {
-      swipedRef.current = true;
-      pulseHaptic("light"); // subtle tap as the rail renders from a swipe
-      onRail(true);
-    }
     // Long-press → rail is showing: fire the iOS Taptic on RELEASE. Safari gates the
     // pulse on user activation, which the 450ms timer lacks but this pointerup has —
     // Android already buzzed at rail-display via the timer.
     if (commit && lpFired.current) pulseIOSHaptic();
-    if (wasSwipe) {
-      setReleasing(true);
-      setDragX(0); // spring back
-    }
-    dragRef.current = null;
+    startRef.current = null;
     setPressing(false);
   };
 
@@ -387,44 +330,6 @@ export const TranscriptBubble = memo(function TranscriptBubble({
           // legible through the blur.
         }}
       >
-        {/* peek hint revealed as the bubble is dragged toward the rail */}
-        {dragX > 0 ? (
-          <div
-            style={{
-              position: "absolute",
-              insetInlineStart: 6,
-              top: 0,
-              bottom: 0,
-              display: "flex",
-              alignItems: "center",
-              opacity: Math.min(1, dragX / SWIPE_THRESHOLD),
-              pointerEvents: "none",
-            }}
-          >
-            <span
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 30,
-                height: 30,
-                borderRadius: 999,
-                background:
-                  dragX >= SWIPE_THRESHOLD
-                    ? "var(--primary-blue-400)"
-                    : "var(--primary-blue-25)",
-              }}
-            >
-              <Icon
-                d={ICON.smilePlus}
-                size={17}
-                color={
-                  dragX >= SWIPE_THRESHOLD ? "#fff" : "var(--primary-blue-500)"
-                }
-              />
-            </span>
-          </div>
-        ) : null}
         <div
           ref={hapticTrigger}
           style={bubbleStyle}
@@ -553,13 +458,16 @@ export const TranscriptBubble = memo(function TranscriptBubble({
             ref={hapticRef}
             className={styles.rxChip}
             title={
-              reacted ? `Change reaction · ${chipR.l}` : "Saved · tap to react"
+              reacted ? `Remove reaction · ${chipR.l}` : "Remove highlight"
             }
-            aria-label={reacted ? "Change reaction" : "React"}
+            aria-label={reacted ? "Remove reaction" : "Remove highlight"}
             onClick={(e) => {
+              // Tap the emoji to REMOVE it (Graham, tracker 7/9 — Slack/Zoom
+              // convention); changing stays on long-press/hover → rail.
               e.stopPropagation();
-              haptic("light");
-              onRail(true);
+              haptic("selection");
+              onToggleSave(bubble.id);
+              if (railOpen) onRail(false);
             }}
             style={{
               position: "absolute",

@@ -43,6 +43,7 @@ export function HelpSheet({
   compact?: boolean;
 }) {
   const [fine, setFine] = useState(false);
+  const [attrOpen, setAttrOpen] = useState(false);
   useEffect(() => {
     setFine(
       window.matchMedia?.("(hover: hover) and (pointer: fine)").matches ?? false
@@ -50,76 +51,150 @@ export function HelpSheet({
   }, []);
   const HELP_QA = helpQA(fine);
   return (
-    <Overlay
-      open={open}
-      onClose={onClose}
-      compact={compact}
-      title="Help"
-      icon={ICON.helpCircle}
-      footer={
-        <div style={{ padding: "12px 16px", textAlign: "center" }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--fg-3)",
-              lineHeight: 1.5,
-            }}
-          >
-            <span style={{ cursor: "pointer" }}>Privacy Policy</span>
-            {" | "}
-            <span style={{ cursor: "pointer" }}>Terms of Service</span>
-            {" | "}
-            <span style={{ cursor: "pointer" }}>Attribution</span>
-          </div>
-          <div style={{ fontSize: 12.5, color: "var(--fg-3)", marginTop: 6 }}>
-            Version 0.1.3
-          </div>
-        </div>
-      }
-    >
-      <div
-        style={{
-          padding: "12px 16px",
-          borderBottom: "1px solid var(--border-1)",
-          background: "var(--gray-50)",
-        }}
-      >
-        <div style={{ fontSize: 13, color: "var(--fg-1)" }}>
-          <span style={{ fontWeight: 600 }}>Session ID:</span> BGNA-3762
-        </div>
-        <div style={{ fontSize: 13, color: "var(--fg-1)", marginTop: 3 }}>
-          <span style={{ fontWeight: 600 }}>Translating from:</span> Spanish
-        </div>
-      </div>
-      <div style={{ padding: "2px 16px 14px" }}>
-        {HELP_QA.map((qa, i) => (
-          <div
-            key={i}
-            style={{
-              padding: "13px 0",
-              borderBottom:
-                i < HELP_QA.length - 1 ? "1px solid var(--border-1)" : "none",
-            }}
-          >
+    <>
+      <Overlay
+        open={open}
+        onClose={onClose}
+        compact={compact}
+        title="Help"
+        icon={ICON.helpCircle}
+        footer={
+          <div style={{ padding: "12px 16px", textAlign: "center" }}>
             <div
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: "var(--fg-1)",
-                marginBottom: 5,
+                color: "var(--fg-3)",
+                lineHeight: 1.5,
               }}
             >
-              {qa[0]}
+              {/* Real destinations (Graham, tracker 7/9). Attribution is app-
+                specific, so it opens an in-app list of this prototype's OSS. */}
+              <a
+                href="https://www.wordly.ai/privacy-policy"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "inherit" }}
+              >
+                Privacy Policy
+              </a>
+              {" | "}
+              <a
+                href="https://www.wordly.ai/wordly-inc-terms-of-service"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "inherit" }}
+              >
+                Terms of Service
+              </a>
+              {" | "}
+              <button
+                onClick={() => setAttrOpen(true)}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  font: "inherit",
+                  color: "inherit",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                Attribution
+              </button>
             </div>
-            <div
-              style={{ fontSize: 12.5, lineHeight: 1.5, color: "var(--fg-2)" }}
-            >
-              {qa[1]}
+            <div style={{ fontSize: 12.5, color: "var(--fg-3)", marginTop: 6 }}>
+              Version 0.1.3
             </div>
           </div>
-        ))}
-      </div>
-    </Overlay>
+        }
+      >
+        <div
+          style={{
+            padding: "12px 16px",
+            borderBottom: "1px solid var(--border-1)",
+            background: "var(--gray-50)",
+          }}
+        >
+          <div style={{ fontSize: 13, color: "var(--fg-1)" }}>
+            <span style={{ fontWeight: 600 }}>Session ID:</span> BGNA-3762
+          </div>
+          <div style={{ fontSize: 13, color: "var(--fg-1)", marginTop: 3 }}>
+            <span style={{ fontWeight: 600 }}>Translating from:</span> Spanish
+          </div>
+        </div>
+        <div style={{ padding: "2px 16px 14px" }}>
+          {HELP_QA.map((qa, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "13px 0",
+                borderBottom:
+                  i < HELP_QA.length - 1 ? "1px solid var(--border-1)" : "none",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--fg-1)",
+                  marginBottom: 5,
+                }}
+              >
+                {qa[0]}
+              </div>
+              <div
+                style={{
+                  fontSize: 12.5,
+                  lineHeight: 1.5,
+                  color: "var(--fg-2)",
+                }}
+              >
+                {qa[1]}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Overlay>
+      {/* Attribution — the open-source components this prototype is built on. */}
+      <Overlay
+        open={attrOpen}
+        onClose={() => setAttrOpen(false)}
+        compact={compact}
+        title="Attribution"
+      >
+        <div style={{ padding: "12px 16px 16px" }}>
+          <div
+            style={{ fontSize: 12.5, color: "var(--fg-3)", marginBottom: 10 }}
+          >
+            This experience is built with open-source software:
+          </div>
+          {[
+            ["React", "MIT License · Meta Platforms, Inc."],
+            ["Next.js", "MIT License · Vercel, Inc."],
+            ["Radix UI / shadcn/ui", "MIT License · WorkOS & contributors"],
+            ["Lucide Icons", "ISC License · Lucide contributors"],
+            ["Roboto", "Apache License 2.0 · Google Fonts"],
+          ].map(([name, lic], i, arr) => (
+            <div
+              key={name}
+              style={{
+                padding: "10px 0",
+                borderBottom:
+                  i < arr.length - 1 ? "1px solid var(--border-1)" : "none",
+              }}
+            >
+              <div
+                style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-1)" }}
+              >
+                {name}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--fg-3)", marginTop: 2 }}>
+                {lic}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Overlay>
+    </>
   );
 }
