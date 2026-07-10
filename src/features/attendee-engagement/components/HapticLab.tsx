@@ -1,7 +1,36 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { hapticTrigger, pulseIOSHaptic } from "../lib/haptics";
+import { hapticTrigger } from "../lib/haptics";
+
+// The label-click trick, kept ONLY here for re-testing on future iOS versions —
+// removed from production 2026-07-10 after the on-device verdict (only row A,
+// the real tap on a switch overlay, produces a Taptic; iOS suppresses the rest).
+let labLabel: HTMLLabelElement | null = null;
+function pulseIOSHaptic() {
+  if (typeof document === "undefined") return;
+  if (!labLabel) {
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.setAttribute("switch", "");
+    input.id = "wEngLabPulseSwitch";
+    input.tabIndex = -1;
+    input.setAttribute("aria-hidden", "true");
+    const label = document.createElement("label");
+    label.htmlFor = "wEngLabPulseSwitch";
+    label.setAttribute("aria-hidden", "true");
+    label.style.cssText =
+      "position:fixed;bottom:0;right:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;";
+    label.appendChild(input);
+    document.body.appendChild(label);
+    labLabel = label;
+  }
+  try {
+    labLabel.click();
+  } catch {
+    /* no-op */
+  }
+}
 import styles from "../engagement.module.css";
 
 /**

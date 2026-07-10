@@ -7,7 +7,6 @@ import { Icon } from "../lib/icons";
 import { Words } from "./Words";
 import {
   pulseHaptic,
-  pulseIOSHaptic,
   hapticTrigger,
   useHapticRef,
   haptic,
@@ -246,12 +245,11 @@ export const TranscriptBubble = memo(function TranscriptBubble({
     }
   };
 
-  const endGesture = (commit: boolean) => {
+  const endGesture = () => {
     clearTimers();
-    // Long-press → rail is showing: fire the iOS Taptic on RELEASE. Safari gates the
-    // pulse on user activation, which the 450ms timer lacks but this pointerup has —
-    // Android already buzzed at rail-display via the timer.
-    if (commit && lpFired.current) pulseIOSHaptic();
+    // No iOS haptic here: verified 2026-07-10 (Haptic Lab) that iOS suppresses
+    // every programmatic Taptic path, including on-release — Android already
+    // buzzed at rail-display via the timer, and the rail pop is the visual cue.
     startRef.current = null;
     setPressing(false);
   };
@@ -336,8 +334,8 @@ export const TranscriptBubble = memo(function TranscriptBubble({
           onClick={onBubbleClick}
           onPointerDown={onDown}
           onPointerMove={onMove}
-          onPointerUp={() => endGesture(true)}
-          onPointerCancel={() => endGesture(false)}
+          onPointerUp={endGesture}
+          onPointerCancel={endGesture}
         >
           <Words bubble={bubble} count={count} done={done} />
         </div>

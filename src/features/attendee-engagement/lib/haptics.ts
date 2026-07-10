@@ -99,52 +99,14 @@ export function haptic(kind: HapticKind | number | number[] = "light") {
 
 // ── Programmatic pulse (for moments NOT tied to a tap, e.g. the reaction rail opening
 // on a long-press) ───────────────────────────────────────────────────────────────────
-// The overlay technique only fires on a real tap, so for a mid-gesture haptic we use
-// the label-click trick (haptics.lochie.me): a hidden, on-screen <label> bound to an
-// <input switch> — clicking the *label* programmatically fires the iOS Taptic Engine.
-// Kept on-screen (1px, opacity 0) rather than off-screen, which iOS honours more reliably.
-let pulseLabel: HTMLLabelElement | null = null;
-function ensurePulse(): HTMLLabelElement | null {
-  if (typeof document === "undefined") return null;
-  if (pulseLabel) return pulseLabel;
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.setAttribute("switch", "");
-  input.id = "wEngPulseSwitch";
-  input.tabIndex = -1;
-  input.setAttribute("aria-hidden", "true");
-  const label = document.createElement("label");
-  label.htmlFor = "wEngPulseSwitch";
-  label.setAttribute("aria-hidden", "true");
-  label.style.cssText =
-    "position:fixed;bottom:0;right:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;";
-  label.appendChild(input);
-  document.body.appendChild(label);
-  pulseLabel = label;
-  return label;
-}
-
-/** A subtle programmatic haptic — iOS Taptic via the label-click trick + a short
- *  Android vibrate. Use for the reaction rail opening on long-press / swipe. */
+// iOS: PLATFORM LIMITATION, verified on device 2026-07-10 via the Haptic Lab
+// (?haptic=lab — six mechanisms; only a REAL tap on a switch overlay buzzed).
+// Every programmatic path — label.click()/input.click(), in-handler, timer-fired
+// mid-press, and on-release — toggles the switch but iOS suppresses the Taptic.
+// So mid-gesture moments get NO iOS haptic by design; feedback there is visual
+// (the rail pop + selected ring). The tap-to-save haptic (hapticTrigger overlay)
+// keeps working, and if a future iOS relaxes the gate, the bubbles already carry
+// the overlay that would benefit. Android buzzes via navigator.vibrate below.
 export function pulseHaptic(kind: HapticKind = "light") {
-  try {
-    ensurePulse()?.click();
-  } catch {
-    /* no-op */
-  }
   haptic(kind);
-}
-
-/**
- * iOS-only Taptic pulse (no Android vibrate). Safari gates the label-click trick on
- * user activation, so a long-press TIMER can't fire it — call this from the real
- * pointerup instead: the long-press haptic lands on RELEASE (rail already showing),
- * while Android already buzzed at rail-display via the timer.
- */
-export function pulseIOSHaptic() {
-  try {
-    ensurePulse()?.click();
-  } catch {
-    /* no-op */
-  }
 }
