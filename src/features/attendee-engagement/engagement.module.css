@@ -404,13 +404,15 @@
     background 0.14s ease,
     color 0.14s ease,
     transform 0.1s ease;
+  /* Circular at REST too (invisible while transparent) — when only the hover
+     was circular, losing hover/focus snapped the radius to the square-ish
+     resting value while the background tint was still fading out, flashing a
+     brief square (Deacon 7/10, volume + close buttons). */
+  border-radius: 999px !important;
 }
 .iconBtn:hover {
   background: var(--gray-100) !important;
   color: var(--fg-1) !important;
-  /* Icon buttons are square 1:1 targets — a circular hover matches the circular
-     active/on states (audio-on, reaction buttons) instead of a rounded square. */
-  border-radius: 999px !important;
 }
 .iconBtn:active {
   transform: scale(0.92);
@@ -426,13 +428,13 @@
     color 0.14s ease,
     border-color 0.14s ease,
     transform 0.1s ease;
+  border-radius: 999px !important; /* circular at rest — see .iconBtn note */
 }
 @media (hover: hover) {
   .ttsBtn:hover {
     background: #bbf7cb !important; /* semantic/accent-green/background-accent-hover */
     border-color: #cdd2d7 !important; /* semantic/gray/gray-border */
     color: #121416 !important;
-    border-radius: 999px !important;
   }
 }
 .ttsBtn:active {
