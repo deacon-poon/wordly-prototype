@@ -218,9 +218,10 @@ export function HighlightsList({
         </button>
 
         {selected ? (
-          /* Picker: the same frosted pill as the transcript panel, OVERLAID on the
-             card and growing out of the chip's corner (transform-origin bottom
-             inline-end) — continuity from the chip, zero height change. */
+          /* Picker: SAME visual system as the transcript rail (unified in the
+             7/8-7/10 rounds — solid white, brand-blue border, borderless
+             buttons, tight shadow, no backdrop blur), OVERLAID on the card and
+             growing out of the chip's corner. */
           <div
             ref={pickerRef}
             role="menu"
@@ -234,12 +235,9 @@ export function HighlightsList({
               gap: fine ? 3 : 4,
               padding: fine ? 4 : 5,
               borderRadius: 999,
-              background:
-                "color-mix(in srgb, var(--primary-blue-50) 92%, transparent)",
-              border: "1px solid rgba(255,255,255,.65)",
-              boxShadow: "0 10px 24px rgba(0,99,204,.26)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
+              background: "#fff",
+              border: "1px solid var(--primary-blue-400)",
+              boxShadow: "0 4px 12px rgba(0,99,204,.18)",
               transformOrigin: "100% 100%",
               animation: "wEngPopIn .18s ease-out",
             }}
@@ -266,11 +264,11 @@ export function HighlightsList({
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 999,
-                    background: on ? r.cbg : "#fff",
-                    border: "1px solid rgba(255,255,255,.7)",
-                    boxShadow: on
-                      ? `0 0 0 2px ${r.cbdr}`
-                      : "0 1px 3px rgba(15,23,42,.14)",
+                    // Borderless on the shared white surface — matches the
+                    // transcript rail's buttons; selected keeps tint + ring.
+                    background: on ? r.cbg : "transparent",
+                    border: "none",
+                    boxShadow: on ? `0 0 0 2px ${r.cbdr}` : "none",
                     cursor: "pointer",
                   }}
                 >
@@ -287,7 +285,9 @@ export function HighlightsList({
   // ── Full / desktop: all cards, full text ──────────────────────────────────────
   if (!peek) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      // gap clears the corner chip, which protrudes ~9px below each card —
+      // at gap 8 it overlapped the next card (Graham, tracker 7/10).
+      <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         {items.map((s) => card(s))}
       </div>
     );
