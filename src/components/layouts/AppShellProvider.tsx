@@ -41,6 +41,7 @@ export function AppShellProvider({ children }: AppShellProviderProps) {
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/signup") &&
     !pathname.startsWith("/public") &&
+    !pathname.startsWith("/doc") &&
     !isStandaloneLabFeature;
 
   const setRightPanel = (panel: Partial<RightPanelState>) => {
