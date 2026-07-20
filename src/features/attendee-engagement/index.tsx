@@ -32,6 +32,9 @@ function EngagementRoute() {
   // ?demo=end → start on the final transcript line so the end-of-session flow
   // (Session complete sheet) can be demoed in seconds instead of ~8 minutes.
   const demoEnd = (params.get("demo") || "").toLowerCase() === "end";
+  // ?demo=wait → force the pre-session "waiting for a speaker" empty state (the
+  // transcript waiting room) so its illustration can be reviewed without a live feed.
+  const demoWait = (params.get("demo") || "").toLowerCase() === "wait";
   // ?lang=ar|he → RTL captions + mirrored transcript/rail (chrome stays LTR).
   const langParam = (params.get("lang") || "").toLowerCase();
   const initialLang =
@@ -60,6 +63,7 @@ function EngagementRoute() {
       <EngagementApp
         coach={coach}
         demoEnd={demoEnd}
+        demoWait={demoWait}
         initialLang={initialLang}
         live={live}
       />

@@ -127,12 +127,15 @@ type DetentKey = keyof typeof DETENTS;
 export default function EngagementApp({
   coach = "b1",
   demoEnd = false,
+  demoWait = false,
   initialLang,
   live,
 }: {
   coach?: CoachVariant;
   /** Demo shortcut (?demo=end): start on the final line so the session ends in seconds. */
   demoEnd?: boolean;
+  /** Demo shortcut (?demo=wait): force the pre-session waiting room to preview the empty state. */
+  demoWait?: boolean;
   /** Initial attend language (?lang=ar → Arabic captions + RTL layout). */
   initialLang?: string;
   /** Live session (?code=XXXX-0000[&key=…]) — real /attend feed instead of the demo. */
@@ -148,7 +151,7 @@ export default function EngagementApp({
   const isWide = device !== "phone";
 
   const demo = useTranscriptStream({
-    active: !live,
+    active: !live && !demoWait,
     wordMs: 206,
     demoEnd,
   });
@@ -239,7 +242,10 @@ export default function EngagementApp({
   // ── Pre-session (spec note, Graham 7/8): joined a live session before the
   //    presenter started — a centered waiting state owns the screen and the
   //    My Highlights panel/sheet/coach stay hidden until the first phrase. ──
-  const preSession = !!live && last < 0 && !ended;
+  const preSession = demoWait || (!!live && last < 0 && !ended);
+  // Demo preview (?demo=wait) has no attend connection — treat it as the
+  // connected-and-waiting ("live") state so it reads as "waiting for the presenter".
+  const waitingStatus = live ? attend.status : "live";
   const waitingRoom = preSession ? (
     <div
       role="status"
@@ -253,36 +259,37 @@ export default function EngagementApp({
       }}
     >
       <div style={{ textAlign: "center", maxWidth: 360 }}>
-        {attend.status !== "error" ? (
-          <span
-            className={styles.pulseDot}
-            style={{
-              display: "inline-block",
-              width: 8,
-              height: 8,
-              borderRadius: 999,
-              background: "var(--primary-blue-400)",
-              marginBottom: 12,
-            }}
-          />
-        ) : null}
+        {/* "Waiting for a speaker" illustration — dashed head silhouette + broadcast
+            mic with a teal head (Figma: Wordly Mobile Design, node 8485-1353). The
+            <img> hides itself on error so the state degrades to text-only. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/asset/illustration/waiting-for-speaker.svg"
+          alt=""
+          aria-hidden
+          width={208}
+          style={{ display: "block", margin: "0 auto 18px", maxWidth: "62%" }}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
+        />
         <div
           style={{
             fontSize: 15,
             fontWeight: 600,
             color:
-              attend.status === "error"
+              waitingStatus === "error"
                 ? "var(--error, #E62D21)"
                 : "var(--fg-1)",
           }}
         >
-          {attend.status === "error"
+          {waitingStatus === "error"
             ? attend.errorMsg
-            : attend.status === "live"
+            : waitingStatus === "live"
               ? "Waiting for the presenter to begin"
               : `Connecting to ${live?.code}…`}
         </div>
-        {attend.status === "live" ? (
+        {waitingStatus === "live" && live ? (
           <div style={{ marginTop: 6, fontSize: 13, color: "var(--fg-3)" }}>
             You&apos;re connected to {live?.code} — captions will appear here
             the moment the session starts.
@@ -425,6 +432,7 @@ export default function EngagementApp({
               onRail={openRail}
               onHoverOpen={openRail}
               onHoverClose={scheduleRailClose}
+              audioOn={audio}
             />
           )}
           {preSession ? null : (
@@ -677,6 +685,7 @@ export default function EngagementApp({
             onRail={openRail}
             onHoverOpen={openRail}
             onHoverClose={scheduleRailClose}
+            audioOn={audio}
           />
         )}
       </div>

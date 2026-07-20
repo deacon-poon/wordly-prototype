@@ -38,6 +38,7 @@ export function Transcript({
   onRail,
   onHoverOpen,
   onHoverClose,
+  audioOn = false,
 }: {
   eng: StreamState;
   last: number;
@@ -58,6 +59,8 @@ export function Transcript({
   /** Desktop hover on a line opens the shared rail for it; leaving schedules a close. */
   onHoverOpen: (id: number) => void;
   onHoverClose: () => void;
+  /** Audio/TTS toggle is on — enables the per-line "now reading" indicator (variant 19). */
+  audioOn?: boolean;
 }) {
   const [atBottom, setAtBottom] = useState(true);
   // "{n} new messages" (attend-app parity): count lines that stream in while the
@@ -154,6 +157,10 @@ export function Transcript({
   };
 
   const latestId = TRANSCRIPT[last]?.id;
+  // TTS "now reading" line = the most-recently-finalized bubble (the one just behind
+  // the still-streaming line, eng.bi); earlier bubbles form the faded "read" trail.
+  // -1 when audio is off, so no bubble shows the indicator.
+  const readingIdx = audioOn ? eng.bi - 1 : -1;
 
   // Stable, id-taking callbacks so the memoized bubbles bail out of the word-tick
   // re-render storm (fresh per-bubble closures would defeat React.memo entirely).
@@ -286,6 +293,13 @@ export function Transcript({
               onHoverClose={onHoverClose}
               tabbable={(focusId ?? latestId) === b.id}
               onFocusLine={setFocusId}
+              tts={
+                readingIdx < 0 || idx > readingIdx
+                  ? undefined
+                  : idx === readingIdx
+                    ? "reading"
+                    : "read"
+              }
             />
           );
           // column-reverse renders DOM-first at the bottom, so reverse to keep

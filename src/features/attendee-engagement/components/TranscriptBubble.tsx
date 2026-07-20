@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import type { Bubble } from "../data/transcript";
 import { SPK } from "../data/transcript";
 import { ICON_FOR, ICON, REACT5 } from "../lib/reactions-data";
-import { Icon } from "../lib/icons";
+import { Icon, VolumeIcon } from "../lib/icons";
 import { Words } from "./Words";
 import {
   pulseHaptic,
@@ -65,6 +65,7 @@ export const TranscriptBubble = memo(function TranscriptBubble({
   onHoverClose,
   tabbable = false,
   onFocusLine,
+  tts,
 }: {
   bubble: Bubble;
   count: number;
@@ -91,6 +92,13 @@ export const TranscriptBubble = memo(function TranscriptBubble({
   /** Roving tabindex: exactly one line is the transcript's Tab stop. */
   tabbable?: boolean;
   onFocusLine?: (id: number) => void;
+  /**
+   * TTS "now reading" indicator (Graham's exploration, variant 19): a small speaker
+   * glyph sits just outside the bubble's reading-end edge. `"reading"` = the line
+   * being spoken now (gray-400); `"read"` = an already-spoken line, left as a faded
+   * gray-200 trail. Undefined when audio is off. Icon only — bubbles are untouched.
+   */
+  tts?: "reading" | "read";
 }) {
   const [hover, setHover] = useState(false);
   // Hover only opens the rail on real hover-capable pointers (not synthetic touch
@@ -493,6 +501,25 @@ export const TranscriptBubble = memo(function TranscriptBubble({
                 picker. */}
             <Icon d={chipR.icon} size={13} color={chipR.c} />
           </button>
+        ) : null}
+        {tts ? (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              insetInlineStart: "100%",
+              marginInlineStart: 7,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "inline-flex",
+              pointerEvents: "none",
+            }}
+          >
+            <VolumeIcon
+              size={13}
+              color={tts === "reading" ? "var(--gray-400)" : "var(--gray-200)"}
+            />
+          </span>
         ) : null}
       </div>
     </div>
