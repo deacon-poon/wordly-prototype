@@ -150,8 +150,18 @@ export default function EngagementApp({
         : "phone";
   const isWide = device !== "phone";
 
+  // Demo pre-roll: at ?v=b1 the "waiting for a speaker" empty state owns the screen
+  // for a beat before the transcript streams in (mimics join → wait → presenter
+  // starts). demoStarted flips true after the delay — or immediately with ?demo=end
+  // (which jumps to the finish); ?demo=wait holds the waiting room open indefinitely.
+  const [demoStarted, setDemoStarted] = useState(demoEnd);
+  useEffect(() => {
+    if (live || demoWait || demoStarted) return;
+    const t = setTimeout(() => setDemoStarted(true), 2800);
+    return () => clearTimeout(t);
+  }, [live, demoWait, demoStarted]);
   const demo = useTranscriptStream({
-    active: !live && !demoWait,
+    active: !live && !demoWait && demoStarted,
     wordMs: 206,
     demoEnd,
   });
@@ -242,7 +252,8 @@ export default function EngagementApp({
   // ── Pre-session (spec note, Graham 7/8): joined a live session before the
   //    presenter started — a centered waiting state owns the screen and the
   //    My Highlights panel/sheet/coach stay hidden until the first phrase. ──
-  const preSession = demoWait || (!!live && last < 0 && !ended);
+  const preSession =
+    demoWait || (!live && !demoStarted) || (!!live && last < 0 && !ended);
   // Demo preview (?demo=wait) has no attend connection — treat it as the
   // connected-and-waiting ("live") state so it reads as "waiting for the presenter".
   const waitingStatus = live ? attend.status : "live";
@@ -260,19 +271,41 @@ export default function EngagementApp({
     >
       <div style={{ textAlign: "center", maxWidth: 360 }}>
         {/* "Waiting for a speaker" illustration — dashed head silhouette + broadcast
-            mic with a teal head (Figma: Wordly Mobile Design, node 8485-1353). The
-            <img> hides itself on error so the state degrades to text-only. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/asset/illustration/waiting-for-speaker.svg"
-          alt=""
-          aria-hidden
-          width={208}
-          style={{ display: "block", margin: "0 auto 18px", maxWidth: "62%" }}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = "none";
+            mic (Figma: Wordly Mobile Design node 8485-1353), recolored to brand
+            (Navy + action-teal head, transparent ground). Floats over a soft aurora
+            halo and bobs gently; the <img> hides itself on error → text-only. */}
+        <div
+          style={{
+            position: "relative",
+            width: 300,
+            maxWidth: "84%",
+            margin: "0 auto 22px",
           }}
-        />
+        >
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: "8%",
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle at 50% 45%, rgba(1,124,255,0.16), rgba(27,195,228,0.08) 52%, rgba(1,124,255,0) 72%)",
+              filter: "blur(10px)",
+              pointerEvents: "none",
+            }}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            className={styles.waitFloat}
+            src="/asset/illustration/waiting-for-speaker.svg"
+            alt=""
+            aria-hidden
+            style={{ position: "relative", display: "block", width: "100%" }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </div>
         <div
           style={{
             fontSize: 15,
