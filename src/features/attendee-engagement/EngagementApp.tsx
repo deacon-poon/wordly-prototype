@@ -317,15 +317,9 @@ export default function EngagementApp({
           {waitingStatus === "error"
             ? attend.errorMsg
             : waitingStatus === "live"
-              ? "Waiting for the presenter to begin"
+              ? "Please wait for the session to start"
               : `Connecting to ${live?.code}…`}
         </div>
-        {waitingStatus === "live" && live ? (
-          <div style={{ marginTop: 6, fontSize: 13, color: "var(--fg-3)" }}>
-            You&apos;re connected to {live?.code} — captions will appear here
-            the moment the session starts.
-          </div>
-        ) : null}
       </div>
     </div>
   ) : null;

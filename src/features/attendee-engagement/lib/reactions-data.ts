@@ -73,7 +73,7 @@ export const REACT5 = [
   {
     e: "👍",
     icon: ICON.lThumbUp,
-    l: "Agree",
+    l: "Like",
     c: "var(--accent-green-700)",
     cbg: "var(--accent-green-25)",
     cbg2: "var(--accent-green-10)",
@@ -82,7 +82,7 @@ export const REACT5 = [
   {
     e: "👎",
     icon: ICON.lThumbDown,
-    l: "Disagree",
+    l: "Dislike",
     c: "var(--rare-orange-600)",
     cbg: "var(--rare-orange-25)",
     cbg2: "var(--rare-orange-10)",
