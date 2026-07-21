@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useViewportSize } from "@/hooks/use-mobile";
 import { Icon } from "./lib/icons";
 import { ICON } from "./lib/reactions-data";
@@ -243,6 +249,33 @@ export default function EngagementApp({
   // handle's tap-to-cycle so a swipe doesn't ALSO cycle the detent after snapping.
   const didDrag = useRef(false);
   const [dragH, setDragH] = useState<number | null>(null);
+  // Peek is a "compact dock" — the newest highlight + the "+N more" pill. Rather than a
+  // fixed fraction of the viewport (which left dead space under the pill when the content
+  // was short — Graham 7/21), it hugs its measured content. `handleRef` is the drag row;
+  // `peekFit` is the measured natural height set pre-paint below.
+  const handleRef = useRef<HTMLDivElement | null>(null);
+  const [peekFit, setPeekFit] = useState<number | null>(null);
+  const newestId = hl.sorted.length ? hl.sorted[hl.sorted.length - 1].id : -1;
+  // Measure the peek dock's content and shrink the sheet to fit. useLayoutEffect runs
+  // before paint, so the sheet never flashes at the taller default first. Re-runs when
+  // the newest highlight, count, or viewport width changes.
+  useLayoutEffect(() => {
+    if (detent !== "peek") return;
+    const body = sheetScroll.ref.current;
+    const handle = handleRef.current;
+    const content = body?.firstElementChild as HTMLElement | null;
+    if (!body || !handle || !content) return;
+    const vhNow = Math.max(window?.innerHeight ?? 720, 120);
+    const ceiling = Math.min(Math.max(56, vhNow - 64), Math.round(vhNow * 0.6));
+    // Measure the CONTENT wrapper, not scrollHeight: when the content is shorter than
+    // the (currently taller) scroll box, scrollHeight clamps to the box's own height and
+    // the sheet could never shrink. The scroll box's vertical padding is added back so
+    // the "+N more" pill keeps a little breathing room below it.
+    const cs = getComputedStyle(body);
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const natural = handle.offsetHeight + content.offsetHeight + padY;
+    setPeekFit(Math.min(natural, ceiling));
+  }, [detent, hl.count, newestId, width, sheetScroll]);
 
   const emptyState = coach === "b1" ? <CoachPanelCard /> : undefined;
 
@@ -588,8 +621,10 @@ export default function EngagementApp({
   const maxSheetH = Math.max(DETENTS.collapsed, vh - 64);
   const collapsedH = DETENTS.collapsed;
   // Peek is a compact dock — just the newest highlight + the "+N more" affordance —
-  // not a half-sheet, so plenty of transcript stays visible above it.
-  const peekH = Math.min(300, Math.round(vh * 0.4), maxSheetH);
+  // not a half-sheet, so plenty of transcript stays visible above it. Height hugs the
+  // measured content (peekFit); the vh-based value is only the pre-measure fallback.
+  const peekHDefault = Math.min(300, Math.round(vh * 0.4), maxSheetH);
+  const peekH = peekFit != null ? Math.min(peekFit, maxSheetH) : peekHDefault;
   const fullH = Math.min(vh * DETENTS.full, maxSheetH);
   const targetH =
     detent === "collapsed" ? collapsedH : detent === "peek" ? peekH : fullH;
@@ -745,6 +780,7 @@ export default function EngagementApp({
             }}
           >
             <div
+              ref={handleRef}
               role="button"
               tabIndex={0}
               aria-label="Toggle highlights panel"
