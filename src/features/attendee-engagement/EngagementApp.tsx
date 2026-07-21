@@ -198,9 +198,6 @@ export default function EngagementApp({
   const panelScroll = useFadeScroll();
   const sheetScroll = useFadeScroll();
   const [shareOpen, setShareOpen] = useState(false);
-  // True while the OS share sheet is up — re-clicks of the Share button are ignored
-  // instead of triggering a second navigator.share (which rejects InvalidStateError).
-  const nativeSharing = useRef(false);
 
   // ── End-of-session flow (spec §2): on session end or early leave, the attendee
   //    gets their highlights and can copy them out. ─────────────────────────────
@@ -286,11 +283,13 @@ export default function EngagementApp({
             aria-hidden
             style={{
               position: "absolute",
-              inset: "8%",
+              inset: "-6%",
               borderRadius: "50%",
+              // Soft radial WHITE backing (Deacon 7/21): a gentle white glow behind the
+              // line-art that fades into the canvas, instead of a coloured halo.
               background:
-                "radial-gradient(circle at 50% 45%, rgba(1,124,255,0.16), rgba(27,195,228,0.08) 52%, rgba(1,124,255,0) 72%)",
-              filter: "blur(10px)",
+                "radial-gradient(circle at 50% 47%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.72) 45%, rgba(255,255,255,0) 74%)",
+              filter: "blur(6px)",
               pointerEvents: "none",
             }}
           />
@@ -424,7 +423,10 @@ export default function EngagementApp({
 
   // ── Wide: transcript + floating right panel ──────────────────────────────────
   if (isWide) {
-    const panelW = device === "desktop" ? 348 : 290;
+    // Tablet panel widened from 290 → 340 (Deacon 7/21): at ~774px the narrow panel
+    // left a wide empty lane between the (80%-capped) bubbles and the highlights card;
+    // the wider panel reaches left to bridge that gap.
+    const panelW = device === "desktop" ? 348 : 340;
     // Transcript metrics, shared with the rail so it can sit right beside the bubble
     // column (not floating out by the panel).
     const tPadLeft = device === "desktop" ? 34 : 26;
@@ -432,10 +434,14 @@ export default function EngagementApp({
     // panel (Justin: too much space between the bubble and the panel).
     const tPad = device === "desktop" ? "78px 20px 28px" : "70px 16px 26px";
     const vw = width || 1280;
-    // Fluid bubbles: cap at 80% of the transcript REGION (not a fixed px column), so
-    // large screens don't strand a lane of empty space beside the conversation.
+    // Fluid bubbles: cap at a fraction of the transcript REGION (not a fixed px
+    // column), so large screens don't strand a lane of empty space beside the
+    // conversation. Tablet fills more (0.9) — its column is tight and the old flat
+    // 0.8 left an awkward gap before the highlights panel (Deacon 7/21); desktop
+    // keeps a roomier 0.85 for a comfortable reading line-length on wide screens.
     const tW = vw - panelW;
-    const bubbleMax = Math.round((tW - tPadLeft * 2) * 0.8);
+    const bubbleFrac = device === "desktop" ? 0.85 : 0.9;
+    const bubbleMax = Math.round((tW - tPadLeft * 2) * bubbleFrac);
     return (
       <div
         className={styles.root}
@@ -506,34 +512,11 @@ export default function EngagementApp({
                 >
                   <PanelHeader count={hl.count} />
                   {hl.count > 0 ? (
-                    // Desktop goes STRAIGHT to the OS share sheet (Graham) — the
-                    // preview modal exists ONLY where navigator.share is absent.
-                    // Never fall back to it on a rejected share: clicking the
-                    // button while the native sheet is up rejects with
-                    // InvalidStateError (Deacon hit this — the fallback modal
-                    // popped and read as the end-of-session sheet), and a
-                    // dismissal rejects with AbortError. Both mean "do nothing".
-                    // (Phone keeps the preview sheet: closed-round decision.)
-                    <ShareButton
-                      onClick={async () => {
-                        if (!navigator.share) {
-                          setShareOpen(true);
-                          return;
-                        }
-                        if (nativeSharing.current) return; // sheet already up
-                        nativeSharing.current = true;
-                        try {
-                          await navigator.share({
-                            title: "My Highlights",
-                            text: buildShareText(hl),
-                          });
-                        } catch {
-                          /* dismissed or blocked — no modal */
-                        } finally {
-                          nativeSharing.current = false;
-                        }
-                      }}
-                    />
+                    // Desktop shows the SAME preview modal as phone (Deacon 7/21):
+                    // click Share → preview the highlights → Copy or Share (native
+                    // sheet) from inside the modal — rather than jumping straight to
+                    // the OS device share on click.
+                    <ShareButton onClick={() => setShareOpen(true)} />
                   ) : null}
                 </div>
                 <div
