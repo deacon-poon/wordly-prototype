@@ -269,7 +269,7 @@ export default function EngagementApp({
         padding: 24,
       }}
     >
-      <div style={{ textAlign: "center", maxWidth: 360 }}>
+      <div style={{ textAlign: "center", maxWidth: 440 }}>
         {/* "Waiting for a speaker" illustration — dashed head silhouette + broadcast
             mic (Figma: Wordly Mobile Design node 8485-1353), recolored to brand
             (Navy + action-teal head, transparent ground). Floats over a soft aurora
@@ -277,8 +277,8 @@ export default function EngagementApp({
         <div
           style={{
             position: "relative",
-            width: 300,
-            maxWidth: "84%",
+            width: 380,
+            maxWidth: "92%",
             margin: "0 auto 22px",
           }}
         >
@@ -296,7 +296,6 @@ export default function EngagementApp({
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className={styles.waitFloat}
             src="/asset/illustration/waiting-for-speaker.svg"
             alt=""
             aria-hidden

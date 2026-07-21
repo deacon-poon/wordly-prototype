@@ -157,10 +157,10 @@ export function Transcript({
   };
 
   const latestId = TRANSCRIPT[last]?.id;
-  // TTS "now reading" line = the most-recently-finalized bubble (the one just behind
-  // the still-streaming line, eng.bi); earlier bubbles form the faded "read" trail.
-  // -1 when audio is off, so no bubble shows the indicator.
-  const readingIdx = audioOn ? eng.bi - 1 : -1;
+  // TTS "now reading" line = the newest / currently-streaming bubble (Deacon 7/21:
+  // the active glyph belongs on the line coming in, not the one behind it); earlier
+  // bubbles form the faded "read" trail. -1 when audio is off, so nothing shows.
+  const readingIdx = audioOn ? last : -1;
 
   // Stable, id-taking callbacks so the memoized bubbles bail out of the word-tick
   // re-render storm (fresh per-bubble closures would defeat React.memo entirely).
