@@ -39,23 +39,16 @@ export function Words({
     seq = head.concat(tailArr);
   }
 
-  // Gently fade the most-recently revealed word in (only while still streaming) so
-  // text arrives word-by-word rather than popping.
+  // Words appear crisply, with no per-word fade-in — the fade was removed per review
+  // (it added cognitive load and made streaming feel less crisp).
   return (
     <span>
-      {seq.map((d, i) => {
-        const isNewest = !done && i === seq.length - 1;
-        return (
-          <Fragment key={d.key}>
-            {i ? " " : ""}
-            <span
-              style={isNewest ? { animation: "wEngFade .22s ease" } : undefined}
-            >
-              {d.t}
-            </span>
-          </Fragment>
-        );
-      })}
+      {seq.map((d, i) => (
+        <Fragment key={d.key}>
+          {i ? " " : ""}
+          <span>{d.t}</span>
+        </Fragment>
+      ))}
     </span>
   );
 }
